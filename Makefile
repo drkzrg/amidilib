@@ -6,14 +6,14 @@
 INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
 CFLAGS= -m68020-60 -Wall -pedantic -ansi
-LDFLAGS=
+LDFLAGS= -L/usr/m68k-atari-mint/lib
 EXE = amidi.tos
 
-SRCS = MAIN.C TWISTERM.C MT32.C MIDI_CMD.C LIST.C IFF.C FMIO.C CM_500.C CM_32L.C C_VARS.C AMIDILIB.C
+SRCS = MAIN.C TWISTERM.C MT32.C MIDI_CMD.C MIDISEQ.C LIST.C IFF.C FMIO.C CM_500.C CM_32L.C C_VARS.C AMIDILIB.C TBL_STAT.C
 OBJECTS = $(SRCS:.c=.o)
 
 $(EXE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(INCLUDES) $(OBJECTS) -o $@
+	$(CC) $(LDFLAGS) $(INCLUDES) $(OBJECTS) -o $@ -lgem
 
 all: $(SRCS) $(EXE)
 

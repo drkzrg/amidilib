@@ -21,7 +21,7 @@
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 
-const U8 *g_arMIDIcontrollers[]=
+const char *g_arMIDIcontrollers[]=
 {
 "Bank Select",
 "Modulation",
@@ -160,7 +160,7 @@ const U8 *g_arMIDIcontrollers[]=
 /**
 * instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)
 */
-const U8 *g_arCM32Linstruments[]=
+const char *g_arCM32Linstruments[]=
 {
 "AcouPiano 1",
 "AcouPiano 2",
@@ -297,7 +297,7 @@ const U8 *g_arCM32Linstruments[]=
 * the mapping is key note -> sound, program number 128 
 */
 
-const U8 *g_arCM32Lrhythm[]=
+const char *g_arCM32Lrhythm[]=
 {
 "00 [no sound]",
 "01 [no sound]",
@@ -429,7 +429,7 @@ const U8 *g_arCM32Lrhythm[]=
 "7F [no sound]"
 };
 
-const U8 *g_arCM500sfx[]=
+const char *g_arCM500sfx[]=
 {
 "0 [no sound]",
 "1 [no sound]",
@@ -562,7 +562,7 @@ const U8 *g_arCM500sfx[]=
 "128 [no sound]"
 };
 
-const U8 *g_arMT32instruments[]=
+const char *g_arMT32instruments[]=
 {
 "AcouPiano 1",
 "AcouPiano 2",
@@ -694,7 +694,7 @@ const U8 *g_arMT32instruments[]=
 "JungleTune"
 };
 
-const U8 *g_arMT32rhythm[]=
+const char *g_arMT32rhythm[]=
 {
 "00 [no sound]",
 "01 [no sound]",

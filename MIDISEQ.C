@@ -17,8 +17,8 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-#include "include/midiseq.h"
-#include "include/midi_cmd.h"	/* for sending midi commands */
+#include "INCLUDE/MIDISEQ.H"
+#include "INCLUDE/MIDI_CMD.H"	/* for sending midi commands */
 
 #include <stdio.h> /* just for dummy printf in event handling messages */
 				   /* remove this include when all the handlers will be implemented */
@@ -26,7 +26,7 @@
 /* string table with all event names */
 /*  */
 
-static const U8 *g_arEventNames[T_EVT_COUNT]=
+static const char *g_arEventNames[T_EVT_COUNT]=
 {
 	"Note On",
 	"Note Off", 
@@ -69,7 +69,7 @@ sEventInfoBlock_t getEventFuncInfo(U8 eventType)
 const U8 *getEventName(U32 id)
 {
 
-	return (g_arEventNames[id]);
+	return ((const U8 *)g_arEventNames[id]);
 }
 
 

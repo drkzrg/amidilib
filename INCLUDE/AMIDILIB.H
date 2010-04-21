@@ -28,7 +28,7 @@
 #include "MIDI_CMD.H"
 
 #define LIB_NAME "Atari (X)MIDI library"
-#define INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
+#define AMIDI_INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 2
@@ -208,7 +208,7 @@ void am_deinit(void);
 */
 void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence);
 
-void *processMIDItrackEvents(const void**startPtr, const void **endAddr, sTrack_t **pCurTrack);
+void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack);
 
 /** read MIDI Variable lenght quantity
 *	@param pChar pointer to VLQ data
@@ -306,7 +306,7 @@ U8 am_isMidiRTorSysex(U8 byteEvent);
 U16 combineBytes(U8 bFirst, U8 bSecond);
 
 /* gets MIDI controller name */
-const S8 *getMIDIcontrollerName(U8 iNb);
+const U8 *getMIDIcontrollerName(U8 iNb);
 
 /* returns info about connected devices  */
 const S8 *getConnectedDeviceInfo(void);

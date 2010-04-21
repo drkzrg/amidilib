@@ -52,7 +52,7 @@ int main(void)
     U32 ulFileLenght=0L;
     S16 iError=0;
     U32 mem=0;
-    sEventList *pMyEvent=NULL;	
+    const sEventList *pMyEvent=NULL;	
 
     /*VLQ test */
     U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
@@ -83,7 +83,7 @@ int main(void)
 	/* get connected device info */
 	getConnectedDeviceInfo();
 
-    pMidi=loadFile((char *)MIDI_FILE, PREFER_TT, &ulFileLenght);
+    pMidi=loadFile((U8 *)MIDI_FILE, PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL)
     {
@@ -91,21 +91,14 @@ int main(void)
 				 	printf("Midi loaded in the memory succesfully...\n");
                     /* process MIDI*/
 					/* check midi header */
-					iRet=am_getHeaderInfo(pMidi);
+		   iRet=am_getHeaderInfo(pMidi);
 
-                    switch(iRet)
+		   if(iRet>0){			
+                    // no error
+		    switch(iRet)
                     {
 
-                        case -1:
-                            /* not MIDI file, do nothing */
-                            printf("It's not valid MIDI file...\n");
-                            iError=1;
-                            break;
-                        case -2:
-                            /* unsupported MIDI type format, do nothing*/
-                            printf("Unsupported MIDI file format...\n");
-                            iError=1;
-                            break;
+                        
 
                         case 0:
 						case 1:
@@ -115,16 +108,27 @@ int main(void)
                         am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
                         break;
 
-						default:
+			default:
                             /* unknown error, do nothing */
                             printf("Unknown error ...\n");
                             iError=1;
                           break;
 
                     }
-
+		   }
+		   else{
+		     if(iRet== -1){
+                      /* not MIDI file, do nothing */
+                      printf("It's not valid MIDI file...\n");
+                    }
+                     else if(iRet==-2){
+		     /* unsupported MIDI type format, do nothing*/
+                      printf("Unsupported MIDI file format...\n");
+                     }
+		     iError=1;
+		   }
                     if(iError!=1)
-                    {
+		    {
                         /* play preloaded tune */
                         ;
                     }
@@ -162,21 +166,21 @@ int main(void)
 		
 		/* turn off all notes on all channels */
 		all_notes_off(0);        
-        all_notes_off(1); 
-        all_notes_off(2); 
-        all_notes_off(3); 
-        all_notes_off(4); 
-        all_notes_off(5); 
-        all_notes_off(6); 
-        all_notes_off(7); 
-        all_notes_off(8); 
-        all_notes_off(9); 
-        all_notes_off(10); 
-        all_notes_off(11); 
-        all_notes_off(12); 
-        all_notes_off(13); 
-        all_notes_off(14); 
-        all_notes_off(15); 
+		all_notes_off(1); 
+	        all_notes_off(2); 
+		all_notes_off(3); 
+		all_notes_off(4); 
+	        all_notes_off(5); 
+		all_notes_off(6); 
+		all_notes_off(7); 
+		all_notes_off(8); 
+		all_notes_off(9); 
+		all_notes_off(10); 
+		all_notes_off(11); 
+		all_notes_off(12); 
+		all_notes_off(13); 
+		all_notes_off(14); 
+		all_notes_off(15); 
         
         /* free up buffer */
         if(pMidi!=NULL)	Mfree(pMidi);

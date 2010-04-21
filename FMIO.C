@@ -22,51 +22,53 @@
 /* switches off PURE C: suspicious pointer conversion and unreachable code warnings  */
 #pragma warn -sus
 #pragma warn -rch
-
+#else
+#include <mint/ostruct.h>
 #endif
 
 static U32 g_save_ssp;
 static long   ssp = 0;
 static S16 g_lastGDOSerror=0;
 
-static const U8 *g_arGEMDOSerror[]= {
-"No error.",
-"Error.",
-"Drive not ready.",
-"Unknown command.",
-"CRC (checksum) error.",
-"Bad request.",
-"Seek error.",
-"Unknown media.",
-"Sector not found.",
-"Out of paper.",
-"Write fault.",
-"Read fault.",
-"NVM checksum error.",
-"Write protected media.",
-"Media change detected.",
-"Unknown device.",
-"Bad sectors on format.",
-"Insert other disk (request).",
-"Invalid GEMDOS function number.",
-"File not found.",
-"Path not found.",
-"Handle pool exhausted.",
-"Access denied.",
-"Invalid handle.",
-"Insufficient memory.",
-"Invalid memory block address.",
-"Invalid drive specification.",
-"Not the same drive.",
-"No more files.",
-"Record is already locked.",
-"Invalid lock removal request.",
-"Argument range error.",
-"GEMDOS internal error.",
-"Invalid executable file format.",
-"Memory block growth failure.",
-"Too many symbolic links.",
-"Mount point crossed." };
+static const U8 *g_arGEMDOSerror[]= { \
+  "No error.",\
+  "Error.",\
+  "Drive not ready.",\
+  "Unknown command.",\
+  "CRC (checksum) error.",\
+  "Bad request.",\
+  "Seek error.",\
+  "Unknown media.",\
+  "Sector not found.",\
+  "Out of paper.",\
+  "Write fault.",\
+  "Read fault.",\
+  "NVM checksum error.",\
+  "Write protected media.",\
+  "Media change detected.",\
+  "Unknown device.",\
+  "Bad sectors on format.",\
+  "Insert other disk (request).",\
+  "Invalid GEMDOS function number.",\
+  "File not found.",\
+  "Path not found.",\
+  "Handle pool exhausted.",\
+  "Access denied.",\
+  "Invalid handle.",\
+  "Insufficient memory.",\
+  "Invalid memory block address.",\
+  "Invalid drive specification.",\
+  "Not the same drive.",\
+  "No more files.",\
+  "Record is already locked.",\
+  "Invalid lock removal request.",\
+  "Argument range error.",\
+  "GEMDOS internal error.",\
+  "Invalid executable file format.",\
+  "Memory block growth failure.",\
+  "Too many symbolic links.",\
+  "Mount point crossed."\
+};
 
 
 const U8 *getLastGemdosError(void)
@@ -240,7 +242,11 @@ const U8 *getGemdosError(S16 iErr)
 void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
 {
     S32 fileHandle;
+#ifdef _PUREC_    
     DTA *pDTA=NULL;
+#else
+    _DTA *pDTA=NULL;
+#endif
     void *pData=NULL;
 	S16 iRet=0;
 	S32 lRet=0L;
@@ -256,22 +262,25 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
         if(iRet==0)
 		{
 		 /* file found */
+		 #ifdef _PUREC_
 		 *fileLenght=pDTA->d_length;
-
+		  #else
+		 *fileLenght=pDTA->dta_size;
+		  
+		  #endif
 		  /* allocate buffer */
-		  pData=Mxalloc( (long)(*fileLenght)+1, memFlag);
+		  pData=(void *)Mxalloc( (long)(*fileLenght)+1, memFlag);
 
             if(pData!=NULL)
             {
                 lRet=Fread( (int)fileHandle, (long)(*fileLenght), pData );
 
                 /* not all data being read */
-                if(lRet!=(*fileLenght))
-				 {
-					/* so we have error, free up memory */
-					Mfree(pData);
-					pData=NULL;
-				 }
+                if(lRet!=(*fileLenght)){
+		 /* so we have error, free up memory */
+		 Mfree(pData);
+		 pData=NULL;
+		}
                 *fileLenght=0L;
                 Fclose((int)fileHandle);
                 return (pData);
@@ -301,7 +310,7 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
 
 U32 getFreeMem(eMemoryFlag memFlag)
 {
-    void *pMem=Mxalloc( -1L, memFlag);
+    void *pMem=(void *)Mxalloc( -1L, memFlag);
 
     return((U32)pMem);
 }

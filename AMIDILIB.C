@@ -24,8 +24,9 @@
 #include "INCLUDE\LIST\LIST.H"
 #else
 //gcc part
-#include <cstdio>
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
+#include <mint/ostruct.h>
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
@@ -126,9 +127,9 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     ulAddr=(U32)startPtr+lenght*sizeof(U8);
     endPtr=(void *)ulAddr;
 
-	pSequence->pSequenceName=NULL;	/* name of the sequence empty string */
-	pSequence->ubNumTracks=0;		/*  */
-	pSequence->ubActiveTrack=0;		/* first one from the array */
+	pSequence->pSequenceName=NULL;		 /* name of the sequence empty string */
+	pSequence->ubNumTracks=0;		 /*  */
+	pSequence->currentState.ubActiveTrack=0; /* first one from the array */
 
 	/* init sequence table */
 	for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
@@ -198,13 +199,13 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 
                     
 					/* create one track list only */
-					pSequence->arTracks[0] = malloc(sizeof(sTrack_t));
+					pSequence->arTracks[0] = (sTrack_t *)malloc(sizeof(sTrack_t));
 					/*assert(pCurSequence->arTracks[0]>0);*/
 
 					(pSequence->arTracks[0])->pInstrumentName=NULL;
 					(pSequence->arTracks[0])->currTrackState.currentPos=0;
 					(pSequence->arTracks[0])->currTrackState.ubVolume=128;                
-					(pSequence->arTracks[0])->currTrackState.ubPlayModeState=0;          /* IDLE state */
+					//(pSequence->arTracks[0])->currTrackState.ubPlayModeState=0;          /* IDLE state */
 					(pSequence->arTracks[0])->currTrackState.ulTimeStep=128;                /* sequence current track tempo */
 		
 		/* init event list */
@@ -351,9 +352,14 @@ static U8 g_arMidiBuffer[MIDI_BUFFER_SIZE];
 
 
 /* Midi buffers system info */
+#ifdef _PUREC_
 static IOREC g_sOldMidiBufferInfo;
 static IOREC *g_psMidiBufferInfo;
+#else
+static _IOREC g_sOldMidiBufferInfo;
+static _IOREC *g_psMidiBufferInfo;
 
+#endif
 
 S16 am_init()
 {
@@ -366,9 +372,11 @@ S16 am_init()
 	   		{
 	   		 g_arMidiBuffer[iCounter]=0x00;
 	   		} 
-	   		
-	   		g_psMidiBufferInfo=Iorec(XB_DEV_MIDI);
-
+	   		#ifdef _PUREC_
+			  g_psMidiBufferInfo=(IOREC*)Iorec(XB_DEV_MIDI);
+			#else
+			  g_psMidiBufferInfo=(_IOREC*)Iorec(XB_DEV_MIDI);
+			#endif
 	 		/* copy old MIDI buffer info */
 	 		g_sOldMidiBufferInfo.ibuf=(*g_psMidiBufferInfo).ibuf;
 	 		g_sOldMidiBufferInfo.ibufsiz=(*g_psMidiBufferInfo).ibufsiz;
@@ -378,8 +386,8 @@ S16 am_init()
 	 		g_sOldMidiBufferInfo.ibufhi=(*g_psMidiBufferInfo).ibufhi;
 
 	 		/* set up new MIDI buffer */
-	 		(*g_psMidiBufferInfo).ibuf=g_arMidiBuffer;
-	 		(*g_psMidiBufferInfo).ibufsiz=MIDI_BUFFER_SIZE;
+	 		(*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
+	 		(*g_psMidiBufferInfo).ibufsiz = MIDI_BUFFER_SIZE;
 	 		(*g_psMidiBufferInfo).ibufhd=0;	        /* first byte index to write */
 		 	(*g_psMidiBufferInfo).ibuftl=0;         /* first byte to read(remove) */
 	 		(*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
@@ -406,8 +414,11 @@ void am_deinit()
 void am_dumpMidiBuffer()
 {
  U32 counter=0;
+#ifdef _PUREC_
  IOREC *g_psMidiBufferInfo;
-  
+#else
+ _IOREC *g_psMidiBufferInfo;
+#endif
   printf("MIDI buffer dump:");
   
   
@@ -429,9 +440,9 @@ because we have to know if we have to dump event data to one eventlist or severa
 
 void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence)
 {   
-	sChunkHeader header;
+    sChunkHeader header;
     U32 trackCounter=0;
-	U32 endAddr=0L;
+    U32 endAddr=0L;
     U32 ulChunkSize=0;
 
     printf("Nb of tracks to process: %d\n",numTracks);
@@ -439,7 +450,7 @@ void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSeq
     memcpy(&header, startPtr, sizeof(sChunkHeader));
     startPtr=(U8*)startPtr + sizeof(sChunkHeader);
     
-	ulChunkSize=header.headLenght;
+    ulChunkSize=header.headLenght;
     endAddr=(U32)startPtr+header.headLenght;
 
     if(fileTypeFlag!=T_MIDI2)
@@ -449,8 +460,12 @@ void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSeq
 		{
 			/* we have got track data :)) */
 			/* add all of them to given track */ 
-
-			startPtr=processMIDItrackEvents(&startPtr,&((const void *)endAddr), &(pCurSequence->arTracks[0]));
+			sTrack_t *pTempTrack=pCurSequence->arTracks[0];
+			sTrack_t **ppTrack=&pTempTrack;
+			
+			const void *pTemp=(const void *)endAddr;
+			const void **end=&pTemp;
+			startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 			
 			/* get next data chunk info */
 			memcpy(&header, startPtr,sizeof(sChunkHeader));
@@ -485,8 +500,13 @@ void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSeq
 		{
 			/* we have got track data :)) */
 			/* add all of them to given track */ 
-
-			startPtr=processMIDItrackEvents(&startPtr,&((const void *)endAddr), &(pCurSequence->arTracks[trackCounter]));
+			sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
+			sTrack_t **ppTrack=&pTempTrack;
+			
+			const void *pTemp=(const void *)endAddr;
+			const void **end=&pTemp;
+			
+			startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 			
 			/* get next data chunk info */
 			memcpy(&header, startPtr,sizeof(sChunkHeader));
@@ -527,9 +547,9 @@ U8 am_isMidiRTorSysex(U8 byteEvent)
 
 /* handles the events in tracks and returns pointer to the next midi track */
 
-void *processMIDItrackEvents(const void**startPtr, const void **endAddr, sTrack_t **pCurTrack )
+void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack )
 {
-	U8 *pCmd=((U8 *)(*startPtr));
+    U8 *pCmd=((U8 *)(*startPtr));
     U8 ubSize;
     U8 usSwitch=0;
     U16 recallStatus=0;
@@ -1453,7 +1473,7 @@ U16 combineBytes(U8 bFirst, U8 bSecond)
 }
 
 /* returns name of MIDI controller */
-const S8 *getMIDIcontrollerName(U8 iNb)
+const U8 *getMIDIcontrollerName(U8 iNb)
 {
 
  return(g_arMIDIcontrollers[iNb]);

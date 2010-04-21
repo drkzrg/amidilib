@@ -116,14 +116,14 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
  * @param iErr GEMDOS error code
  * @return pointer to const char * array with error description
  */
-const S8 *getGemdosError(S16 iErr);
+const U8 *getGemdosError(S16 iErr);
 
 /**
  * gets text description of last GEMDOS error that occured.
  *
  * @return pointer to const char * array with error description
  */
-const S8 *getLastGemdosError(void);
+const U8 *getLastGemdosError(void);
 
 /**
  * turns supervisor mode ON.

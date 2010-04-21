@@ -71,7 +71,7 @@ typedef struct SequenceState_t
 typedef struct Sequence_t
 {
    /** internal midi data storage format */
-   U8 *pSequenceName;					/* NULL terminated string */
+   U8 *pSequenceName;			/* NULL terminated string */
    U8 ubNumTracks;            	        /* number of tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];/* up to AMIDI_MAX_TRACKS tracks available */
    sSequenceState_t currentState;       /* current sequence state */

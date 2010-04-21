@@ -145,12 +145,14 @@
  *
  */
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <ext.h>
 
+#ifdef __PURE_C__
+#include <ext.h>
+#else
+#include <time.h>
+#endif
 /*
  * Before we include the Mersenne Twist header file, we must do a bit
  * of magic setup.  The code for actual random-number generation
@@ -160,8 +162,7 @@
  * to a function.  We do so with a couple of careful #defines.
  */
 
-
-#include "include\TWISTERM\TWISTERM.H"
+#include "INCLUDE/TWISTERM/TWISTERM.H"
 
 /*
  * Table of contents:
@@ -458,7 +459,7 @@ void mts_seed(
 void mts_goodseed(
     mt_state*		state)		/* State vector to seed */
     {
-    mts_devseed(state);
+      mts_devseed(state);
     }
 
 /*
@@ -467,8 +468,7 @@ void mts_goodseed(
  * current time.
  */
 static void mts_devseed( mt_state*	state)	/* Device to seed from */
-
-    {
+ {
 
     union
 	{
@@ -478,26 +478,28 @@ static void mts_devseed( mt_state*	state)	/* Device to seed from */
 	}
 			randomunion;	/* Union for reading random int */
 
-    struct time	tv;		/* Time of day */
-
-
-
-
-
-    /*
+/*
      * The device isn't available.  Use the time.  We will
      * assume that the time of day is accurate to microsecond
      * resolution, which is true on most modern machines.
      */
 
-    gettime (&tv);
-
-
-    /*
+#ifdef __PUREC__
+   struct time	tv;		/* Time of day */
+   gettime (&tv);
+   /*
      * We just let the excess part of the seconds field overflow
      */
+   randomunion.randomvalue = tv.ti_sec * 1000000 + tv.ti_hund;
+#else
+  time_t tv;
+  time ( &tv );
+  srand48((long) tv);
+  randomunion.randomvalue = lrand48() * 1000000 + lrand48();
+#endif
 
-    randomunion.randomvalue = tv.ti_sec * 1000000 + tv.ti_hund;
+    
+   
 
     mts_seed32new(state, randomunion.randomvalue);
     }

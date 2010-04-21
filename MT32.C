@@ -16,7 +16,7 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 /* Roland MT-32 static tables */
-#include	"INCLUDE\C_VARS.H"
+#include	"INCLUDE/C_VARS.H"
 
 #ifdef __PUREC__
 /*
@@ -41,11 +41,11 @@ extern const U8 *g_arMT32rhythm[];
 const U8 *getMT32InstrName(U8 ubInstrNb)
 {
 
- return(&(g_arMT32instruments[ubInstrNb]));
+ return(g_arMT32instruments[ubInstrNb]);
 };
 
 const U8 *getMT32RhythmName(U8 ubNoteNb)
 {
 
- return(&(g_arMT32rhythm[ubNoteNb]));
+ return(g_arMT32rhythm[ubNoteNb]);
 };

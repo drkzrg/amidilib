@@ -17,7 +17,7 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 /* Roland CM-500 static tables */
-#include	"INCLUDE\C_VARS.H"
+#include	"INCLUDE/C_VARS.H"
 
 #ifdef __PUREC__
 /*

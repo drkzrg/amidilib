@@ -18,9 +18,9 @@
 #ifndef __AMIDI_H__
 #define __AMIDI_H__
 
-#include "INCLUDE\C_VARS.H"
-#include "INCLUDE\VENDORS.H"
-#include "INCLUDE\EVENTS.H"
+#include "C_VARS.H"
+#include "VENDORS.H"
+#include "EVENTS.H"
 
 #define ID_MTHD     0x4D546864UL
 #define ID_MTRK     0x4D54726BUL

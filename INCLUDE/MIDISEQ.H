@@ -19,8 +19,8 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include "include\C_VARS.H"
-#include "include\MIDI.H"
+#include "C_VARS.H"
+#include "MIDI.H"
 
 
 /* max tracks per sequence */

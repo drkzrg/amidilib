@@ -20,10 +20,10 @@
 /* MIDI file definitions */
 
 /* Some standard EA IFF definitions */
-#include "INCLUDE\IFF.H"
+#include "IFF.H"
 
 /* XMIDI contain midi events */
-#include "INCLUDE\MIDI.H"
+#include "MIDI.H"
 
 /* define XMIDI specific chunk defs */
 #define ID_XDIR 0x58444952  /* XDIR */

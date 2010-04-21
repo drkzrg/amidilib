@@ -16,12 +16,20 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
+#ifdef __PUREC__
 #include <STDIO.H>
 #include <STRING.H>
 #include <AES.H>
 #include "INCLUDE\AMIDILIB.H"
 #include "INCLUDE\LIST\LIST.H"
+#else
+//gcc part
+#include <cstdio>
+#include <cstring>
+#include "INCLUDE/AMIDILIB.H"
+#include "INCLUDE/LIST/LIST.H"
 
+#endif
 /* current version */
 typedef struct AMIDI_version {
 	U16 major;

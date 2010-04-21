@@ -17,7 +17,7 @@
     
 #include <assert.h>
 #include <string.h>
-#include "include\list\list.h"
+#include "INCLUDE/LIST/LIST.H"
 
 void initEventList(sEventList *listPtr)
 {
@@ -57,7 +57,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr )
 			if(pTempPtr->pNext==NULL)
 			{
 				/* insert at the end of list */
-				pNewItem=malloc(sizeof(sEventItem));
+				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
 				/*assert(pNewItem>0);*/					/* assert malloc ok, TODO: proper disaster handling */
 
 				/* add data to new list node */
@@ -82,7 +82,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr )
 			else
 			{
 				/* insert between current and next one */
-				pNewItem=malloc(sizeof(sEventItem));
+				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
 				/*assert(pNewItem>0);*/						/* assert malloc ok, TODO: proper disaster handling */
 
 				/* add data to new list node */
@@ -113,7 +113,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr )
 	}
 	else {
 		/* add first element */
-		listPtr->pEventList=malloc(sizeof(sEventItem));
+		listPtr->pEventList=(sEventItem *)malloc(sizeof(sEventItem));
 		listPtr->pEventList->eventBlock.uiDeltaTime=eventBlockPtr->uiDeltaTime;
 		listPtr->pEventList->eventBlock.type = eventBlockPtr->type;
 		listPtr->pEventList->eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
@@ -197,7 +197,8 @@ void printEventList(const sEventList **listPtr)
 		while(pTemp!=NULL)
 		{
 			/* print */
-			printEventBlock(counter,&pTemp);		
+			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
+			printEventBlock(counter,&pBlock);		
 			counter++;
 			pTemp=pTemp->pNext;
 		}
@@ -282,15 +283,16 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 
 		/* find first event with given delta */
 
-		while(( (delta_start!=pTemp->uiDeltaTime)&&(pTemp!=NULL)) )
+		while(( (delta_start!=(*pTemp).eventBlock.uiDeltaTime)&&(pTemp!=NULL)) )
 		{
 				pTemp=pTemp->pNext;
 		}
 		
-		while(( (pTemp!=NULL)&&(pTemp->uiDeltaTime==delta_start)))
-		{
-			/* send all events with given delta  */
-			printEventBlock(counter,&pTemp);
+		while(( (pTemp!=NULL)&&(pTemp->eventBlock.uiDeltaTime==delta_start))){
+			
+		  /* send all events with given delta  */
+			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
+			printEventBlock(counter,&pBlock);
 			counter++;
 			pTemp=pTemp->pNext;
 		}
@@ -302,7 +304,7 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 		else
 		{	
 			/* return next delta */
-			return ((pTemp->uiDeltaTime));
+			return ((pTemp->eventBlock.uiDeltaTime));
 		}
 		
 	}

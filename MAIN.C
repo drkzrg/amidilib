@@ -14,20 +14,29 @@
 
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
+
+
+#ifdef __PUREC__
 #include <aes.h>	/* quick hack*/
+#include <tos.h>
+#else
+#include <gem.h>
+#include <gemx.h>
+
+#endif
+
 #include <stdio.h>
 #include <string.h>
-#include <tos.h>
 #include <stdlib.h>
 
-#include "INCLUDE\AMIDILIB.H"
+#include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
-#define MIDI_FILE "..\\TUNES\\ULTIMA01.MID"
+#define MIDI_FILE "../TUNES/ULTIMA01.MID"
 
-#define XMIDI_FILE "..\\TUNES\\UWR10.XMI"
+#define XMIDI_FILE "../TUNES/UWR10.XMI"
 
 /**
  * main program entry
@@ -43,13 +52,14 @@ int main(void)
     U32 ulFileLenght=0L;
     S16 iError=0;
     U32 mem=0;
-	sEventList *pMyEvent=NULL;	
+    sEventList *pMyEvent=NULL;	
 
     /*VLQ test */
     U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
     U32 result=0,iCounter;
     U8 *pValPtr=NULL;
     U8 valsize;
+    
     for (iCounter=0;iCounter<10;iCounter++)
     {
         pValPtr=(U8 *)(&val[iCounter]);
@@ -59,6 +69,7 @@ int main(void)
         result= readVLQ(pValPtr,&valsize);
      	printf("VLQ value:%lx, decoded: %lx, size: %d\n",val[iCounter], result, valsize );
     }
+    
     /* mem tst */
     mem=getFreeMem(ST_RAM);
     mem=getFreeMem(TT_RAM);
@@ -141,7 +152,11 @@ int main(void)
 			
 			printf("Sending all events with delta: %ld\n", currDelta);
 			/*getchar();*/
+			#ifdef _PUREC_
 			evnt_timer((currDelta-lastDelta)*500,0);
+			#else
+			evnt_timer((currDelta-lastDelta)*500);
+			#endif
 			lastDelta=currDelta;
 		}
 		

@@ -18,6 +18,9 @@
 #ifndef __C_VARS_H__
 #define __C_VARS_H__
 
+
+#ifdef __PUREC__
+
 /* ###################################################################################
 #  INCLUDES
 ################################################################################### */
@@ -28,26 +31,40 @@
 /* ###################################################################################
 #  TYPEDEFS
 ################################################################################### */
-#ifdef __PUREC__
-typedef unsigned char			U8;
-typedef signed char				S8;
-typedef unsigned int 			U16;
-typedef signed int          	S16;
-typedef unsigned long           U32;
-typedef signed long      		S32;
-typedef	float					F32;
-typedef float                   FP32;
-typedef signed int			    BOOL;
+
+typedef unsigned char 	U8;
+typedef signed char 	S8;
+typedef unsigned int 	U16;
+typedef signed int	S16;
+typedef unsigned long	U32;
+typedef signed long	S32;
+typedef	float		F32;
+typedef float		FP32;
+typedef unsigned int	BOOL;
+
 #else
-typedef unsigned char U8;
-typedef signed char S8;
-typedef unsigned short int U16;
-typedef signed short int S16;
-typedef unsigned long U32;
-typedef signed long S32;
-typedef	float F32;
-typedef float FP32;
-typedef signed int BOOL;
+
+/* ###################################################################################
+#  INCLUDES
+################################################################################### */
+
+#include	<stdio.h>
+#include	<stdlib.h>
+
+/* ###################################################################################
+#  TYPEDEFS
+################################################################################### */
+
+typedef unsigned char 		U8;
+typedef signed char 		S8;
+typedef unsigned short int 	U16;
+typedef signed short int 	S16;
+typedef unsigned long 		U32;
+typedef signed long 		S32;
+typedef	float 			F32;
+typedef float 			FP32;
+typedef unsigned int 		BOOL;
+
 #endif
 
 typedef enum
@@ -80,9 +97,9 @@ S32 					 l;
 
 typedef union
 {
-struct {U8 b3,b2,b1,b0;} b;
-struct {U16 w1,w0;} 	 w;
-U32						 l;
+  struct {U8 b3,b2,b1,b0;} b;
+  struct {U16 w1,w0;} 	 w;
+  U32  l;
 } uU32;
 
 
@@ -128,7 +145,7 @@ U32		endianSwap_U32( U8 * apU16 );
 
 S32		asciiToS32( const char * apTxt );
 
-void    checkCompiler(void);
+void compilerSanityCheck(void);
 
 /* ################################################################################ */
 

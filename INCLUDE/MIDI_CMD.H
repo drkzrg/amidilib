@@ -20,7 +20,7 @@
 #ifndef __MIDI_CMD_H__
 #define __MIDI_CMD_H__
 
-#include "INCLUDE\C_VARS.H"
+#include "C_VARS.H"
 
 /* common, channel voice messages */
 

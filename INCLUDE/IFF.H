@@ -18,7 +18,7 @@
 #ifndef __IFF_H__
 #define __IFF_H__
 
-#include	"INCLUDE\C_VARS.H"
+#include	"C_VARS.H"
 #include <string.h>
 #include <stdio.h>
 

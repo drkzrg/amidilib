@@ -19,13 +19,13 @@
 #ifndef __AMIDILIB_H__
 #define __AMIDILIB_H__
 
-#include "INCLUDE\C_VARS.H"
-#include "INCLUDE\MIDI.H"
-#include "INCLUDE\XMIDI.H"
-#include "INCLUDE\FMIO.H"
-#include "INCLUDE\ROLAND.H"
-#include "INCLUDE\AMIDISEQ.H"
-#include "INCLUDE\MIDI_CMD.H"
+#include "C_VARS.H"
+#include "MIDI.H"
+#include "XMIDI.H"
+#include "FMIO.H"
+#include "ROLAND.H"
+#include "AMIDISEQ.H"
+#include "MIDI_CMD.H"
 
 #define LIB_NAME "Atari (X)MIDI library"
 #define INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"

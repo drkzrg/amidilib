@@ -15,22 +15,21 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include	"INCLUDE\FMIO.H"
+#include "INCLUDE/FMIO.H"
 
 #ifdef __PUREC__
-/*
-switches off PURE C:
-suspicious pointer conversion and unreachable code warnings
- */
 
+/* switches off PURE C: suspicious pointer conversion and unreachable code warnings  */
 #pragma warn -sus
 #pragma warn -rch
+
 #endif
+
 static U32 g_save_ssp;
 static long   ssp = 0;
+static S16 g_lastGDOSerror=0;
 
-static U8 **g_arGEMDOSerror[]=
-{
+static const U8 *g_arGEMDOSerror[]= {
 "No error.",
 "Error.",
 "Drive not ready.",
@@ -51,7 +50,7 @@ static U8 **g_arGEMDOSerror[]=
 "Insert other disk (request).",
 "Invalid GEMDOS function number.",
 "File not found.",
- "Path not found.",
+"Path not found.",
 "Handle pool exhausted.",
 "Access denied.",
 "Invalid handle.",
@@ -67,17 +66,15 @@ static U8 **g_arGEMDOSerror[]=
 "Invalid executable file format.",
 "Memory block growth failure.",
 "Too many symbolic links.",
-"Mount point crossed."
-};
+"Mount point crossed." };
 
-static S16 g_lastGDOSerror=0;
 
-const S8 *getLastGemdosError(void)
+const U8 *getLastGemdosError(void)
 {
     return(g_arGEMDOSerror[g_lastGDOSerror]);
 }
 
-const S8 *getGemdosError(S16 iErr)
+const U8 *getGemdosError(S16 iErr)
 {
     switch(iErr)
     {
@@ -258,11 +255,11 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
 
         if(iRet==0)
 		{
-		    /* file found */
-			*fileLenght=pDTA->d_length;
+		 /* file found */
+		 *fileLenght=pDTA->d_length;
 
-            /* allocate buffer */
-            pData=Mxalloc( (long)(*fileLenght)+1, memFlag);
+		  /* allocate buffer */
+		  pData=Mxalloc( (long)(*fileLenght)+1, memFlag);
 
             if(pData!=NULL)
             {

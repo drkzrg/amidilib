@@ -17,8 +17,8 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 /* Roland CM-32L, CM-64 static tables */
-#include	"INCLUDE\C_VARS.H"
-#include	"INCLUDE\AMIDILIB.H"
+#include	"INCLUDE/C_VARS.H"
+#include	"INCLUDE/AMIDILIB.H"
 
 #ifdef __PUREC__
 /*

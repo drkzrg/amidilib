@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include "INCLUDE\IFF.H"
+#include "INCLUDE/IFF.H"
 
 /*
 ID GetChunkHeader();

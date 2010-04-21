@@ -20,86 +20,27 @@
 #  INCLUDES
 ################################################################################### */
 
-#include	"INCLUDE\C_VARS.H"
+#include <assert.h>
+#include "INCLUDE/C_VARS.H"
 
 /* Compiler sanity check */
 
-void checkCompiler(void)
+void compilerSanityCheck(void)
 {
- /* check compiler, it is valid for PureC */
+ /* check compiler sanity */
  /* if something below will be not right then compiler will moan ;)) ..*/
  /* In this case check your compiler docs with typedefs from C_VARS.H */
-  #ifdef __PUREC__
-    
-    /*if(sizeof(char)!=1)
-    {
-        #error Check your compiler char variable type definition!
-    }
-    if(sizeof(unsigned short)!=2)
-    {
-        #error Check your compiler unsigned short variable type definition!
-    }
 
-    if(sizeof(enum)!=2)
-    {
-        #error Check your compiler enum variable type definition!
-    }
-
-    if(sizeof(short)!=2){
-        #error Check your compiler short variable type definition!
-    }
-
-    if(sizeof(unsigned int)!=2){
-        #error Check your compiler unsigned int variable type definition!
-    }
-    if(sizeof(int)!=2){
-        #error Check your compiler int variable type definition!
-    }
-    if(sizeof(unsigned long)!=4){
-        #error Check your compiler unsigned long variable type definition!
-    }
-    if(sizeof(long)!=4){
-        #error Check your compiler long variable type definition!
-    }
-    if(sizeof(float)!=4){
-        #error Check your compiler float variable type definition!
-    }
-    if(sizeof(double)!=10){
-        #error Check your compiler double variable type definition!
-    }
-    if(sizeof(long double)!=10){
-        #error Check your compiler long variable type definition!
-    }*/
-#else
-    if(sizeof(U8)!=sizeof(unsigned char))
-    {
-        #error Check your compiler char variable type definition!
-    }
-    if(sizeof(U16)!=sizeof(unsigned short int))
-    {
-        #error Check your compiler unsigned short variable type definition!
-    }
-
-    if(sizeof(U32)!=sizeof(unsigned int)){
-        #error Check your compiler unsigned int variable type definition!
-    }
-    if(sizeof(S32)!=sizeof(signed int)){
-        #error Check your compiler int variable type definition!
-    }
-    
-    if(sizeof(float)!=4){
-        #error Check your compiler float variable type definition!
-    }
-    if(sizeof(double)!=10){
-        #error Check your compiler double variable type definition!
-    }
-    if(sizeof(long double)!=10){
-        #error Check your compiler long variable type definition!
-    }
-
-
-#endif
-
+ assert(sizeof(U8)==1);
+    assert(sizeof(U16)==2);
+    assert(((U16)-1)>0);
+    assert(sizeof(U32)==4);    
+    assert((U32)-1>0);    
+    assert(sizeof(S32)==4);    
+    assert((S32)-1==-1);    
+    assert(sizeof(float)==4);
+    assert(sizeof(double)==10);
+    assert(sizeof(long double)==10);
 
 }
 

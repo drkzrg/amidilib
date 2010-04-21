@@ -242,7 +242,7 @@ const U8 *getGemdosError(S16 iErr)
 void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
 {
     S32 fileHandle;
-#ifdef _PUREC_    
+#ifdef __PUREC__    
     DTA *pDTA=NULL;
 #else
     _DTA *pDTA=NULL;
@@ -262,7 +262,7 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
         if(iRet==0)
 		{
 		 /* file found */
-		 #ifdef _PUREC_
+		 #ifdef __PUREC__
 		 *fileLenght=pDTA->d_length;
 		  #else
 		 *fileLenght=pDTA->dta_size;

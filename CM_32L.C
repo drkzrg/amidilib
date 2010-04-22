@@ -40,17 +40,16 @@ extern const U8 *g_arCM32Lrhythm[];
 
 
 /* MT32 reset to factory defaults SysEx message */
-static U8 g_arReset[]={0xf0,0x41,0x10,0x16,0x12,0x7f,0x01,0xf7};
+static U8 const g_arReset[]={0xf0,0x41,0x10,0x16,0x12,0x7f,0x01,0xf7};
 
 /* MT32toGM bank patches */
 /*give an include ?*/
 
-static U8 g_arMT32toGM[]={
+static const U8 g_arMT32toGM[]={
 0x00
-
 };
 
-static U8 g_arMT32emptyBank[]={
+static const U8 g_arMT32emptyBank[]={
 0x00
 
 };
@@ -62,13 +61,13 @@ const U8 *getCM32LInstrName(U8 ubInstrNb)
 {
 
  return(g_arCM32Linstruments[ubInstrNb]);
-};
+}
 
 const U8 *getCM32LRhythmName(U8 ubNoteNb)
 {
 
  return(g_arCM32Lrhythm[ubNoteNb]);
-};
+}
 
 void MT32Reset(void)
 {

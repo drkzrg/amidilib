@@ -27,7 +27,7 @@
 #define EV_CONTROLLER           0x0B       /* Controller			    0xB		controller number	controller value */
 #define EV_PROGRAM_CHANGE       0x0C       /* Program Change		    0xC		program number		not used */
 #define EV_CHANNEL_AFTERTOUCH   0x0D       /* Channel Aftertouch		0xD		aftertouch value	not used */
-#define EV_PITCH_BEND           0x0E       /* Pitch Bend		        0xE		pitch value (LSB)	pitch value (MSB)
+#define EV_PITCH_BEND           0x0E       /* Pitch Bend		        0xE		pitch value (LSB)	pitch value (MSB) */
 
 
 /* CONTROLLER (EV_CONTROLLER) EVENTS */

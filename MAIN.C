@@ -151,7 +151,7 @@ int main(void)
 		
 		/* TODO: callback on timer */
 		
-		while(currDelta=sendMidiEvents(lastDelta, &pMyEvent))
+		while((currDelta=sendMidiEvents(lastDelta, &pMyEvent)))
 		{
 			
 			printf("Sending all events with delta: %ld\n", currDelta);

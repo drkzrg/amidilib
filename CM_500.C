@@ -40,7 +40,7 @@ const U8 *getCM500SFXName(U8 ubNoteNb)
 {
 
  return(g_arCM500sfx[ubNoteNb]);
-};
+}
 
 
 void  allPartsOn(void)

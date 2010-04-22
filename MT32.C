@@ -42,10 +42,10 @@ const U8 *getMT32InstrName(U8 ubInstrNb)
 {
 
  return(g_arMT32instruments[ubInstrNb]);
-};
+}
 
 const U8 *getMT32RhythmName(U8 ubNoteNb)
 {
 
  return(g_arMT32rhythm[ubNoteNb]);
-};
+}

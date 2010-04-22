@@ -494,7 +494,7 @@ static void mts_devseed( mt_state*	state)	/* Device to seed from */
 #else
   time_t tv;
   time ( &tv );
-  srand48((long) tv);
+  srand48((long int) tv);
   randomunion.randomvalue = lrand48() * 1000000 + lrand48();
 #endif
 

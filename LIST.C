@@ -297,16 +297,16 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 			pTemp=pTemp->pNext;
 		}
 		
-		if(pTemp==NULL) /* end of track next delta will be 0*/
-		{
-			return 0;
+		if(pTemp==NULL) {
+		 /* end of track next delta will be 0*/
+		 return 0;
 		}
-		else
-		{	
-			/* return next delta */
-			return ((pTemp->eventBlock.uiDeltaTime));
+		else{	
+		 /* return next delta */
+		 return ((pTemp->eventBlock.uiDeltaTime));
 		}
 		
 	}
+	return 0;
 }
 

@@ -43,16 +43,15 @@ static const char *g_arEventNames[T_EVT_COUNT]=
 /** !ORDER IS IMPORTANT! and has to be the same as in enums with T_EVT_COUNT. Additionally
 the ordering of members should be the same as described in type sEventList. */
 
-static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] =
-{
-   (sizeof(sNoteOn_EventBlock_t)),fNoteOn,
-   (sizeof(sNoteOff_EventBlock_t)),fNoteOff,
-   (sizeof(sNoteAft_EventBlock_t)), fNoteAft,
-   (sizeof(sController_EventBlock_t)),fController,
-   (sizeof(sPrgChng_EventBlock_t)),fProgramChange,
-   (sizeof(sChannelAft_EventBlock_t)),fChannelAft,
-   (sizeof(sPitchBend_EventBlock_t)),fPitchBend,
-   (sizeof(sTempo_EventBlock_t)),fSetTempo
+static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
+  {sizeof(sNoteOn_EventBlock_t),fNoteOn},
+   {sizeof(sNoteOff_EventBlock_t),fNoteOff},
+   {sizeof(sNoteAft_EventBlock_t), fNoteAft},
+   {sizeof(sController_EventBlock_t),fController},
+   {sizeof(sPrgChng_EventBlock_t),fProgramChange},
+   {sizeof(sChannelAft_EventBlock_t),fChannelAft},
+   {sizeof(sPitchBend_EventBlock_t),fPitchBend},
+   {sizeof(sTempo_EventBlock_t),fSetTempo}
 };
 
 sEventInfoBlock_t getEventFuncInfo(U8 eventType)
@@ -111,7 +110,7 @@ void  fController(void *pEvent)
 void  fChannelAft(void *pEvent)
 {
 	sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
-	printf("Sending Channel Aftertouch data to sequencer ch:% pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+	printf("Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
 	channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
 
 }

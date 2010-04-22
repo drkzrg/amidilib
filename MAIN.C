@@ -34,9 +34,9 @@
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
-#define MIDI_FILE "../TUNES/ULTIMA01.MID"
+#define MIDI_FILE "TUNES/ULTIMA01.MID"
 
-#define XMIDI_FILE "../TUNES/UWR10.XMI"
+#define XMIDI_FILE "TUNES/UWR10.XMI"
 
 /**
  * main program entry

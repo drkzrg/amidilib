@@ -445,7 +445,7 @@ void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSeq
     U32 endAddr=0L;
     U32 ulChunkSize=0;
 
-    printf("Nb of tracks to process: %d\n",numTracks);
+    printf("Nb of tracks to process: %ld\n",numTracks);
 
     memcpy(&header, startPtr, sizeof(sChunkHeader));
     startPtr=(U8*)startPtr + sizeof(sChunkHeader);
@@ -1312,7 +1312,7 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
         (*pPtr)++;
 
         /*get port nb*/
-        printf("Midi channel nb: %d\n",(*pPtr));
+        printf("Midi channel nb: %d\n",*(*pPtr));
         (*pPtr)++;
     break;
     case MT_MIDI_PORT: /* obsolete! just ignore */
@@ -1322,7 +1322,7 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
         (*pPtr)++;
 
         /*get port nb*/
-        printf("Midi port nb: %d\n",(*pPtr));
+        printf("Midi port nb: %d\n",*(*pPtr));
         (*pPtr)++;
     break;
     case MT_EOT:
@@ -1418,7 +1418,7 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */
         /* file also could be broken */
-        printf("Unknown meta event id: %d, size: %d parameters: %ld %\n",ubVal,(*pPtr));
+        printf("Unknown meta event id: %d, size: %d parameters: %ld %\n",ubVal,*(*pPtr));
         (*pPtr)=(*pPtr)+ubLenght;
     break;
  }
@@ -1507,7 +1507,7 @@ const S8 *getConnectedDeviceInfo(void)
   	{
   		data=GET_MIDI_DATA;
   
-  		printf("%x",data);
+  		printf("%x",((U32)data));
   	}
  	printf("\n");
   am_dumpMidiBuffer();

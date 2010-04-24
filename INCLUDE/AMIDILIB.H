@@ -319,9 +319,11 @@ float am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups);
 
 /** Simple time division to console function
 *   with example of handling timeDivision data
-*   @param timeDivision - time division value from midi file header 
+*   @param timeDivision - time division value from midi file header
+*   @return decoded time division in PPQN or FPS
 */
-void am_printTimeDivisionInfo(U16 timeDivision);
+
+U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 
 /** Silents midi channels (n to n-1) - useful when we have for example hanging notes.
 *   @param numChannels - number of channel

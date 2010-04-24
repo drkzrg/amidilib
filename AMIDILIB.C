@@ -98,14 +98,12 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     pSequence->pSequenceName=NULL;	 /* name of the sequence empty string */
     pSequence->ubNumTracks=0;		 /*  */
     pSequence->currentState.ubActiveTrack=0; /* first one from the array */
-
+    pSequence->uiTimeDivision=0;	/* PPQN */
     /* init sequence table */
     for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
       /* we will allocate needed track tables when appropriate */
       pSequence->arTracks[iLoop]=NULL;
     }
-	
-    
     
     switch(type)
     {
@@ -127,10 +125,10 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
                  /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
                  startPtr=(void *)((U8 *)startPtr+12);
        
-		 /* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
-		 am_printTimeDivisionInfo(iTimeDivision);
-  
-                 while (startPtr!=endPtr){
+		 /* Store time division for sequence, TODO: SMPTE handling */
+		  pSequence->uiTimeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+                 
+		  while (startPtr!=endPtr){
 		  /* Pointer to midi data, 
 		     type of midi to preprocess, 
 		     number of tracks, 
@@ -152,10 +150,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 	  iTimeDivision = am_getTimeDivision(pMidiPtr);
           startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
-	  /* TODO: fill in proper value based on timedivision and PPQ/SMPTE */
-	  
-	  /* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
-	  am_printTimeDivisionInfo(iTimeDivision);
+	  /* Store time division for sequence, TODO: SMPTE handling */
+	  pSequence->uiTimeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 	  /* create one track list only */
 	  pSequence->arTracks[0] = (sTrack_t *)malloc(sizeof(sTrack_t));
 	  /*assert(pCurSequence->arTracks[0]>0);*/
@@ -188,8 +184,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 		/* TODO: fill in proper value based on timedivision and PPQ/SMPTE */
 		(pSequence->arTracks[0])->currTrackState.ulTimeStep=128;	
 
-		/* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
-		am_printTimeDivisionInfo(iTimeDivision);
+		/* Store time division for sequence, TODO: SMPTE handling */
+		pSequence->uiTimeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
                 while (((startPtr!=endPtr)&&(startPtr!=NULL))){
                   startPtr=processMidiTrackData(startPtr,T_MIDI2,iNumTracks,pSequence);
@@ -364,7 +360,8 @@ if(fileTypeFlag!=T_MIDI2){
 	/* we have got track data :)) */
 	/* add all of them to given track */ 
 	sTrack_t *pTempTrack=pCurSequence->arTracks[0];
-	pCurSequence->arTracks[0]->currTrackState.ulTrackTempo=500000;
+	pCurSequence->arTracks[0]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
+	
 	sTrack_t **ppTrack=&pTempTrack;
 	const void *pTemp=(const void *)endAddr;
 	const void **end=&pTemp;
@@ -397,7 +394,7 @@ if(fileTypeFlag!=T_MIDI2){
 	/* we have got track data :)) */
 	/* add all of them to given track */ 
 	sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
-	pCurSequence->arTracks[trackCounter]->currTrackState.ulTrackTempo=500000;
+	pCurSequence->arTracks[trackCounter]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
 	
 	sTrack_t **ppTrack=&pTempTrack;
 	const void *pTemp=(const void *)endAddr;
@@ -556,26 +553,26 @@ void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
     sNoteOff_EventBlock_t *pEvntBlock=NULL;
 
 	if((*recallRS)==0){
- 			/* save last running status */
- 			g_runningStatus=*(*pPtr);
-			
-			tempEvent.uiDeltaTime=delta;
-			tempEvent.type=T_NOTEOFF;
-			tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
-			tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-			/*assert(tempEvent.dataPtr>0);*/
-			pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
-			pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+ 	/* save last running status */
+ 	g_runningStatus=*(*pPtr);
+	
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_NOTEOFF;
+	tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
-			/* now we can recall former running status next time */
-			(*recallRS)=1;
+	/* now we can recall former running status next time */
+	(*recallRS)=1;
 
-			(*pPtr)++;
-			channel=(g_runningStatus&0x0F)+1;
-			note=*(*pPtr);
-			pEvntBlock->eventData.noteNb=*(*pPtr);
+	(*pPtr)++;
+	channel=(g_runningStatus&0x0F)+1;
+	note=*(*pPtr);
+	pEvntBlock->eventData.noteNb=*(*pPtr);
 			
-			/* get parameters */
+	/* get parameters */
 			(*pPtr)++;
 			velocity=*(*pPtr);
 			pEvntBlock->eventData.velocity=*(*pPtr);
@@ -587,8 +584,7 @@ void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 			free(tempEvent.dataPtr);
 
 		}
-		else
-		{
+		else {
 			/* recall last cmd status */
 			/* and get parameters as usual */
 
@@ -632,8 +628,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
  sEventBlock_t tempEvent;
  sNoteOn_EventBlock_t *pEvntBlock=NULL;
 
- if((*recallRS)==0)
- {
+ if((*recallRS)==0){
     /* save last running status */
     g_runningStatus=*(*pPtr);
 
@@ -1439,7 +1434,7 @@ float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
     MicrosPerPPQN = SubFramesPerPPQN * Frames * SubFrames
 */
 
-void am_printTimeDivisionInfo(U16 timeDivision)
+U16 am_decodeTimeDivisionInfo(U16 timeDivision)
 {
   U8 subframe=0;
   
@@ -1449,11 +1444,12 @@ void am_printTimeDivisionInfo(U16 timeDivision)
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
     printf("Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));
-   
+    return 0;		//todo:
   }
    else{
     /* PPQN */
     printf("Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);
+    return timeDivision;
    }
 }
 

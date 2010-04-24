@@ -16,7 +16,7 @@ $(EXE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(INCLUDES) $(OBJECTS) $(CFLAGS) -o $@ -lgem
 
 all: $(SRCS) $(EXE)
-	cp $(EXE) ~/Pulpit/aranym/c
+	
 
 
 .c.o:

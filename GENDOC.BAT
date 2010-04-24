@@ -1,2 +1,2 @@
-doxygen Doxyfile
+doxygen Doxyfile.win32
 pause

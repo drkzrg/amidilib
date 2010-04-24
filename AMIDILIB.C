@@ -134,27 +134,25 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
                 {return(-1);} /* invalid number of tracks, there can be only one! */
             else
                 {
-                    /* prepare our structure */
-					pSequence->ubNumTracks=1;	/* one by default */
-					
-					/* OK! valid number of tracks */
+                 /* prepare our structure */
+		 pSequence->ubNumTracks=1;	/* one by default */
+		    /* OK! valid number of tracks */
                     /* get time division for timing */
                     iTimeDivision = am_getTimeDivision(pMidiPtr);
                     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
                     startPtr=(void *)((U8 *)startPtr+12);
        
-					
-					/* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
-					am_printTimeDivisionInfo(iTimeDivision);
+		    /* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
+		    am_printTimeDivisionInfo(iTimeDivision);
   
 
                     while (startPtr!=endPtr)
                     {
                         /* 
-							Pointer do midi data, type of midi to preprocess, number of tracks, pointer to the structure in which track data will						    be dumped (or not).  
-						*/
+			 Pointer do midi data, type of midi to preprocess, number of tracks, pointer to the structure in which track data will						    be dumped (or not).  
+			*/
 
-						startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence);
+			startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence);
 
                     }
 
@@ -198,7 +196,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
               while (((startPtr!=endPtr)&&(startPtr!=NULL)))
                     {
                         startPtr=processMidiTrackData(startPtr,T_MIDI1, iNumTracks, pSequence);
-
                     }
 
             return(0);
@@ -207,26 +204,21 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 
         case 2:
             {
-				/* handle MIDI type 2 */
-				/* several tracks not tied to each others tracks */
+		/* handle MIDI type 2 */
+		/* several tracks not tied to each others tracks */
 
-			
-				
-				iNumTracks=am_getNbOfTracks(pMidiPtr,type);
-				iTimeDivision = am_getTimeDivision(pMidiPtr);
-				startPtr=(void *)((U32)startPtr+sizeof(sMThd));
-				
-                
-				/* TODO: fill in proper value based on timedivision and PPQ/SMPTE */
-				(pSequence->arTracks[0])->currTrackState.ulTimeStep=128;	
+		iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+		iTimeDivision = am_getTimeDivision(pMidiPtr);
+		startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+		               
+		/* TODO: fill in proper value based on timedivision and PPQ/SMPTE */
+		(pSequence->arTracks[0])->currTrackState.ulTimeStep=128;	
 
-				/* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
-				am_printTimeDivisionInfo(iTimeDivision);
+		/* Time division handling example, TODO: translate this value to consistent tempo value to use across the whole program */
+		am_printTimeDivisionInfo(iTimeDivision);
 
-                while (((startPtr!=endPtr)&&(startPtr!=NULL)))
-                {
+                while (((startPtr!=endPtr)&&(startPtr!=NULL))){
                   startPtr=processMidiTrackData(startPtr,T_MIDI2,iNumTracks,pSequence);
-
                 }
              return(0);
             }
@@ -292,12 +284,9 @@ U16 am_getTimeDivision (void *pMidiPtr)
     memcpy(&midiInfo, pMidiPtr, sizeof(sMThd));
 
     /* check midi header */
-    if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L)))
-        {
-
-
+    if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L))){
             return (midiInfo.division);
-        }
+    }
     /* (X)Midi has timing data inside midi eventlist */
 
  return (0);
@@ -314,8 +303,7 @@ S16 am_getTrackInfo(void *pMidiPtr, U16 usiTrackNb, sMIDItrackInfo *pTrackInfo)
 void *am_getTrackPtr(void *pMidiPtr,S16 iTrackNum)
 {
 
-return NULL;
-
+ return NULL;
 }
 
 U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end)
@@ -330,86 +318,67 @@ U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end)
 	return (0x80 - (total & mask)) & mask ;
 }
 
-
 static U8 g_arMidiBuffer[MIDI_BUFFER_SIZE];
 
-
 /* Midi buffers system info */
-#ifdef _PUREC_
-static IOREC g_sOldMidiBufferInfo;
-static IOREC *g_psMidiBufferInfo;
-#else
 static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
 
-#endif
-
 S16 am_init()
 {
-	S32 iCounter=0;
-            am_setSuperOn();
+ S32 iCounter=0;
+ am_setSuperOn();
 
-	   		/* clear our new buffer */
-	   		
-	   		for(iCounter=0;iCounter<(MIDI_BUFFER_SIZE-1);iCounter++)
-	   		{
-	   		 g_arMidiBuffer[iCounter]=0x00;
-	   		} 
-	   		#ifdef _PUREC_
-			  g_psMidiBufferInfo=(IOREC*)Iorec(XB_DEV_MIDI);
-			#else
-			  g_psMidiBufferInfo=(_IOREC*)Iorec(XB_DEV_MIDI);
-			#endif
-	 		/* copy old MIDI buffer info */
-	 		g_sOldMidiBufferInfo.ibuf=(*g_psMidiBufferInfo).ibuf;
-	 		g_sOldMidiBufferInfo.ibufsiz=(*g_psMidiBufferInfo).ibufsiz;
-	 		g_sOldMidiBufferInfo.ibufhd=(*g_psMidiBufferInfo).ibufhd;
-	 		g_sOldMidiBufferInfo.ibuftl=(*g_psMidiBufferInfo).ibuftl;
-	 		g_sOldMidiBufferInfo.ibuflow=(*g_psMidiBufferInfo).ibuflow;
-	 		g_sOldMidiBufferInfo.ibufhi=(*g_psMidiBufferInfo).ibufhi;
+ /* clear our new buffer */
+ for(iCounter=0;iCounter<(MIDI_BUFFER_SIZE-1);iCounter++){
+   g_arMidiBuffer[iCounter]=0x00;
+  } 
+  g_psMidiBufferInfo=(_IOREC*)Iorec(XB_DEV_MIDI);
+		
+ /* copy old MIDI buffer info */
+ g_sOldMidiBufferInfo.ibuf=(*g_psMidiBufferInfo).ibuf;
+ g_sOldMidiBufferInfo.ibufsiz=(*g_psMidiBufferInfo).ibufsiz;
+ g_sOldMidiBufferInfo.ibufhd=(*g_psMidiBufferInfo).ibufhd;
+ g_sOldMidiBufferInfo.ibuftl=(*g_psMidiBufferInfo).ibuftl;
+ g_sOldMidiBufferInfo.ibuflow=(*g_psMidiBufferInfo).ibuflow;
+ g_sOldMidiBufferInfo.ibufhi=(*g_psMidiBufferInfo).ibufhi;
 
-	 		/* set up new MIDI buffer */
-	 		(*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
-	 		(*g_psMidiBufferInfo).ibufsiz = MIDI_BUFFER_SIZE;
-	 		(*g_psMidiBufferInfo).ibufhd=0;	        /* first byte index to write */
-		 	(*g_psMidiBufferInfo).ibuftl=0;         /* first byte to read(remove) */
-	 		(*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
-	 		(*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
-            am_setSuperOff();
- 		 	return(1);
-
+ /* set up new MIDI buffer */
+ (*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
+ (*g_psMidiBufferInfo).ibufsiz = MIDI_BUFFER_SIZE;
+ (*g_psMidiBufferInfo).ibufhd=0;	        /* first byte index to write */
+ (*g_psMidiBufferInfo).ibuftl=0;         /* first byte to read(remove) */
+ (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
+ (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
+ am_setSuperOff();
+ return(1);
 }
 
-void am_deinit()
-{
+void am_deinit(){
     am_setSuperOn();
-	/* restore standard MIDI buffer */
- 	(*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
-	(*g_psMidiBufferInfo).ibufsiz=g_sOldMidiBufferInfo.ibufsiz;
-	(*g_psMidiBufferInfo).ibufhd=g_sOldMidiBufferInfo.ibufhd;
-	(*g_psMidiBufferInfo).ibuftl=g_sOldMidiBufferInfo.ibuftl;
- 	(*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
-	(*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
-    am_setSuperOff();
-	/* end sequence */
+/* restore standard MIDI buffer */
+  (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
+  (*g_psMidiBufferInfo).ibufsiz=g_sOldMidiBufferInfo.ibufsiz;
+  (*g_psMidiBufferInfo).ibufhd=g_sOldMidiBufferInfo.ibufhd;
+  (*g_psMidiBufferInfo).ibuftl=g_sOldMidiBufferInfo.ibuftl;
+  (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
+  (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
+  am_setSuperOff();
+ /* end sequence */
 }
 
 void am_dumpMidiBuffer()
 {
  U32 counter=0;
-#ifdef _PUREC_
- IOREC *g_psMidiBufferInfo;
-#else
+ 
  _IOREC *g_psMidiBufferInfo;
-#endif
-  printf("MIDI buffer dump:");
+
+ printf("MIDI buffer dump:");
   
-  
- for(counter=0;counter<(MIDI_BUFFER_SIZE-1);counter++)
- {
- 	
- 	if(g_arMidiBuffer[counter]!=0x00)	printf("%x",g_arMidiBuffer[counter]);
- 	
+ for(counter=0;counter<(MIDI_BUFFER_SIZE-1);counter++){
+ 
+  if(g_arMidiBuffer[counter]!=0x00)	printf("%x",g_arMidiBuffer[counter]);
+ 
  }
   printf("\n");
 
@@ -509,19 +478,17 @@ void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSeq
 	return NULL;
 }
 
-U8 am_isMidiChannelEvent(U8 byteEvent)
-{
+U8 am_isMidiChannelEvent(U8 byteEvent){
 
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
     {return 1;}
     else return 0;
 }
 
-U8 am_isMidiRTorSysex(U8 byteEvent)
-{
+U8 am_isMidiRTorSysex(U8 byteEvent){
 
-    if( ((byteEvent>=(U8)0xF0)&&(byteEvent<=(U8)0xFF)) )
-    {   /* it is! */
+    if( ((byteEvent>=(U8)0xF0)&&(byteEvent<=(U8)0xFF)) ){   
+      /* it is! */
         return (1);
     }
     else /*no, it's not! */
@@ -530,8 +497,7 @@ U8 am_isMidiRTorSysex(U8 byteEvent)
 
 /* handles the events in tracks and returns pointer to the next midi track */
 
-void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack )
-{
+void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack ){
     U8 *pCmd=((U8 *)(*startPtr));
     U8 ubSize;
     U8 usSwitch=0;
@@ -556,10 +522,7 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
 
 		ubSize=(*pCmd);
 
-		if( (!(am_isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(am_isMidiRTorSysex(ubSize)))))
-		{
-
-
+		if( (!(am_isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(am_isMidiRTorSysex(ubSize))))){
             /*recall last cmd byte */
             usSwitch=g_runningStatus;
             usSwitch=((usSwitch>>4)&0x0F);
@@ -572,22 +535,17 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
             /* check if the new cmd is the system one*/
             recallStatus=0;
 
-            if((am_isMidiRTorSysex(ubSize)))
-            {
+            if((am_isMidiRTorSysex(ubSize))){
                  usSwitch=ubSize;
             }
-            else
-            {
+            else{
                 usSwitch=ubSize;
                 usSwitch=((usSwitch>>4)&0x0F);
-
             }
-
-		}
+   }
 
 		/* decode event and write it to our custom structure */
-		switch(usSwitch)
-		{
+		switch(usSwitch){
 			case EV_NOTE_OFF:
 				am_noteOff(&pCmd,&recallStatus, delta, pCurTrack );
 			break;
@@ -657,12 +615,11 @@ return(pCmd);
 }
 
 
-void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
-{
+void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
     U8 channel=0;
     U8 note=0;
     U8 velocity=0;
-	sEventBlock_t tempEvent;
+    sEventBlock_t tempEvent;
     sNoteOff_EventBlock_t *pEvntBlock=NULL;
 
 	if((*recallRS)==0)

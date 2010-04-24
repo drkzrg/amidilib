@@ -18,14 +18,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <gem.h>
+
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
 #define MIDI_FILE "TUNES/ULTIMA01.MID"
-
 #define XMIDI_FILE "TUNES/UWR10.XMI"
 
 /**
@@ -50,8 +49,7 @@ int main(void)
     U8 *pValPtr=NULL;
     U8 valsize;
     
-    for (iCounter=0;iCounter<10;iCounter++)
-    {
+    for (iCounter=0;iCounter<10;iCounter++)   {
         pValPtr=(U8 *)(&val[iCounter]);
         while((*pValPtr)==0x00)
         {pValPtr++;}
@@ -145,10 +143,6 @@ int main(void)
 		{
 			
 			printf("Sending all events with delta: %ld\n", currDelta);
-			/*getchar();*/
-			
-			evnt_timer((currDelta-lastDelta)*500);
-			
 			lastDelta=currDelta;
 		}
 		

@@ -54,9 +54,9 @@
 #define AMIDI_VERSION_ATLEAST(X, Y, Z) \
 	(AMIDI_COMPILEDVERSION >= AMIDI_VERSIONNUM(X, Y, Z))
 
-#define MIDI_FLOWCTRL 0		    /* flow control enable/disable, default by: disabled*/
-#define MIDI_LWM 32		   		 /* low watermark if flow control enabled */
-#define MIDI_HWM 32000		    /* hight watermark if flow control enabled */
+#define MIDI_FLOWCTRL 0		/* flow control enable/disable, default by: disabled*/
+#define MIDI_LWM 32		/* low watermark if flow control enabled */
+#define MIDI_HWM 32000		/* hight watermark if flow control enabled */
 #define MIDI_BUFFER_SIZE 32767  /*default MIDI buffer size 32k */
 
 
@@ -68,7 +68,7 @@
 #define GS_SOUND_SOURCE 2       /* for pure GS/GM sound source */
 #define LA_GS_MIXED 4           /* if both LA/GS sound sources are available, like in CM-500 */
 #define MT32_GM_EMULATION 5     /* before loading midi data MT32 sound banks has to be patched */
-#define XG_GM_YAMAHA 6			/* before loading midi data MT32 sound banks has to be patched */
+#define XG_GM_YAMAHA 6		/* before loading midi data MT32 sound banks has to be patched */
 
 
 /** for internal use, midi file types  */
@@ -206,7 +206,7 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
 U32 readVLQ(U8 *pChar,U8 *ubSize);
 
 /** read/decode note off message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -322,6 +322,9 @@ float am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups);
 */
 void am_printTimeDivisionInfo(U16 timeDivision);
 
-
+/** Silents midi channels (n to n-1) - useful when we have for example hanging notes.
+*   @param numChannels - number of channel
+*/
+void am_allNotesOff(U16 numChannels);
 
 #endif

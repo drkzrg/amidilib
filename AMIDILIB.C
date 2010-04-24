@@ -15,9 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-
-
-//gcc part
 #include <stdio.h>
 #include <string.h>
 #include <mint/ostruct.h>
@@ -43,54 +40,42 @@ extern const U8 *g_arMIDIcontrollers[];
 
 
 
-S16 am_getHeaderInfo(void *pMidiPtr)
-{
+S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
 
  memcpy(&midiInfo, pMidiPtr, sizeof(sMThd));
 
     /* check midi header */
-    if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L)))
-	{
+    if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L))){
 
-        switch(midiInfo.format)
-				{
-					case 0:
-					/* Midi Format 0 detected */
-					return (0);
-					break;
+        switch(midiInfo.format){
+	 case 0:
+	  /* Midi Format 0 detected */
+	  return (0);
+	 break;
 
-					case 1:
-					/* Midi Format 1 detected */
-					return(1);
-					break;
+	case 1:
+	 /* Midi Format 1 detected */
+	  return(1);
+	 break;
 
-					case 2:
-					/* Midi Format 2 detected */
-					return(2);
-					break;
+        case 2:
+	/* Midi Format 2 detected */
+	  return(2);
+	break;
 
-					default:
-						/*Error: Unsupported MIDI format */
-						return(-2);
-					break;
-				}
+	default:
+	/*Error: Unsupported MIDI format */
+	  return(-2);
+	break;
+    }
 
-	}
-	else if ((midiInfo.id==ID_FORM)||(midiInfo.id==ID_CAT))
-        {
-            /* possible XMIDI*/
-
-
-            return(3);
-
-        }
-        else
-        {
-            /* error it's not MIDI file !*/
-            return (-1);
-        }
-
+   }
+   else if ((midiInfo.id==ID_FORM)||(midiInfo.id==ID_CAT)){
+    /* possible XMIDI*/
+    return(3);
+   }
+    
 return(-1);
 }
 
@@ -99,10 +84,10 @@ return(-1);
 
 S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence)
 {
-    S16 iNumTracks=0,iLoop;
-   
+    S16 iNumTracks=0;
     U16 iTimeDivision=0;
     U32 ulAddr;
+   
     void *startPtr=pMidiPtr;
     void *endPtr=0L;
 
@@ -110,15 +95,15 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     ulAddr=(U32)startPtr+lenght*sizeof(U8);
     endPtr=(void *)ulAddr;
 
-	pSequence->pSequenceName=NULL;		 /* name of the sequence empty string */
-	pSequence->ubNumTracks=0;		 /*  */
-	pSequence->currentState.ubActiveTrack=0; /* first one from the array */
+    pSequence->pSequenceName=NULL;	 /* name of the sequence empty string */
+    pSequence->ubNumTracks=0;		 /*  */
+    pSequence->currentState.ubActiveTrack=0; /* first one from the array */
 
-	/* init sequence table */
-	for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
-		/* we will allocate needed track tables when appropriate */
-		pSequence->arTracks[iLoop]=NULL;
-	}
+    /* init sequence table */
+    for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+      /* we will allocate needed track tables when appropriate */
+      pSequence->arTracks[iLoop]=NULL;
+    }
 	
     
     
@@ -223,21 +208,20 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
              return(0);
             }
         break;
-		case 3:
-            {
-                /* handle XMIDI */
-                iNumTracks=am_getNbOfTracks(pMidiPtr,type);
-                iTimeDivision = am_getTimeDivision(pMidiPtr);
+	case 3:{
+         /* handle XMIDI */
+         iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+         iTimeDivision = am_getTimeDivision(pMidiPtr);
 
-                /* processing (X)MIDI file */
-				/* TODO: handle + process */
+         /* processing (X)MIDI file */
+	/* TODO: handle + process */
 
-            return(0);
-            }
+         return(0);
+        }
 
         break;
 		default:;
-			/* unsupported file type */
+	/* unsupported file type */
  }
  return(-1);
 }
@@ -526,12 +510,8 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
             /*recall last cmd byte */
             usSwitch=g_runningStatus;
             usSwitch=((usSwitch>>4)&0x0F);
-
-
-
-		}
-		else
-		{
+	}
+	else{
             /* check if the new cmd is the system one*/
             recallStatus=0;
 
@@ -1121,8 +1101,7 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
  (*pPtr)++;
  ubVal=*(*pPtr);
 
- switch(ubVal)
- {
+ switch(ubVal){
     case MT_SEQ_NB:
         printf("Sequence nb: ");
         (*pPtr)++;
@@ -1365,10 +1344,8 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
 
 }
 
-
-U32 readVLQ(U8 *pChar,U8 *ubSize)
-{
-
+/* reads Variable Lenght Quantity */
+U32 readVLQ(U8 *pChar,U8 *ubSize){
      U32 value=0;
      U8 c=0;
      (*ubSize)=0;
@@ -1381,9 +1358,7 @@ U32 readVLQ(U8 *pChar,U8 *ubSize)
        pChar++;
        (*ubSize)++;
 
-       do
-       {
-
+       do{
          value = (value << 7);
          c = (*pChar);
          value = value + (c&0x7F);
@@ -1489,8 +1464,7 @@ return ppu;
 /* UPS - update interval (updates per second) */
 /* music resolution are in PPQ */
 
-float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups)
-{
+float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
     float ppu;
     float temp;
     ppu=(float)qpm*(float)ppq;
@@ -1517,21 +1491,25 @@ void am_printTimeDivisionInfo(U16 timeDivision)
 {
 	 U8 subframe=0;
 	
-	if(timeDivision&0x8000)
-       {
+       if(timeDivision&0x8000){
         /* SMPTE */
         timeDivision&=0x7FFF;
         subframe=timeDivision>>7;
 
         printf("Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));
 
-	   }
-      else
-       {
+      }
+      else{
         /* PPQN */
         printf("Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);
 
        }
 }
 
+void am_allNotesOff(U16 numChannels){
+
+  for(U16 iCounter=0;iCounter<numChannels;iCounter++){
+  all_notes_off(iCounter);
+ }
+}        
 

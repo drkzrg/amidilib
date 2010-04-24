@@ -39,8 +39,6 @@ typedef	float 			F32;
 typedef float 			FP32;
 typedef unsigned int 		BOOL;
 
-
-
 typedef enum
 {
  FALSE=-1,

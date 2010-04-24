@@ -270,12 +270,13 @@ void am_PitchBend(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_Sysex(U8 **pPtr, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode meta event message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
+*   @return bool flag TRUE if end of track (EOT) occured, FALSE otherwise.
 */
-void am_Meta(U8 **pPtr, U32 delta, sTrack_t **pCurTrack);
+BOOL am_Meta(U8 **pPtr, U32 delta, sTrack_t **pCurTrack);
 
 /** checks if byte is midi channel
 *	@param byteEvent command byte

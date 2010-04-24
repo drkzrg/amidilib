@@ -30,37 +30,31 @@
 
 		
 /**  sequence play state */
-enum
-{
+enum{
 	S_PAUSE=0,
 	S_PLAY_ONCE=1,
 	S_PLAY_LOOP=2
 };
 
-
-typedef struct EventList
-{
+typedef struct EventList{
  U32 uiNbOfItems;
  sEventItem *pEventList;
 } sEventList;
 
-typedef struct sTrackState
-{
+typedef struct sTrackState{
  U32 currentPos;              /* current delta position, 0 at start */
  U8 ubVolume;                 /* sequence current track volume */
  U32 ulTimeStep;              /* sequence current update time step */
+ U32 ulTrackTempo;	      /* miliseconds per quarter note, default 500 000ms */
 } sTrackState;
 
-
-typedef struct Track_t
-{
-  U8 *pInstrumentName;				/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
-  sTrackState currTrackState;		/* current track state */
-  sEventList trkEventList;  		/* track event list */
+typedef struct Track_t{
+  U8 *pInstrumentName;		/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
+  sTrackState currTrackState;	/* current track state */
+  sEventList trkEventList;  	/* track event list */
 } sTrack_t;
 
-typedef struct SequenceState_t
-{
+typedef struct SequenceState_t{
  U8 ubVolume;                 /* sequence current volume */
  U8 ubActiveTrack;            /* sets the active track, by default 0 */
  U8 ubPlayModeState;          /* bitfield with current track state ( paused, loop, play_once) */
@@ -68,8 +62,7 @@ typedef struct SequenceState_t
  U32 time;
 } sSequenceState_t;
 
-typedef struct Sequence_t
-{
+typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;			/* NULL terminated string */
    U8 ubNumTracks;            	        /* number of tracks */

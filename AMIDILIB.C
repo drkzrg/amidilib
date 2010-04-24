@@ -16,13 +16,7 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-#ifdef __PUREC__
-#include <STDIO.H>
-#include <STRING.H>
-#include <AES.H>
-#include "INCLUDE\AMIDILIB.H"
-#include "INCLUDE\LIST\LIST.H"
-#else
+
 //gcc part
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +24,6 @@
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
-#endif
 /* current version */
 typedef struct AMIDI_version {
 	U16 major;
@@ -43,16 +36,6 @@ static AMIDI_version version =
 
 /* for saving last running status */
 static U8 g_runningStatus;
-
-#ifdef __PUREC__
-/*
-switches off PURE C:
-suspicious pointer conversion and unreachable code warnings
- */
-
-#pragma warn -sus
-#pragma warn -rch
-#endif
 
 
 /* static table with MIDI controller names */
@@ -1400,7 +1383,7 @@ void am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
         else if ((param1>1&&param1<=7))
             {printf(" %d sharps\n",param1);}
         else if (( ((S8)param1)<-1&& ((S8)param1)>=-7))
-            {printf(" %d flats\n",param1);}
+            {printf(" %d flats\n",(U32)param1);}
         else {printf(" error: wrong key signature. \n",param1);}
         (*pPtr)++;
 

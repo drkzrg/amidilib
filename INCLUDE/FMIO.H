@@ -19,20 +19,8 @@
 #define __FMIO_H__
 
 #include "C_VARS.H"
-
-#ifdef __PUREC__
-#include    <TOS.H>
-
-/*BIOS input/output devices*/
-#define DEV_PRT 0	/* Centronics interface */
-#define DEV_AUX 1	/* RS232 */
-#define DEV_CON 2	/* Screen and Keyboard */
-#define DEV_MIDI 3	/* MIDI interface */
-#define DEV_IKBD 4	/* Keyboard port */
-
-#else
 #include <mint/mintbind.h>
-#endif
+
 
 /* memory allocation preference */
 typedef enum

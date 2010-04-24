@@ -15,20 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-
-#ifdef __PUREC__
-#include <aes.h>	/* quick hack*/
-#include <tos.h>
-#else
-#include <gem.h>
-#include <gemx.h>
-
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <gem.h>
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
@@ -156,11 +146,9 @@ int main(void)
 			
 			printf("Sending all events with delta: %ld\n", currDelta);
 			/*getchar();*/
-			#ifdef _PUREC_
-			evnt_timer((currDelta-lastDelta)*500,0);
-			#else
+			
 			evnt_timer((currDelta-lastDelta)*500);
-			#endif
+			
 			lastDelta=currDelta;
 		}
 		

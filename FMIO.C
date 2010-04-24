@@ -16,16 +16,8 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 #include "INCLUDE/FMIO.H"
-
-#ifdef __PUREC__
-
-/* switches off PURE C: suspicious pointer conversion and unreachable code warnings  */
-#pragma warn -sus
-#pragma warn -rch
-
-#else
 #include <mint/ostruct.h>
-#endif
+
 
 static U32 g_save_ssp;
 static long   ssp = 0;
@@ -243,11 +235,9 @@ const U8 *getGemdosError(S16 iErr)
 void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
 {
     S32 fileHandle;
-#ifdef __PUREC__    
-    DTA *pDTA=NULL;
-#else
+
     _DTA *pDTA=NULL;
-#endif
+
     void *pData=NULL;
 	S16 iRet=0;
 	S32 lRet=0L;
@@ -263,12 +253,8 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
         if(iRet==0)
 		{
 		 /* file found */
-		 #ifdef __PUREC__
-		 *fileLenght=pDTA->d_length;
-		  #else
+		 
 		 *fileLenght=pDTA->dta_size;
-		  
-		  #endif
 		  /* allocate buffer */
 		  pData=(void *)Mxalloc( (long)(*fileLenght)+1, memFlag);
 

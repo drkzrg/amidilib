@@ -20,16 +20,6 @@
 #include	"INCLUDE/C_VARS.H"
 #include	"INCLUDE/AMIDILIB.H"
 
-#ifdef __PUREC__
-/*
-switches off PURE C:
-suspicious pointer conversion and unreachable code warnings
- */
-
-#pragma warn -sus
-#pragma warn -rch
-#endif
-
 /*instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)*/
 extern const U8 *g_arCM32Linstruments[];
 

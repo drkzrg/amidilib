@@ -484,19 +484,19 @@ static void mts_devseed( mt_state*	state)	/* Device to seed from */
      * resolution, which is true on most modern machines.
      */
 
-#ifdef __PUREC__
-   struct time	tv;		/* Time of day */
-   gettime (&tv);
-   /*
-     * We just let the excess part of the seconds field overflow
-     */
-   randomunion.randomvalue = tv.ti_sec * 1000000 + tv.ti_hund;
-#else
+
+//    struct time	tv;		/* Time of day */
+//    gettime (&tv);
+//    /*
+//      * We just let the excess part of the seconds field overflow
+//      */
+//    randomunion.randomvalue = tv.ti_sec * 1000000 + tv.ti_hund;
+
   time_t tv;
   time ( &tv );
   srand48((long int) tv);
   randomunion.randomvalue = lrand48() * 1000000 + lrand48();
-#endif
+
 
     
    

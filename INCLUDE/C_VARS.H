@@ -18,32 +18,6 @@
 #ifndef __C_VARS_H__
 #define __C_VARS_H__
 
-
-#ifdef __PUREC__
-
-/* ###################################################################################
-#  INCLUDES
-################################################################################### */
-
-#include	<STDIO.H>
-#include	<STDLIB.H>
-
-/* ###################################################################################
-#  TYPEDEFS
-################################################################################### */
-
-typedef unsigned char 	U8;
-typedef signed char 	S8;
-typedef unsigned int 	U16;
-typedef signed int	S16;
-typedef unsigned long	U32;
-typedef signed long	S32;
-typedef	float		F32;
-typedef float		FP32;
-typedef unsigned int	BOOL;
-
-#else
-
 /* ###################################################################################
 #  INCLUDES
 ################################################################################### */
@@ -65,7 +39,7 @@ typedef	float 			F32;
 typedef float 			FP32;
 typedef unsigned int 		BOOL;
 
-#endif
+
 
 typedef enum
 {

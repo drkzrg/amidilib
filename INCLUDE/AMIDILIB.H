@@ -82,7 +82,6 @@
 #define T_SNG     7
 #define T_MUS     8	/* e.g Doom MIDI music format */
 
-#ifdef __PUREC__
 /* MIDI macros */
 /* returns != 0 if data are in system MIDI buffer */
 #define MIDI_DATA_READY Bconstat(DEV_MIDI)
@@ -92,18 +91,6 @@
 #define MIDI_SEND_DATA(count,data) Midiws(count-1,data)
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
-#else
-/* MIDI macros */
-/* returns != 0 if data are in system MIDI buffer */
-#define MIDI_DATA_READY Bconstat(DEV_MIDI)
-/* sends 1 byte to MIDI output */
-#define MIDI_SEND_BYTE(data) Bconout(DEV_MIDI,(U8)data)
-/* sends multiple bytes to MIDI output, count is number of bytes to send */
-#define MIDI_SEND_DATA(count,data) Midiws(count-1,data)
-/* reads 1 unsigned byte from MIDI input */
-#define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
-
-#endif
 
 /* function prototypes  */
 /**

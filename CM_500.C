@@ -19,17 +19,6 @@
 /* Roland CM-500 static tables */
 #include	"INCLUDE/C_VARS.H"
 
-#ifdef __PUREC__
-/*
-switches off PURE C:
-suspicious pointer conversion and unreachable code warnings
- */
-
-#pragma warn -sus
-#pragma warn -rch
-#endif
-
-
 /* SFX set, program number 57 */
 extern const U8 *g_arCM500sfx[];
 

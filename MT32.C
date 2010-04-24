@@ -18,16 +18,6 @@
 /* Roland MT-32 static tables */
 #include	"INCLUDE/C_VARS.H"
 
-#ifdef __PUREC__
-/*
-switches off PURE C:
-suspicious pointer conversion and unreachable code warnings
- */
-
-#pragma warn -sus
-#pragma warn -rch
-#endif
-
 /*instruments can be assigned to 1-8 part (2-8 channel, can be remmaped to channel 1-8)*/
 extern U8 *g_arMT32instruments[];
 

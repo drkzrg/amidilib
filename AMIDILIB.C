@@ -34,11 +34,22 @@ static AMIDI_version version =
 /* for saving last running status */
 static U8 g_runningStatus;
 
+/* variables for debug output to file */
+#ifdef DEBUG_FILE_OUTPUT
+static FILE *ofp;
+static U8 outputFilename[] = "amidi.log";
+#endif
+
+static U8 messBuf[256]; /* for error buffer  */
+
+#ifdef DEBUG_CONSOLE_OUTPUT
+  static BOOL CON_LOG=TRUE;
+#else
+  static BOOL CON_LOG=FALSE;
+#endif
 
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
-
-
 
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
@@ -79,8 +90,7 @@ S16 am_getHeaderInfo(void *pMidiPtr){
 return(-1);
 }
 
-S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence)
-{
+S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence){
     S16 iNumTracks=0;
     U16 iTimeDivision=0;
     U32 ulAddr;
@@ -96,6 +106,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     pSequence->ubNumTracks=0;		 /*  */
     pSequence->currentState.ubActiveTrack=0; /* first one from the array */
     pSequence->uiTimeDivision=0;	/* PPQN */
+    
     /* init sequence table */
     for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
       /* we will allocate needed track tables when appropriate */
@@ -168,8 +179,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
         }
         break;
 
-        case 2:
-            {
+        case 2:{
 		/* handle MIDI type 2 */
 		/* several tracks not tied to each others tracks */
 
@@ -280,6 +290,15 @@ S16 am_init(){
  S32 iCounter=0;
  am_setSuperOn();
 
+ /* if file output enabled open debug file */
+#ifdef DEBUG_FILE_OUTPUT
+ ofp = fopen((const char *)outputFilename, "w");
+
+ if (ofp == NULL) {
+   fprintf(stderr,"Can't init debug file output to %s!\n",outputFilename);
+ }
+ #endif
+ 
  /* clear our new buffer */
  for(iCounter=0;iCounter<(MIDI_BUFFER_SIZE-1);iCounter++){
    g_arMidiBuffer[iCounter]=0x00;
@@ -297,8 +316,8 @@ S16 am_init(){
  /* set up new MIDI buffer */
  (*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
  (*g_psMidiBufferInfo).ibufsiz = MIDI_BUFFER_SIZE;
- (*g_psMidiBufferInfo).ibufhd=0;	        /* first byte index to write */
- (*g_psMidiBufferInfo).ibuftl=0;         /* first byte to read(remove) */
+ (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
+ (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
  (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
  am_setSuperOff();
@@ -306,8 +325,8 @@ S16 am_init(){
 }
 
 void am_deinit(){
-    am_setSuperOn();
-/* restore standard MIDI buffer */
+  am_setSuperOn();
+  /* restore standard MIDI buffer */
   (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
   (*g_psMidiBufferInfo).ibufsiz=g_sOldMidiBufferInfo.ibufsiz;
   (*g_psMidiBufferInfo).ibufhd=g_sOldMidiBufferInfo.ibufhd;
@@ -315,18 +334,20 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
   am_setSuperOff();
+  
+  /* close debug file output */
+  #ifdef DEBUG_FILE_OUTPUT
+  fclose(ofp);
+  #endif
  /* end sequence */
 }
 
 void am_dumpMidiBuffer(){
-
-  printf("MIDI buffer dump: ");
-  
-for(U32 counter=0;counter<(MIDI_BUFFER_SIZE-1);counter++){
-  if(g_arMidiBuffer[counter]!=0x00)	
-    printf("%x",g_arMidiBuffer[counter]);
+ 
+  if(g_arMidiBuffer[0]!=0){
+  sprintf((char *)messBuf,"MIDI buffer dump:\n %s",g_arMidiBuffer);
+  am_log(messBuf,CON_LOG);
  }
-printf("\n");
 }
 
 
@@ -341,7 +362,8 @@ U32 trackCounter=0;
 U32 endAddr=0L;
 U32 ulChunkSize=0;
 
-printf("Nb of tracks to process: %ld\n",numTracks);
+sprintf((char *)messBuf,"Nb of tracks to process: %ld\n",numTracks);
+am_log(messBuf,CON_LOG);
 
 memcpy(&header, startPtr, sizeof(sChunkHeader));
 startPtr=(U8*)startPtr + sizeof(sChunkHeader);
@@ -439,15 +461,17 @@ U16 recallStatus=0;
 U32 delta=0L;
 U32 deltaAll=0L;
 BOOL bEOF=false;
-    
+/*U8 arDeltaInfo[16];*/
+
     /* execute as long we are on the end of file or EOT meta occured, 
       50% midi track headers is broken, so the web says ;)) */
     while ( ((pCmd!=(*endAddr))) ){
     
       /*read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
-      deltaAll=deltaAll+delta;
-      printf("Event: delta %u \n",(unsigned int)deltaAll);
+     /* deltaAll=deltaAll+delta;
+      sprintf((char *)arDeltaInfo,"Event: delta %u \n",(unsigned int)deltaAll);*/
+     
       pCmd=(U8 *)((U32)pCmd+ubSize*sizeof(U8));
 
       /* handling of running status */
@@ -502,36 +526,42 @@ BOOL bEOF=false;
       break;
       case SC_MTCQF:
 	recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
-	printf("Event: System common MIDI time code qt frame\n");
+	sprintf((char *)messBuf,"Event: System common MIDI time code qt frame\n");
+	am_log(messBuf,CON_LOG);
 	pCmd++;
 	pCmd++;
       break;
       case SC_SONG_POS_PTR:
-	printf("Event: System common Song position pointer\n");
+	sprintf((char *)messBuf,"Event: System common Song position pointer\n");
+	am_log(messBuf,CON_LOG);
 	recallStatus=0;                      /* Song position pointer, 2 data bytes */
 	pCmd++;
 	pCmd++;
 	pCmd++;
       break;
       case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-	printf("Event: System common Song select\n");
+	sprintf((char *)messBuf,"Event: System common Song select\n");
+	am_log(messBuf,CON_LOG);
 	recallStatus=0;
 	pCmd++;
 	pCmd++;
       break;
       case SC_UNDEF1:                   /* undefined */
       case SC_UNDEF2:                  /* undefined */
-	printf("Event: System common not defined.\n");
+	sprintf((char *)messBuf,"Event: System common not defined.\n");
+	am_log(messBuf,CON_LOG);
 	recallStatus=0;
 	pCmd++;
       break;
       case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-	printf("Event: System tune request.\n");
+	sprintf((char *)messBuf,"Event: System tune request.\n");
+	am_log(messBuf,CON_LOG);
 	recallStatus=0;
 	pCmd++;
       break;
       default:
-	printf("Event: Unknown type: %d\n",(*pCmd));
+	sprintf((char *)messBuf,"Event: Unknown type: %d\n",(*pCmd));
+	am_log(messBuf,CON_LOG);
 	/* unknown event, do nothing or maybe throw error? */
     }
 } /*end of decode events loop */
@@ -608,10 +638,16 @@ else {
   addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
   free(tempEvent.dataPtr);
 }
-  printf("Note off: ");
-  printf(" channel: %d ",(g_runningStatus&0x0F)+1);
-  printf(" note: %d ",*(*pPtr));
-  printf(" vel: %d \n",*(*pPtr));
+  sprintf((char *)messBuf,"delta: %u\t",(unsigned int)delta);
+  am_log(messBuf,CON_LOG);
+  sprintf((char *)messBuf,"event: Note off ");
+  am_log(messBuf,CON_LOG);
+  sprintf((char *)messBuf,"channel: %d\t",(g_runningStatus&0x0F)+1);
+  am_log(messBuf,CON_LOG);
+  sprintf((char *)messBuf,"note: %d\t",*(*pPtr));
+  am_log(messBuf,CON_LOG);
+  sprintf((char *)messBuf,"vel: %d\n",*(*pPtr));
+  am_log(messBuf,CON_LOG);
 }
 
 void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -680,10 +716,16 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 		free(tempEvent.dataPtr);
  }
  /* print and handle */
-    printf("Note on: ");
-    printf(" channel: %d ",channel);
-    printf(" note: %d ",note);
-    printf(" vel: %d \n",velocity);
+    sprintf((char *)messBuf,"delta: %u\t",(unsigned int)delta);
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"event: Note on ");
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"channel: %d\t",channel);
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"note: %d\t",note);
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"vel: %d \n",velocity);
+    am_log(messBuf,CON_LOG);
 }
 
 void am_noteAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -742,7 +784,8 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	free(tempEvent.dataPtr);
 
     }
-     printf(" Note Aftertouch, note: %d, pressure: %d\n",noteNb,pressure);
+     sprintf((char *)messBuf,"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d\n",(unsigned int)delta, noteNb,pressure);
+     am_log(messBuf,CON_LOG);
 
 }
 
@@ -797,8 +840,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
         /* get program controller nb */
         controllerNb=(*(*pPtr));
-		pEvntBlock->eventData.controllerNb=(*(*pPtr));
-		
+	pEvntBlock->eventData.controllerNb=(*(*pPtr));
 
         (*pPtr)++;
         value=*((*pPtr));
@@ -811,8 +853,8 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
     }
 
-    printf("Controller channel: %d, nb:%d, name:%s value: %d\n",channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
-
+    sprintf((char *)messBuf,"delta: %u\tevent: Controller channel: %d, nb:%d\t name:%s\tvalue: %d\n",(unsigned int)delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
+    am_log(messBuf,CON_LOG);
 
 }
 
@@ -872,10 +914,14 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
-
-    printf("Program change: ");
-    printf(" channel: %d ",channel);
-    printf(" program nb: %d \n",PN);
+    sprintf((char *)messBuf,"delta: %u\t",(unsigned int)delta);
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"event: Program change ");
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"channel: %d\t",channel);
+    am_log(messBuf,CON_LOG);
+    sprintf((char *)messBuf,"program nb: %d\n",PN);
+    am_log(messBuf,CON_LOG);
 
 }
 
@@ -929,7 +975,8 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
-    printf("Channel aftertouch, pressure: %d\n",param);
+    sprintf((char *)messBuf,"delta: %u\tevent: Channel aftertouch pressure: %d\n",(unsigned int)delta, param);
+    am_log(messBuf,CON_LOG);
 
 }
 
@@ -991,22 +1038,25 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
- printf("Pitch bend, LSB: %d, MSB:%d\n",LSB,MSB);
+ sprintf((char *)messBuf,"delta: %u\tevent: Pitch bend LSB: %d, MSB:%d\n",(unsigned int)delta,LSB,MSB);
+ am_log(messBuf,CON_LOG);
 }
 
 void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
   U32 ulCount=0L;
   sEventBlock_t tempEvent;
  
-  printf("SOX: ");
-
+  sprintf((char *)messBuf,"SOX: ");
+  am_log(messBuf,CON_LOG);
     while( (*(*pPtr))!=EV_EOX){
-     printf("%x ",*(*pPtr));
+     sprintf((char *)messBuf,"%x ",*(*pPtr));
+     am_log(messBuf,CON_LOG);
      (*pPtr)++;
       /*count Sysex msg data bytes */
       ulCount++;
     }
-    printf(" EOX, size: %ld\n",ulCount);
+    sprintf((char *)messBuf," EOX, size: %ld\n",ulCount);
+    am_log(messBuf,CON_LOG);
 }
 
 BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
@@ -1020,112 +1070,134 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
  sTimeSignature timeSign;
  sEventBlock_t tempEvent;
 
- printf(" Meta event: ");
-
  /*get meta event type */
  (*pPtr)++;
  ubVal=*(*pPtr);
 
  switch(ubVal){
     case MT_SEQ_NB:
-        printf("Sequence nb: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Sequence nb: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
-        printf("%d\n", ubLenght);
+        sprintf((char *)messBuf,"%d\n", ubLenght);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
 	return FALSE;
     break;
     case MT_TEXT:
-        printf("Text:");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Text:",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
-        printf("meta size: %d ",ubLenght);
-        /* set to the start of the string */
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+        am_log(messBuf,CON_LOG);
+	/* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_COPYRIGHT:
-        printf("Copyright: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Copyright: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
-        printf("meta size: %d ",ubLenght);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_SEQNAME:
-        printf("Sequence name: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Sequence name: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("meta size: %d ",ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_INSTRNAME:
-        printf("Instrument name: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Instrument name: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
-        printf("meta size: %d",ubLenght);
+        sprintf((char *)messBuf,"meta size: %d",ubLenght);
+	am_log(messBuf,CON_LOG);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_LYRICS:
-        printf("Lyrics: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Lyrics: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
-        printf("meta size: %d ",ubLenght);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
 
     case MT_MARKER:
-        printf("Marker: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Marker: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("meta size: %d ",ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_CUEPOINT:
-        printf("Cuepoint\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Cuepoint\n",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("meta size: %d ",ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
 
     case MT_PROGRAM_NAME:
         /* program(patch) name */
-        printf("Program (patch) name: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Program (patch) name: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 
@@ -1133,13 +1205,16 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("meta size: %d ",ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_DEVICE_NAME:
         /* device (port) name */
-        printf("Device (port) name: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Device (port) name: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 
@@ -1147,12 +1222,15 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
-        printf("meta size: %d ",ubLenght);
-        printf("%s \n",textBuffer);
+        sprintf((char *)messBuf,"meta size: %d ",ubLenght);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"%s \n",textBuffer);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_CH_PREFIX:
-        printf("Channel prefix\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Channel prefix\n",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1167,7 +1245,8 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
 
         /*get port nb*/
-        printf("Midi channel nb: %d\n",*(*pPtr));
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Midi channel nb: %d\n",(unsigned int)delta,*(*pPtr));
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
 	return FALSE;
     break;
@@ -1178,12 +1257,14 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
 
         /*get port nb*/
-        printf("Midi port nb: %d\n",*(*pPtr));
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Midi port nb: %d\n",(unsigned int)delta,*(*pPtr));
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
 	return FALSE;
     break;
     case MT_EOT:
-        printf("End of track\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: End of track\n",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1194,7 +1275,8 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
     case MT_SET_TEMPO:{
         /* sets tempo in track, should be in the first track, if not 120 BPM is assumed */
 	U8 ulVal[3]={0};   /* for retrieving set tempo info */
-	printf("Set tempo: ");
+	sprintf((char *)messBuf,"delta: %u\tMeta event: Set tempo: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
 	(*pPtr)++;
         ubLenght=(*(*pPtr));
          (*pPtr)++;
@@ -1203,7 +1285,8 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
-        printf("0x%x%x%x ms per MIDI quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
+        sprintf((char *)messBuf,"0x%x%x%x ms per MIDI quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
+	am_log(messBuf,CON_LOG);
 	U32 val1=ulVal[0],val2=ulVal[1],val3=ulVal[2]; 
 	val1=val1&0x000000FFL;
 	val2=(val2<<8)&0x0000FF00L;
@@ -1212,12 +1295,14 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	/* range: 0-8355711 ms, 24 bit value */
 	val1=val1|val2|val3;
 	(*pCurTrack)->currTrackState.ulTrackTempo=val1;
-	printf("%u ms per MIDI quarter-note\n", (unsigned int)val1);
+	sprintf((char *)messBuf,"%u ms per MIDI quarter-note\n", (unsigned int)val1);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     }
     break;
     case MT_SMPTE_OFFSET:
-        printf("SMPTE offset:\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: SMPTE offset:\n",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1226,15 +1311,21 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
     /* print out info */
-        printf("hr: %d\n",SMPTEinfo.hr);
-        printf("mn: %d\n",SMPTEinfo.mn);
-        printf("se: %d\n",SMPTEinfo.fr);
-        printf("fr: %d\n",SMPTEinfo.fr);
-        printf("ff: %d\n",SMPTEinfo.ff);
+        sprintf((char *)messBuf,"hr: %d\n",SMPTEinfo.hr);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"mn: %d\n",SMPTEinfo.mn);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"se: %d\n",SMPTEinfo.fr);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"fr: %d\n",SMPTEinfo.fr);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"ff: %d\n",SMPTEinfo.ff);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_TIME_SIG:
-        printf("Time signature:\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Time signature:\n",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1243,14 +1334,19 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
     /* print out info */
-        printf("nn: %d\n",timeSign.nn);
-        printf("dd: %d\n",timeSign.dd);
-        printf("cc: %d\n",timeSign.cc);
-        printf("bb: %d\n",timeSign.bb);
+        sprintf((char *)messBuf,"nn: %d\n",timeSign.nn);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"dd: %d\n",timeSign.dd);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"cc: %d\n",timeSign.cc);
+	am_log(messBuf,CON_LOG);
+        sprintf((char *)messBuf,"bb: %d\n",timeSign.bb);
+	am_log(messBuf,CON_LOG);
 	return FALSE;
     break;
     case MT_KEY_SIG:
-        printf("Key signature: ");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Key signature: ",(unsigned int)delta);
+	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1258,26 +1354,26 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         param2=(*(*pPtr));
 
-        if (param2==0) {printf("scale: major ");}
-        else if(param2==1) {printf("scale: minor ");}
-         else { printf("error: wrong key signature scale. "); }
+        if (param2==0) {sprintf((char *)messBuf,"scale: major ");am_log(messBuf,CON_LOG);}
+        else if(param2==1) {sprintf((char *)messBuf,"scale: minor ");am_log(messBuf,CON_LOG);}
+         else { sprintf((char *)messBuf,"error: wrong key signature scale. ");am_log(messBuf,CON_LOG); }
 
         if(param1==0)
-            {printf("Key of C\n");}
+            {sprintf((char *)messBuf,"Key of C\n");am_log(messBuf,CON_LOG);}
         else if (((S8)param1==-1))
-            {printf("1 flat\n");}
+            {sprintf((char *)messBuf,"1 flat\n");am_log(messBuf,CON_LOG);}
         else if(((S8)param1)==1)
-            {printf("1 sharp\n");}
+            {sprintf((char *)messBuf,"1 sharp\n");am_log(messBuf,CON_LOG);}
         else if ((param1>1&&param1<=7))
-            {printf(" %d sharps\n",param1);}
+            {sprintf((char *)messBuf," %d sharps\n",param1);am_log(messBuf,CON_LOG);}
         else if (( ((S8)param1)<-1&& ((S8)param1)>=-7))
-            {printf(" %ld flats\n",(U32)param1);}
-        else {printf(" error: wrong key signature. %d\n",param1);}
+            {sprintf((char *)messBuf," %ld flats\n",(U32)param1);am_log(messBuf,CON_LOG);}
+        else {sprintf((char *)messBuf," error: wrong key signature. %d\n",param1);am_log(messBuf,CON_LOG);}
         (*pPtr)++;
 	return FALSE;
     break;
     case MT_SEQ_SPEC:
-        printf("Sequencer specific data.\n");
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Sequencer specific data.\n",(unsigned int)delta);am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1286,14 +1382,14 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	return FALSE;
     break;
     default:
-       printf("Unknown meta event.\n");
+       sprintf((char *)messBuf,"delta: %u\tUnknown meta event.\n",(unsigned int)delta);am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */
         /* file also could be broken */
 	U8 tempArray[128]={0};
 	
-        printf("id: %d, size: %d\n" /*parameters: %ld \n"*/,ubVal,*(*pPtr));
+        sprintf((char *)messBuf,"id: %d, size: %d\n" /*parameters: %ld \n"*/,ubVal,*(*pPtr));am_log(messBuf,CON_LOG);
         (*pPtr)=(*pPtr)+ubLenght;
 	return FALSE;
     break;
@@ -1351,11 +1447,13 @@ const U8 *getMIDIcontrollerName(U8 iNb)
 /* gets info about connected devices via MIDI interface */
 const S8 *getConnectedDeviceInfo(void){
   /*  request on all channels */
-  
-  /*static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; */
-  U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
+  sprintf((char *)messBuf,"Quering connected MIDI device...\n");
+  am_log(messBuf,CON_LOG);
+    
+  static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
+  //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   U8 channel=0x00;
-  S32 data;
+  U32 data;
   
   /* calculate checksum */
   /*getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);*/
@@ -1364,15 +1462,25 @@ const S8 *getConnectedDeviceInfo(void){
   
     getInfoSysEx[5]=channel;
     getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
-    MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
-    am_dumpMidiBuffer();
-    printf("Sysex channel %d 0x",channel);
     
+    MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
+    am_dumpMidiBuffer(); 
+    messBuf[0]=0;
+    
+    /* get reply */
     while(MIDI_DATA_READY) {
-      data=GET_MIDI_DATA;
-      printf("%d ",(signed int)data);
+      data = GET_MIDI_DATA;
+      if(data!=0){
+	sprintf ((char *)messBuf,"%x\t",(unsigned int)data);
+	am_log (messBuf,CON_LOG);
+      }
     }
-  printf("\n");
+   
+    if(messBuf[0]!=0){
+     sprintf((char *)messBuf,"received response from SysEx channel %d 0x ",channel);
+     am_log(messBuf,CON_LOG);
+   }
+
   am_dumpMidiBuffer();
   }
 
@@ -1437,12 +1545,12 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision)
     /* SMPTE */
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
-    printf("Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));
+    sprintf((char *)messBuf,"Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));am_log(messBuf,CON_LOG);
     return 0;		//todo:
   }
    else{
     /* PPQN */
-    printf("Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);
+    sprintf((char *)messBuf,"Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);am_log(messBuf,CON_LOG);
     return timeDivision;
    }
 }
@@ -1454,3 +1562,12 @@ void am_allNotesOff(U16 numChannels){
  }
 }        
 
+void am_log(U8 *mes,BOOL bLogToConsole){
+
+  if(bLogToConsole==TRUE) fprintf(stdout,(const char *)mes);
+
+  #ifdef DEBUG_FILE_OUTPUT
+    fprintf(ofp,(const char *)mes);
+  #endif
+
+}

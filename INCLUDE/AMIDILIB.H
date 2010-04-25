@@ -92,6 +92,9 @@
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
 
+
+
+
 /* function prototypes  */
 /**
  * Gets MIDI file info type(0,1,2), number of tracks, track lenghts..
@@ -329,5 +332,7 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 *   @param numChannels - number of channel
 */
 void am_allNotesOff(U16 numChannels);
+
+void am_log(U8 *mes, BOOL bLogToConsole);
 
 #endif

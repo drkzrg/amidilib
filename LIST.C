@@ -17,7 +17,13 @@
     
 #include <assert.h>
 #include <string.h>
+#include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
+
+extern "C"{
+  static U8 messBuf[256]; /* for error buffer  */
+  static BOOL CON_LOG=TRUE;
+}
 
 void initEventList(sEventList *listPtr)
 {
@@ -215,8 +221,9 @@ void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr)
  			evntFuncPtr myFunc; 
 
   			/* print delta */
-  			printf("event nb: %ld event delta: %ld\n",counter,(*pPtr)->uiDeltaTime);
-			
+			sprintf((char *)messBuf,"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
+			am_log(messBuf,CON_LOG);
+  			
 			switch((U16)((*pPtr)->type))
 			{
 			  case T_NOTEON:			  

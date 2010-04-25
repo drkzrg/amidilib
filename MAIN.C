@@ -27,6 +27,12 @@
 #define MIDI_FILE "TUNES/ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
 
+
+extern "C"{
+  static U8 messBuf[256]; /* for error buffer  */
+  static BOOL CON_LOG;
+}
+
 /**
  * main program entry
  */
@@ -54,7 +60,8 @@ int main(void){
     sSequence_t midiTune;
     if(pMidi!=NULL){
 
-     printf("Midi file loaded in the memory succesfully, filesize: %u...\n",(unsigned int)ulFileLenght);
+     sprintf((char *)messBuf, "Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     am_log(messBuf,CON_LOG);
      /* process MIDI*/
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
@@ -67,13 +74,14 @@ int main(void){
 	case 2:
 	case 3:
 	/* handle file */
-	  printf("Preparing MIDI file for replay\n");
+	  sprintf((char *)messBuf, "Preparing MIDI file for replay\n");
+	  am_log(messBuf,CON_LOG);
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	break;
 
 	default:
 	  /* unknown error, do nothing */
-	  printf("Unknown error ...\n");
+	  fprintf(stderr, "Unknown error ...\n");
 	  iError=1;
 	break;
      }
@@ -81,10 +89,10 @@ int main(void){
     }else{
       if(iRet== -1){
        /* not MIDI file, do nothing */
-       printf("It's not valid MIDI file...\n");
+       fprintf(stderr, "It's not valid MIDI file...\n");
       } else if(iRet==-2){
 	/* unsupported MIDI type format, do nothing*/
-	printf("Unsupported MIDI file format...\n");
+	fprintf(stderr, "Unsupported MIDI file format...\n");
       }
       iError=1;
     }
@@ -94,21 +102,15 @@ int main(void){
     
     if(iError!=1){
      /* play preloaded tune */
-      
         playMidi(&midiTune);
-       
-      
-     
     }
      
     } /* MIDI loading failed */
     else{
-      printf("Error: Couldn't read file...\n");
+      fprintf(stderr, "Error: Couldn't read file...\n");
       return(-1);
     }
-    
-   
-    
+
     /* turn off all notes on channels 0-15 */
     am_allNotesOff(16);
    
@@ -131,7 +133,8 @@ void VLQtest(void){
         {pValPtr++;}
         valsize=0;result=0;
         result= readVLQ(pValPtr,&valsize);
-     	printf("VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
+     	sprintf((char *)messBuf, "VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
+	am_log(messBuf,CON_LOG);
     }
     /* End of VLQ test */
 }
@@ -150,14 +153,29 @@ void playMidi(sSequence_t *pMidiSequence){
   U32 currDelta=0,lastDelta=0;
   const sEventList *pMyEvent=NULL;	
   
+  /* get timing info */
+  /* the smallest tick is trackTempo/td */
+  U32 trackTempo=pMidiSequence->arTracks[0]->currTrackState.ulTrackTempo;
+  U16 td=pMidiSequence->uiTimeDivision;
+  double tick=(double)trackTempo/(double)td;
+  
+  sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %f\n",td,(unsigned int)trackTempo,tick);
+  am_log(messBuf,CON_LOG);
+  /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      
   /*printEventList( &pMyEvent );*/
-  printf("Sending all events with delta: %u\n", (unsigned int)currDelta);
-
-  /* TODO: callback on timer */
+  
+  /* deltas are relative to the last event */
+  sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
+  am_log(messBuf,CON_LOG);
   while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
-    printf("Sending all events with delta: %u\n", (unsigned int)currDelta);
+    sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
+    am_log(messBuf,CON_LOG);
     lastDelta=currDelta;
   }
+  
+  sprintf((char *)messBuf,"File processed successfully. ");
+  am_log(messBuf,CON_LOG);
+  
 }

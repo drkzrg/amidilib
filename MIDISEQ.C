@@ -5,7 +5,7 @@
 
     AMIDILIB is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
+    the Free Software Foundation\, either version 3 of the License, or
     (at your option) any later version.
 
     AMIDILIB is distributed in the hope that it will be useful,
@@ -18,6 +18,7 @@
 
 
 #include "INCLUDE/MIDISEQ.H"
+#include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/MIDI_CMD.H"	/* for sending midi commands */
 
 #include <stdio.h> /* just for dummy printf in event handling messages */
@@ -25,6 +26,12 @@
 				   
 /* string table with all event names */
 /*  */
+
+extern "C"{
+  static U8 messBuf[256]; /* for error buffer  */
+  static BOOL CON_LOG=TRUE;
+}
+
 
 static const char *g_arEventNames[T_EVT_COUNT]=
 {
@@ -65,68 +72,65 @@ sEventInfoBlock_t getEventFuncInfo(U8 eventType)
 
 /*returns pointer to NULL terminated string with event name */
 /* id is enumerated value from eEventType */
-const U8 *getEventName(U32 id)
-{
-
+const U8 *getEventName(U32 id){
 	return ((const U8 *)g_arEventNames[id]);
 }
 
 
-void  fNoteOn(void *pEvent)
-{
+void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
-	printf("Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+	sprintf((char *)messBuf, "Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+	am_log(messBuf,CON_LOG);
 	note_on(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);	
 }
 
-void  fNoteOff(void *pEvent)
-{
+void  fNoteOff(void *pEvent){
 	sNoteOff_EventBlock_t *pPtr=(sNoteOff_EventBlock_t *)pEvent;
- 	printf("Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+ 	sprintf((char *)messBuf, "Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+	am_log(messBuf,CON_LOG);
 	note_off(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
 
-void  fNoteAft(void *pEvent)
-{
+void  fNoteAft(void *pEvent){
 	sNoteAft_EventBlock_t *pPtr=(sNoteAft_EventBlock_t *)pEvent;	
-	printf("Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
+	sprintf((char *)messBuf, "Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
+	am_log(messBuf,CON_LOG);
 	polyphonic_key_press(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 }
 
-void  fProgramChange (void *pEvent)
-{
+void  fProgramChange (void *pEvent){
 	sPrgChng_EventBlock_t *pPtr=(sPrgChng_EventBlock_t *)pEvent;
-	printf("Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
+	sprintf((char *)messBuf, "Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
+	am_log(messBuf,CON_LOG);
 	program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
-void  fController(void *pEvent)
-{
+void  fController(void *pEvent){
 	sController_EventBlock_t *pPtr=(sController_EventBlock_t *)pEvent;
-	printf("Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
+	sprintf((char *)messBuf, "Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
+	am_log(messBuf,CON_LOG);
 	control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
 
-void  fChannelAft(void *pEvent)
-{
+void  fChannelAft(void *pEvent){
 	sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
-	printf("Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+	sprintf((char *)messBuf, "Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+	am_log(messBuf,CON_LOG);
 	channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
 
 }
 
-void  fPitchBend(void *pEvent)
-{
+void  fPitchBend(void *pEvent){
 	sPitchBend_EventBlock_t *pPtr=(sPitchBend_EventBlock_t *)pEvent;
-	printf("Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
+	sprintf((char *)messBuf, "Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
+	am_log(messBuf,CON_LOG);
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
-void  fSetTempo(void *pEvent)
-{
+void  fSetTempo(void *pEvent){
 sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
-	printf("Setting new replay tempo...\n");
-
+	sprintf((char *)messBuf, "Setting new replay tempo...\n");
+	am_log(messBuf,CON_LOG);
 }
 
 

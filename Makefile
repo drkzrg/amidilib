@@ -5,7 +5,7 @@
 
 INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
-CFLAGS += -m68020-60 -Wall -pedantic -Wl,--traditional-format
+CFLAGS += -m68020-60 -Wall -pedantic -Wl,--traditional-format -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib
 EXE = amidi.tos
 

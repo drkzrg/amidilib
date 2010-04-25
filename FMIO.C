@@ -262,7 +262,7 @@ U32 lRet=0L;
 	Mfree(pData);
 	pData=NULL;
       }
-	*fileLenght=0L;
+	
         Fclose((int)fileHandle);
         return (pData);
      }

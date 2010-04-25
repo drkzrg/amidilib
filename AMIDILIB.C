@@ -853,7 +853,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
     }
 
-    sprintf((char *)messBuf,"delta: %u\tevent: Controller channel: %d, nb:%d\t name:%s\tvalue: %d\n",(unsigned int)delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
+    sprintf((char *)messBuf,"delta: %u\tevent: Controller channel: %d, nb:%d name: %s\tvalue: %d\n",(unsigned int)delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
     am_log(messBuf,CON_LOG);
 
 }
@@ -1285,17 +1285,18 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
-        sprintf((char *)messBuf,"0x%x%x%x ms per MIDI quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
-	am_log(messBuf,CON_LOG);
+        /*sprintf((char *)messBuf,"0x%x%x%x ms per quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
+	am_log(messBuf,CON_LOG);*/
+	
 	U32 val1=ulVal[0],val2=ulVal[1],val3=ulVal[2]; 
-	val1=val1&0x000000FFL;
+	val1=(val1<<16)&0x00FF0000L;
 	val2=(val2<<8)&0x0000FF00L;
-	val3=(val3<<16)&0x00FF0000L;;
+	val3=(val3)&0x000000FFL;
 
 	/* range: 0-8355711 ms, 24 bit value */
 	val1=val1|val2|val3;
 	(*pCurTrack)->currTrackState.ulTrackTempo=val1;
-	sprintf((char *)messBuf,"%u ms per MIDI quarter-note\n", (unsigned int)val1);
+	sprintf((char *)messBuf,"%u ms per quarter-note\n", (unsigned int)val1);
 	am_log(messBuf,CON_LOG);
 	return FALSE;
     }
@@ -1324,7 +1325,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	return FALSE;
     break;
     case MT_TIME_SIG:
-        sprintf((char *)messBuf,"delta: %u\tMeta event: Time signature:\n",(unsigned int)delta);
+        sprintf((char *)messBuf,"delta: %u\tMeta event: Time signature: ",(unsigned int)delta);
 	am_log(messBuf,CON_LOG);
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1333,15 +1334,10 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         memcpy (&timeSign,(*pPtr),sizeof(sTimeSignature));
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
-    /* print out info */
-        sprintf((char *)messBuf,"nn: %d\n",timeSign.nn);
+        /* print out info */
+        sprintf((char *)messBuf,"nn: %d\tdd: %d\tcc: %d\tbb: %d\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
 	am_log(messBuf,CON_LOG);
-        sprintf((char *)messBuf,"dd: %d\n",timeSign.dd);
-	am_log(messBuf,CON_LOG);
-        sprintf((char *)messBuf,"cc: %d\n",timeSign.cc);
-	am_log(messBuf,CON_LOG);
-        sprintf((char *)messBuf,"bb: %d\n",timeSign.bb);
-	am_log(messBuf,CON_LOG);
+        
 	return FALSE;
     break;
     case MT_KEY_SIG:

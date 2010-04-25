@@ -93,7 +93,11 @@
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
 
 
+/* extern assembly*/
 
+extern "C" {
+  void myRoutine(void);
+}
 
 /* function prototypes  */
 /**
@@ -334,5 +338,6 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 void am_allNotesOff(U16 numChannels);
 
 void am_log(U8 *mes, BOOL bLogToConsole);
+
 
 #endif

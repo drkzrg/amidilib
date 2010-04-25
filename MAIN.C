@@ -45,7 +45,7 @@ int main(void){
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-
+    
     VLQtest();
     memoryCheck();
 
@@ -116,7 +116,7 @@ int main(void){
    
     /* clean up, free internal library buffers etc..*/
     am_deinit();
-    
+    myRoutine();	/* vasm test :D */
  return (0);
 }
 

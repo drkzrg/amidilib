@@ -15,23 +15,19 @@
 ; You should have received a copy of the GNU General Public License
 ; along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.
 
+; export routines 
+	XDEF	_myRoutine 
 
-  XDEF am_writeVarLen
-  XDEF am_readVarLen
+; export labels 
+	text
+_myRoutine:
+	move.l	#text,-(sp)
+	move.w	#$09,-(sp)
+	trap	#1
+	addq.l	#6,sp
+	RTS
 
-    text
-am_readVarLen:
-    move.l  d0,d1
-    moveq   #0,d0
-    ;result now in d0 
-    ;VLC value copied in d1
+	data
+text:	 dc.b 	'Test test...............',$0d,$0a,$00
 
-    ;results in d0.l */
-    RTS
-
-
-am_writeVarLen:
-  ; value to write in d0.l
-
-
-    RTS
+	text

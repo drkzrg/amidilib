@@ -24,7 +24,7 @@
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
-#define MIDI_FILE "TUNES/ULTIMA01.MID"
+#define MIDI_FILE "ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
 
 
@@ -117,6 +117,13 @@ int main(void){
     /* clean up, free internal library buffers etc..*/
     am_deinit();
     myRoutine();	/* vasm test :D */
+     void installTickCounter();
+ 
+    /*interrupt handler test */
+    for(;;){
+      printf("%u\n",(unsigned int)counter);
+    }
+     void deinstallTickCounter();
  return (0);
 }
 

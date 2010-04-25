@@ -79,9 +79,6 @@ S16 am_getHeaderInfo(void *pMidiPtr){
 return(-1);
 }
 
-
-
-
 S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence)
 {
     S16 iNumTracks=0;
@@ -105,8 +102,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
       pSequence->arTracks[iLoop]=NULL;
     }
     
-    switch(type)
-    {
+    switch(type){
 
         case 0:{
             /* handle MIDI type 0 */
@@ -159,8 +155,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 	  (pSequence->arTracks[0])->pInstrumentName=NULL;
 	  (pSequence->arTracks[0])->currTrackState.currentPos=0;
 	  (pSequence->arTracks[0])->currTrackState.ubVolume=128;                
-	  //(pSequence->arTracks[0])->currTrackState.ubPlayModeState=0;          /* IDLE state */
-	  (pSequence->arTracks[0])->currTrackState.ulTimeStep=128;                /* sequence current track tempo */
+	  //(pSequence->arTracks[0])->currTrackState.ubPlayModeState=0;	/* IDLE state */
+	  (pSequence->arTracks[0])->currTrackState.ulTimeStep=128;	/* sequence current track tempo */
 	  
 	  /* init event list */
 	  initEventList(&((pSequence->arTracks[0])->trkEventList));
@@ -323,12 +319,10 @@ void am_deinit(){
 }
 
 void am_dumpMidiBuffer(){
-U32 counter=0;
- _IOREC *g_psMidiBufferInfo;
 
-printf("MIDI buffer dump:");
+  printf("MIDI buffer dump: ");
   
-for(counter=0;counter<(MIDI_BUFFER_SIZE-1);counter++){
+for(U32 counter=0;counter<(MIDI_BUFFER_SIZE-1);counter++){
   if(g_arMidiBuffer[counter]!=0x00)	
     printf("%x",g_arMidiBuffer[counter]);
  }
@@ -438,21 +432,22 @@ U8 am_isMidiRTorSysex(U8 byteEvent){
 /* handles the events in tracks and returns pointer to the next midi track */
 
 void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack ){
-    U8 *pCmd=((U8 *)(*startPtr));
-    U8 ubSize;
-    U8 usSwitch=0;
-    U16 recallStatus=0;
-    U32 delta=0L;
-    U32 deltaAll=0L;
-    BOOL bEOF=false;
+U8 *pCmd=((U8 *)(*startPtr));
+U8 ubSize;
+U8 usSwitch=0;
+U16 recallStatus=0;
+U32 delta=0L;
+U32 deltaAll=0L;
+BOOL bEOF=false;
     
     /* execute as long we are on the end of file or EOT meta occured, 
       50% midi track headers is broken, so the web says ;)) */
-    while ((pCmd!=(*endAddr)&&bEOF==FALSE)){
-    /*read delta time, pCmd should point to the command data */
+    while ( ((pCmd!=(*endAddr))) ){
+    
+      /*read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
       deltaAll=deltaAll+delta;
-      printf("Event: delta %ld \n",deltaAll);
+      printf("Event: delta %u \n",(unsigned int)deltaAll);
       pCmd=(U8 *)((U32)pCmd+ubSize*sizeof(U8));
 
       /* handling of running status */
@@ -460,12 +455,12 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
       /* else set recallStatus = 0 and do nothing special */
       ubSize=(*pCmd);
       if( (!(am_isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(am_isMidiRTorSysex(ubSize))))){
-      /*recall last cmd byte */
+	/*recall last cmd byte */
 	usSwitch=g_runningStatus;
         usSwitch=((usSwitch>>4)&0x0F);
       }else{
 	/* check if the new cmd is the system one*/
-            recallStatus=0;
+	recallStatus=0;
 
       if((am_isMidiRTorSysex(ubSize))){
 	usSwitch=ubSize;
@@ -526,12 +521,12 @@ void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pC
       break;
       case SC_UNDEF1:                   /* undefined */
       case SC_UNDEF2:                  /* undefined */
-	printf("Event: System common not defined\n");
+	printf("Event: System common not defined.\n");
 	recallStatus=0;
 	pCmd++;
       break;
       case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-	printf("Event: System tune request\n");
+	printf("Event: System tune request.\n");
 	recallStatus=0;
 	pCmd++;
       break;
@@ -546,82 +541,80 @@ return(pCmd);
 
 
 void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
-    U8 channel=0;
-    U8 note=0;
-    U8 velocity=0;
-    sEventBlock_t tempEvent;
-    sNoteOff_EventBlock_t *pEvntBlock=NULL;
+U8 channel=0;
+U8 note=0;
+U8 velocity=0;
+sEventBlock_t tempEvent;
+sNoteOff_EventBlock_t *pEvntBlock=NULL;
 
-	if((*recallRS)==0){
- 	/* save last running status */
- 	g_runningStatus=*(*pPtr);
+if((*recallRS)==0){
+  /* save last running status */
+  g_runningStatus=*(*pPtr);
 	
-	tempEvent.uiDeltaTime=delta;
-	tempEvent.type=T_NOTEOFF;
-	tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
-	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-	/*assert(tempEvent.dataPtr>0);*/
-	pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
-	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+  tempEvent.uiDeltaTime=delta;
+  tempEvent.type=T_NOTEOFF;
+  tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
+  tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+  /*assert(tempEvent.dataPtr>0);*/
+  pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
+  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
-	/* now we can recall former running status next time */
-	(*recallRS)=1;
+  /* now we can recall former running status next time */
+  (*recallRS)=1;
 
-	(*pPtr)++;
-	channel=(g_runningStatus&0x0F)+1;
-	note=*(*pPtr);
-	pEvntBlock->eventData.noteNb=*(*pPtr);
+  (*pPtr)++;
+  channel=(g_runningStatus&0x0F)+1;
+  note=*(*pPtr);
+  pEvntBlock->eventData.noteNb=*(*pPtr);
 			
-	/* get parameters */
-			(*pPtr)++;
-			velocity=*(*pPtr);
-			pEvntBlock->eventData.velocity=*(*pPtr);
+  /* get parameters */
+  (*pPtr)++;
+  velocity=*(*pPtr);
+  pEvntBlock->eventData.velocity=*(*pPtr);
 			
-			(*pPtr)++;
+  (*pPtr)++;
 
-			/* add event to list */
-			addEvent( &((*pCurTrack)->trkEventList), &tempEvent );
-			free(tempEvent.dataPtr);
+  /* add event to list */
+  addEvent( &((*pCurTrack)->trkEventList), &tempEvent );
+  free(tempEvent.dataPtr);
 
-		}
-		else {
-			/* recall last cmd status */
-			/* and get parameters as usual */
+}
+else {
+  /* recall last cmd status */
+  /* and get parameters as usual */
 
-			/* get last note info */
-			tempEvent.uiDeltaTime=delta;
-			tempEvent.type=T_NOTEOFF;
-			tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
-			tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-			/*assert(tempEvent.dataPtr>0);*/
-			pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
-			/* save channel */
-			pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+  /* get last note info */
+  tempEvent.uiDeltaTime=delta;
+  tempEvent.type=T_NOTEOFF;
+  tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
+  tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+  /*assert(tempEvent.dataPtr>0);*/
+  pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
+  /* save channel */
+  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
-			channel=(g_runningStatus&0x0F)+1;
-			note=*(*pPtr);
-			pEvntBlock->eventData.noteNb=*(*pPtr);
+  channel=(g_runningStatus&0x0F)+1;
+  note=*(*pPtr);
+  pEvntBlock->eventData.noteNb=*(*pPtr);
 
-			/* get parameters */
-			(*pPtr)++;
-			velocity=*(*pPtr);
-			pEvntBlock->eventData.velocity=*(*pPtr);
+  /* get parameters */
+  (*pPtr)++;
+  velocity=*(*pPtr);
+  pEvntBlock->eventData.velocity=*(*pPtr);
 			
-			(*pPtr)++;
+  (*pPtr)++;
 
-			/* add event to list */
-			addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-			free(tempEvent.dataPtr);
-		
-		}
-		printf("Note off: ");
-		printf(" channel: %d ",(g_runningStatus&0x0F)+1);
-		printf(" note: %ld ",(*pPtr));
-		printf(" vel: %ld \n",(*pPtr));
+  /* add event to list */
+  addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+  free(tempEvent.dataPtr);
+}
+  printf("Note off: ");
+  printf(" channel: %d ",(g_runningStatus&0x0F)+1);
+  printf(" note: %d ",*(*pPtr));
+  printf(" vel: %d \n",*(*pPtr));
 }
 
-void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
-{
+void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
  U8 channel=0;
  U8 note=0;
  U8 velocity=0;
@@ -632,12 +625,12 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
     /* save last running status */
     g_runningStatus=*(*pPtr);
 
-	tempEvent.uiDeltaTime=delta;
-	tempEvent.type=T_NOTEON;
-	tempEvent.infoBlock=getEventFuncInfo(T_NOTEON);
-	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-	/*assert(tempEvent.dataPtr>0);*/
-	pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
+    tempEvent.uiDeltaTime=delta;
+    tempEvent.type=T_NOTEON;
+    tempEvent.infoBlock=getEventFuncInfo(T_NOTEON);
+    tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+    /*assert(tempEvent.dataPtr>0);*/
+    pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
 
     /* now we can recall former running status next time */
     (*recallRS)=1;
@@ -687,7 +680,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 		free(tempEvent.dataPtr);
  }
  /* print and handle */
-    printf("Note on: ",channel);
+    printf("Note on: ");
     printf(" channel: %d ",channel);
     printf(" note: %d ",note);
     printf(" vel: %d \n",velocity);
@@ -724,29 +717,29 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	pEvntBlock->eventData.pressure=*(*pPtr);
     (*pPtr)++;
 	/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
  }
  else{
         /* get parameters */
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_NOTEAFT;
-		tempEvent.infoBlock=getEventFuncInfo(T_NOTEAFT);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
-		pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_NOTEAFT;
+	tempEvent.infoBlock=getEventFuncInfo(T_NOTEAFT);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
         noteNb=*(*pPtr);
-		pEvntBlock->eventData.noteNb=*(*pPtr);
+	pEvntBlock->eventData.noteNb=*(*pPtr);
         (*pPtr)++;
         pressure=*(*pPtr);
-		pEvntBlock->eventData.pressure=*(*pPtr);
+	pEvntBlock->eventData.pressure=*(*pPtr);
         (*pPtr)++;
 		
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
 
     }
      printf(" Note Aftertouch, note: %d, pressure: %d\n",noteNb,pressure);
@@ -757,52 +750,51 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
     U8 channelNb=0;
     U8 controllerNb=0;
     U8 value=0;
-	sEventBlock_t tempEvent;
-	sController_EventBlock_t *pEvntBlock=NULL;
+    sEventBlock_t tempEvent;
+    sController_EventBlock_t *pEvntBlock=NULL;
 
-    if((*recallRS)==0)
-    {
+    if((*recallRS)==0){
         /* save last running status */
         g_runningStatus=*(*pPtr);
         /* now we can recall former running status next time */
         (*recallRS)=1;
 
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_CONTROL;
-		tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_CONTROL;
+	tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
         channelNb=g_runningStatus&0x0F;
 		pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
         (*pPtr)++;
         /* get controller nb */
         controllerNb=(*(*pPtr));
-		pEvntBlock->eventData.controllerNb=(*(*pPtr));
+	pEvntBlock->eventData.controllerNb=(*(*pPtr));
         (*pPtr)++;
         value=*((*pPtr));
-		pEvntBlock->eventData.value=*((*pPtr));
+	pEvntBlock->eventData.value=*((*pPtr));
 
         (*pPtr)++;
-		
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
     else{
         
         channelNb=g_runningStatus&0x0F;
 		
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_CONTROL;
-		tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_CONTROL;
+	tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
-		pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
-		
+	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+
         /* get program controller nb */
         controllerNb=(*(*pPtr));
 		pEvntBlock->eventData.controllerNb=(*(*pPtr));
@@ -831,56 +823,54 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	sEventBlock_t tempEvent;
 	sPrgChng_EventBlock_t *pEvntBlock=NULL;
 
-     if((*recallRS)==0)
-	{
+     if((*recallRS)==0){
         /* save last running status */
         g_runningStatus=*(*pPtr);
 		
-		/* now we can recall former running status next time */
+	/* now we can recall former running status next time */
         (*recallRS)=1;
 
-		channel=(g_runningStatus&0x0F)+1;
+	channel=(g_runningStatus&0x0F)+1;
 
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_PRG_CH;
-		tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_PRG_CH;
+	tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
 
         
 
-		pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
         (*pPtr)++;
         /* get parameters */
         PN=*(*pPtr);
-		pEvntBlock->eventData.programNb=*(*pPtr);
-		(*pPtr)++;
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	pEvntBlock->eventData.programNb=*(*pPtr);
+	(*pPtr)++;
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
-    else
-    {
+    else{
          /* get last PC status */
           channel=(g_runningStatus&0x0F)+1;
-		  tempEvent.uiDeltaTime=delta;
-		  tempEvent.type=T_PRG_CH;
-		  tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
-		  tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		  /*assert(tempEvent.dataPtr>0);*/
-		  pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
-		  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+	  tempEvent.uiDeltaTime=delta;
+	  tempEvent.type=T_PRG_CH;
+	  tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
+	  tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	  /*assert(tempEvent.dataPtr>0);*/
+	  pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
+	  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
           PN=*(*pPtr);
-		  pEvntBlock->eventData.programNb=*(*pPtr);
+	  pEvntBlock->eventData.programNb=*(*pPtr);
          
-		 /* get parameters */
-		  (*pPtr)++;
-		
-		 /* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	 /* get parameters */
+	  (*pPtr)++;
+	
+	 /* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
 
     printf("Program change: ");
@@ -896,57 +886,54 @@ U8 param=0;
 sEventBlock_t tempEvent;
 sChannelAft_EventBlock_t *pEvntBlock=NULL;
 
-    if((*recallRS)==0)
-    {
+    if((*recallRS)==0){
         /* save last running status */
         g_runningStatus=*(*pPtr);
         /* now we can recall former running status next time */
         (*recallRS)=1;
 
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_CHAN_AFT;
-		tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
-		pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_CHAN_AFT;
+	tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
         
-		/* get parameters */
+	/* get parameters */
         (*pPtr)++;
         param=*(*pPtr);
 		pEvntBlock->eventData.pressure=*(*pPtr);
         (*pPtr)++;
 
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
 
     }
-    else
-    {
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_CHAN_AFT;
-		tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+    else{
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_CHAN_AFT;
+	tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*		assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
-		pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
         /* get parameters */
         param=*(*pPtr);
-		pEvntBlock->eventData.pressure=*(*pPtr);
+	pEvntBlock->eventData.pressure=*(*pPtr);
         (*pPtr)++;
 
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
     printf("Channel aftertouch, pressure: %d\n",param);
 
 }
 
-void am_PitchBend(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
-{
+void am_PitchBend(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 U8 MSB=0;
 U8 LSB=0;
 sEventBlock_t tempEvent;
@@ -960,63 +947,60 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
         /* now we can recall former running status next time */
         (*recallRS)=1;
 
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_PITCH_BEND;
-		tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
-		pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_PITCH_BEND;
+	tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
         (*pPtr)++;
         LSB=*(*pPtr);
-		pEvntBlock->eventData.LSB=*(*pPtr);
+	pEvntBlock->eventData.LSB=*(*pPtr);
         /* get parameters */
         (*pPtr)++;
         MSB=*(*pPtr);
-		pEvntBlock->eventData.MSB=*(*pPtr);
+	pEvntBlock->eventData.MSB=*(*pPtr);
         (*pPtr)++;
 		
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
-    else
-    {
+    else{
         g_runningStatus;    /* get last PC status */
 
-		tempEvent.uiDeltaTime=delta;
-		tempEvent.type=T_PITCH_BEND;
-		tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
-		tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
-		/*assert(tempEvent.dataPtr>0);*/
-		pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
-		pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_PITCH_BEND;
+	tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
+	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
+	/*assert(tempEvent.dataPtr>0);*/
+	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
+	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
         /* get parameters */
         LSB=*(*pPtr);
-		pEvntBlock->eventData.LSB=*(*pPtr);
+	pEvntBlock->eventData.LSB=*(*pPtr);
         (*pPtr)++;
         MSB=*(*pPtr);
-		pEvntBlock->eventData.MSB=*(*pPtr);
+	pEvntBlock->eventData.MSB=*(*pPtr);
         (*pPtr)++;
 		
-		/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		free(tempEvent.dataPtr);
+	/* add event to list */
+	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	free(tempEvent.dataPtr);
     }
  printf("Pitch bend, LSB: %d, MSB:%d\n",LSB,MSB);
 }
 
-void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
-{
+void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
   U32 ulCount=0L;
   sEventBlock_t tempEvent;
  
   printf("SOX: ");
 
-    while( (*(*pPtr))!=EV_EOX)
-    {
+    while( (*(*pPtr))!=EV_EOX){
      printf("%x ",*(*pPtr));
      (*pPtr)++;
       /*count Sysex msg data bytes */
@@ -1028,7 +1012,7 @@ void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack)
 BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
  /* TODO: maybe move these variables to static/global area and/or replace them with register vars for speed ?*/
  U8 ubLenght,ubVal,ubSize=0;
-U8 ulVal[3]={0};   /* for retrieving set tempo info */
+
  U8 param1=0,param2=0;
  U32 addr;
  U8 textBuffer[128]={0};
@@ -1207,8 +1191,9 @@ U8 ulVal[3]={0};   /* for retrieving set tempo info */
         *pPtr=(U8*)addr;
 	return TRUE;
     break;
-    case MT_SET_TEMPO:
+    case MT_SET_TEMPO:{
         /* sets tempo in track, should be in the first track, if not 120 BPM is assumed */
+	U8 ulVal[3]={0};   /* for retrieving set tempo info */
 	printf("Set tempo: ");
 	(*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1219,11 +1204,17 @@ U8 ulVal[3]={0};   /* for retrieving set tempo info */
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
         printf("0x%x%x%x ms per MIDI quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
-	/*range: 0-8355711 ms */
-	
-	memcpy(&((*pCurTrack)->currTrackState.ulTrackTempo), ulVal,3*sizeof(U8) );
-	printf("%d %x ms per MIDI quarter-note\n", (*pCurTrack)->currTrackState.ulTrackTempo,(*pCurTrack)->currTrackState.ulTrackTempo);
+	U32 val1=ulVal[0],val2=ulVal[1],val3=ulVal[2]; 
+	val1=val1&0x000000FFL;
+	val2=(val2<<8)&0x0000FF00L;
+	val3=(val3<<16)&0x00FF0000L;;
+
+	/* range: 0-8355711 ms, 24 bit value */
+	val1=val1|val2|val3;
+	(*pCurTrack)->currTrackState.ulTrackTempo=val1;
+	printf("%u ms per MIDI quarter-note\n", (unsigned int)val1);
 	return FALSE;
+    }
     break;
     case MT_SMPTE_OFFSET:
         printf("SMPTE offset:\n");
@@ -1280,8 +1271,8 @@ U8 ulVal[3]={0};   /* for retrieving set tempo info */
         else if ((param1>1&&param1<=7))
             {printf(" %d sharps\n",param1);}
         else if (( ((S8)param1)<-1&& ((S8)param1)>=-7))
-            {printf(" %d flats\n",(U32)param1);}
-        else {printf(" error: wrong key signature. \n",param1);}
+            {printf(" %ld flats\n",(U32)param1);}
+        else {printf(" error: wrong key signature. %d\n",param1);}
         (*pPtr)++;
 	return FALSE;
     break;
@@ -1295,11 +1286,14 @@ U8 ulVal[3]={0};   /* for retrieving set tempo info */
 	return FALSE;
     break;
     default:
+       printf("Unknown meta event.\n");
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */
         /* file also could be broken */
-        printf("Unknown meta event id: %d, size: %d parameters: %ld %\n",ubVal,*(*pPtr));
+	U8 tempArray[128]={0};
+	
+        printf("id: %d, size: %d\n" /*parameters: %ld \n"*/,ubVal,*(*pPtr));
         (*pPtr)=(*pPtr)+ubLenght;
 	return FALSE;
     break;
@@ -1376,7 +1370,7 @@ const S8 *getConnectedDeviceInfo(void){
     
     while(MIDI_DATA_READY) {
       data=GET_MIDI_DATA;
-      printf("%x",((U32)data));
+      printf("%d ",(signed int)data);
     }
   printf("\n");
   am_dumpMidiBuffer();
@@ -1415,8 +1409,8 @@ return ppu;
 /* music resolution are in PPQ */
 
 float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
-    float ppu;
-    float temp;
+    float ppu=0;
+    float temp=0;
     ppu=(float)qpm*(float)ppq;
     temp=(temp/ups)/60.0f;
    

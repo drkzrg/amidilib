@@ -35,6 +35,7 @@ void memoryCheck(void);
 void playMidi(sSequence_t *pMidiSequence);
 
 int main(void){
+  
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
@@ -53,7 +54,7 @@ int main(void){
     sSequence_t midiTune;
     if(pMidi!=NULL){
 
-     printf("Midi file loaded in the memory succesfully...\n");
+     printf("Midi file loaded in the memory succesfully, filesize: %u...\n",(unsigned int)ulFileLenght);
      /* process MIDI*/
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
@@ -61,24 +62,22 @@ int main(void){
      if(iRet>0){
       // no error
       switch(iRet){
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      /* handle file */
-      am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
-      
-      /* free up buffer, we don't need it anymore */
-      if(pMidi!=NULL)	Mfree(pMidi);
-      
-      break;
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	/* handle file */
+	  printf("Preparing MIDI file for replay\n");
+	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	break;
 
-      default:
-      /* unknown error, do nothing */
-      printf("Unknown error ...\n");
-      iError=1;
-      break;
+	default:
+	  /* unknown error, do nothing */
+	  printf("Unknown error ...\n");
+	  iError=1;
+	break;
      }
+     
     }else{
       if(iRet== -1){
        /* not MIDI file, do nothing */
@@ -89,18 +88,26 @@ int main(void){
       }
       iError=1;
     }
+     /* free up buffer, we don't need it anymore */
+      Mfree(pMidi);pMidi=NULL;
+    
+    
     if(iError!=1){
      /* play preloaded tune */
-     ;
+      
+        playMidi(&midiTune);
+       
+      
+     
     }
-
+     
     } /* MIDI loading failed */
     else{
       printf("Error: Couldn't read file...\n");
       return(-1);
     }
     
-    playMidi(&midiTune);
+   
     
     /* turn off all notes on channels 0-15 */
     am_allNotesOff(16);
@@ -124,7 +131,7 @@ void VLQtest(void){
         {pValPtr++;}
         valsize=0;result=0;
         result= readVLQ(pValPtr,&valsize);
-     	printf("VLQ value:%lx, decoded: %lx, size: %d\n",val[iCounter], result, valsize );
+     	printf("VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
     }
     /* End of VLQ test */
 }
@@ -146,11 +153,11 @@ void playMidi(sSequence_t *pMidiSequence){
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      
   /*printEventList( &pMyEvent );*/
-  printf("Sending all events with delta: %ld\n", currDelta);
+  printf("Sending all events with delta: %u\n", (unsigned int)currDelta);
 
   /* TODO: callback on timer */
   while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
-    printf("Sending all events with delta: %ld\n", currDelta);
+    printf("Sending all events with delta: %u\n", (unsigned int)currDelta);
     lastDelta=currDelta;
   }
 }

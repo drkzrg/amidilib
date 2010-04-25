@@ -232,52 +232,45 @@ const U8 *getGemdosError(S16 iErr)
 }
 
 /* loads file to specified type memory */
-void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
-{
-    S32 fileHandle;
-
-    _DTA *pDTA=NULL;
-
-    void *pData=NULL;
-	S16 iRet=0;
-	S32 lRet=0L;
+void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
+S32 fileHandle;
+_DTA *pDTA=NULL;
+void *pData=NULL;
+S16 iRet=0;
+U32 lRet=0L;
 
     fileHandle = Fopen( szFileName, FO_READ );
     *fileLenght=0L;
 
-    if((fileHandle)>0L)
-	{
-	   pDTA=Fgetdta();
- 	   iRet=Fsfirst( szFileName, 0 );
+    if((fileHandle)>0L){
+    pDTA=Fgetdta();
+    iRet=Fsfirst( szFileName, 0 );
 
-        if(iRet==0)
-		{
-		 /* file found */
-		 
-		 *fileLenght=pDTA->dta_size;
-		  /* allocate buffer */
-		  pData=(void *)Mxalloc( (long)(*fileLenght)+1, memFlag);
+    if(iRet==0){
+    /* file found */
+	 
+    *fileLenght=pDTA->dta_size;
+    /* allocate buffer */
+    pData=(void *)Mxalloc( (long)(*fileLenght)+1, memFlag);
 
-            if(pData!=NULL)
-            {
-                lRet=Fread( (int)fileHandle, (long)(*fileLenght), pData );
+    if(pData!=NULL){
+      lRet=Fread( (int)fileHandle, (long)(*fileLenght), pData );
 
-                /* not all data being read */
-                if(lRet!=(*fileLenght)){
-		 /* so we have error, free up memory */
-		 Mfree(pData);
-		 pData=NULL;
-		}
-                *fileLenght=0L;
-                Fclose((int)fileHandle);
-                return (pData);
-            }
-            else
-                {
-                        /*no memory available */
-                        return NULL;
-                }
-		}
+      /* not all data being read */
+      if(lRet!=(*fileLenght)){
+	/* so we have error, free up memory */
+	Mfree(pData);
+	pData=NULL;
+      }
+	*fileLenght=0L;
+        Fclose((int)fileHandle);
+        return (pData);
+     }
+     else{
+      /*no memory available */
+      return NULL;
+     }
+    }
 		else
 		{
 		 Fclose((int)fileHandle);
@@ -287,18 +280,15 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght)
          return NULL;
         }
     }
-    else
-    {
+    else{
         /* print GEMDOS error code */
         getGemdosError((S16)fileHandle);
         return NULL;
     }
 }
 
-U32 getFreeMem(eMemoryFlag memFlag)
-{
+U32 getFreeMem(eMemoryFlag memFlag){
     void *pMem=(void *)Mxalloc( -1L, memFlag);
-
     return((U32)pMem);
 }
 

@@ -27,7 +27,13 @@
 #define MIDI_FILE "ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
 
-
+extern "C" {
+  
+  void installTickCounter();
+  void deinstallTickCounter();
+   extern U32 volatile counter;
+   extern U32 volatile cA;
+}
 extern "C"{
   static U8 messBuf[256]; /* for error buffer  */
   static BOOL CON_LOG;
@@ -116,12 +122,12 @@ int main(void){
    
     /* clean up, free internal library buffers etc..*/
     am_deinit();
-    myRoutine();	/* vasm test :D */
-     void installTickCounter();
+   
+    void installTickCounter();
  
     /*interrupt handler test */
     for(;;){
-      printf("%u\n",(unsigned int)counter);
+      printf("%u, %x \n",(unsigned int)counter,(unsigned int)counter);
     }
      void deinstallTickCounter();
  return (0);

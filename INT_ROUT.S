@@ -14,63 +14,96 @@
 
 ; You should have received a copy of the GNU General Public License
 ; along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.
-
 ; export routines 
-	XDEF	_myRoutine 
-	XDEF	_installTickCounter
-	XDEF	_deinstallTickCounter
-	XDEF    _counter
-; export labels 
-	text
-_myRoutine:
-	move.l	#text,-(sp)
-	move.w	#$09,-(sp)
-	trap	#1
-	addq.l	#6,sp
-	rts
-
+	
+	
+	  XDEF	_installTickCounter
+	  XDEF	_deinstallTickCounter
+	  XDEF	_counter
+	  XDEF  _cA
 ; installs tick counter on timer B
-_installTickCounter:
+_installTickCounter:	 
 	bsr.w	  super_on
+	movem.l	d0-a6,-(sp)
+	move.w	sr,-(sp)	;save status register
+
+	or.w	#$0700,sr
+
 	clr.b     $fffffa1b
-	move.l	  #0,_counter	;init counter 
+	move.l	  #0,_counter		;init counter 
 	move.l	  $120,_oldTB	
-
-	move.l    #_tickCounter,$120	;slap interrupt 
-	bset      #0,$fffffa13
-	bset      #0,$fffffa07
+	bclr.b    #3,$FFFFFA17		;auto ISR enable
+	move.l    #_tickCounter,$120	;slap interrupt
 	
 	move.b    #127,$fffffa21	;data 59 for ~4166
-	move.b    #7,$fffffa1b		;div 10
+	move.b    #7,$fffffa1b		;div 10 
+	bset.b    #0,$fffffa07
+	bset.b    #0,$fffffa13
+
+	move.w (sp)+,sr 		;restore Status Register
+	movem.l (sp)+,d0-a6 		;restore registers
 	bsr.w	  super_off
 	rts
 
+;_installTA:
+;	bsr.w	  super_on
+;	pea       _tiA
+;	move.w    #245,-(sp)   ; count = 245
+;	move.w    #6,-(sp)     ; delay = 1:00
+;	move.w    #0,-(sp)     ; timer A
+;	move.w    #$1f,-(sp)   ; Xbtimer
+;	trap      #14
+;	lea       $c(sp),sp    ; correct stack
+;	; now enable the interrupt
+;	move.w    #13,-(sp)    ; Timer A is interrupt 13 on the MFP
+;	move.w    #$1b,-(sp)   ; Jenabint
+;	trap      #14
+;	addq.l    #4,ap        ; correct stack
+;	bsr.w	  super_off
+;	rts
+
 _deinstallTickCounter:
 	bsr.w	super_on
-	clr.b     $fffffa1b
-	move.l	 _oldTB,$120
+	move.w	sr,-(a7)		;save status register
+
+	or.w	#$0700,sr
+
+	clr.b     $fffffa1b	;turn off tb
+	move.l	 _oldTB,$120	;install old tb
+	
+        move.w	(sp)+,sr		;restore Status Register
+	movem.l	(sp)+,d0-a6		;restore registers
 	bsr.w	super_off
 	rts
+
+
+
 
 _tickCounter:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
-	eor.w	#$0f0,$ffff8240
+	eor.w	  #$0f0,$ffff8240
 	move.l	  _counter,d0
 
-	add.l	#1,d0
+	addq.l	#1,d0
 	move.l	d0,_counter
 
 	move.l    #_tickCounter,$120	;slap interrupt 
-	bset      #0,$fffffa13
-	bset      #0,$fffffa07
-	
 	move.b    #127,$fffffa21	;data 59 for ~4166
-	move.b    #7,$fffffa1b		;div 10
+	move.b    #7,$fffffa1b		;div 10 
+	bset.b    #0,$fffffa07
+	bset.b    #0,$fffffa13
+	
 
+	
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
-	bclr  #0,$fffffa0f  ; finished!
+	bclr.b	  #0,$fffffa0f  ; finished!
+
 	rte                 ; return from timer
+
+_tiA:
+	addq.l		#1,_cA
+	rte
 
 super_on:
 	movem.l	d0/a0,-(sp)
@@ -94,14 +127,14 @@ super_off:
 
 
 	bss
-_counter: 	ds.l	1
+
 _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
 
 	data
-text:	 dc.b 	'Test test...............',$0d,$0a,$00
-
-
+text:	dc.b 	'Test test...............',$0d,$0a,$00
+_counter:	dc.l	0
+_cA: 	dc.l 	0
 	
 
 

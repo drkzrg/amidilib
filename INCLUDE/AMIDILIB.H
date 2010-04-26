@@ -95,12 +95,7 @@
 
 /* extern assembly*/
 
-extern "C" {
-  void myRoutine(void);
-  void installTickCounter();
-  void deinstallTickCounter();
-  volatile extern U32 counter;
-}
+
 
 /* function prototypes  */
 /**

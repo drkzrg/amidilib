@@ -19,8 +19,10 @@
 	
 	  XDEF	_installTickCounter
 	  XDEF	_deinstallTickCounter
-	  XDEF	_counter
-	  XDEF  _cA
+	  XDEF	_installTA
+	  ;XDEF	_counter
+	  ;XDEF  _cA
+
 ; installs tick counter on timer B
 _installTickCounter:	 
 	bsr.w	  super_on
@@ -45,22 +47,23 @@ _installTickCounter:
 	bsr.w	  super_off
 	rts
 
-;_installTA:
-;	bsr.w	  super_on
-;	pea       _tiA
-;	move.w    #245,-(sp)   ; count = 245
-;	move.w    #6,-(sp)     ; delay = 1:00
-;	move.w    #0,-(sp)     ; timer A
-;	move.w    #$1f,-(sp)   ; Xbtimer
-;	trap      #14
-;	lea       $c(sp),sp    ; correct stack
-;	; now enable the interrupt
-;	move.w    #13,-(sp)    ; Timer A is interrupt 13 on the MFP
-;	move.w    #$1b,-(sp)   ; Jenabint
-;	trap      #14
-;	addq.l    #4,ap        ; correct stack
-;	bsr.w	  super_off
-;	rts
+_installTA:
+	bsr.w	super_on
+	pea	_tiA
+	move.w	#245,-(sp)
+	move.w	#6,-(sp)
+	move.w	#0,-(sp)
+	move.w	#$1f,-(sp)
+	trap	#14
+;enable interrupt
+	move.w	#13,-(sp)
+	move.w	#$1b,-(sp)
+	trap	#14
+	addq.l	#4,sp
+	
+	lea	$c(sp),sp
+	bsr.w	super_off
+	rts
 
 _deinstallTickCounter:
 	bsr.w	super_on
@@ -102,7 +105,8 @@ _tickCounter:
 	rte                 ; return from timer
 
 _tiA:
-	addq.l		#1,_cA
+	addq.l	#1,_cA
+	bclr.b	  #5,$fffffa0f  ; finished!
 	rte
 
 super_on:

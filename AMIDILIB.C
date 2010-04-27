@@ -1567,3 +1567,11 @@ void am_log(U8 *mes,BOOL bLogToConsole){
   #endif
 
 }
+
+
+///////////////////
+
+
+
+
+

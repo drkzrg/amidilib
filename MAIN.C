@@ -28,12 +28,13 @@
 #define XMIDI_FILE "TUNES/UWR10.XMI"
 
 extern "C" {
-  
+  void installTA();
   void installTickCounter();
   void deinstallTickCounter();
-   extern U32 volatile counter;
-   extern U32 volatile cA;
+  volatile U32 counter;
+  volatile U32 cA;
 }
+
 extern "C"{
   static U8 messBuf[256]; /* for error buffer  */
   static BOOL CON_LOG;
@@ -123,13 +124,13 @@ int main(void){
     /* clean up, free internal library buffers etc..*/
     am_deinit();
    
-    void installTickCounter();
- 
+    installTickCounter();
+   installTA();
     /*interrupt handler test */
     for(;;){
-      printf("%u, %x \n",(unsigned int)counter,(unsigned int)counter);
+      printf("tb: %u, ta: %x \n",(unsigned int)counter,(unsigned int)cA);
     }
-     void deinstallTickCounter();
+      deinstallTickCounter();
  return (0);
 }
 

@@ -25,8 +25,9 @@
 
 ; installs tick counter on timer B
 _installTickCounter:	 
-	bsr.w	  super_on
 	movem.l	d0-a6,-(sp)
+	bsr.w	  super_on
+	
 	move.w	sr,-(sp)	;save status register
 
 	or.w	#$0700,sr
@@ -41,10 +42,11 @@ _installTickCounter:
 	move.b    #7,$fffffa1b		;div 10 
 	bset.b    #0,$fffffa07
 	bset.b    #0,$fffffa13
-
+	bclr.b	  #0,$FFFFA0B
 	move.w (sp)+,sr 		;restore Status Register
-	movem.l (sp)+,d0-a6 		;restore registers
 	bsr.w	  super_off
+	movem.l (sp)+,d0-a6 		;restore registers
+	
 	rts
 
 _installTA:
@@ -60,7 +62,7 @@ _installTA:
 	move.w	#$1b,-(sp)
 	trap	#14
 	addq.l	#4,sp
-	
+	bclr.b	  #5,$FFFFA0B
 	lea	$c(sp),sp
 	bsr.w	super_off
 	rts
@@ -86,10 +88,11 @@ _tickCounter:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240
-	move.l	  _counter,d0
-
+	lea.l	_counter,a0
+   	move.l	(a0),d0
 	addq.l	#1,d0
-	move.l	d0,_counter
+	move.l	d0,(a0)
+	
 
 	move.l    #_tickCounter,$120	;slap interrupt 
 	move.b    #127,$fffffa21	;data 59 for ~4166
@@ -100,13 +103,23 @@ _tickCounter:
 
 	
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
+	bclr.b	   #0,$FFFFA0B
 	bclr.b	  #0,$fffffa0f  ; finished!
 
 	rte                 ; return from timer
 
 _tiA:
-	addq.l	#1,_cA
+	movem.l   d0-7/a0-6,-(a7)	;save registers
+	
+	lea.l	_cA,a0
+   	move.l	(a0),d0
+	addq.l	#1,d0
+	move.l	d0,(a0)
+
+	eor.w	  #$00f,$ffff8240
+	bclr.b	  #5,$FFFFA0B
 	bclr.b	  #5,$fffffa0f  ; finished!
+	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
 
 super_on:
@@ -125,20 +138,20 @@ super_off:
 	move.w	#$20,-(sp)
 	trap	#1
 	addq.l	#6,sp
-	move.l	d0,old_ssp
 	movem.l	(sp)+,d0/a0 
 	RTS
 
 
 	bss
-
+	even
 _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
-
+_counter:	ds.l	1
+_cA: 		ds.l 	1
 	data
 text:	dc.b 	'Test test...............',$0d,$0a,$00
-_counter:	dc.l	0
-_cA: 	dc.l 	0
+	even
+
 	
 
 

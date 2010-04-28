@@ -26,14 +26,15 @@
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
 #define MIDI_FILE "ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
-
-extern "C" {
-  void installTA();
-  void installTickCounter();
-  void deinstallTickCounter();
-   static volatile U32  counter;
-   static volatile U32  cA;
+extern "C"{
+ extern void installTA(void);
+ extern void installTickCounter(void);
+ 
+extern void deinstallTickCounter(void);
 }
+ extern volatile U32 counter;
+ extern volatile U32 cA;
+
 
 extern "C"{
   static U8 messBuf[256]; /* for error buffer  */
@@ -124,11 +125,11 @@ int main(void){
 //     /* clean up, free internal library buffers etc..*/
 //     am_deinit();
    
-    installTickCounter();
+   installTickCounter();
    installTA();
     /*interrupt handler test */
     for(;;){
-      printf("tb: %u, ta: %x \n",(volatile unsigned int)counter,(volatile unsigned int)cA);
+      printf("tb: %u, ta: %x \n",(unsigned int)counter,(unsigned int)cA);
     }
       deinstallTickCounter();
  return (0);

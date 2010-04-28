@@ -17,11 +17,11 @@
 ; export routines 
 	
 	
-	  XDEF	_installTickCounter
-	  XDEF	_deinstallTickCounter
-	  XDEF	_installTA
-	  ;XDEF	_counter
-	  ;XDEF  _cA
+          xdef _installTickCounter
+	  xdef deinstallTickCounter
+	  xdef	_installTA
+	  xdef	_counter
+	  xdef  _cA
 
 ; installs tick counter on timer B
 _installTickCounter:	 
@@ -36,7 +36,7 @@ _installTickCounter:
 	move.l	  #0,_counter		;init counter 
 	move.l	  $120,_oldTB	
 	bclr.b    #3,$FFFFFA17		;auto ISR enable
-	move.l    #_tickCounter,$120	;slap interrupt
+	move.l    #tickCounter,$120	;slap interrupt
 	
 	move.b    #127,$fffffa21	;data 59 for ~4166
 	move.b    #7,$fffffa1b		;div 10 
@@ -84,7 +84,7 @@ _deinstallTickCounter:
 
 
 
-_tickCounter:
+tickCounter:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240
@@ -94,7 +94,7 @@ _tickCounter:
 	move.l	d0,(a0)
 	
 
-	move.l    #_tickCounter,$120	;slap interrupt 
+	move.l    #tickCounter,$120	;slap interrupt 
 	move.b    #127,$fffffa21	;data 59 for ~4166
 	move.b    #7,$fffffa1b		;div 10 
 	bset.b    #0,$fffffa07

@@ -35,14 +35,12 @@ _installTickCounter:
 	clr.b     $fffffa1b
 	move.l	  #0,_counter		;init counter 
 	move.l	  $120,_oldTB	
-	bclr.b    #3,$FFFFFA17		;auto ISR enable
 	move.l    #tickCounter,$120	;slap interrupt
 	
 	move.b    #127,$fffffa21	;data 59 for ~4166
 	move.b    #7,$fffffa1b		;div 10 
 	bset.b    #0,$fffffa07
 	bset.b    #0,$fffffa13
-	bclr.b	  #0,$FFFFA0B
 	move.w (sp)+,sr 		;restore Status Register
 	bsr.w	  super_off
 	movem.l (sp)+,d0-a6 		;restore registers
@@ -62,7 +60,6 @@ _installTA:
 	move.w	#$1b,-(sp)
 	trap	#14
 	addq.l	#4,sp
-	bclr.b	  #5,$FFFFA0B
 	lea	$c(sp),sp
 	bsr.w	super_off
 	rts
@@ -103,7 +100,6 @@ tickCounter:
 
 	
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
-	bclr.b	   #0,$FFFFA0B
 	bclr.b	  #0,$fffffa0f  ; finished!
 
 	rte                 ; return from timer
@@ -117,7 +113,6 @@ _tiA:
 	move.l	d0,(a0)
 
 	eor.w	  #$00f,$ffff8240
-	bclr.b	  #5,$FFFFA0B
 	bclr.b	  #5,$fffffa0f  ; finished!
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte

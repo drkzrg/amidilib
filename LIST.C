@@ -20,11 +20,6 @@
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
 
-extern "C"{
-  static U8 messBuf[256]; /* for error buffer  */
-  
-}
-
 void initEventList(sEventList *listPtr)
 {
 	/*assert(listPtr!=NULL);*/

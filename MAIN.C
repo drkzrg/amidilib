@@ -278,7 +278,7 @@ void playMidi(sSequence_t *pMidiSequence){
     lastDelta=currDelta;
   }
   
-  sprintf((char *)messBuf,"File processed successfully. ");
+  amTrace((const U8*)"File processed successfully. ");
   
   
 }

@@ -36,7 +36,6 @@ static AMIDI_version version =
 static U8 g_runningStatus;
 
 static U8 outputFilename[] = "amidi.log";
-static U8 messBuf[256]; 	/* for error buffer  */
 static BOOL CON_LOG;
 static sSequence_t *gpCurrentSequence;
 
@@ -1485,23 +1484,17 @@ const S8 *getConnectedDeviceInfo(void){
     
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
     am_dumpMidiBuffer(); 
-    messBuf[0]=0;
-    
+
     /* get reply */
     while(MIDI_DATA_READY) {
       data = GET_MIDI_DATA;
       if(data!=0){
-	sprintf ((char *)messBuf,"%x\t",(unsigned int)data);
-	am_log (messBuf);
+	amTrace((const U8*)"%x\t",(unsigned int)data);
       }
     }
-   
-    if(messBuf[0]!=0){
-     amTrace((const U8*)"received response from SysEx channel %d 0x ",channel);
-     
-   }
-
-  am_dumpMidiBuffer();
+  
+   //amTrace((const U8*)"received response from SysEx channel %d 0x \n",channel);
+   am_dumpMidiBuffer();
   }
 
  return NULL;
@@ -1598,7 +1591,7 @@ else
 
 
 void am_log(const U8 *mes,...){
-static char buffer[1024];
+static char buffer[256];
 
 va_list va;
 va_start(va, mes);

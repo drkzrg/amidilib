@@ -27,11 +27,6 @@
 /* string table with all event names */
 /*  */
 
-extern "C"{
-  static U8 messBuf[256]; /* for error buffer  */
-}
-
-
 static const char *g_arEventNames[T_EVT_COUNT]=
 {
 	"Note On",

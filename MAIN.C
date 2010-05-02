@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
@@ -49,81 +50,89 @@ void memoryCheck(void);
 void playMidi(sSequence_t *pMidiSequence);
 
 int main(void){
-  
-//     void *pMidi=NULL;
-//     U16 iRet=0;
-//     S16 iError=0;
-//     
-//     VLQtest();
-//     memoryCheck();
-// 
-//     /* init library */
-//     iError=am_init();
-//     
-//     /* get connected device info */
-//     getConnectedDeviceInfo();
-//     U32 ulFileLenght=0L;
-//     pMidi=loadFile((U8 *)MIDI_FILE, PREFER_TT, &ulFileLenght);
-//     
-//     sSequence_t midiTune;
-//     if(pMidi!=NULL){
-// 
-//      sprintf((char *)messBuf, "Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
-//      am_log(messBuf,CON_LOG);
-//      /* process MIDI*/
-//      /* check midi header */
-//      iRet=am_getHeaderInfo(pMidi);
-// 
-//      if(iRet>0){
-//       // no error
-//       switch(iRet){
-// 	case 0:
-// 	case 1:
-// 	case 2:
-// 	case 3:
-// 	/* handle file */
-// 	  sprintf((char *)messBuf, "Preparing MIDI file for replay\n");
-// 	  am_log(messBuf,CON_LOG);
-// 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
-// 	break;
-// 
-// 	default:
-// 	  /* unknown error, do nothing */
-// 	  fprintf(stderr, "Unknown error ...\n");
-// 	  iError=1;
-// 	break;
-//      }
-//      
-//     }else{
-//       if(iRet== -1){
-//        /* not MIDI file, do nothing */
-//        fprintf(stderr, "It's not valid MIDI file...\n");
-//       } else if(iRet==-2){
-// 	/* unsupported MIDI type format, do nothing*/
-// 	fprintf(stderr, "Unsupported MIDI file format...\n");
-//       }
-//       iError=1;
-//     }
-//      /* free up buffer, we don't need it anymore */
-//       Mfree(pMidi);pMidi=NULL;
-//     
-//     
-//     if(iError!=1){
-//      /* play preloaded tune */
-//         playMidi(&midiTune);
-//     }
-//      
-//     } /* MIDI loading failed */
-//     else{
-//       fprintf(stderr, "Error: Couldn't read file...\n");
-//       return(-1);
-//     }
-// 
-//     /* turn off all notes on channels 0-15 */
-//     am_allNotesOff(16);
-//    
-//     /* clean up, free internal library buffers etc..*/
-//     am_deinit();
+ 
+ //program code
+
+ 
+    void *pMidi=NULL;
+    U16 iRet=0;
+    S16 iError=0;
+    
+    VLQtest();
+    memoryCheck();
+
+    /* init library */
+    iError=am_init();
+    
+    /* get connected device info */
+    getConnectedDeviceInfo();
+    U32 ulFileLenght=0L;
+    pMidi=loadFile((U8 *)MIDI_FILE, PREFER_TT, &ulFileLenght);
+    
+    sSequence_t midiTune;
+    if(pMidi!=NULL){
+
+     sprintf((char *)messBuf, "Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     am_log(messBuf,CON_LOG);
+     /* process MIDI*/
+     /* check midi header */
+     iRet=am_getHeaderInfo(pMidi);
+
+     if(iRet>0){
+      // no error
+      switch(iRet){
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	/* handle file */{
+	  sprintf((char *)messBuf, "Preparing MIDI file for replay\n");
+	  am_log(messBuf,CON_LOG);
+	  clock_t begin=clock();
+	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  clock_t end=clock();
+	  sprintf((char *)messBuf, "MIDI file parsed in %f ms\n",am_diffclock(end,begin));
+	  am_log(messBuf,CON_LOG);
+	}
+	break;
+
+	default:
+	  /* unknown error, do nothing */
+	  fprintf(stderr, "Unknown error ...\n");
+	  iError=1;
+	break;
+     }
+     
+    }else{
+      if(iRet== -1){
+       /* not MIDI file, do nothing */
+       fprintf(stderr, "It's not valid MIDI file...\n");
+      } else if(iRet==-2){
+	/* unsupported MIDI type format, do nothing*/
+	fprintf(stderr, "Unsupported MIDI file format...\n");
+      }
+      iError=1;
+    }
+     /* free up buffer, we don't need it anymore */
+      Mfree(pMidi);pMidi=NULL;
+    
+    
+    if(iError!=1){
+     /* play preloaded tune */
+        playMidi(&midiTune);
+    }
+     
+    } /* MIDI loading failed */
+    else{
+      fprintf(stderr, "Error: Couldn't read file...\n");
+      return(-1);
+    }
+
+    /* turn off all notes on channels 0-15 */
+    am_allNotesOff(16);
+   
+    /* clean up, free internal library buffers etc..*/
+    am_deinit();
    
    installTickCounter();
    installTA();

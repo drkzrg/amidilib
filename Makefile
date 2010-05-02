@@ -5,7 +5,7 @@
 
 INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
-CFLAGS += -m68000 -Wall -pedantic -Wl,--traditional-format -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
+CFLAGS += -m68000 -Wall -pedantic -Wl,--traditional-format -DDEBUG_FILE_OUTPUT 
 LDFLAGS += -L/usr/m68k-atari-mint/lib
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000  
@@ -17,7 +17,7 @@ OBJECTS = $(SRCS:.c=.o)
 $(EXE): $(OBJECTS) 
 	$(ASM) AMIDI.S $(ASMFLAGS) -o amidi.o
 	$(ASM) INT_ROUT.S $(ASMFLAGS) -o int_rout.o
-	$(CC) $(LDFLAGS) $(INCLUDES) $(OBJECTS) $(CFLAGS) amidi.o int_rout.o -o $@ -lgem 
+	$(CC) $(LDFLAGS) $(INCLUDES) $(OBJECTS) $(CFLAGS) amidi.o int_rout.o -o $@ -lgem -lm 
 	
 all: $(SRCS) $(EXE)
 	

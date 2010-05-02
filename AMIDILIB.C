@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <mint/ostruct.h>
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
@@ -50,6 +51,9 @@ static U8 messBuf[256]; /* for error buffer  */
 
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
+
+/* static table with MIDI notes to ASA ISO */
+extern const char *g_arMIDI2key[];
 
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
@@ -644,7 +648,7 @@ else {
   am_log(messBuf,CON_LOG);
   sprintf((char *)messBuf,"channel: %d\t",(g_runningStatus&0x0F)+1);
   am_log(messBuf,CON_LOG);
-  sprintf((char *)messBuf,"note: %d\t",*(*pPtr));
+  sprintf((char *)messBuf,"note: %d(%s)\t",*(*pPtr),am_getMIDInoteName(*(*pPtr)));
   am_log(messBuf,CON_LOG);
   sprintf((char *)messBuf,"vel: %d\n",*(*pPtr));
   am_log(messBuf,CON_LOG);
@@ -722,7 +726,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
     am_log(messBuf,CON_LOG);
     sprintf((char *)messBuf,"channel: %d\t",channel);
     am_log(messBuf,CON_LOG);
-    sprintf((char *)messBuf,"note: %d\t",note);
+    sprintf((char *)messBuf,"note: %d(%s)\t",note,am_getMIDInoteName(note));
     am_log(messBuf,CON_LOG);
     sprintf((char *)messBuf,"vel: %d \n",velocity);
     am_log(messBuf,CON_LOG);
@@ -1491,8 +1495,7 @@ const S8 *getConnectedDeviceInfo(void){
 /* UPS - update interval (updates per second) */
 /* music resolution are in PPQ */
 
-U32  am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups)
-{
+U32  am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
     U32 ppu;
     U32 temp;
     temp=(U32)qpm*(U32)ppq;
@@ -1532,8 +1535,7 @@ float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
     MicrosPerPPQN = SubFramesPerPPQN * Frames * SubFrames
 */
 
-U16 am_decodeTimeDivisionInfo(U16 timeDivision)
-{
+U16 am_decodeTimeDivisionInfo(U16 timeDivision){
   U8 subframe=0;
   
   if(timeDivision&0x8000){
@@ -1568,6 +1570,20 @@ void am_log(U8 *mes,BOOL bLogToConsole){
 
 }
 
+/* utility for measuring function time execution */
+double am_diffclock(clock_t end,clock_t begin){
+ double diffticks=end-begin;
+ double diffms=(diffticks)/(CLOCKS_PER_SEC/1000.0f);
+return diffms;
+}
+
+
+const U8 *am_getMIDInoteName(U8 ubNoteNb){
+if((ubNoteNb>=0&&ubNoteNb<=127)) /* 0-127 range check */
+ return((const U8*)g_arMIDI2key[ubNoteNb]);
+else 
+  return NULL;
+}
 
 ///////////////////
 

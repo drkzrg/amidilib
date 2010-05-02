@@ -26,6 +26,7 @@
 #include "ROLAND.H"
 #include "AMIDISEQ.H"
 #include "MIDI_CMD.H"
+#include <time.h>
 
 #define LIB_NAME "Atari (X)MIDI library"
 #define AMIDI_INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
@@ -203,9 +204,9 @@ void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequ
 void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack);
 
 /** read MIDI Variable lenght quantity
-*	@param pChar pointer to VLQ data
-*   @param ubSize size of VLQ data
-*	@return decoded VLQ value
+*  @param pChar pointer to VLQ data
+*  @param ubSize size of VLQ data
+*  @return decoded VLQ value
 */
 
 U32 readVLQ(U8 *pChar,U8 *ubSize);
@@ -219,7 +220,7 @@ U32 readVLQ(U8 *pChar,U8 *ubSize);
 void am_noteOff(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode note on message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -227,7 +228,7 @@ void am_noteOff(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_noteOn(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode note aftertouch/pressure message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -235,7 +236,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_noteAft(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode control change message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -243,7 +244,7 @@ void am_noteAft(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_Controller(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode program change message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -259,7 +260,7 @@ void am_PC(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_ChannelAft(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode pitch bend message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -267,7 +268,7 @@ void am_ChannelAft(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 void am_PitchBend(U8 **pPtr,U16 *recallRS, U32 delta, sTrack_t **pCurTrack);
 
 /** read/decode sysex message
-*	@param pPtr pointer to the pointer with midi data to read
+*   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
@@ -335,7 +336,21 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 */
 void am_allNotesOff(U16 numChannels);
 
+/** Utility function sends text buffer to console and text log.
+*   @param mes - null terminated string
+*   @param bLogToConsole - enables/disables logging to console
+*/
 void am_log(U8 *mes, BOOL bLogToConsole);
 
+/** utility for measuring function execution time (end-begin timestamp in ms) 
+*   @param end - end timestamp
+*   @param begin - begin timestamp
+*/
+double am_diffclock(clock_t end,clock_t begin);
+
+/** returns null terminated string with note name according to ASA ISO 
+*   @param ubNoteNb - note number in 0-127 range
+*/
+const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
 #endif

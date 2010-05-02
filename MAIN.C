@@ -45,11 +45,8 @@ void memoryCheck(void);
 void playMidi(sSequence_t *pMidiSequence);
 
 int main(void){
- 
- //program code
 
- 
-    void *pMidi=NULL;
+  void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
     
@@ -67,103 +64,115 @@ int main(void){
     sSequence_t midiTune;
     if(pMidi!=NULL){
 
-     sprintf((char *)messBuf, "Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
-     am_log(messBuf);
+     amTrace((const U8*)"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     
      /* process MIDI*/
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
-
+     double ms;
      switch(iRet){
 	
 	case 0:{ /* handle file */
-	  sprintf((char *)messBuf, "Preparing MIDI type 0 file for replay\n");
-	  am_log(messBuf);
+	  amTrace((const U8*)"Preparing MIDI type 0 file for replay\n");
+	  
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
+	  ms=am_diffclock(end,begin);
 	  if(iError==0){
-	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
-	    am_log(messBuf);
+	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
 	  }else{
-	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
-	    am_log(messBuf);
+	    amTrace((const U8*)"Error while parsing. Exiting... \n");
 	  }
 	}
 	break;
 	case 1:{ /* handle file */
-	  sprintf((char *)messBuf, "Preparing MIDI type 1 file for replay\n");
-	  am_log(messBuf);
+	  amTrace((const U8*)"Preparing MIDI type 1 file for replay\n");
+	  
 	  
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
+	  ms=am_diffclock(end,begin);
 	  if(iError==0){
-	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
-	    am_log(messBuf);
+	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    
+	    
 	  }else{
-	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
-	    am_log(messBuf);
+	    amTrace((const U8*)"Error while parsing. Exiting... \n");
+	    
 	  }
 	  
 	}break;
 	
 	case 2:{ /* handle file */
-	  sprintf((char *)messBuf, "Preparing MIDI type 2 file for replay\n");
-	  am_log(messBuf);
+	  amTrace((const U8*)"Preparing MIDI type 2 file for replay\n");
+	  
 	  
 	   clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
+	   ms=am_diffclock(end,begin);
 	  if(iError==0){
-	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
-	    am_log(messBuf);
+	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    
+	    
 	  }else{
-	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
-	    am_log(messBuf);
+	    amTrace((const U8*)"Error while parsing. Exiting... \n");
+	    
 	  }
 	  
 	}
 	break;
 	case 3:
 	/* handle file */{
-	  sprintf((char *)messBuf, "Preparing XMIDI file for replay\n");
-	  am_log(messBuf);
+	  amTrace((const U8*)"Preparing XMIDI file for replay\n");
+	  
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
+	  ms=am_diffclock(end,begin);
+	  
 	  if(iError==0){
-	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
-	    am_log(messBuf);
+	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	    
+	    
 	  }else{
-	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
-	    am_log(messBuf);
+	    amTrace((const U8*)"Error while parsing. Exiting... \n");
+	    
 	  }
 	}
 	break;
 
 	default:{
-	  
+	   iError=1;
 	   if(iRet==-1){
 	      /* not MIDI file, do nothing */
-	      sprintf((char *)messBuf, "It's not valid MIDI file...\n");
-	      am_log(messBuf);
+	      amTrace((const U8*)"It's not valid MIDI file...\n");
+	      
 	      fprintf(stderr, "It's not valid MIDI file...\n");
 	   } else if(iRet==-2){
 	    /* unsupported MIDI type format, do nothing*/
-	      sprintf((char *)messBuf, "Unsupported MIDI file format...\n");
-	      am_log(messBuf);
+	      
+	      amTrace((const U8*)"Unsupported MIDI file format...\n");
+	      
+	      
 	      fprintf(stderr, "Unsupported MIDI file format...\n");
 	  }
 	  else{
 	    /* unknown error, do nothing */
-	    sprintf((char *)messBuf, "Unknown error.\n");
-	    am_log(messBuf);
+	    amTrace((const U8*)"Unknown error.\n");
+	    
 	    fprintf(stderr, "Unknown error ...\n");
-	    iError=1;
+	    
 	  }
 	}
 	break;
@@ -180,8 +189,8 @@ int main(void){
      
     } /* MIDI loading failed */
     else{
-      sprintf((char *)messBuf, "Error: Couldn't read file...\n");
-      am_log(messBuf);
+      amTrace((const U8*)"Error: Couldn't read file...\n");
+      
       fprintf(stderr, "Error: Couldn't read file...\n");
       return(-1);
     }
@@ -217,11 +226,12 @@ void VLQtest(void){
         {pValPtr++;}
         valsize=0;result=0;
         result= readVLQ(pValPtr,&valsize);
-     	sprintf((char *)messBuf, "VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
-	am_log(messBuf);
+     	amTrace((const U8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
+	
     }
     /* End of VLQ test */
 }
+
 
 void memoryCheck(void){
     U32 mem=0;
@@ -244,8 +254,8 @@ void playMidi(sSequence_t *pMidiSequence){
   U16 td=pMidiSequence->uiTimeDivision;
   double tick=(double)trackTempo/(double)td;
   
-  sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
-  am_log(messBuf);
+  amTrace((const U8*)"\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
+  
   
   //print sequence info 
   printf("Now playing:\n");
@@ -254,23 +264,21 @@ void playMidi(sSequence_t *pMidiSequence){
   //retrieve track list
   printf("Tracks: %s\n",pMidiSequence->pSequenceName);
   
-  
-  
   /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      
   /*printEventList( &pMyEvent );*/
   
   /* deltas are relative to the last event */
-  sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
-  am_log(messBuf);
+  amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
+  
   while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
-    sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
-    am_log(messBuf);
+    amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
+    
     lastDelta=currDelta;
   }
   
   sprintf((char *)messBuf,"File processed successfully. ");
-  am_log(messBuf);
+  
   
 }

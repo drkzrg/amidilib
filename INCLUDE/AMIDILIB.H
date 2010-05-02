@@ -94,6 +94,13 @@
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
 
 
+/* small trick to get rid of logs/debug info in final build :D haxx0r! let the compiler do dirty work */
+#if DEBUG_BUILD
+#define amTrace am_log
+#else
+#define amTrace sizeof
+#endif
+
 
 
 /* function prototypes  */
@@ -348,6 +355,6 @@ const U8 *am_getMIDInoteName(U8 ubNoteNb);
 /** Utility function sends text buffer to console and text log.
 *   @param mes - null terminated string
 */
-void am_log(U8 *mes);
+void am_log(const U8 *mes,...);
 
 #endif

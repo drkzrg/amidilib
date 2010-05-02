@@ -78,58 +78,58 @@ const U8 *getEventName(U32 id){
 
 void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
-	sprintf((char *)messBuf, "Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+	
 	note_on(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);	
 }
 
 void  fNoteOff(void *pEvent){
 	sNoteOff_EventBlock_t *pPtr=(sNoteOff_EventBlock_t *)pEvent;
- 	sprintf((char *)messBuf, "Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
-	am_log(messBuf);
+ 	amTrace((const U8*)"Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+	
 	note_off(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
 
 void  fNoteAft(void *pEvent){
 	sNoteAft_EventBlock_t *pPtr=(sNoteAft_EventBlock_t *)pEvent;	
-	sprintf((char *)messBuf, "Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
+	
 	polyphonic_key_press(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 }
 
 void  fProgramChange (void *pEvent){
 	sPrgChng_EventBlock_t *pPtr=(sPrgChng_EventBlock_t *)pEvent;
-	sprintf((char *)messBuf, "Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
+	
 	program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
 void  fController(void *pEvent){
 	sController_EventBlock_t *pPtr=(sController_EventBlock_t *)pEvent;
-	sprintf((char *)messBuf, "Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
+	
 	control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
 
 void  fChannelAft(void *pEvent){
 	sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
-	sprintf((char *)messBuf, "Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+	
 	channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
 
 }
 
 void  fPitchBend(void *pEvent){
 	sPitchBend_EventBlock_t *pPtr=(sPitchBend_EventBlock_t *)pEvent;
-	sprintf((char *)messBuf, "Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
-	am_log(messBuf);
+	amTrace((const U8*)"Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
+	
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
 void  fSetTempo(void *pEvent){
 sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
-	sprintf((char *)messBuf, "Setting new replay tempo...\n");
-	am_log(messBuf);
+	amTrace((const U8*)"Setting new replay tempo...\n");
+	
 }
 
 

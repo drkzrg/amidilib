@@ -221,11 +221,9 @@ void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr)
  			evntFuncPtr myFunc; 
 
   			/* print delta */
-			sprintf((char *)messBuf,"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
-			am_log(messBuf);
-  			
-			switch((U16)((*pPtr)->type))
-			{
+			amTrace((const U8*)"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
+
+			switch((U16)((*pPtr)->type)){
 			  case T_NOTEON:			  
 			  myFunc=(*pPtr)->infoBlock.func;
 			  (*myFunc)((*pPtr)->dataPtr);						  

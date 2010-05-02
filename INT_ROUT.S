@@ -65,7 +65,6 @@ _installTickCounter:
 	move.w (sp)+,sr 		;restore Status Register
 	bsr.w	  super_off
 	movem.l (sp)+,d0-a6 		;restore registers
-	
 	rts
 
 _installTA:
@@ -164,9 +163,8 @@ _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
 _counter:	ds.l	1
 _cA: 		ds.l 	1
-	data
-text:	dc.b 	'Test test...............',$0d,$0a,$00
-	even
+
+
 
 	
 

@@ -114,7 +114,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     }
     
     switch(type){
-
+    /* TODO: refactor this mess */
         case 0:{
             /* handle MIDI type 0 */
             iNumTracks=am_getNbOfTracks(pMidiPtr,type);
@@ -124,18 +124,20 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
 	    } /* invalid number of tracks, there can be only one! */
             else{
                  /* prepare our structure */
-		 pSequence->ubNumTracks=1;	/* one by default */
+		 pSequence->ubNumTracks=iNumTracks;	/* one by default */
 		 
 		 /* OK! valid number of tracks */
                  /* get time division for timing */
                  iTimeDivision = am_getTimeDivision(pMidiPtr);
                  /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-                 startPtr=(void *)((U8 *)startPtr+12);
+                 startPtr=(void *)((U32)startPtr+sizeof(sMThd));
        
 		 /* Store time division for sequence, TODO: SMPTE handling */
 		  pSequence->uiTimeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-                 
-		  while (startPtr!=endPtr){
+                  /* create one track list only */
+		  pSequence->arTracks[0] = (sTrack_t *)malloc(sizeof(sTrack_t));
+		  
+		   while (((startPtr!=endPtr)&&(startPtr!=NULL))){
 		  /* Pointer to midi data, 
 		     type of midi to preprocess, 
 		     number of tracks, 
@@ -211,7 +213,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
         }
 
         break;
-		default:;
+	default:;
 	/* unsupported file type */
  }
  return(-1);
@@ -368,13 +370,13 @@ because we have to know if we have to dump event data to one eventlist or severa
 
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
-void * processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence){   
+void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence){   
 sChunkHeader header;
 U32 trackCounter=0;
 U32 endAddr=0L;
 U32 ulChunkSize=0;
 
-sprintf((char *)messBuf,"Nb of tracks to process: %ld\n",numTracks);
+sprintf((char *)messBuf,"Number of tracks to process: %ld\n\n",numTracks);
 am_log(messBuf);
 
 memcpy(&header, startPtr, sizeof(sChunkHeader));
@@ -383,30 +385,46 @@ startPtr=(U8*)startPtr + sizeof(sChunkHeader);
 ulChunkSize=header.headLenght;
 endAddr=(U32)startPtr+header.headLenght;
 
-if(fileTypeFlag!=T_MIDI2){
-	while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
-	/* we have got track data :)) */
-	/* add all of them to given track */ 
-	sTrack_t *pTempTrack=pCurSequence->arTracks[0];
-	pCurSequence->arTracks[0]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
+  switch(fileTypeFlag){
+  
+    case T_MIDI0:{
+	  /* we have only one track data to process */
+	  /* add all of them to given track */ 
+	  sTrack_t *pTempTrack=pCurSequence->arTracks[0];
+	  pCurSequence->arTracks[0]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
 	
-	sTrack_t **ppTrack=&pTempTrack;
-	const void *pTemp=(const void *)endAddr;
-	const void **end=&pTemp;
-	startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
+	  sTrack_t **ppTrack=&pTempTrack;
+	  const void *pTemp=(const void *)endAddr;
+	  const void **end=&pTemp;
+	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
+    }
+    break;
+     case T_MIDI1:{
+      while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
+	  /* we have got track data :)) */
+	  /* add all of them to given track */ 
+	  sTrack_t *pTempTrack=pCurSequence->arTracks[0];
+	  pCurSequence->arTracks[0]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
 	
-	/* get next data chunk info */
-	memcpy(&header, startPtr,sizeof(sChunkHeader));
-	ulChunkSize=header.headLenght;
+	  sTrack_t **ppTrack=&pTempTrack;
+	  const void *pTemp=(const void *)endAddr;
+	  const void **end=&pTemp;
+	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 	
-	/* omit Track header */
-	startPtr=(U8*)startPtr+sizeof(sChunkHeader);
-	endAddr=(U32)startPtr+header.headLenght;
+	  /* get next data chunk info */
+	  memcpy(&header, startPtr,sizeof(sChunkHeader));
+	  ulChunkSize=header.headLenght;
+	
+	  /* omit Track header */
+	  startPtr=(U8*)startPtr+sizeof(sChunkHeader);
+	  endAddr=(U32)startPtr+header.headLenght;
 
-	/* increase track counter */
-	trackCounter++;
+	  /* increase track counter */
+	  trackCounter++;
 	}
-}else{	
+	
+    }break;
+    case T_MIDI2:{
 	/* handle MIDI 2, multitrack type */
 	/* create several track lists according to numTracks */
 	/*  TODO: not finished !*/
@@ -419,30 +437,36 @@ if(fileTypeFlag!=T_MIDI2){
 	trackCounter=0;	/* reset track counter first */
 
 	while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
-	/* we have got track data :)) */
-	/* add all of them to given track */ 
-	sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
-	pCurSequence->arTracks[trackCounter]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
+	  /* we have got track data :)) */
+	  /* add all of them to given track */ 
+	  sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
+	  pCurSequence->arTracks[trackCounter]->currTrackState.ulTrackTempo=DEFAULT_TEMPO;
 	
-	sTrack_t **ppTrack=&pTempTrack;
-	const void *pTemp=(const void *)endAddr;
-	const void **end=&pTemp;
+	  sTrack_t **ppTrack=&pTempTrack;
+	  const void *pTemp=(const void *)endAddr;
+	  const void **end=&pTemp;
 	
-	startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
+	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	
-	/* get next data chunk info */
-	memcpy(&header, startPtr,sizeof(sChunkHeader));
-	ulChunkSize=header.headLenght;
+	  /* get next data chunk info */
+	  memcpy(&header, startPtr,sizeof(sChunkHeader));
+	  ulChunkSize=header.headLenght;
 	
-	/* omit Track header */
-	startPtr=(U8*)startPtr+sizeof(sChunkHeader);
-	endAddr=(U32)startPtr+header.headLenght;
+	  /* omit Track header */
+	  startPtr=(U8*)startPtr+sizeof(sChunkHeader);
+	  endAddr=(U32)startPtr+header.headLenght;
 
-	/* increase track counter */
-	trackCounter++;
+	  /* increase track counter */
+	  trackCounter++;
 	}
-}
-
+    }break;
+    default:{
+      return NULL;
+    }
+  };
+  
+  
+  
  return NULL;
 }
 
@@ -532,7 +556,7 @@ BOOL bEOF=false;
       case EV_META:
 	bEOF=am_Meta(&pCmd, delta, pCurTrack );
       break;
-      case EV_SOX:                          /* SySEX midi exclusive */
+      case EV_SOX:                          	/* SySEX midi exclusive */
 	recallStatus=0; 	                /* cancel out midi running status */
 	am_Sysex(&pCmd,delta, pCurTrack);
       break;

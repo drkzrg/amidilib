@@ -73,46 +73,106 @@ int main(void){
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
 
-     if(iRet>0){
-      // no error
-      switch(iRet){
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	/* handle file */{
-	  sprintf((char *)messBuf, "Preparing MIDI file for replay\n");
+     switch(iRet){
+	
+	case 0:{ /* handle file */
+	  sprintf((char *)messBuf, "Preparing MIDI type 0 file for replay\n");
 	  am_log(messBuf);
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
-	  sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
+	  if(iError==0){
+	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
+	    am_log(messBuf);
+	  }else{
+	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
+	    am_log(messBuf);
+	  }
+	}
+	break;
+	case 1:{ /* handle file */
+	  sprintf((char *)messBuf, "Preparing MIDI type 1 file for replay\n");
 	  am_log(messBuf);
+	  
+	  clock_t begin=clock();
+	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  clock_t end=clock();
+	  
+	  if(iError==0){
+	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
+	    am_log(messBuf);
+	  }else{
+	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
+	    am_log(messBuf);
+	  }
+	  
+	}break;
+	
+	case 2:{ /* handle file */
+	  sprintf((char *)messBuf, "Preparing MIDI type 2 file for replay\n");
+	  am_log(messBuf);
+	  
+	   clock_t begin=clock();
+	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  clock_t end=clock();
+	  
+	  if(iError==0){
+	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
+	    am_log(messBuf);
+	  }else{
+	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
+	    am_log(messBuf);
+	  }
+	  
+	}
+	break;
+	case 3:
+	/* handle file */{
+	  sprintf((char *)messBuf, "Preparing XMIDI file for replay\n");
+	  am_log(messBuf);
+	  clock_t begin=clock();
+	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  clock_t end=clock();
+	  
+	  if(iError==0){
+	    sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
+	    am_log(messBuf);
+	  }else{
+	    sprintf((char *)messBuf, "Error while parsing. Exiting... \n");
+	    am_log(messBuf);
+	  }
 	}
 	break;
 
-	default:
-	  /* unknown error, do nothing */
-	  fprintf(stderr, "Unknown error ...\n");
-	  iError=1;
+	default:{
+	  
+	   if(iRet==-1){
+	      /* not MIDI file, do nothing */
+	      sprintf((char *)messBuf, "It's not valid MIDI file...\n");
+	      am_log(messBuf);
+	      fprintf(stderr, "It's not valid MIDI file...\n");
+	   } else if(iRet==-2){
+	    /* unsupported MIDI type format, do nothing*/
+	      sprintf((char *)messBuf, "Unsupported MIDI file format...\n");
+	      am_log(messBuf);
+	      fprintf(stderr, "Unsupported MIDI file format...\n");
+	  }
+	  else{
+	    /* unknown error, do nothing */
+	    sprintf((char *)messBuf, "Unknown error.\n");
+	    am_log(messBuf);
+	    fprintf(stderr, "Unknown error ...\n");
+	    iError=1;
+	  }
+	}
 	break;
      }
      
-    }else{
-      if(iRet== -1){
-       /* not MIDI file, do nothing */
-       fprintf(stderr, "It's not valid MIDI file...\n");
-      } else if(iRet==-2){
-	/* unsupported MIDI type format, do nothing*/
-	fprintf(stderr, "Unsupported MIDI file format...\n");
-      }
-      iError=1;
-    }
-     /* free up buffer, we don't need it anymore */
+      /* free up buffer, we don't need it anymore */
       Mfree(pMidi);pMidi=NULL;
-    
-    
+	  
+	  
     if(iError!=1){
      /* play preloaded tune */
         playMidi(&midiTune);
@@ -120,6 +180,8 @@ int main(void){
      
     } /* MIDI loading failed */
     else{
+      sprintf((char *)messBuf, "Error: Couldn't read file...\n");
+      am_log(messBuf);
       fprintf(stderr, "Error: Couldn't read file...\n");
       return(-1);
     }
@@ -130,14 +192,14 @@ int main(void){
     /* clean up, free internal library buffers etc..*/
     am_deinit();
    
-    /* just the test TA and TB */ 
-   installTickCounter();
-   installTA();
-    /*interrupt handler test */
-    for(;;){
-      printf("tb: %u, ta: %x \n",(unsigned int)counter,(unsigned int)cA);
-    }
-      deinstallTickCounter();
+//     /* just the test TA and TB */ 
+//    installTickCounter();
+//    installTA();
+//     /*interrupt handler test */
+//     for(;;){
+//       printf("tb: %u, ta: %x \n",(unsigned int)counter,(unsigned int)cA);
+//     }
+//       deinstallTickCounter();
  return (0);
 }
 
@@ -190,7 +252,7 @@ void playMidi(sSequence_t *pMidiSequence){
   printf("Sequence name: %s\n",pMidiSequence->pSequenceName);
   
   //retrieve track list
-  printf("Tracks: \n",pMidiSequence->pSequenceName);
+  printf("Tracks: %s\n",pMidiSequence->pSequenceName);
   
   
   

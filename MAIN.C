@@ -141,6 +141,7 @@ int main(void){
  return (0);
 }
 
+/* variable quantity reading test */
 void VLQtest(void){
 /* VLQ test */
     U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
@@ -176,12 +177,23 @@ void playMidi(sSequence_t *pMidiSequence){
   
   /* get timing info */
   /* the smallest tick is trackTempo/td */
+  
   U32 trackTempo=pMidiSequence->arTracks[0]->currTrackState.ulTrackTempo;
   U16 td=pMidiSequence->uiTimeDivision;
   double tick=(double)trackTempo/(double)td;
   
   sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
   am_log(messBuf);
+  
+  //print sequence info 
+  printf("Now playing:\n");
+  printf("Sequence name: %s\n",pMidiSequence->pSequenceName);
+  
+  //retrieve track list
+  printf("Tracks: \n",pMidiSequence->pSequenceName);
+  
+  
+  
   /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      

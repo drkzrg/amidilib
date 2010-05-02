@@ -25,10 +25,10 @@
 #define AMIDI_MAX_TRACKS 16
 
 #define DEFAULT_TEMPO 0x007A120		/* 500000ms */
-#define DEFAULT_PPQ	120				/* pulses per quarternote */
+#define DEFAULT_PPQ	120		/* pulses per quarternote */
 #define DEFAULT_TIME_SIG 0x0404	
 
-		
+	
 /** current play mode */
 typedef enum{
   S_PLAY_ONCE=0x00,

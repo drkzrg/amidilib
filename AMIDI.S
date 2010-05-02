@@ -18,8 +18,8 @@
 
   XDEF am_writeVarLen
   XDEF am_readVarLen
-
-  XREF sendMidiEvents
+  XDEF am_send_midi_cmd
+ 
   
     text
 am_readVarLen:
@@ -38,8 +38,13 @@ am_writeVarLen:
 
     RTS
 
-
-
+;a0 - address of midi buffer
+am_send_midi_cmd:
+  move.b  (a0)+,d0
+  btst    #1,$fffffc04          ;is data reg empty?
+  beq.s   am_send_midi_cmd          ;no, wait for empty
+  move.b  d0,$fffffc06          ;write to MIDI data reg
+  rts                             ;return
 
 
 

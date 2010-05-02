@@ -38,6 +38,7 @@ static U8 g_runningStatus;
 static U8 outputFilename[] = "amidi.log";
 static U8 messBuf[256]; 	/* for error buffer  */
 static BOOL CON_LOG;
+static sSequence_t *gpCurrentSequence;
 
 /* variables for debug output to file */
 #ifdef DEBUG_FILE_OUTPUT
@@ -101,10 +102,10 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     ulAddr=(U32)startPtr+lenght*sizeof(U8);
     endPtr=(void *)ulAddr;
 
-    pSequence->pSequenceName=NULL;	 /* name of the sequence empty string */
-    pSequence->ubNumTracks=0;		 /*  */
-    pSequence->currentState.ubActiveTrack=0; /* first one from the array */
-    pSequence->uiTimeDivision=0;	/* PPQN */
+    pSequence->pSequenceName=NULL;	 	/* name of the sequence empty string */
+    pSequence->ubNumTracks=0;		 	/*  */
+    pSequence->currentState.ubActiveTrack=0; 	/* first one from the array */
+    pSequence->uiTimeDivision=DEFAULT_PPQ;	/* PPQN */
     
     /* init sequence table */
     for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
@@ -304,6 +305,11 @@ S16 am_init(){
    fprintf(stderr,"Can't init debug file output to %s!\n",outputFilename);
  }
  #endif
+ 
+ /* init sequence */
+ /* nothing loaded, nothing played */
+ 
+ gpCurrentSequence=NULL;
  
  /* clear our new buffer */
  for(iCounter=0;iCounter<(MIDI_BUFFER_SIZE-1);iCounter++){
@@ -1562,8 +1568,6 @@ void am_allNotesOff(U16 numChannels){
  }
 }        
 
-
-
 /* utility for measuring function time execution */
 double am_diffclock(clock_t end,clock_t begin){
  double diffticks=end-begin;
@@ -1594,8 +1598,4 @@ void am_log(U8 *mes){
 
 
 ///////////////////
-
-
-
-
 

@@ -23,6 +23,9 @@
 	  xdef	_counter
 	  xdef  _cA
 
+;external references
+	  xref  am_send_midi_cmd
+
 ; installs tick counter on timer B
 _installTickCounter:	 
 	movem.l	d0-a6,-(sp)

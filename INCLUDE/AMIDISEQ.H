@@ -29,12 +29,19 @@
 #define DEFAULT_TIME_SIG 0x0404	
 
 		
-/**  sequence play state */
-enum{
-	S_PAUSE=0,
-	S_PLAY_ONCE=1,
-	S_PLAY_LOOP=2
-};
+/** current play mode */
+typedef enum{
+  S_PLAY_ONCE=0x00,
+  S_PLAY_LOOP=0x02,
+  S_PLAY_RANDOM=0x04
+} ePlayMode;
+
+/** current play mode */
+typedef enum{
+  S_STOPPED=0x00,
+  S_PLAYING=0x02,
+  S_PAUSED=0x04
+} ePlayState;
 
 typedef struct EventList{
  U32 uiNbOfItems;
@@ -55,10 +62,14 @@ typedef struct Track_t{
 } sTrack_t;
 
 typedef struct SequenceState_t{
- U8 ubVolume;                 /* sequence current volume */
+ U8 ubVolume;                 /* sequence master volume */
  U8 ubActiveTrack;            /* sets the active track, by default 0 */
- U8 ubPlayModeState;          /* bitfield with current track state ( paused, loop, play_once) */
- U32 timeElapsed;
+ U8 bPlayState;		      /* indicates if sequence is currently being played or not: 
+				S_STOPPED (stopped), 
+				S_PLAYING (playing),
+				S_PAUSED (paused)sequence is being played / FALSE */          
+ U8 ubPlayModeState;	      /* current play mode (loop, play_once) */
+ U32 timeElapsed;	      /* TODO: move time/timeElapsed to global space (?)*/
  U32 time;
 } sSequenceState_t;
 

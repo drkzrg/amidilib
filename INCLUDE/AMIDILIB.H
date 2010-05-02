@@ -334,8 +334,6 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 */
 void am_allNotesOff(U16 numChannels);
 
-
-
 /** utility for measuring function execution time (end-begin timestamp in ms) 
 *   @param end - end timestamp
 *   @param begin - begin timestamp
@@ -349,9 +347,7 @@ const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
 /** Utility function sends text buffer to console and text log.
 *   @param mes - null terminated string
-*   @param bLogToConsole - enables/disables logging to console
 */
-
- void am_log(U8 *mes);
+void am_log(U8 *mes);
 
 #endif

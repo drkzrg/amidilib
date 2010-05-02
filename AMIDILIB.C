@@ -1269,7 +1269,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	return FALSE;
     break;
     case MT_EOT:
-        sprintf((char *)messBuf,"delta: %u\tMeta event: End of track\n",(unsigned int)delta);
+        sprintf((char *)messBuf,"delta: %u\tMeta event: End of track\n\n",(unsigned int)delta);
 	am_log(messBuf);
         (*pPtr)++;
         ubLenght=(*(*pPtr));

@@ -32,10 +32,7 @@ extern "C"{
  extern void installTA(void);
  extern void installTickCounter(void);
  extern void deinstallTickCounter(void);
-
-  static U8 messBuf[256]; /* for error buffer  */
- 
- 
+ static U8 messBuf[256]; /* for error buffer  */
 }
  extern volatile U32 counter;
  extern volatile U32 cA;
@@ -89,7 +86,8 @@ int main(void){
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
-	  sprintf((char *)messBuf, "MIDI file parsed in %f ms\n",am_diffclock(end,begin));
+	  
+	  sprintf((char *)messBuf, "MIDI file parsed in ~%4.2f [sec](%6.4f [ms])\n",am_diffclock(end,begin)/1000.0f,am_diffclock(end,begin));
 	  am_log(messBuf);
 	}
 	break;
@@ -132,6 +130,7 @@ int main(void){
     /* clean up, free internal library buffers etc..*/
     am_deinit();
    
+    /* just the test TA and TB */ 
    installTickCounter();
    installTA();
     /*interrupt handler test */
@@ -181,7 +180,7 @@ void playMidi(sSequence_t *pMidiSequence){
   U16 td=pMidiSequence->uiTimeDivision;
   double tick=(double)trackTempo/(double)td;
   
-  sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %f\n",td,(unsigned int)trackTempo,tick);
+  sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
   am_log(messBuf);
   /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 

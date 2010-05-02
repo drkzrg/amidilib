@@ -19,6 +19,8 @@
   XDEF am_writeVarLen
   XDEF am_readVarLen
 
+  XREF sendMidiEvents
+  
     text
 am_readVarLen:
     move.l  d0,d1

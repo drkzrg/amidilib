@@ -27,20 +27,18 @@
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
 #define MIDI_FILE "ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
+
 extern "C"{
  extern void installTA(void);
  extern void installTickCounter(void);
+ extern void deinstallTickCounter(void);
+
+  static U8 messBuf[256]; /* for error buffer  */
  
-extern void deinstallTickCounter(void);
+ 
 }
  extern volatile U32 counter;
  extern volatile U32 cA;
-
-
-extern "C"{
-  static U8 messBuf[256]; /* for error buffer  */
-  static BOOL CON_LOG;
-}
 
 /**
  * main program entry
@@ -73,7 +71,7 @@ int main(void){
     if(pMidi!=NULL){
 
      sprintf((char *)messBuf, "Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
-     am_log(messBuf,CON_LOG);
+     am_log(messBuf);
      /* process MIDI*/
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
@@ -87,12 +85,12 @@ int main(void){
 	case 3:
 	/* handle file */{
 	  sprintf((char *)messBuf, "Preparing MIDI file for replay\n");
-	  am_log(messBuf,CON_LOG);
+	  am_log(messBuf);
 	  clock_t begin=clock();
 	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  sprintf((char *)messBuf, "MIDI file parsed in %f ms\n",am_diffclock(end,begin));
-	  am_log(messBuf,CON_LOG);
+	  am_log(messBuf);
 	}
 	break;
 
@@ -158,7 +156,7 @@ void VLQtest(void){
         valsize=0;result=0;
         result= readVLQ(pValPtr,&valsize);
      	sprintf((char *)messBuf, "VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
-	am_log(messBuf,CON_LOG);
+	am_log(messBuf);
     }
     /* End of VLQ test */
 }
@@ -184,7 +182,7 @@ void playMidi(sSequence_t *pMidiSequence){
   double tick=(double)trackTempo/(double)td;
   
   sprintf((char *)messBuf, "\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %f\n",td,(unsigned int)trackTempo,tick);
-  am_log(messBuf,CON_LOG);
+  am_log(messBuf);
   /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      
@@ -192,14 +190,14 @@ void playMidi(sSequence_t *pMidiSequence){
   
   /* deltas are relative to the last event */
   sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
-  am_log(messBuf,CON_LOG);
+  am_log(messBuf);
   while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
     sprintf((char *)messBuf, "Sending all events with delta: %u\n", (unsigned int)currDelta);
-    am_log(messBuf,CON_LOG);
+    am_log(messBuf);
     lastDelta=currDelta;
   }
   
   sprintf((char *)messBuf,"File processed successfully. ");
-  am_log(messBuf,CON_LOG);
+  am_log(messBuf);
   
 }

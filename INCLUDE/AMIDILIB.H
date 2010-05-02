@@ -94,8 +94,6 @@
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
 
 
-/* extern assembly*/
-
 
 
 /* function prototypes  */
@@ -336,11 +334,7 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 */
 void am_allNotesOff(U16 numChannels);
 
-/** Utility function sends text buffer to console and text log.
-*   @param mes - null terminated string
-*   @param bLogToConsole - enables/disables logging to console
-*/
-void am_log(U8 *mes, BOOL bLogToConsole);
+
 
 /** utility for measuring function execution time (end-begin timestamp in ms) 
 *   @param end - end timestamp
@@ -352,5 +346,12 @@ double am_diffclock(clock_t end,clock_t begin);
 *   @param ubNoteNb - note number in 0-127 range
 */
 const U8 *am_getMIDInoteName(U8 ubNoteNb);
+
+/** Utility function sends text buffer to console and text log.
+*   @param mes - null terminated string
+*   @param bLogToConsole - enables/disables logging to console
+*/
+
+ void am_log(U8 *mes);
 
 #endif

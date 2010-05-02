@@ -22,7 +22,7 @@
 
 extern "C"{
   static U8 messBuf[256]; /* for error buffer  */
-  static BOOL CON_LOG=TRUE;
+  
 }
 
 void initEventList(sEventList *listPtr)
@@ -222,7 +222,7 @@ void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr)
 
   			/* print delta */
 			sprintf((char *)messBuf,"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
-			am_log(messBuf,CON_LOG);
+			am_log(messBuf);
   			
 			switch((U16)((*pPtr)->type))
 			{

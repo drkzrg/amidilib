@@ -25,6 +25,8 @@
 
 ;external references
 	  xref  am_send_midi_cmd
+	  xref	pEvent
+	  xref	iCurrentDelta
 
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
@@ -109,13 +111,35 @@ tickCounter:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240
-	
-	lea.l	_counter,a0		;increase counter
-   	move.l	(a0),d0
-	addq.l	#1,d0
-	move.l	d0,(a0)
 
-	move.l    #tickCounter,$120	;slap interrupt 
+;<----- insert your code here ----- >
+	lea.l	_counter,a0		;check counter if == 0 
+   	move.l	(a0),d0
+	cmpi.l	#0,d0
+	bne.s	.notZero
+	nop			;send events [TODO]
+	
+	;get event 
+	;check if it is null
+	;check if event is set tempo
+	;if yes set new values in _tbData,_tbMode
+
+	;check if pEvent->delta==iCurrentDelta
+	;if yes send midi event(or all events with current delta?) 
+	;adjust pEvent pointer(next event OR the first one (pEvent->delta!=iCurrentDelta)) 
+	;iCurrentDelta=pEvent->delta
+	
+	;and jump to .notZero
+
+	move.l	#30,d0		;init counter with next delta value(iCurrentDelta)	
+	move.l	d0,(a0)
+	bra.s	.exit		
+.notZero:			;decrease it
+	subq.l	#1,d0
+	move.l	d0,(a0)
+.exit:
+;<----- insert your code here ----- >
+        move.l    #tickCounter,$120	;slap interrupt 
 	move.b    _tbData,$fffffa21	;set data
 	move.b    _tbMode,$fffffa1b	;div mode
 	bset.b    #0,$fffffa07		;go!

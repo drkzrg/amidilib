@@ -185,6 +185,19 @@ int main(void){
     if(iError!=1){
      /* play preloaded tune */
         playMidi(&midiTune);
+	
+    /* loop and wait for keypress */
+    BOOL bQuit=FALSE;
+    printf("Press q to quit...\n");
+    
+    while(bQuit!=TRUE){
+     //char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
+     printf("counter %u\n",counter);
+    
+    }
+  
+  deinstallMIDIreplay();
+
     }
      
     } /* MIDI loading failed */
@@ -200,20 +213,9 @@ int main(void){
    
     /* clean up, free internal library buffers etc..*/
     am_deinit();
-    installMIDIreplay(MFP_DIV10,59);
+   // installMIDIreplay(MFP_DIV10,59);
     
-    /* loop and wait for keypress */
-    BOOL bQuit=FALSE;
-    printf("Press q to quit...\n");
-    
-    while(bQuit!=TRUE){
-      
-      char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
-    
-    }
-    
-    
-    deinstallMIDIreplay();
+   
 
  return (0);
 }
@@ -262,27 +264,27 @@ void playMidi(sSequence_t *pMidiSequence){
   
   amTrace((const U8*)"\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
   
-  
   //print sequence info 
   printf("Now playing:\n");
   printf("Sequence name: %s\n",pMidiSequence->pSequenceName);
   
   //retrieve track list
-  printf("Tracks: %s\n",pMidiSequence->pSequenceName);
-  
+  printf("Tracks: %d\n",pMidiSequence->ubNumTracks);
+
   /* get first event */
   pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
   /* play our sequence - send all events  */		      
-  /*printEventList( &pMyEvent );*/
+ 
+  playSequence(&pMyEvent);
   
   /* deltas are relative to the last event */
-  amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
+  /*amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
   
   while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
     amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
     
     lastDelta=currDelta;
-  }
+  }*/
   
   amTrace((const U8*)"File processed successfully. ");
   

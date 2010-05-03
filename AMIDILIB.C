@@ -1511,7 +1511,7 @@ const S8 *getConnectedDeviceInfo(void){
   U32 data;
   
   /* calculate checksum */
-  /*getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);*/
+  getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
   
   for(channel=0;channel<0x7f;channel++){
   
@@ -1519,7 +1519,7 @@ const S8 *getConnectedDeviceInfo(void){
     getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
     
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
-    am_dumpMidiBuffer(); 
+   // am_dumpMidiBuffer(); 
 
     /* get reply */
     while(MIDI_DATA_READY) {
@@ -1529,8 +1529,8 @@ const S8 *getConnectedDeviceInfo(void){
       }
     }
   
-   //amTrace((const U8*)"received response from SysEx channel %d 0x \n",channel);
-   am_dumpMidiBuffer();
+   amTrace((const U8*)"received response from SysEx channel %d 0x \n",channel);
+   //am_dumpMidiBuffer();
   }
 
  return NULL;

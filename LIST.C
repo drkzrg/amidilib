@@ -19,6 +19,7 @@
 #include <string.h>
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
+#include "INCLUDE/MFP.H"
 
 void initEventList(sEventList *listPtr)
 {
@@ -29,8 +30,7 @@ void initEventList(sEventList *listPtr)
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
 /* adds event to linked list, list has to be inintialised with initEventList() function */
-U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr )
-{
+U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
  sEventItem *pTempPtr=NULL;
  sEventItem *pNewItem=NULL;
  U32 uiDeltaNew=0;
@@ -55,8 +55,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr )
 			
 			/* insert event */
 			
-			if(pTempPtr->pNext==NULL)
-			{
+			if(pTempPtr->pNext==NULL){
 				/* insert at the end of list */
 				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
 				/*assert(pNewItem>0);*/					/* assert malloc ok, TODO: proper disaster handling */
@@ -182,8 +181,7 @@ U32 destroyList(sEventList *listPtr)
 return 0;
 }
 
-void printEventList(const sEventList **listPtr)
-{
+void printEventList(const sEventList **listPtr){
 	sEventItem *pTemp=NULL;	
 
 	U32 counter=0;
@@ -210,12 +208,11 @@ void printEventList(const sEventList **listPtr)
 
 /* handles event (TODO: send all events with given delta, get next delta, set timer)  */
 
-void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr)
-{
+void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr){
  
  			evntFuncPtr myFunc; 
 
-  			/* print delta */
+  			 /* print delta */
 			amTrace((const U8*)"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
 
 			switch((U16)((*pPtr)->type)){
@@ -269,6 +266,28 @@ void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr)
 /* sends all midi events with given delta */
 /* returns next delta time or 0, if end of track */
 /* waits for space keypress after sending all of the data */
+
+/* MIDI replay draft */
+/*
+
+int iCurrentDelta=0;
+sEventItem *pTemp
+
+
+*/
+volatile static sEventItem *pEvent;
+volatile static U32 iCurrentDelta=0;
+
+void playSequence(const sEventList **listPtr){
+  
+  if((*listPtr)->pEventList!=NULL){
+    pEvent=(*listPtr)->pEventList;
+    iCurrentDelta=0;
+    //getTempo 
+    installMIDIreplay(MFP_DIV10,59);
+  }
+}
+
 
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 {

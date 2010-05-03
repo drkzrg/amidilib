@@ -22,20 +22,12 @@
 
 #include "INCLUDE/AMIDILIB.H"
 #include "INCLUDE/LIST/LIST.H"
+#include "INCLUDE/MFP.H"
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
 #define MIDI_FILE "ULTIMA01.MID"
 #define XMIDI_FILE "TUNES/UWR10.XMI"
-
-extern "C"{
- extern void installTA(void);
- extern void installTickCounter(void);
- extern void deinstallTickCounter(void);
- static U8 messBuf[256]; /* for error buffer  */
-}
- extern volatile U32 counter;
- extern volatile U32 cA;
 
 /**
  * main program entry
@@ -208,15 +200,21 @@ int main(void){
    
     /* clean up, free internal library buffers etc..*/
     am_deinit();
-   
-//     /* just the test TA and TB */ 
-//    installTickCounter();
-//    installTA();
-//     /*interrupt handler test */
-//     for(;;){
-//       printf("tb: %u, ta: %x \n",(unsigned int)counter,(unsigned int)cA);
-//     }
-//       deinstallTickCounter();
+    installMIDIreplay(MFP_DIV10,59);
+    
+    /* loop and wait for keypress */
+    BOOL bQuit=FALSE;
+    printf("Press q to quit...\n");
+    
+    while(bQuit!=TRUE){
+      
+      char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
+    
+    }
+    
+    
+    deinstallMIDIreplay();
+
  return (0);
 }
 

@@ -17,8 +17,8 @@
 ; export routines 
 	
 	
-          xdef _installTickCounter
-	  xdef deinstallTickCounter
+          xdef _installMIDIreplay
+	  xdef _deinstallMIDIreplay
 	  xdef	_installTA
 	  xdef	_counter
 	  xdef  _cA
@@ -44,27 +44,48 @@ MFP_DEL64	equ	%1101  ;delay 64
 MFP_DEL100	equ	%1110  ;delay 100
 MFP_DEL200	equ	%1111  ;delay 200;
 
-; installs tick counter on timer B
-_installTickCounter:	 
-	movem.l	d0-a6,-(sp)
+; installs MIDI replay on timer B
+_installMIDIreplay:	 
+	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	  super_on
-	
 	move.w	sr,-(sp)	;save status register
+        or.w	#$0700,sr	;turn off all interupts
 
-	or.w	#$0700,sr
+	move.w	$54(sp),d1  ;mode
+	move.w  $58(sp),d0  ;data
+        move.b	d1,_tbMode  ;save parameters for later
+	move.b	d0,_tbData
 
-	clr.b     $fffffa1b
+	clr.b     $fffffa1b		;turn off tb
 	move.l	  #0,_counter		;init counter 
 	move.l	  $120,_oldTB	
 	move.l    #tickCounter,$120	;slap interrupt
 	
-	move.b    #59,$fffffa21		;data 59 for ~4166
-	move.b    #MFP_DIV10,$fffffa1b	;div 10 
+	move.b    d0,$fffffa21		;put data 
+	move.b    d1,$fffffa1b		;put mode 
 	bset.b    #0,$fffffa07
 	bset.b    #0,$fffffa13
-	move.w (sp)+,sr 		;restore Status Register
+	
+	move.w 	  (sp)+,sr 		;restore Status Register
 	bsr.w	  super_off
-	movem.l (sp)+,d0-a6 		;restore registers
+	movem.l (sp)+,d0-d7/a0-a6		;restore registers
+	rts
+
+; deinstalls MIDI replay on timer B 
+_deinstallMIDIreplay:
+	movem.l	  d0-d7/a0-a6,-(sp)
+	bsr.w	super_on
+
+	move.w	sr,-(a7)		;save status register
+	or.w	#$0700,sr
+
+	clr.b     $fffffa1b	;turn off tb
+	move.l	 _oldTB,$120	;save old tb
+	
+        move.w	(sp)+,sr		;restore Status Register
+
+	bsr.w	super_off
+	movem.l (sp)+,d0-d7/a0-a6
 	rts
 
 _installTA:
@@ -84,44 +105,24 @@ _installTA:
 	bsr.w	super_off
 	rts
 
-_deinstallTickCounter:
-	bsr.w	super_on
-	move.w	sr,-(a7)		;save status register
-
-	or.w	#$0700,sr
-
-	clr.b     $fffffa1b	;turn off tb
-	move.l	 _oldTB,$120	;install old tb
-	
-        move.w	(sp)+,sr		;restore Status Register
-	movem.l	(sp)+,d0-a6		;restore registers
-	bsr.w	super_off
-	rts
-
-
-
-
 tickCounter:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240
-	lea.l	_counter,a0
+	
+	lea.l	_counter,a0		;increase counter
    	move.l	(a0),d0
 	addq.l	#1,d0
 	move.l	d0,(a0)
-	
 
 	move.l    #tickCounter,$120	;slap interrupt 
-	move.b    #127,$fffffa21	;data 59 for ~4166
-	move.b    #7,$fffffa1b		;div 10 
-	bset.b    #0,$fffffa07
+	move.b    _tbData,$fffffa21	;set data
+	move.b    _tbMode,$fffffa1b	;div mode
+	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
-	
-
 	
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  ; finished!
-
 	rte                 ; return from timer
 
 _tiA:
@@ -136,7 +137,7 @@ _tiA:
 	bclr.b	  #5,$fffffa0f  ; finished!
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
-
+;enter supervisor mode
 super_on:
 	movem.l	d0/a0,-(sp)
 	clr.l	-(sp)
@@ -147,6 +148,7 @@ super_on:
 	movem.l	(sp)+,d0/a0
 	RTS
 
+;leave supervisor mode
 super_off:
 	movem.l	d0/a0,-(sp)
 	move.l	old_ssp,-(sp)
@@ -163,7 +165,10 @@ _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
 _counter:	ds.l	1
 _cA: 		ds.l 	1
-
+	even
+_tbMode:	ds.b	1
+	even
+_tbData:	ds.b	1
 
 
 	

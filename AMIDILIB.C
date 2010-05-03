@@ -241,10 +241,26 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
      case T_XMIDI:{
         /*TODO: ! not implemented */
      }
+     case T_RMID:{
+     return -1;/*TODO: ! not implemented */
+     }break;
+     case T_SMF:{
+      return -1;/*TODO: ! not implemented */
+     }break;
+     case T_XMF:{
+      return -1;/*TODO: ! not implemented */
+     } break;
+     
+     case T_SNG:{
+      return -1;/*TODO: ! not implemented */
+    }break;
+     case T_MUS:
+       return -1;/*TODO: ! not implemented */
+     
      break;
+     default:
+       return -1;/*TODO: ! not implemented */
     }
-
- return (-1);
 }
 
 U16 am_getTimeDivision (void *pMidiPtr){
@@ -458,6 +474,26 @@ endAddr=(U32)startPtr+header.headLenght;
 	  trackCounter++;
 	}
     }break;
+     case T_XMIDI:{
+        /*TODO: ! not implemented */
+	return NULL;
+     }
+     case T_RMID:{
+     return NULL;/*TODO: ! not implemented */
+     }break;
+     case T_SMF:{
+      return NULL;/*TODO: ! not implemented */
+     }break;
+     case T_XMF:{
+      return NULL;/*TODO: ! not implemented */
+     } break;
+     
+     case T_SNG:{
+      return NULL;;/*TODO: ! not implemented */
+    }break;
+     case T_MUS:
+       return NULL;;/*TODO: ! not implemented */
+     break;
     default:{
       return NULL;
     }

@@ -70,13 +70,15 @@ int main(void){
      /* check midi header */
      iRet=am_getHeaderInfo(pMidi);
      double ms;
+     printf("Please wait...\n");
+     
      switch(iRet){
 	
-	case 0:{ /* handle file */
+	case T_MIDI0:{ /* handle file */
 	  amTrace((const U8*)"Preparing MIDI type 0 file for replay\n");
 	  
 	  clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  iError=am_handleMIDIfile(pMidi, T_MIDI0, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
 	  ms=am_diffclock(end,begin);
@@ -88,12 +90,12 @@ int main(void){
 	  }
 	}
 	break;
-	case 1:{ /* handle file */
+	case T_MIDI1:{ /* handle file */
 	  amTrace((const U8*)"Preparing MIDI type 1 file for replay\n");
 	  
 	  
 	  clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  iError=am_handleMIDIfile(pMidi, T_MIDI1, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
 	  ms=am_diffclock(end,begin);
@@ -109,12 +111,12 @@ int main(void){
 	  
 	}break;
 	
-	case 2:{ /* handle file */
+	case T_MIDI2:{ /* handle file */
 	  amTrace((const U8*)"Preparing MIDI type 2 file for replay\n");
 	  
 	  
 	   clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
+	  iError=am_handleMIDIfile(pMidi, T_MIDI2, ulFileLenght,&midiTune);
 	  clock_t end=clock();
 	  
 	   ms=am_diffclock(end,begin);
@@ -130,7 +132,7 @@ int main(void){
 	  
 	}
 	break;
-	case 3:
+	case T_XMIDI:
 	/* handle file */{
 	  amTrace((const U8*)"Preparing XMIDI file for replay\n");
 	  
@@ -147,11 +149,16 @@ int main(void){
 	    
 	  }else{
 	    amTrace((const U8*)"Error while parsing. Exiting... \n");
-	    
 	  }
 	}
 	break;
 
+	case T_RMID:{iError=1;;}break; 
+	case T_SMF:{iError=1;;}break;
+	case T_XMF:{iError=1;;}break;
+	case T_SNG:{iError=1;;}break;
+	case T_MUS:{iError=1;;}break;
+	
 	default:{
 	   iError=1;
 	   if(iRet==-1){
@@ -179,7 +186,8 @@ int main(void){
      }
      
       /* free up buffer, we don't need it anymore */
-      Mfree(pMidi);pMidi=NULL;
+      if(pMidi!=NULL)
+	Mfree(pMidi);pMidi=NULL;
 	  
 	  
     if(iError!=1){

@@ -275,8 +275,8 @@ sEventItem *pTemp
 
 
 */
-volatile static sEventItem *pEvent;
-volatile static U32 iCurrentDelta=0;
+volatile extern sEventItem *pEvent;
+volatile extern U32 iCurrentDelta;
 
 void playSequence(const sEventList **listPtr){
   

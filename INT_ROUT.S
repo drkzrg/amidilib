@@ -25,8 +25,8 @@
 
 ;external references
 	  xref  am_send_midi_cmd
-	  xref	pEvent
-	  xref	iCurrentDelta
+	  xdef	_pEvent
+	  xdef	_iCurrentDelta
 
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
@@ -124,6 +124,9 @@ tickCounter:
 	;check if event is set tempo
 	;if yes set new values in _tbData,_tbMode
 
+	move.l	_pEvent,a1
+        
+
 	;check if pEvent->delta==iCurrentDelta
 	;if yes send midi event(or all events with current delta?) 
 	;adjust pEvent pointer(next event OR the first one (pEvent->delta!=iCurrentDelta)) 
@@ -189,13 +192,55 @@ _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
 _counter:	ds.l	1
 _cA: 		ds.l 	1
+_pEvent:	ds.l 	1
+_iCurrentDelta: ds.l 	1
 	even
 _tbMode:	ds.b	1
 	even
 _tbData:	ds.b	1
 
+;================================== structs ==========================================================================================
+;offsets has to be like in AMIDISEQ.H
+AMIDI_MAX_TRACKS	equ	16
 
-	
+; play mode flags
+S_PLAY_ONCE 	equ	$00
+S_PLAY_LOOP 	equ	$02
+S_PLAY_RANDOM 	equ	$04
+
+;play state flags
+S_STOPPED 	equ	$00
+S_PLAYING	equ	$02
+S_PAUSED 	equ	$04
 
 
-	
+	RSRESET ;sEventList
+seNbOfItems	rs.l	1
+seEventList	rs.l	1
+
+	RSRESET ;sTrackState
+tsCurrentPos	rs.l	1	; current delta position, 0 at start 
+tsVolume	rs.b	1	;sequence current track volume
+tsTimeStep	rs.l	1	;sequence current update time step
+tsTrackTempo	rs.l	1	;miliseconds per quarter note, default 500 000ms
+
+      RSRESET	;Track_t
+ttInstrumentName rs.l	1	; NULL terminated string with instrument name, track data and other text from MIDI meta events .. 
+ttCurrTrackState  rs.b   13	;current track state 
+ttTrkEventList	rs.l	2	; track event list 
+
+      RSRESET ;SequenceState_t
+ssVolume	rs.b	1	; sequence master volume
+ssActiveTrack	rs.b	1	; sets the active track, by default 0 
+ssPlayState	rs.b	1	; indicates if sequence is currently being played or not: S_STOPPED (stopped), S_PLAYING (playing),S_PAUSED (paused)sequence is being played / FALSE */          
+ssPlayModeState rs.b	1	; current play mode (loop, play_once) 
+sstimeElapsed 	rs.l	1	; TODO: move time/timeElapsed to global space (?)
+ssTime	    	rs.l	1	;
+
+    RSRESET ;Sequence_t internal midi data storage format 
+stSequenceName	rs.l	1	; NULL terminated string 
+stNumTracks	rs.b	1	; number of tracks 
+stTimeDivision	rs.w	1	; PPQN 
+stTracks	rs.l	AMIDI_MAX_TRACKS ; up to AMIDI_MAX_TRACKS tracks available 
+stCurrentState	rs.l	3	; current sequence state 
+  RSRESET

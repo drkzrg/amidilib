@@ -120,7 +120,7 @@ tickCounter:
 	nop			;send events [TODO]
 	
 	;get event 
-	;check if it is null
+	;check if it is null or eot
 	;check if event is set tempo
 	;if yes set new values in _tbData,_tbMode
 
@@ -218,6 +218,21 @@ S_PAUSED 	equ	$04
 seNbOfItems	rs.l	1
 seEventList	rs.l	1
 
+	RSRESET		;eventItem
+eipEventBlock  	rs.b	17	; EventBlock_t
+eipPrev		rs.l	1	;ptr
+eipNext		rs.l	1	;ptr
+ 
+      RSRESET	;EventBlock_t
+ebDT		rs.l	1	; event delta time 
+ebEventType	rs.b	1	; event type 
+ebInfoBlock	rs.l 	2 	; function info block (EventInfoBlock_t) 
+ebDataPtr	rs.l 	1	; pointer to event data of sEventInfoBlock_t.size * 1 byte (U8)
+
+      RSRESET	;EventInfoBlock_t
+eibSize 	rs.l	1	;size of command string in bytes
+eibFuncPtr 	rs.l	1	;pointer to event handler 
+
 	RSRESET ;sTrackState
 tsCurrentPos	rs.l	1	; current delta position, 0 at start 
 tsVolume	rs.b	1	;sequence current track volume
@@ -225,9 +240,9 @@ tsTimeStep	rs.l	1	;sequence current update time step
 tsTrackTempo	rs.l	1	;miliseconds per quarter note, default 500 000ms
 
       RSRESET	;Track_t
-ttInstrumentName rs.l	1	; NULL terminated string with instrument name, track data and other text from MIDI meta events .. 
+ttInstrumentName rs.l	1	;NULL terminated string with instrument name, track data and other text from MIDI meta events .. 
 ttCurrTrackState  rs.b   13	;current track state 
-ttTrkEventList	rs.l	2	; track event list 
+ttTrkEventList	rs.l	2	;track event list 
 
       RSRESET ;SequenceState_t
 ssVolume	rs.b	1	; sequence master volume

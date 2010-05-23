@@ -45,20 +45,16 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 			
 			
 			while(((pTempPtr->pNext != NULL) && (pTempPtr->pNext->eventBlock.uiDeltaTime<=uiDeltaNew)) ){
-				
-								
 				pTempPtr=pTempPtr->pNext;
-				
 			}
 
-			
-			
 			/* insert event */
-			
+
 			if(pTempPtr->pNext==NULL){
 				/* insert at the end of list */
 				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
-				/*assert(pNewItem>0);*/					/* assert malloc ok, TODO: proper disaster handling */
+				/*assert(pNewItem>0);*/					
+				/* assert malloc ok, TODO: proper disaster handling */
 
 				/* add data to new list node */
 				(*pNewItem).eventBlock.uiDeltaTime = eventBlockPtr->uiDeltaTime;

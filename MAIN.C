@@ -137,8 +137,6 @@ int main(void){
 	  if(iError==0){
 	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
 	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    
-	    
 	  }else{
 	    amTrace((const U8*)"Error while parsing. Exiting... \n");
 	  }
@@ -288,5 +286,6 @@ void playMidi(sSequence_t *pMidiSequence){
   
   amTrace((const U8*)"File processed successfully. ");
   
+  while(1){;}
   
 }

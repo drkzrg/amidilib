@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include "INCLUDE/MIDI_CMD.H"
-#include "INCLUDE/AMIDILIB.H"
+#include "include/midi_cmd.h"
+#include "include/amidilib.h"
 
 
 /* small static buffer for sending MIDI commands */

@@ -17,7 +17,7 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-#include "INCLUDE/C_VARS.H"
+#include "include/c_vars.h"
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 

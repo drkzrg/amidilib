@@ -19,9 +19,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <mint/ostruct.h>
-#include "INCLUDE/AMIDILIB.H"
-#include "INCLUDE/MFP.H"
-#include "INCLUDE/LIST/LIST.H"
+#include "include/amidilib.h"
+#include "include/mfp.h"
+#include "include/list/list.h"
 
 
 extern volatile sEventItem *g_pEventPtr;
@@ -535,7 +535,7 @@ U8 usSwitch=0;
 U16 recallStatus=0;
 U32 delta=0L;
 U32 deltaAll=0L;
-BOOL bEOF=false;
+BOOL bEOF=FALSE;
 /*U8 arDeltaInfo[16];*/
 
     /* execute as long we are on the end of file or EOT meta occured, 

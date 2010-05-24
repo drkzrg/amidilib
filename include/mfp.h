@@ -36,11 +36,11 @@
 #define MFP_DEL200	0b00001111  /* delay 200 */
 
 
-extern "C"{
+
  extern void installTA(void);
  extern void installMIDIreplay(U8 mode,U8 data);
  extern void deinstallMIDIreplay(void);
-}
+
 
 extern volatile U32 counter;
 extern volatile U32 cA;

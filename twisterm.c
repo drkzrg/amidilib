@@ -148,11 +148,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef __PURE_C__
-#include <ext.h>
-#else
+
 #include <time.h>
-#endif
+
 /*
  * Before we include the Mersenne Twist header file, we must do a bit
  * of magic setup.  The code for actual random-number generation
@@ -162,7 +160,7 @@
  * to a function.  We do so with a couple of careful #defines.
  */
 
-#include "INCLUDE/TWISTERM/TWISTERM.H"
+#include "include/twisterm/twisterm.h"
 
 /*
  * Table of contents:

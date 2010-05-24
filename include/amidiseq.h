@@ -20,7 +20,7 @@
 
 /** file contains internal data structures for midi event internal storage and replay */
 
-#include "MIDISEQ.H"
+#include "midiseq.h"
 
 #define AMIDI_MAX_TRACKS 16
 

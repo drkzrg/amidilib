@@ -20,7 +20,7 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 
-#include "../AMIDISEQ.H"
+#include "../amidiseq.h"
 
 
 void initEventList(sEventList *listPtr);

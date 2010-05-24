@@ -17,7 +17,7 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 /* Roland CM-500 static tables */
-#include	"INCLUDE/C_VARS.H"
+#include	"include/c_vars.h"
 
 /* SFX set, program number 57 */
 extern const U8 *g_arCM500sfx[];

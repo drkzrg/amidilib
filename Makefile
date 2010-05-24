@@ -7,14 +7,14 @@ INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
-CFLAGS += -g -m68000 -Wall -fsigned-char -pedantic -Wl,--traditional-format -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT
+CFLAGS += -g -std=c99 -m68000 -Wall -fsigned-char -pedantic -Wl,--traditional-format -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
 EXE = amidi.tos
 
-SRCS = MAIN.C TWISTERM.C MT32.C MIDI_CMD.C MIDISEQ.C LIST.C IFF.C FMIO.C CM_500.C CM_32L.C C_VARS.C AMIDILIB.C TBL_STAT.C
-OBJECTS = MAIN.O TWISTERM.O MT32.O MIDI_CMD.O MIDISEQ.O LIST.O IFF.O FMIO.O CM_500.O CM_32L.O C_VARS.O AMIDILIB.O TBL_STAT.O
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o
 
 $(EXE): $(OBJECTS) amidi.o int_routs.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
@@ -28,8 +28,8 @@ amidi.o:	AMIDI.S
 int_routs.o:	INT_ROUT.S
 		$(ASM) INT_ROUT.S $(ASMFLAGS) -o int_rout.o
 
-$(OBJECTS): 	%.O: %.C
+$(OBJECTS): 	%.o: %.c
 		$(CC) -c $(CFLAGS) $< -o $@
 clean:
-	rm -rf *o *O amidi.tos
+	rm -rf *o amidi.tos
 

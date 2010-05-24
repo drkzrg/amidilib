@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include "INCLUDE/FMIO.H"
+#include "include/fmio.h"
 #include <mint/ostruct.h>
 
 

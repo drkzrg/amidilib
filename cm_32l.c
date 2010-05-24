@@ -17,8 +17,8 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 /* Roland CM-32L, CM-64 static tables */
-#include	"INCLUDE/C_VARS.H"
-#include	"INCLUDE/AMIDILIB.H"
+#include	"include/c_vars.h"
+#include	"include/amidilib.h"
 
 /*instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)*/
 extern const U8 *g_arCM32Linstruments[];

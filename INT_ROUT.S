@@ -24,7 +24,7 @@
 	  xdef  _cA
 
 ;external references
-	  xref 		__Z10hMidiEventv
+	  xref 		_hMidiEvent
 	  
 	  xdef		_g_pEventPtr
 	  xdef		_iCurrentDelta
@@ -126,7 +126,7 @@ tickCounter:
 	;if yes set new values in _tbData,_tbMode
 	;get event 
 	move.l	_g_pEventPtr,-(sp)		;a1 points to beginning of EventBlock_t which is followed 
-	jsr	__Z10hMidiEventv			;by two pointers to the next or previous event
+	jsr	_hMidiEvent			;by two pointers to the next or previous event
         ;check if it is null or eot
 	;;cmpi.b	#,d1
 	;firstly check if pEvent->delta==iCurrentDelta

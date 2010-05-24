@@ -17,9 +17,9 @@
     along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-#include "INCLUDE/MIDISEQ.H"
-#include "INCLUDE/AMIDILIB.H"
-#include "INCLUDE/MIDI_CMD.H"	/* for sending midi commands */
+#include "include/midiseq.h"
+#include "include/amidilib.h"
+#include "include/midi_cmd.h"	/* for sending midi commands */
 
 #include <stdio.h> /* just for dummy printf in event handling messages */
 				   /* remove this include when all the handlers will be implemented */

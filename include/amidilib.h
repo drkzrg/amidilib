@@ -19,13 +19,13 @@
 #ifndef __AMIDILIB_H__
 #define __AMIDILIB_H__
 
-#include "C_VARS.H"
-#include "MIDI.H"
-#include "XMIDI.H"
-#include "FMIO.H"
-#include "ROLAND.H"
-#include "AMIDISEQ.H"
-#include "MIDI_CMD.H"
+#include "c_vars.h"
+#include "midi.h"
+#include "xmidi.h"
+#include "fmio.h"
+#include "roland.h"
+#include "amidiseq.h"
+#include "midi_cmd.h"
 #include <time.h>
 
 #define LIB_NAME "Atari (X)MIDI library"

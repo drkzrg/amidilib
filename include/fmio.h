@@ -18,7 +18,7 @@
 #ifndef __FMIO_H__
 #define __FMIO_H__
 
-#include "C_VARS.H"
+#include "c_vars.h"
 #include <mint/mintbind.h>
 
 

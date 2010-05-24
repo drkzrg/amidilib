@@ -17,9 +17,9 @@
     
 #include <assert.h>
 #include <string.h>
-#include "INCLUDE/AMIDILIB.H"
-#include "INCLUDE/LIST/LIST.H"
-#include "INCLUDE/MFP.H"
+#include "include/amidilib.h"
+#include "include/list/list.h"
+#include "include/mfp.h"
 
 void initEventList(sEventList *listPtr)
 {

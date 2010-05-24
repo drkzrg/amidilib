@@ -20,9 +20,9 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "INCLUDE/AMIDILIB.H"
-#include "INCLUDE/LIST/LIST.H"
-#include "INCLUDE/MFP.H"
+#include "include/amidilib.h"
+#include "include/list/list.h"
+#include "include/mfp.h"
 
 /* test midi file to load */
 /*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/

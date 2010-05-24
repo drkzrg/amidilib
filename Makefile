@@ -22,11 +22,11 @@ $(EXE): $(OBJECTS) amidi.o int_routs.o
 	
 all: $(SRCS) $(EXE)
 	
-amidi.o:	AMIDI.S
-		$(ASM) AMIDI.S $(ASMFLAGS) -o amidi.o
+amidi.o:	amidi.s
+		$(ASM) amidi.s $(ASMFLAGS) -o amidi.o
 
-int_routs.o:	INT_ROUT.S
-		$(ASM) INT_ROUT.S $(ASMFLAGS) -o int_rout.o
+int_routs.o:	int_rout.s
+		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
 
 $(OBJECTS): 	%.o: %.c
 		$(CC) -c $(CFLAGS) $< -o $@

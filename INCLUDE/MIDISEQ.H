@@ -103,10 +103,10 @@ typedef struct EventInfoBlock_t{
 } sEventInfoBlock_t;
 
 typedef struct EventBlock_t{
- U32 uiDeltaTime;	/* event delta time */
- U8	type;		/* event type */
- sEventInfoBlock_t infoBlock;	/* function info block */ 
- void *dataPtr;					/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
+ U32 uiDeltaTime;			/* event delta time */
+ U8	type;				/* event type */
+ sEventInfoBlock_t infoBlock;		/* function info block */ 
+ void *dataPtr;				/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
 }sEventBlock_t, *sEventBlockPtr_t;
 
 typedef struct EventItem{

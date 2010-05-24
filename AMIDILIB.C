@@ -20,7 +20,12 @@
 #include <stdarg.h>
 #include <mint/ostruct.h>
 #include "INCLUDE/AMIDILIB.H"
+#include "INCLUDE/MFP.H"
 #include "INCLUDE/LIST/LIST.H"
+
+
+extern volatile sEventItem *g_pEventPtr;
+extern volatile U32 iCurrentDelta;
 
 /* current version */
 typedef struct AMIDI_version {
@@ -1625,6 +1630,58 @@ else
 }
 
 
+void hMidiEvent(void){
+
+if(counter!=0){
+  counter--;
+}else{
+    /* 	
+	counter is 0 so we have to:
+	send current event
+	set g_pEventPtr 
+    */
+    //sending event 
+    printEventBlock(counter, (volatile sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
+    
+    g_pEventPtr=g_pEventPtr->pNext;
+
+    if(g_pEventPtr!=0){
+     //set up counter
+     counter=g_pEventPtr->eventBlock.uiDeltaTime;
+     
+    
+    }
+    
+}
+  
+if (g_pEventPtr==0)return;
+
+
+}
+
+/* sends all midi events with given delta */
+/* returns next delta time or 0, if end of track */
+/* waits for space keypress after sending all of the data */
+
+/* MIDI replay draft */
+/*
+
+int iCurrentDelta=0;
+sEventItem *pTemp
+
+
+*/
+
+
+void playSequence(const sEventList **listPtr){
+  
+  if((*listPtr)->pEventList!=NULL){
+    g_pEventPtr=(*listPtr)->pEventList;
+    iCurrentDelta=0;
+    //getTempo 
+    installMIDIreplay(MFP_DIV10,59);
+  }
+}
 
 void am_log(const U8 *mes,...){
 static char buffer[256];

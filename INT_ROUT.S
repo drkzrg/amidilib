@@ -24,9 +24,10 @@
 	  xdef  _cA
 
 ;external references
-	  xref  am_send_midi_cmd
-	  xdef	_pEvent
-	  xdef	_iCurrentDelta
+	  xref 		__Z10hMidiEventv
+	  
+	  xdef		_g_pEventPtr
+	  xdef		_iCurrentDelta
 
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
@@ -117,20 +118,25 @@ tickCounter:
    	move.l	(a0),d0
 	cmpi.l	#0,d0
 	bne.s	.notZero
-	nop			;send events [TODO]
+	;send events we are fucking lazy today, so everything will be done in C :P
 	
-	;get event 
-	;check if it is null or eot
+	
+	
 	;check if event is set tempo
 	;if yes set new values in _tbData,_tbMode
-
-	move.l	_pEvent,a1
-        
-
-	;check if pEvent->delta==iCurrentDelta
+	;get event 
+	move.l	_g_pEventPtr,-(sp)		;a1 points to beginning of EventBlock_t which is followed 
+	jsr	__Z10hMidiEventv			;by two pointers to the next or previous event
+        ;check if it is null or eot
+	;;cmpi.b	#,d1
+	;firstly check if pEvent->delta==iCurrentDelta
 	;if yes send midi event(or all events with current delta?) 
-	;adjust pEvent pointer(next event OR the first one (pEvent->delta!=iCurrentDelta)) 
+	
+        ;adjust pEvent pointer (next event OR the first one (pEvent->delta!=iCurrentDelta)) 
 	;iCurrentDelta=pEvent->delta
+	
+
+	
 	
 	;and jump to .notZero
 
@@ -147,10 +153,10 @@ tickCounter:
 	move.b    _tbMode,$fffffa1b	;div mode
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
-	
+.finish:	
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
-	bclr.b	  #0,$fffffa0f  ; finished!
-	rte                 ; return from timer
+	bclr.b	  #0,$fffffa0f  	; finished!
+	rte                 		; return from timer
 
 _tiA:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
@@ -192,7 +198,7 @@ _oldTB:	  	ds.l	1
 old_ssp:	ds.l	1
 _counter:	ds.l	1
 _cA: 		ds.l 	1
-_pEvent:	ds.l 	1
+_g_pEventPtr:	ds.l 	1
 _iCurrentDelta: ds.l 	1
 	even
 _tbMode:	ds.b	1

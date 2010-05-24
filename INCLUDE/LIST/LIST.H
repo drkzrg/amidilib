@@ -29,8 +29,10 @@ U32 destroyList(sEventList *listPtr);
 
 /* for debugging purposes */
 void printEventList(const sEventList **listPtr);
-void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr);
-void playSequence(const sEventList **listPtr);
+void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr);
+
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr);
+
+
 
 #endif

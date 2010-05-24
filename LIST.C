@@ -75,8 +75,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 				listPtr->uiNbOfItems++;				/* increase event counter */
 				return 0;
 			}
-			else
-			{
+			else{
 				/* insert between current and next one */
 				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
 				/*assert(pNewItem>0);*/						/* assert malloc ok, TODO: proper disaster handling */
@@ -152,8 +151,7 @@ U32 destroyList(sEventList *listPtr)
 			/* iterate to the begining */
 			while(pCurrentPtr!=NULL){
 				
-				if(pCurrentPtr->eventBlock.dataPtr>0)
-				{
+				if(pCurrentPtr->eventBlock.dataPtr>0){
 					free(pCurrentPtr->eventBlock.dataPtr);
 					pCurrentPtr->eventBlock.dataPtr=NULL;
 				}
@@ -189,11 +187,10 @@ void printEventList(const sEventList **listPtr){
 		pTemp=(*listPtr)->pEventList;
 
 		
-		while(pTemp!=NULL)
-		{
+		while(pTemp!=NULL){
 			/* print */
 			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
-			printEventBlock(counter,&pBlock);		
+			printEventBlock(counter,pBlock);		
 			counter++;
 			pTemp=pTemp->pNext;
 		}
@@ -204,52 +201,52 @@ void printEventList(const sEventList **listPtr){
 
 /* handles event (TODO: send all events with given delta, get next delta, set timer)  */
 
-void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr){
+void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
  
  			evntFuncPtr myFunc; 
 
   			 /* print delta */
-			amTrace((const U8*)"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)(*pPtr)->uiDeltaTime);
+			amTrace((const U8*)"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)pPtr->uiDeltaTime);
 
-			switch((U16)((*pPtr)->type)){
-			  case T_NOTEON:			  
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((*pPtr)->dataPtr);						  
+			switch((U16)(pPtr->type)){
+			  case T_NOTEON:{			  
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)(pPtr->dataPtr);}						  
 			  break;
 			  
-			  case T_NOTEOFF:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_NOTEOFF:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_NOTEAFT:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_NOTEAFT:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_CONTROL:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_CONTROL:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_PRG_CH:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_PRG_CH:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_CHAN_AFT:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_CHAN_AFT:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_PITCH_BEND:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_PITCH_BEND:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;
 			  
-			  case T_META_SET_TEMPO:
-			  myFunc=(*pPtr)->infoBlock.func;
-			  (*myFunc)((void *)(*pPtr)->dataPtr);
+			  case T_META_SET_TEMPO:{
+			  myFunc=pPtr->infoBlock.func;
+			  (*myFunc)((void *)pPtr->dataPtr);}
 			  break;	
 			
 			}  
@@ -259,30 +256,9 @@ void printEventBlock(U32 counter,const sEventBlockPtr_t *pPtr){
 }
 
 
-/* sends all midi events with given delta */
-/* returns next delta time or 0, if end of track */
-/* waits for space keypress after sending all of the data */
-
-/* MIDI replay draft */
-/*
-
-int iCurrentDelta=0;
-sEventItem *pTemp
 
 
-*/
-volatile extern sEventItem *pEvent;
-volatile extern U32 iCurrentDelta;
 
-void playSequence(const sEventList **listPtr){
-  
-  if((*listPtr)->pEventList!=NULL){
-    pEvent=(*listPtr)->pEventList;
-    iCurrentDelta=0;
-    //getTempo 
-    installMIDIreplay(MFP_DIV10,59);
-  }
-}
 
 
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
@@ -307,7 +283,7 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 			
 		  /* send all events with given delta  */
 			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
-			printEventBlock(counter,&pBlock);
+			//printEventBlock(counter,&pBlock);
 			counter++;
 			pTemp=pTemp->pNext;
 		}

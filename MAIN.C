@@ -286,6 +286,6 @@ void playMidi(sSequence_t *pMidiSequence){
   
   amTrace((const U8*)"File processed successfully. ");
   
-  while(1){;}
+  while(1){;} // endless loop
   
 }

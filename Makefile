@@ -7,8 +7,8 @@ INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
-CFLAGS += -g -std=c99 -m68000 -Wall -fsigned-char -pedantic -Wl,--traditional-format -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT
-LDFLAGS += -L/usr/m68k-atari-mint/lib
+CFLAGS += -g -std=c99 -m68000 -Wall -fsigned-char -pedantic -Wall -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT
+LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
 EXE = amidi.tos
@@ -29,7 +29,7 @@ int_routs.o:	int_rout.s
 		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
 
 $(OBJECTS): 	%.o: %.c
-		$(CC) -c $(CFLAGS) $< -o $@
+		$(CC) $(CFLAGS) -c $< -o $@
 clean:
 	rm -rf *o amidi.tos
 

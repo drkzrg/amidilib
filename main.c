@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits.h>
 
 #include "include/amidilib.h"
 #include "include/list/list.h"
@@ -248,7 +249,7 @@ void memoryCheck(void){
     mem=getFreeMem(PREFER_ST);
     mem=getFreeMem(PREFER_TT);
 }
-
+extern volatile sEventItem *g_pEventPtr;
 void playMidi(sSequence_t *pMidiSequence){
   U32 currDelta=0,lastDelta=0;
   const sEventList *pMyEvent=NULL;	
@@ -286,6 +287,9 @@ void playMidi(sSequence_t *pMidiSequence){
   
   amTrace((const U8*)"File processed successfully. ");
   
-  while(1){;} // endless loop
+  while(counter!=UINT_MAX){
+      amTrace("event ptr: %p, counter: %d\n",g_pEventPtr,counter);
+    
+    ;} // endless loop
   
 }

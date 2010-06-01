@@ -22,7 +22,7 @@
 #include "include/amidilib.h"
 #include "include/mfp.h"
 #include "include/list/list.h"
-
+#include <limits.h>
 
 extern volatile sEventItem *g_pEventPtr;
 extern volatile U32 iCurrentDelta;
@@ -1640,21 +1640,22 @@ if(counter!=0){
 	send current event
 	set g_pEventPtr 
     */
-    //sending event 
+    //sending event
     printEventBlock(counter, (volatile sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
     
     g_pEventPtr=g_pEventPtr->pNext;
-
-    if(g_pEventPtr!=0){
+    
+    if(g_pEventPtr!=0&&g_pEventPtr->eventBlock.type!=MT_EOT){
      //set up counter
      counter=g_pEventPtr->eventBlock.uiDeltaTime;
-     
     
+    }else{ 
+      
+      counter=UINT_MAX;
     }
-    
-}
+ }
   
-if (g_pEventPtr==0)return;
+
 
 
 }

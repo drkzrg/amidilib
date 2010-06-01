@@ -358,7 +358,7 @@ const U8 *am_getMIDInoteName(U8 ubNoteNb);
 void am_log(const U8 *mes,...);
 
 
-void _hMidiEvent(void);	/* handles stuff inside the replay routine */ 
+void hMidiEvent(void);	/* handles stuff inside the replay routine */ 
 
 void playSequence(const sEventList **listPtr);
 

@@ -7,7 +7,7 @@ INCLUDES = -I./ -I./INCLUDE -I/usr/m68k-atari-mint/include
 CC = m68k-atari-mint-gcc
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
-CFLAGS += -g -std=c99 -m68000 -Wall -fsigned-char -pedantic -Wall -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT
+CFLAGS += -g -std=c99 -m68000 -Wall -fsigned-char -pedantic -Wall -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 

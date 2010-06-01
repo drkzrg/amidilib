@@ -22,7 +22,7 @@
 	  xdef	_installTA
 	  xdef	_counter
 	  xdef  _cA
-
+          
 ;external references
 	  xref 		_hMidiEvent
 	  
@@ -114,10 +114,7 @@ tickCounter:
 	eor.w	  #$0f0,$ffff8240
 
 ;<----- insert your code here ----- >
-	lea.l	_counter,a0		;check counter if == 0 
-   	move.l	(a0),d0
-	cmpi.l	#0,d0
-	bne.s	.notZero
+	
 	;send events we are fucking lazy today, so everything will be done in C :P
 	
 	
@@ -125,8 +122,11 @@ tickCounter:
 	;check if event is set tempo
 	;if yes set new values in _tbData,_tbMode
 	;get event 
-	move.l	_g_pEventPtr,-(sp)		;a1 points to beginning of EventBlock_t which is followed 
-	jsr	_hMidiEvent			;by two pointers to the next or previous event
+	
+	bsr.w	_hMidiEvent			;by two pointers to the next or previous event
+ 
+        cmp.w	#$ffff,_counter			;if max int we have reached the end of track
+	beq.s	.finish
         ;check if it is null or eot
 	;;cmpi.b	#,d1
 	;firstly check if pEvent->delta==iCurrentDelta
@@ -134,18 +134,11 @@ tickCounter:
 	
         ;adjust pEvent pointer (next event OR the first one (pEvent->delta!=iCurrentDelta)) 
 	;iCurrentDelta=pEvent->delta
-	
 
-	
-	
-	;and jump to .notZero
+	moveq.l	#30,d0		;init counter with next delta value(iCurrentDelta)	
+	move.l	d0,(a0)
+		
 
-	move.l	#30,d0		;init counter with next delta value(iCurrentDelta)	
-	move.l	d0,(a0)
-	bra.s	.exit		
-.notZero:			;decrease it
-	subq.l	#1,d0
-	move.l	d0,(a0)
 .exit:
 ;<----- insert your code here ----- >
         move.l    #tickCounter,$120	;slap interrupt 
@@ -200,6 +193,7 @@ _counter:	ds.l	1
 _cA: 		ds.l 	1
 _g_pEventPtr:	ds.l 	1
 _iCurrentDelta: ds.l 	1
+
 	even
 _tbMode:	ds.b	1
 	even

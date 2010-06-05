@@ -13,12 +13,13 @@ ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
 EXE = amidi.tos
 
+ST_HD_PATH=$(HOME)/Pulpit/steem/c
 SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c
 OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o
 
 $(EXE): $(OBJECTS) amidi.o int_routs.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
-	
+	cp $(EXE) $(ST_HD_PATH)
 	
 all: $(SRCS) $(EXE)
 	

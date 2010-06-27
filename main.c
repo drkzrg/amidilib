@@ -285,7 +285,7 @@ void playMidi(sSequence_t *pMidiSequence){
     lastDelta=currDelta;
   }*/
   
-  amTrace((const U8*)"File processed successfully. ");
+  amTrace((const U8*)"File processed successfully. \n");
   
   while(counter!=UINT_MAX){
       amTrace("event ptr: %p, counter: %d\n",g_pEventPtr,counter);

@@ -348,7 +348,7 @@ void am_log(const U8 *mes,...);
 
 
 void hMidiEvent(void);	/* handles stuff inside the replay routine */ 
-
+void getDeviceInfoResponse(U8 channel);
 void playSequence(const sEventList **listPtr);
 
 #endif

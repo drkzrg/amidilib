@@ -771,13 +771,9 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
  }
  /* print and handle */
     amTrace((const U8*)"delta: %u\t",(unsigned int)delta);
-    
     amTrace((const U8*)"event: Note on ");
-    
     amTrace((const U8*)"ch: %d\t",channel);
-    
     amTrace((const U8*)"note: %d(%s)\t",note,am_getMIDInoteName(note));
-    
     amTrace((const U8*)"vel: %d \n",velocity);
     
 }
@@ -934,9 +930,6 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
-
-        
-
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
         (*pPtr)++;
         /* get parameters */
@@ -969,15 +962,10 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	free(tempEvent.dataPtr);
     }
     amTrace((const U8*)"delta: %u\t",(unsigned int)delta);
-    
     amTrace((const U8*)"event: Program change ");
-    
     amTrace((const U8*)"ch: %d\t",channel);
-    
     amTrace((const U8*)"program nb: %d\n",PN);
-    
-
-}
+ }
 
 void am_ChannelAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 {
@@ -1367,15 +1355,10 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         *pPtr=(U8*)addr;
     /* print out info */
         amTrace((const U8*)"hr: %d\n",SMPTEinfo.hr);
-	
         amTrace((const U8*)"mn: %d\n",SMPTEinfo.mn);
-	
         amTrace((const U8*)"se: %d\n",SMPTEinfo.fr);
-	
         amTrace((const U8*)"fr: %d\n",SMPTEinfo.fr);
-	
         amTrace((const U8*)"ff: %d\n",SMPTEinfo.ff);
-	
 	return FALSE;
     break;
     case MT_TIME_SIG:
@@ -1390,7 +1373,6 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         *pPtr=(U8*)addr;
         /* print out info */
         amTrace((const U8*)"nn: %d\tdd: %d\tcc: %d\tbb: %d\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
-	
         
 	return FALSE;
     break;
@@ -1494,24 +1476,17 @@ const U8 *getMIDIcontrollerName(U8 iNb)
  return(g_arMIDIcontrollers[iNb]);
 }
 
-/* gets info about connected devices via MIDI interface */
-const S8 *getConnectedDeviceInfo(void){
-  /*  request on all channels */
-  amTrace((const U8*)"Quering connected MIDI device...\n");
-  
-    
+void getDeviceInfoResponse(U8 channel){
   static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
-  U8 channel=0x00;
-  U32 data;
+  BOOL bFlag=FALSE;
+  
+  U32 data=0;
   
   /* calculate checksum */
   getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
-  
-  for(channel=0;channel<0x7f;channel++){
-  
-    getInfoSysEx[5]=channel;
-    getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
+  getInfoSysEx[5]=channel;
+  getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
     
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
@@ -1519,15 +1494,29 @@ const S8 *getConnectedDeviceInfo(void){
     /* get reply */
     while(MIDI_DATA_READY) {
       data = GET_MIDI_DATA;
+      
       if(data!=0){
+	if(bFlag==FALSE){
+	 amTrace((const U8*)"Received device info on ch: %d\t",channel);
+ 	 bFlag=TRUE;
+	}
+	
 	amTrace((const U8*)"%x\t",(unsigned int)data);
       }
-    }
+    
+    
+}
+}
+/* gets info about connected devices via MIDI interface */
+const S8 *getConnectedDeviceInfo(void){
+  /*  request on all channels */
+  amTrace((const U8*)"Quering connected MIDI device...\n");
   
-   amTrace((const U8*)"received response from SysEx channel %d 0x \n",channel);
+  for(U8 channel=0;channel<0x7f;channel++){
+    getDeviceInfoResponse(channel);
+   }
+ 
    //am_dumpMidiBuffer();
-  }
-
  return NULL;
 }
 
@@ -1624,6 +1613,7 @@ void hMidiEvent(void){
 
 if(counter!=0){
   counter--;
+  printf("Decreasing counter.\n");
 }else{
     /* 	
 	counter is 0 so we have to:

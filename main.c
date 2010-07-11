@@ -182,7 +182,7 @@ int main(void){
     
     while(bQuit!=TRUE){
      //char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
-     printf("counter %u\n",counter);
+     printf("counter %u\n",(unsigned int)counter);
     
     }
   
@@ -237,16 +237,16 @@ void memoryCheck(void){
 	
     /* mem tst */
     mem=getFreeMem(ST_RAM);
-    amTrace((const U8*)"ST-RAM: %ld\n",(U32)mem);
+    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
 	
     mem=getFreeMem(TT_RAM);
-    amTrace((const U8*)"TT-RAM: %ld\n",(U32)mem);
+    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
 	
     mem=getFreeMem(PREFER_ST);
-    amTrace((const U8*)"Prefered ST-RAM: %ld\n",(U32)mem);
+    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
 	
     mem=getFreeMem(PREFER_TT);
-    amTrace((const U8*)"Prefered TT-RAM: %ld\n",(U32)mem);
+    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
 	
 }
 
@@ -289,7 +289,7 @@ void playMidi(sSequence_t *pMidiSequence){
   amTrace((const U8*)"File processed successfully. \n");
   
   while(counter!=UINT_MAX){
-      amTrace("event ptr: %p, counter: %d\n",g_pEventPtr,counter);
+      amTrace("event ptr: %p, counter: %d\n",g_pEventPtr,(unsigned int)counter);
     
     ;} // endless loop
   

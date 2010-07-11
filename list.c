@@ -123,7 +123,7 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 U32 destroyList(sEventList *listPtr)
 {
 	sEventItem *pTemp=NULL,*pCurrentPtr=NULL;
-	/*assert(listPtr!=NULL);*/
+	
 	
 
 		if(listPtr->pEventList!=NULL){
@@ -141,7 +141,7 @@ U32 destroyList(sEventList *listPtr)
 			/* iterate to the begining */
 			while(pCurrentPtr!=NULL){
 				
-				if(pCurrentPtr->eventBlock.dataPtr>0){
+				if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
 					free(pCurrentPtr->eventBlock.dataPtr);
 					pCurrentPtr->eventBlock.dataPtr=NULL;
 				}

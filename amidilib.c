@@ -255,6 +255,7 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
      default:
        return -1;/*TODO: ! not implemented */
     }
+return -1;
 }
 
 U16 am_getTimeDivision (void *pMidiPtr){

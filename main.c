@@ -1,19 +1,9 @@
-/*  Copyright 2008, 2009 Pawel Goralski
+
+/**  Copyright 2007-2010 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
-
-    AMIDILIB is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    AMIDILIB is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with AMIDILIB.  If not, see <http://www.gnu.org/licenses/>.*/
+    See license.txt for licensing information.
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +23,7 @@
 /**
  * main program entry
  */
+
 void VLQtest(void);
 void memoryCheck(void);
 void playMidi(sSequence_t *pMidiSequence);
@@ -242,13 +233,23 @@ void VLQtest(void){
 
 void memoryCheck(void){
     U32 mem=0;
-    
+    amTrace((const U8*)"System memory check:\n");
+	
     /* mem tst */
     mem=getFreeMem(ST_RAM);
+    amTrace((const U8*)"ST-RAM: %ld\n",(U32)mem);
+	
     mem=getFreeMem(TT_RAM);
+    amTrace((const U8*)"TT-RAM: %ld\n",(U32)mem);
+	
     mem=getFreeMem(PREFER_ST);
+    amTrace((const U8*)"Prefered ST-RAM: %ld\n",(U32)mem);
+	
     mem=getFreeMem(PREFER_TT);
+    amTrace((const U8*)"Prefered TT-RAM: %ld\n",(U32)mem);
+	
 }
+
 extern volatile sEventItem *g_pEventPtr;
 void playMidi(sSequence_t *pMidiSequence){
   U32 currDelta=0,lastDelta=0;

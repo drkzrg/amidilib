@@ -193,72 +193,74 @@ void printEventList(const sEventList **listPtr){
 
 void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
  
- 			evntFuncPtr myFunc=NULL; 
+   evntFuncPtr myFunc=NULL; 
 
-  			 /* print delta */
-			amTrace((const U8*)"event nb: %u event delta: %u\n",(unsigned int)counter,(unsigned int)pPtr->uiDeltaTime);
-
-			switch((U16)(pPtr->type)){
-			  case T_NOTEON:{			  
-			    amTrace((const U8*)"T_NOTEON: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)(pPtr->dataPtr);}						  
-			  break;
+   amTrace((const U8*)"delta: %d\n",(unsigned int)pPtr->uiDeltaTime);
+   amTrace((const U8*)"event type: %d\n",pPtr->type);
+   amTrace((const U8*)"function pointer: %p\n",pPtr->infoBlock.func);
+   amTrace((const U8*)"data size: %u\n",pPtr->infoBlock.size);
+   amTrace((const U8*)"data pointer: %p\n",pPtr->dataPtr);
+   
+   amTrace((const U8*)"data: \t");
+   U8 *pbuf=(U8 *)pPtr->dataPtr;
+   for(int x=0;x<pPtr->infoBlock.size;x++){
+    amTrace((const U8*)"0x%x \t",pbuf[x]);
+   }
+   amTrace((const U8*)"\n");
+   
+   
+    switch((U16)(pPtr->type)){
+    case T_NOTEON:{			  
+      amTrace((const U8*)"T_NOTEON: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+      myFunc=pPtr->infoBlock.func;
+      (*myFunc)(pPtr->dataPtr);}						  
+     break;
 			  
-			  case T_NOTEOFF:{
-			    amTrace((const U8*)"T_NOTEOFF: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
+      case T_NOTEOFF:{
+	amTrace((const U8*)"T_NOTEOFF: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	myFunc=pPtr->infoBlock.func;
+	(*myFunc)((void *)pPtr->dataPtr);}
+       break;
 			  
-			  case T_NOTEAFT:{
-			    amTrace((const U8*)"T_NOTEAFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+      case T_NOTEAFT:{
+	  amTrace((const U8*)"T_NOTEAFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
 
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
+	  myFunc=pPtr->infoBlock.func;
+	  (*myFunc)((void *)pPtr->dataPtr);}
+      break;
 			  
-			  case T_CONTROL:{
-			    amTrace((const U8*)"T_CONTROL: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+      case T_CONTROL:{
+	  amTrace((const U8*)"T_CONTROL: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
 
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
+	   myFunc=pPtr->infoBlock.func;
+	    (*myFunc)((void *)pPtr->dataPtr);}
+	break;
 			  
-			  case T_PRG_CH:{
-			    amTrace((const U8*)"T_PRG_CH: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
+	case T_PRG_CH:{
+	    amTrace((const U8*)"T_PRG_CH: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	    myFunc=pPtr->infoBlock.func;
+	    (*myFunc)((void *)pPtr->dataPtr);}
+	break;
+	case T_CHAN_AFT:{
+	    amTrace((const U8*)"T_CHAN_AFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	    myFunc=pPtr->infoBlock.func;
+	    (*myFunc)((void *)pPtr->dataPtr);}
+	break;
 			  
-			  case T_CHAN_AFT:{
-			    amTrace((const U8*)"T_CHAN_AFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
-			  
-			  case T_PITCH_BEND:{
-			    amTrace((const U8*)"T_PITCH_BEND: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;
-			  
-			  case T_META_SET_TEMPO:{
-			    amTrace((const U8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
-
-			    myFunc=pPtr->infoBlock.func;
-			    (*myFunc)((void *)pPtr->dataPtr);}
-			  break;	
-			  default:
-			    amTrace((const U8*)"printEventBlock() unknown event type %d\n",(U16)(pPtr->type));
-
-			  break;
-			}  
+	case T_PITCH_BEND:{
+	      amTrace((const U8*)"T_PITCH_BEND: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	      myFunc=pPtr->infoBlock.func;
+	      (*myFunc)((void *)pPtr->dataPtr);}
+	break;
+	case T_META_SET_TEMPO:{
+	      amTrace((const U8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	      myFunc=pPtr->infoBlock.func;
+	      (*myFunc)((void *)pPtr->dataPtr);}
+	break;	
+	default:
+	      amTrace((const U8*)"printEventBlock() error unknown event type %d\n",(U16)(pPtr->type));
+	break;
+ }  
 		
 		/* decode stored event */
 	

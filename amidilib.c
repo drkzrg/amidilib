@@ -1613,30 +1613,31 @@ void hMidiEvent(void){
 
 if(counter!=0){
   counter--;
-  printf("Decreasing counter.\n");
+  amTrace("hMidiEvent() counter!=0 Decreasing counter.\n");
 }else{
+  amTrace("hMidiEvent() counter==0 send current event and update g_pEventPtr.\n");
     /* 	
 	counter is 0 so we have to:
 	send current event
-	set g_pEventPtr 
+	set g_pEventPtr to next event in the list
     */
     //sending event
-    printEventBlock(counter, (volatile sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
-    
+    printEventBlock(counter, (sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
+     
+    // get next event
     g_pEventPtr=g_pEventPtr->pNext;
+    amTrace("hMidiEvent() setting pointer to new event: %p\n",g_pEventPtr);
     
-    if(g_pEventPtr!=0&&g_pEventPtr->eventBlock.type!=MT_EOT){
+    if(((g_pEventPtr!=NULL)&&(g_pEventPtr->eventBlock.type!=MT_EOT))){
      //set up counter
      counter=g_pEventPtr->eventBlock.uiDeltaTime;
+     amTrace("hMidiEvent() setting counter to new delta value: %d\n",counter);
     
     }else{ 
-      
+      amTrace("hMidiEvent() counter=UINT_MAX.\n");
       counter=UINT_MAX;
     }
  }
-  
-
-
 
 }
 

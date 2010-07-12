@@ -105,8 +105,6 @@ tickCounter:
 	
 	;send events we are fucking lazy today, so everything will be done in C :P
 	
-	
-	
 	;check if event is set tempo
 	;if yes set new values in _tbData,_tbMode
 	;get event 

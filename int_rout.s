@@ -7,6 +7,7 @@
 	
           xdef _installMIDIreplay
 	  xdef _deinstallMIDIreplay
+	  xdef _turnOffKeyclick
 	  xdef	_installTA
 	  xdef	_counter
 	  xdef  _cA
@@ -78,6 +79,13 @@ _deinstallMIDIreplay:
 	bsr.w	super_off
 	movem.l (sp)+,d0-d7/a0-a6
 	rts
+
+_turnOffKeyclick:
+      bsr.w	super_on
+      bclr	#0,$484.w
+
+      bsr.w	super_off
+      rts
 
 _installTA:
 	bsr.w	super_on

@@ -6,7 +6,7 @@
   XDEF am_writeVarLen
   XDEF am_readVarLen
   XDEF am_send_midi_cmd
- 
+  
   
     text
 am_readVarLen:

@@ -39,6 +39,7 @@ void ymSoundOff(){
   //turn off envelope period
   Giaccess(0,LB_ENV_PERIOD+128);
   Giaccess(0,HB_ENV_PERIOD+128);
+
 }
 
 

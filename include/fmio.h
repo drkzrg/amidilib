@@ -9,7 +9,7 @@
 #define __FMIO_H__
 
 #include "c_vars.h"
-#include <mint/mintbind.h>
+#include <mintbind.h>
 
 
 /* memory allocation preference */

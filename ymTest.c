@@ -1,3 +1,10 @@
+
+/**  Copyright 2007-2010 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include <stdio.h>
 #include <ctype.h> 
 #include <osbind.h>
@@ -23,6 +30,7 @@ int main(void) {
   printf("'z' or 'x' - change channels amplitude -/+ \n");
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
+  printf("(c)Nokturnal 2010\n");
   printf("================================================\n");
   
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};

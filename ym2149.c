@@ -1,4 +1,10 @@
 
+/**  Copyright 2007-2010 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include "ym2149.h"
 
 void ymDoSound(U8 hByte,U8 lByte, U8 envelope, U8 amp, U16 period,U8 noiseGenPeriod){

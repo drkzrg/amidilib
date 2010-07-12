@@ -3,17 +3,18 @@
 
 void ymDoSound(U8 hByte,U8 lByte, U8 envelope, U8 amp, U16 period,U8 noiseGenPeriod){
     
-    Giaccess(0b11110000,MIXER+128);	// sound chip setup
-    
-    Giaccess(16,AMP_OSC1+128);		// set osc1
+    Giaccess(0b11000000,MIXER+128);	// sound chip setup
+					//enable 3 oscillators on all channels
+					
+    Giaccess(amp,AMP_OSC1+128);		// set osc1
     Giaccess(lByte,LB_OSC1+128);	
     Giaccess(hByte,HB_OSC1+128);
     
-    Giaccess(15,AMP_OSC2+128);		// set osc2
+    Giaccess(amp,AMP_OSC2+128);		// set osc2
     Giaccess(lByte,LB_OSC2+128);	
     Giaccess(hByte,HB_OSC2+128);
     
-    Giaccess(16,AMP_OSC3+128);		// set osc3
+    Giaccess(amp,AMP_OSC3+128);		// set osc3
     Giaccess(lByte,LB_OSC3+128);	
     Giaccess(hByte,HB_OSC3+128);
     

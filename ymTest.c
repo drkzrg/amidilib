@@ -20,6 +20,7 @@ int main(void) {
   printf("[q-h] - play note\n");
   printf("',' or '.' - change envelope -/+ \n");
   printf("';' or ''' - change noise generator period -/+ \n");
+  printf("'z' or 'x' - change channels amplitude -/+ \n");
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
   printf("================================================\n");
@@ -34,6 +35,7 @@ int main(void) {
   U8 currentBaseIdx=0;
   U8 currentEnvIdx=0;
   U8 noisegenPeriod=15;
+  U8 channelAmp=15;
   
   U8 noteBase=noteBaseArray[currentBaseIdx];
   U8 currentEnvelope=envelopeArray[currentEnvIdx];
@@ -65,7 +67,7 @@ int main(void) {
 	    U8 envelope=envelopeArray[currentEnvIdx];
 	    U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	    ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	    ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	  }
 	}break;
 	case ']':{
@@ -78,7 +80,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	  }
 	}break;
 	case ',':{
@@ -90,7 +92,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	  }
 	
 	}break;
@@ -103,7 +105,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	  }
 	}break;
 	case ';':{
@@ -115,7 +117,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	 }
 	}break;
 	case '\'':{
@@ -127,8 +129,34 @@ int main(void) {
 	   U8 envelope=envelopeArray[currentEnvIdx];
 	   U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	   ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	   ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	 }
+	}break;
+	case 'Z':{
+	  if(channelAmp!=0){
+	    channelAmp--;
+	     printf("Changed channel amplitude to: %d\n",channelAmp);
+	     U8 hByte=g_arMIDI2ym2149Tone[idx].highbyte;
+	     U8 lByte=g_arMIDI2ym2149Tone[idx].lowbyte;
+	     U8 envelope=envelopeArray[currentEnvIdx];
+	     U16 period=g_arMIDI2ym2149Tone[idx].period;
+	  
+	     ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
+	  }
+	}break;
+	
+	case 'X':{
+	  if(channelAmp!=16){
+	    channelAmp++;
+	     printf("Changed channel amplitude to: %d\n",channelAmp);
+	     U8 hByte=g_arMIDI2ym2149Tone[idx].highbyte;
+	     U8 lByte=g_arMIDI2ym2149Tone[idx].lowbyte;
+	     U8 envelope=envelopeArray[currentEnvIdx];
+	     U16 period=g_arMIDI2ym2149Tone[idx].period;
+	  
+	     ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
+	  }
+
 	}break;
 	
 	case 'Q':{
@@ -139,7 +167,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -151,7 +179,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -163,7 +191,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -175,7 +203,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -186,7 +214,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -197,7 +225,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;  
 	
@@ -208,7 +236,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -219,7 +247,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -230,7 +258,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;  
 	
@@ -241,7 +269,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -252,7 +280,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	
@@ -263,7 +291,7 @@ int main(void) {
 	  U8 envelope=envelopeArray[currentEnvIdx];
 	  U16 period=g_arMIDI2ym2149Tone[idx].period;
 	  
-	  ymDoSound(hByte,lByte,envelope,15,period,noisegenPeriod);
+	  ymDoSound(hByte,lByte,envelope,channelAmp,period,noisegenPeriod);
 	}
 	break;
 	

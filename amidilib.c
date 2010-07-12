@@ -1625,7 +1625,7 @@ if(counter!=0){
     printEventBlock(counter, (sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
      
     // get next event
-    g_pEventPtr=g_pEventPtr->pNext;
+    g_pEventPtr=g_pEventPtr->pNext;	
     amTrace("hMidiEvent() setting pointer to new event: %p\n",g_pEventPtr);
     
     if(((g_pEventPtr!=NULL)&&(g_pEventPtr->eventBlock.type!=MT_EOT))){

@@ -27,6 +27,24 @@ static const U8 LB_ENV_PERIOD=11;
 static const U8 HB_ENV_PERIOD=12;
 static const U8 ENV_SELECT=13;
 
+// envelopes
+static const U8 ENV_1=0b1001;
+static const U8 ENV_2=0b1101;
+static const U8 ENV_3=0b1011;
+static const U8 ENV_4=0b1111;
+static const U8 ENV_5=0b1000;
+static const U8 ENV_6=0b1100;
+static const U8 ENV_7=0b1010;
+static const U8 ENV_8=0b1110;
+
+
+
+/* 
+  \
+  \__________________________
+*/
+
+
 typedef struct  {
   U16 period;
   U8 highbyte;
@@ -169,7 +187,7 @@ static const ymData g_arMIDI2ym2149Tone[128]={
 };
 
 
-void ymDoSound(U8 hByte,U8 lByte);
+void ymDoSound(U8 hByte,U8 lByte, U8 envelope, U8 amp, U16 period,U8 noiseGenPeriod);
 void ymSoundOff();
 
 

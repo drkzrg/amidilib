@@ -25,15 +25,17 @@ OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_5
 YMTEST_SRCS = ymTest.c c_vars.c ym2149.c
 YMTEST_OBJECTS = ymTest.o c_vars.o ym2149.o
 
+$(YM_TEST_EXE): $(YMTEST_OBJECTS) int_routs.o 
+	$(CC) $(LDFLAGS) $(YMTEST_OBJECTS) int_rout.o -o $@ -lm 
+	echo "Copying ym2149 test program to emulator directory."
+	cp $(YM_TEST_EXE) $(ST_HD_PATH)
+
+
 $(EXE): $(OBJECTS) amidi.o int_routs.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
 	echo "Copying TOS binary to emulator directory."
 	cp $(EXE) $(ST_HD_PATH)
 	
-$(YM_TEST_EXE): $(YMTEST_OBJECTS) int_routs.o 
-	$(CC) $(LDFLAGS) $(YMTEST_OBJECTS) int_rout.o -o $@ -lm 
-	echo "Copying ym2149 test program to emulator directory."
-	cp $(YM_TEST_EXE) $(ST_HD_PATH)
 
 all: $(SRCS) $(EXE)
 	

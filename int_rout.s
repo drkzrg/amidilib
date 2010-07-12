@@ -2,8 +2,6 @@
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
-
-	
 	
           xdef _installMIDIreplay
 	  xdef _deinstallMIDIreplay

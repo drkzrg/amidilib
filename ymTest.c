@@ -17,10 +17,7 @@
 
 extern void turnOffKeyclick(void);
 
-int main(void) {
-  
-  turnOffKeyclick();
-  
+void printHelpScreen(){
   printf("===============================================\n");
   printf("/|\\ ym2149 sound output test..\n");
   printf("'[' or ']' - change octave -/+ \n");
@@ -28,10 +25,19 @@ int main(void) {
   printf("',' or '.' - change envelope -/+ \n");
   printf("';' or ''' - change noise generator period -/+ \n");
   printf("'z' or 'x' - change channels amplitude -/+ \n");
+  printf("[i] - show this help screen \n");
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
   printf("(c)Nokturnal 2010\n");
   printf("================================================\n");
+  
+}
+
+int main(void) {
+  
+  turnOffKeyclick();
+  
+  printHelpScreen();
   
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   U8 envelopeArray[]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8};
@@ -166,7 +172,9 @@ int main(void) {
 	  }
 
 	}break;
-	
+	case 'I':{
+	  printHelpScreen();
+	}break;
 	case 'Q':{
 	  
 	  idx=noteBaseArray[currentBaseIdx]+0;

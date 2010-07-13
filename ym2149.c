@@ -47,6 +47,17 @@ void ymSoundOff(){
   Giaccess(0,LB_ENV_PERIOD+128);
   Giaccess(0,HB_ENV_PERIOD+128);
 
+  Giaccess(0,AMP_OSC1+128);		// set osc1
+  Giaccess(0,LB_OSC1+128);	
+  Giaccess(0,HB_OSC1+128);
+    
+  Giaccess(0,AMP_OSC2+128);		// set osc2
+  Giaccess(0,LB_OSC2+128);	
+  Giaccess(0,HB_OSC2+128);
+    
+  Giaccess(0,AMP_OSC3+128);		// set osc3
+  Giaccess(0,LB_OSC3+128);	
+  Giaccess(0,HB_OSC3+128);
 }
 
 

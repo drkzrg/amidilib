@@ -8,9 +8,17 @@
 #include <stdio.h>
 #include <ctype.h> 
 #include <osbind.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "c_vars.h"
- 
+#include "ikbd.h"
+
+// IKBD defines 
+#define SCANCODE_ESC	0x01
+#define KEY_PRESSED	0xff
+#define KEY_UNDEFINED	0x80
+#define KEY_RELEASED	0x00
 
 extern void turnOffKeyclick(void);
 
@@ -25,167 +33,45 @@ void printHelpScreen(){
   printf("[Esc] - quit\n");
   printf("(c)Nokturnal 2010\n");
   printf("================================================\n");
-  
 }
 
 int main(void) {
-  
+  	int i, quit;
+
   turnOffKeyclick();
   
   printHelpScreen();
   
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   
-  BOOL bQuitFlag=FALSE;
-  U16 input=0L;
-  U8 idx=0;
-  
-  U8 currentBaseIdx=0;
-  U8 currentEnvIdx=0;
-  U8 noisegenPeriod=15;
-  U8 channelAmp=15;
-  
-  U8 noteBase=noteBaseArray[currentBaseIdx];
-  
-  while(bQuitFlag!=TRUE){
-    
-    input=(U16)Crawcin();
-    
-    if(input!=0){
-    
-      switch(toupper((U8)input)){
-    
-	case 0x1b:{
-	  bQuitFlag=TRUE;
-	}
-	break;
-	case ' ':{
-	 // turn off all sound
-	}
-	break;
-	
-	case '[':{
-	  if(currentBaseIdx!=0){
-	    currentBaseIdx--;
-	    printf("Changed octave to: %d\n",currentBaseIdx+1);
-	    idx=idx-12;
-	    
-	  }
-	}break;
-	case ']':{
-	if(currentBaseIdx!=7){
-	    currentBaseIdx++;
-	    printf("Changed octave to: %d\n",currentBaseIdx+1);
-	    idx=idx+12;
-	    
-	  }
-	}break;
-	
-	
-	case 'Z':{
-	  if(channelAmp!=0){
-	    channelAmp--;
-	     printf("Changed channel amplitude to: %d\n",channelAmp);
-	     
-	  }
-	}break;
-	
-	case 'X':{
-	  if(channelAmp!=16){
-	    channelAmp++;
-	     printf("Changed channel amplitude to: %d\n",channelAmp);
-	     
-	  }
+  memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
+  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
-	}break;
-	case 'I':{
-	  printHelpScreen();
-	}break;
-	case 'Q':{
-	  
-	  idx=noteBaseArray[currentBaseIdx]+0;
-	  
+	/* Install our asm handler */
+	Supexec(IkbdInstall);
+
+	printf("Press ESC to quit\n");
+
+	/* Wait till ESC key pressed */
+	quit = 0;
+	while (!quit) {
+		for (i=0; i<128; i++) {
+			if (Ikbd_keyboard[i]==KEY_PRESSED) {
+				printf("Key with scancode 0x%02x pressed\n", i);
+				Ikbd_keyboard[i]=KEY_UNDEFINED;
+				if (i==SCANCODE_ESC) {
+					quit=1;
+				}
+			}
+			if (Ikbd_keyboard[i]==KEY_RELEASED) {
+				printf("Key with scancode 0x%02x released\n", i);
+				Ikbd_keyboard[i]=KEY_UNDEFINED;
+			}
+		}
 	}
-	break;
-	
-	case 'A':{
-	  
-	  idx=noteBaseArray[currentBaseIdx]+1;
-	  
-	}
-	break;
-	
-	case 'W':{
-	  
-	  idx=noteBaseArray[currentBaseIdx]+2;
-	  
-	}
-	break;
-	
-	case 'S':{
-	  
-	  idx=noteBaseArray[currentBaseIdx]+3;
-	  
-	}
-	break;
-	
-	case 'E':{
-	  idx=noteBaseArray[currentBaseIdx]+4;
-	  
-	}
-	break;
-	
-	case 'D':{
-	  idx=noteBaseArray[currentBaseIdx]+5;
-	  
-	}
-	break;  
-	
-	case 'R':{
-	  idx=noteBaseArray[currentBaseIdx]+6;
-	  
-	}
-	break;
-	
-	case 'F':{
-	  idx=noteBaseArray[currentBaseIdx]+7;
-	  
-	}
-	break;
-	
-	case 'T':{
-	  idx=noteBaseArray[currentBaseIdx]+8;
-	  
-	}
-	break;  
-	
-	case 'G':{
-	  idx=noteBaseArray[currentBaseIdx]+9;
-	  
-	}
-	break;
-	
-	case 'Y':{
-	  idx=noteBaseArray[currentBaseIdx]+10;
-	  
-	}
-	break;
-	
-	case 'H':{
-	  idx=noteBaseArray[currentBaseIdx]+11;
-	  
-	}
-	break;
-	
-    }
-      
-    }
-  
-  }
-  
-  //turn off sound output 
- 
- printf("Program terminated...\n");
+
+	/* Uninstall our asm handler */
+	Supexec(IkbdUninstall);
 
 return 0;
 }

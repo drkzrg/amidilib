@@ -5,6 +5,7 @@
 
 INCLUDES = -I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./include/ym2149
 CC = m68k-atari-mint-gcc
+GAS = m68k-atari-mint-as
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
 CFLAGS += -g -std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
@@ -25,8 +26,8 @@ ST_HD_PATH=$(HOME)/Dokumenty/Pulpit/tos/dyskST
 SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c ym2149.c
 OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o ym2149.o
 
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c
-MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o
+MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c 
+MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o  
 
 YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o
@@ -43,8 +44,8 @@ $(YM_TEST_EXE): $(YMTEST_OBJECTS) int_routs.o
 	cp $(YM_TEST_EXE) $(ST_HD_PATH)
 
 
-$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_routs.o 
-	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) int_rout.o -o $@ -lm 
+$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_routs.o ikbd_asm.o  
+	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) int_rout.o ikbd.o -o $@ -lm 
 	echo "Copying midi output test program to emulator directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
@@ -56,6 +57,9 @@ amidi.o:	amidi.s
 
 int_routs.o:	int_rout.s
 		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
+
+ikbd_asm.o:	ikbd.S
+		$(GAS) ikbd.S -o ikbd.o
 
 $(OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

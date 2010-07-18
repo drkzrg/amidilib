@@ -32,12 +32,15 @@
 #define SC_G 0x22
 #define SC_Y 0x15
 #define SC_H 0x23
+
 #define SC_SQ_LEFT_BRACE 0x1a
 #define SC_SQ_RIGHT_BRACE 0x1b
+
 #define SC_Z 0x2c
 #define SC_X 0x2d
 #define SC_LT 0x33
 #define SC_GT 0x34
+
 #define SC_1 0x02
 #define SC_2 0x03
 #define SC_3 0x04
@@ -55,6 +58,10 @@
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;
+
+extern const char *g_arMIDI2key[];	//midi note to musical tone table 
+extern const char *g_arCM32Linstruments[]; //MT32 instruments on 2-9 channel
+extern const char *g_arCM32Lrhythm[]; //MT32 rhytm part
 
 extern void turnOffKeyclick(void);
 
@@ -107,7 +114,7 @@ int main(void) {
   U32 i, quit;
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   U8 currentOctave=3;	
-  U8 currentChannel=0;
+  U8 currentChannel=1;
   U8 currentVelocity=127;
   U8 currentPN=1;
   
@@ -115,7 +122,10 @@ int main(void) {
   
   /* init library */
   U32 iError=am_init();
-  
+ 
+  //set current channel as 1, default is 0 in external module
+  program_change(currentChannel, currentPN);
+				  
   printHelpScreen();
   
   memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
@@ -139,105 +149,112 @@ int main(void) {
 				  case SC_ESC:{
 				    quit=1;
 				  }break;
-				  case SC_SPACEBAR:{
-				    printf("Turn all sounds off\n");
-				  }break;
-				  
-				  //change octave
+				  				  //change octave
 				  case SC_1:{
-				    printf("Current octave: -3 \n");
+				    printf("octave: -3 set\n");
 				   
 				    currentOctave=0;
 				  }break;
 				  //change octave
 				  case SC_2:{
-				  printf("Current octave: -2 \n");
+				  printf("octave: -2 set\n");
 				   
 				    currentOctave=1;
 				  }break;
 				  
 				  //change octave
 				  case SC_3:{
-				  printf("Current octave: -1 \n");
+				  printf("octave: -1 set \n");
 				   
 				    currentOctave=2;
 				  }break;
 				  //change octave
 				  case SC_4:{
-				    printf("Current octave: 0 \n");
+				    printf("octave: 0 set\n");
 				   
 				  currentOctave=3;
 				  }break;
 				  //change octave
 				  case SC_5:{
-				    printf("Current octave: 1 \n");
+				    printf("octave: 1 set \n");
 				   
 				  currentOctave=4;
 				  }break;
 				  
 				  //change octave
 				  case SC_6:{
-				    printf("Current octave: 2 \n");
+				    printf("octave: 2 set \n");
 				   
 				  currentOctave=5;
 				  }break;
 				  
 				  //change octave
 				  case SC_7:{
-				    printf("Current octave: 3 \n");
+				    printf("octave: 3 set\n");
 				   
 				  currentOctave=6;
 				  }break;
 				  //change octave
 				  case SC_8:{
-				    printf("Current octave: 4 \n");
+				    printf("octave: 4 set\n");
 				   
 				  currentOctave=7;
 				  }break;
 				  //note on handling
 				  case SC_Q:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+0));
 				  }break;
 				  case SC_A:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+1,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+1));
 				  }break;
 				  case SC_W:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+2,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+2));
 				  }break;
 				  case SC_S:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+3,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+3));
 				  }break;
 				  case SC_E:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+4));
 				  }break;
 				  
 				  case SC_D:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+5));
 				  }break;
 				  
 				  case SC_R:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+6,currentVelocity);
-  
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+6));
 				  }break;
 				  
 				  case SC_F:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+7,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+7));
 				  }break;
 				  
 				  case SC_T:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+8,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+8));
 				  }break;
 				  
 				  case SC_G:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+9,currentVelocity);
+				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+9));
 				  }break;
 				  
 				  case SC_Y:{
 				     note_on(currentChannel,noteBaseArray[currentOctave]+10,currentVelocity);
+				     printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+10));
 				  }break;
 				  
 				  case SC_H:{
 				     note_on(currentChannel,noteBaseArray[currentOctave]+11,currentVelocity);
+				     printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+11));
 				  }break;
 				  
 				  // change program number
@@ -257,17 +274,17 @@ int main(void) {
 				  case SC_Z :{
 				    if(currentVelocity!=0){
 				      currentVelocity--;
+				      printf("Current note velocity:: %d \n",currentVelocity);
 				    }
-				    printf("Current note velocity:: %d \n",currentVelocity);
-				   
+				    
 				  }break;
 		
 				  case SC_X:{
 				    if(currentVelocity!=127){
 				      currentVelocity++;
+				      printf("Current note velocity:: %d \n",currentVelocity);
 				    }
-				    printf("Current note velocity:: %d \n",currentVelocity);
-				   
+				    
 				  }break;
 				  
 				  //change active channel/part 0-15
@@ -275,18 +292,19 @@ int main(void) {
 				    if(currentChannel!=0){
 				      am_allNotesOff(16);
 				      currentChannel--;
+				      program_change(currentChannel, currentPN);
+				      printf("active channel: %d \n",currentChannel);
 				    }
-				    printf("Current channel: %d \n",currentChannel);
-				   
+				    
 				  }break;
 				 
 				  case SC_GT:{
 				    if(currentChannel!=15){
 					am_allNotesOff(16);
-				  
 					currentChannel++;
-				      }
-				   printf("Current channel: %d \n",currentChannel);
+				        program_change(currentChannel, currentPN);
+					printf("Current channel: %d \n",currentChannel);
+				    }
 				  }break;
 				  
 				  case SC_B:{
@@ -360,7 +378,7 @@ int main(void) {
 				  // send chosen program number
 				  case SC_SQ_LEFT_BRACE:
 				  case SC_SQ_RIGHT_BRACE:{
-				    printf("Program change on ch: %d pn: %d\n",currentChannel, currentPN);
+				    printf("ch: %d %s (#PC %d)\n",currentChannel,g_arCM32Linstruments[currentPN], currentPN);
 				    program_change(currentChannel, currentPN);
 				  }break;
 				

@@ -351,4 +351,6 @@ void hMidiEvent(void);	/* handles stuff inside the replay routine */
 void getDeviceInfoResponse(U8 channel);
 void playSequence(const sEventList **listPtr);
 
+const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
+
 #endif

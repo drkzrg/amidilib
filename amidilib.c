@@ -44,6 +44,9 @@ extern const U8 *g_arMIDIcontrollers[];
 /* static table with MIDI notes to ASA ISO */
 extern const char *g_arMIDI2key[];
 
+/* static table with CM32 rhytm part */
+extern const char *g_arCM32Lrhythm[];
+
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
 
@@ -1605,6 +1608,19 @@ const U8 *am_getMIDInoteName(U8 ubNoteNb){
 if((ubNoteNb>=0&&ubNoteNb<=127)) /* 0-127 range check */
  return((const U8*)g_arMIDI2key[ubNoteNb]);
 else 
+  return NULL;
+}
+
+const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
+  /* 0-127 range check */
+  if((noteNumber>=0&&noteNumber<=127)) {  
+    if((currentChannel!=11&&currentPN!=128)){
+	return(g_arMIDI2key[noteNumber]);
+    }
+    else{
+	return(g_arCM32Lrhythm[noteNumber]);
+    }
+}else 
   return NULL;
 }
 

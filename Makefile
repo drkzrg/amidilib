@@ -33,29 +33,26 @@ YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o
 
 
-$(EXE): $(OBJECTS) amidi.o int_routs.o
+$(EXE): $(OBJECTS) amidi.o int_rout.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
 	echo "Copying TOS binary to emulator directory."
 	cp $(EXE) $(ST_HD_PATH)
 
-$(YM_TEST_EXE): $(YMTEST_OBJECTS) int_routs.o 
-	$(CC) $(LDFLAGS) $(YMTEST_OBJECTS) int_rout.o -o $@ -lm 
+$(YM_TEST_EXE): $(YM_TEST_OBJECTS) int_rout.o 
+	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS) int_rout.o -o $@ -lm 
 	echo "Copying ym2149 test program to emulator directory."
 	cp $(YM_TEST_EXE) $(ST_HD_PATH)
 
 
-$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_routs.o ikbd_asm.o  
+$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o  
 	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) int_rout.o ikbd.o -o $@ -lm 
 	echo "Copying midi output test program to emulator directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
-
-all: $(SRCS) $(EXE)
-	
 amidi.o:	amidi.s
 		$(ASM) amidi.s $(ASMFLAGS) -o amidi.o
 
-int_routs.o:	int_rout.s
+int_rout.o:	int_rout.s
 		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
 
 ikbd_asm.o:	ikbd.S
@@ -64,17 +61,17 @@ ikbd_asm.o:	ikbd.S
 $(OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(YMTEST_OBJECTS): %.o: %.c
+$(YM_TEST_OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(MIDITEST_OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-
-ym: $(YMTEST_SRCS) $(YM_TEST_EXE)	
-
+ym: $(YM_TEST_SRCS) $(YM_TEST_EXE)	
 midi: $(MIDITEST_SRCS) $(MIDI_TEST_EXE)	
 
+all: $(SRCS) $(EXE)
+	
 clean:
 	rm -rf *o $(EXE)
 	rm -rf *o $(YM_TEST_EXE)

@@ -261,6 +261,8 @@ int main(void) {
 				  case SC_SQ_LEFT_BRACE:{
 				    if(currentPN!=1){
 				      currentPN--;
+				    }else{
+				      currentPN=128;
 				    }
 				     
 				  }break;
@@ -268,23 +270,27 @@ int main(void) {
 				  case SC_SQ_RIGHT_BRACE:{
 				  if(currentPN!=128){
 				      currentPN++;
+				    }else{
+				      currentPN=1;
 				    }
 				  }break;
 				  //change velocity
 				  case SC_Z :{
 				    if(currentVelocity!=0){
 				      currentVelocity--;
-				      printf("Current note velocity:: %d \n",currentVelocity);
+				    }else{
+				      currentVelocity=127;
 				    }
-				    
+				    printf("Current note velocity:: %d \n",currentVelocity);
 				  }break;
 		
 				  case SC_X:{
 				    if(currentVelocity!=127){
 				      currentVelocity++;
-				      printf("Current note velocity:: %d \n",currentVelocity);
+				    }else{
+				      currentVelocity=0;
 				    }
-				    
+				    printf("Current note velocity:: %d \n",currentVelocity);
 				  }break;
 				  
 				  //change active channel/part 0-15

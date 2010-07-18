@@ -112,6 +112,11 @@ int main(void) {
   U8 currentPN=1;
   
   turnOffKeyclick();
+  
+  /* init library */
+  U32 iError=am_init();
+    
+  
   printHelpScreen();
   
   memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
@@ -142,83 +147,99 @@ int main(void) {
 				  
 				  //change octave
 				  case SC_1:{
+				    printf("Current octave: -3 \n");
+				   
 				    currentOctave=0;
 				  }break;
 				  //change octave
 				  case SC_2:{
-				  currentOctave=1;
+				  printf("Current octave: -2 \n");
+				   
+				    currentOctave=1;
 				  }break;
 				  
 				  //change octave
 				  case SC_3:{
-				  currentOctave=2;
+				  printf("Current octave: -1 \n");
+				   
+				    currentOctave=2;
 				  }break;
 				  //change octave
 				  case SC_4:{
+				    printf("Current octave: 0 \n");
+				   
 				  currentOctave=3;
 				  }break;
 				  //change octave
 				  case SC_5:{
+				    printf("Current octave: 1 \n");
+				   
 				  currentOctave=4;
 				  }break;
 				  
 				  //change octave
 				  case SC_6:{
+				    printf("Current octave: 2 \n");
+				   
 				  currentOctave=5;
 				  }break;
 				  
 				  //change octave
 				  case SC_7:{
+				    printf("Current octave: 3 \n");
+				   
 				  currentOctave=6;
 				  }break;
 				  //change octave
 				  case SC_8:{
+				    printf("Current octave: 4 \n");
+				   
 				  currentOctave=7;
 				  }break;
 				  //note on handling
 				  case SC_Q:{
-				    note_on(noteBaseArray[currentOctave]+0,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
 				  }break;
 				  case SC_A:{
-				    note_on(noteBaseArray[currentOctave]+1,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+1,currentVelocity);
 				  }break;
 				  case SC_W:{
-				    note_on(noteBaseArray[currentOctave]+2,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+2,currentVelocity);
 				  }break;
 				  case SC_S:{
-				    note_on(noteBaseArray[currentOctave]+3,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+3,currentVelocity);
 				  }break;
 				  case SC_E:{
-				    note_on(noteBaseArray[currentOctave]+4,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
 				  }break;
 				  
 				  case SC_D:{
-				    note_on(noteBaseArray[currentOctave]+5,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
 				  }break;
 				  
 				  case SC_R:{
-				    note_on(noteBaseArray[currentOctave]+6,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+6,currentVelocity);
   
 				  }break;
 				  
 				  case SC_F:{
-				    note_on(noteBaseArray[currentOctave]+7,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+7,currentVelocity);
 				  }break;
 				  
 				  case SC_T:{
-				    note_on(noteBaseArray[currentOctave]+8,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+8,currentVelocity);
 				  }break;
 				  
 				  case SC_G:{
-				    note_on(noteBaseArray[currentOctave]+9,currentChannel,currentVelocity);
+				    note_on(currentChannel,noteBaseArray[currentOctave]+9,currentVelocity);
 				  }break;
 				  
 				  case SC_Y:{
-				     note_on(noteBaseArray[currentOctave]+10,currentChannel,currentVelocity);
+				     note_on(currentChannel,noteBaseArray[currentOctave]+10,currentVelocity);
 				  }break;
 				  
 				  case SC_H:{
-				     note_on(noteBaseArray[currentOctave]+11,currentChannel,currentVelocity);
+				     note_on(currentChannel,noteBaseArray[currentOctave]+11,currentVelocity);
 				  }break;
 				  
 				  // change program number
@@ -265,12 +286,13 @@ int main(void) {
 					currentChannel++;
 				      }
 				   printf("Current channel: %d \n",currentChannel);
-				  }
+				  }break;
 				  
 				  case SC_B:{
 				    changeGSprogramNumber();
 				   
 				  }break;
+				  
 				  case SC_I:{
 				   printHelpScreen();
 				  }break;
@@ -286,52 +308,52 @@ int main(void) {
 				switch(i){
 				  //note off handling
 				  case SC_Q:{
-				     note_off(noteBaseArray[currentOctave]+0,currentChannel,currentVelocity);
+				     note_off(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
 				  }break;
 				  
 				  case SC_A:{
-				    note_off(noteBaseArray[currentOctave]+1,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+1,currentVelocity);
 				  
 				  }break;
 				  
 				  case SC_W:{
-				    note_off(noteBaseArray[currentOctave]+2,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+2,currentVelocity);
 				  }break;
 				  
 				  case SC_S:{
-				    note_off(noteBaseArray[currentOctave]+3,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+3,currentVelocity);
 				  }
 				  
 				  case SC_E:{
-				    note_off(noteBaseArray[currentOctave]+4,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
 				  }break;
 				  
 				  case SC_D:{
-				    note_off(noteBaseArray[currentOctave]+5,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
 				  }
 				  
 				  case SC_R:{
-				    note_off(noteBaseArray[currentOctave]+6,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+6,currentVelocity);
 				  }break;
 				  
 				  case SC_F:{
-				    note_off(noteBaseArray[currentOctave]+7,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+7,currentVelocity);
 				  }
 				  
 				  case SC_T:{
-				    note_off(noteBaseArray[currentOctave]+8,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+8,currentVelocity);
 				  }break;
 				  
 				  case SC_G:{
-				    note_off(noteBaseArray[currentOctave]+9,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+9,currentVelocity);
 				  }break;
 				  
 				  case SC_Y:{
-				    note_off(noteBaseArray[currentOctave]+10,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+10,currentVelocity);
 				  }break;
 				  
 				  case SC_H:{
-				    note_off(noteBaseArray[currentOctave]+11,currentChannel,currentVelocity);
+				    note_off(currentChannel,noteBaseArray[currentOctave]+11,currentVelocity);
 				  }break;
 		
 				  // send chosen program number
@@ -357,5 +379,9 @@ int main(void) {
 	/* Uninstall our asm handler */
 	Supexec(IkbdUninstall);
 
+    /* clean up, free internal library buffers etc..*/
+    am_deinit();
+   
+	
 return 0;
 }

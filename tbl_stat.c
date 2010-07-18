@@ -417,6 +417,8 @@ const char *g_arCM32Lrhythm[]=
 "7F [no sound]"
 };
 
+
+// program number #57
 const char *g_arCM500sfx[]=
 {
 "0 [no sound]",

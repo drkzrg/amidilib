@@ -36,6 +36,14 @@
 #define SC_SQ_LEFT_BRACE 0x1a
 #define SC_SQ_RIGHT_BRACE 0x1b
 
+#define SC_ARROW_UP 0x48
+#define SC_ARROW_DOWN 0x50
+#define SC_ARROW_LEFT 0x4b
+#define SC_ARROW_RIGHT 0x4d
+#define SC_HELP 0x62
+#define SC_UNDO 0x61
+
+
 #define SC_Z 0x2c
 #define SC_X 0x2d
 #define SC_LT 0x33
@@ -71,12 +79,13 @@ void printHelpScreen(){
   printf("[q-h] - play note\n");
   printf("[1-8] - choose octave \n");
   printf("'[' or ']' - change program number for active channel -/+ \n");
-  printf(" [B] - GS source program change for active channel (bank select + program number) -/+ \n");
+  printf(" [B] - change GS source instrument for active channel\n\t (bank select + program number) -/+ \n");
+  printf(" [Arrow Up/Down] - adjust bank select -/+ \n");
   printf("'<' or '>' - change active channel/part\n");
   printf("'z' or 'x' - change note velocity -/+ \n");
   printf("[C] - change chorus settings for all channels\n");
   printf("[V] - change reverb settings for all channels\n");
-  printf("[i] - show this help screen \n");
+  printf("[HELP] - show this help screen \n");
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
   printf("(c) Nokturnal 2010\n");
@@ -84,11 +93,10 @@ void printHelpScreen(){
 }
 
 
-void changeGSprogramNumber(){
-  printf("Change GS program number:\n");
-  printf("Bank select for GS sound source\n");
-  printf("Select Bank 0-63,44-127 (user area):\n");
-  printf("Select Program number:\n");
+void changeGSprogramNumber(U8 channel,U8 bank,U8 pn){
+  printf("Change GS instrument, bank: %d, pn: %d\n", bank,pn);
+  control_change(0x00, channel, 0x00, bank);
+  program_change(channel, pn);
 }
 
 
@@ -117,6 +125,7 @@ int main(void) {
   U8 currentChannel=1;
   U8 currentVelocity=127;
   U8 currentPN=1;
+  U8 currentBankSelect=0;
   
   turnOffKeyclick();
   
@@ -312,13 +321,28 @@ int main(void) {
 					printf("Current channel: %d \n",currentChannel);
 				    }
 				  }break;
+				  case SC_ARROW_UP:{
+				    if(currentBankSelect!=127){
+				      currentBankSelect++;
+				    }
+				    else{
+				      currentBankSelect=0;
+				    }
 				  
+				  }break;
+				  case SC_ARROW_DOWN:{
+				    if(currentBankSelect!=0){
+				      currentBankSelect--;
+				    }
+				    else{
+				      currentBankSelect=127;
+				    }
+				  }break;
 				  case SC_B:{
-				    changeGSprogramNumber();
-				   
+				    changeGSprogramNumber(currentChannel,currentBankSelect,currentPN);
 				  }break;
 				  
-				  case SC_I:{
+				  case SC_HELP:{
 				   printHelpScreen();
 				  }break;
  

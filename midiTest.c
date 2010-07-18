@@ -115,7 +115,6 @@ int main(void) {
   
   /* init library */
   U32 iError=am_init();
-    
   
   printHelpScreen();
   
@@ -134,7 +133,6 @@ int main(void) {
 		  
 			if (Ikbd_keyboard[i]==KEY_PRESSED) {
 				
-			    //printf("Key with scancode 0x%02x pressed\n", i);
 			     Ikbd_keyboard[i]=KEY_UNDEFINED;
 				
 				switch(i){
@@ -275,6 +273,7 @@ int main(void) {
 				  //change active channel/part 0-15
 				  case SC_LT: {
 				    if(currentChannel!=0){
+				      am_allNotesOff(16);
 				      currentChannel--;
 				    }
 				    printf("Current channel: %d \n",currentChannel);
@@ -283,6 +282,8 @@ int main(void) {
 				 
 				  case SC_GT:{
 				    if(currentChannel!=15){
+					am_allNotesOff(16);
+				  
 					currentChannel++;
 				      }
 				   printf("Current channel: %d \n",currentChannel);
@@ -302,8 +303,8 @@ int main(void) {
 				
 			}
 			if (Ikbd_keyboard[i]==KEY_RELEASED) {
-				//printf("Key with scancode 0x%02x released\n", i);
-				Ikbd_keyboard[i]=KEY_UNDEFINED;
+				
+			  Ikbd_keyboard[i]=KEY_UNDEFINED;
 				
 				switch(i){
 				  //note off handling
@@ -364,8 +365,8 @@ int main(void) {
 				  }break;
 				
 				  case SC_SPACEBAR:{
-				    printf("Turned all all channels.\n");
-				    am_allNotesOff(15);
+				    printf("Silence...\n");
+				    am_allNotesOff(16);
 				  
 				  }break;
 				  

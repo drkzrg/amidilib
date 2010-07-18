@@ -10,6 +10,7 @@
 #include <osbind.h>
 #include <stdio.h>
 #include <string.h>
+#include "amidilib.h"
 
 #include "c_vars.h"
 #include "ikbd.h"
@@ -45,7 +46,10 @@
 #define SC_6 0x07
 #define SC_7 0x08
 #define SC_8 0x09
-
+#define SC_C 0x2e
+#define SC_V 0x2f
+#define SC_B 0x30
+#define SC_I 0x17
 
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
@@ -59,8 +63,11 @@ void printHelpScreen(){
   printf("[q-h] - play note\n");
   printf("[1-8] - choose octave \n");
   printf("'[' or ']' - change program number for active channel -/+ \n");
-  printf("'<' or '>' - change active channel\n");
+  printf(" [B] - GS source program change for active channel (bank select + program number) -/+ \n");
+  printf("'<' or '>' - change active channel/part\n");
   printf("'z' or 'x' - change note velocity -/+ \n");
+  printf("[C] - change chorus settings for all channels\n");
+  printf("[V] - change reverb settings for all channels\n");
   printf("[i] - show this help screen \n");
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
@@ -68,10 +75,38 @@ void printHelpScreen(){
   printf("================================================\n");
 }
 
+
+void changeGSprogramNumber(){
+  printf("Change GS program number:\n");
+}
+
+
+void changeGlobalChorusSettings(){
+  printf("Change global chorus settings:\n");
+}
+
+void changeGlobalReverbSettings(){
+  printf("Change global reverb settings:\n");
+}
+
+void increaseGlobalMasterVolume(){
+  printf("Increase global Master volume\n");
+}
+
+void decreaseGlobalMasterVolume(){
+  printf("Decrease global Master volume\n");
+}
+
+//======================================================================================================
 int main(void) {
+  
   U32 i, quit;
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
-
+  U8 currentOctave=3;	
+  U8 currentChannel=0;
+  U8 currentVelocity=127;
+  U8 currentPN=1;
+  
   turnOffKeyclick();
   printHelpScreen();
   
@@ -87,10 +122,11 @@ int main(void) {
 	quit = 0;
 	while (!quit) {
 		for (i=0; i<128; i++) {
+		  
 			if (Ikbd_keyboard[i]==KEY_PRESSED) {
 				
-				printf("Key with scancode 0x%02x pressed\n", i);
-				Ikbd_keyboard[i]=KEY_UNDEFINED;
+			  printf("Key with scancode 0x%02x pressed\n", i);
+			  Ikbd_keyboard[i]=KEY_UNDEFINED;
 				
 				switch(i){
 				  case SC_ESC:{
@@ -102,114 +138,139 @@ int main(void) {
 				  
 				  //change octave
 				  case SC_1:{
-				  
+				    currentOctave=0;
 				  }break;
 				  //change octave
 				  case SC_2:{
-				  
+				  currentOctave=1;
 				  }break;
 				  
 				  //change octave
 				  case SC_3:{
-				  
+				  currentOctave=2;
 				  }break;
-				  
 				  //change octave
 				  case SC_4:{
-				  
+				  currentOctave=3;
 				  }break;
 				  //change octave
 				  case SC_5:{
-				  
+				  currentOctave=4;
 				  }break;
 				  
 				  //change octave
 				  case SC_6:{
-				  
+				  currentOctave=5;
 				  }break;
 				  
 				  //change octave
 				  case SC_7:{
-				  
+				  currentOctave=6;
 				  }break;
-				  
 				  //change octave
 				  case SC_8:{
-				  
+				  currentOctave=7;
 				  }break;
 				  
 				  
 				  //note on handling
 				  case SC_Q:{
-				  
+				    note_on(noteBaseArray[currentOctave]+0,currentChannel,currentVelocity);
 				  }
 				  case SC_A:{
+				  note_on(noteBaseArray[currentOctave]+1,currentChannel,currentVelocity);
 				  
 				  }
 				  case SC_W:{
+				  note_on(noteBaseArray[currentOctave]+2,currentChannel,currentVelocity);
 				  
 				  }
 				  case SC_S:{
+				  note_on(noteBaseArray[currentOctave]+3,currentChannel,currentVelocity);
 				  
 				  }
 				  case SC_E:{
+				  note_on(noteBaseArray[currentOctave]+4,currentChannel,currentVelocity);
 				  
 				  }
 				  
 				  case SC_D:{
+				  note_on(noteBaseArray[currentOctave]+5,currentChannel,currentVelocity);
 				  
 				  }
 				  
 				  case SC_R:{
+				  note_on(noteBaseArray[currentOctave]+6,currentChannel,currentVelocity);
 				  
 				  }
 				  
 				  case SC_F:{
-				  
-				  
+				    note_on(noteBaseArray[currentOctave]+7,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_T:{
-				  
+				    note_on(noteBaseArray[currentOctave]+8,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_G:{
-				  
+				    note_on(noteBaseArray[currentOctave]+9,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_Y:{
-				  
+				     note_on(noteBaseArray[currentOctave]+10,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_H:{
-				  
+				     note_on(noteBaseArray[currentOctave]+11,currentChannel,currentVelocity);
 				  }
 				  
 				  // change program number
 				  case SC_SQ_LEFT_BRACE:{
-				  
+				    if(currentPN!=1){
+				      currentPN--;
+				    }
 				  }
 				  
 				  case SC_SQ_RIGHT_BRACE:{
-				  
+				  if(currentPN!=128){
+				      currentPN++;
+				    }
 				  }
 				  //change velocity
 				  case SC_Z :{
-				  
+				    if(currentVelocity!=0){
+				      currentVelocity--;
+				    }break;
 				  }
 		
 				  case SC_X:{
+				    if(currentVelocity!=127){
+				      currentVelocity++;
+				    }
+				  }break;
 				  
-				  }
-				  
-				  //change active channel 0-15
+				  //change active channel/part 0-15
 				  case SC_LT: {
-				  
-				  }
+				    if(currentChannel!=0){
+				      currentChannel--;
+				    }
+				  }break;
 				 
 				  case SC_GT:{
-				  
+				    if(currentChannel!=15){
+					currentChannel++;
+				      }
 				  }
+				  
+				  case SC_B:{
+				   printf("Bank select for GS sound source\n");
+				   printf("Select Bank 0-63,44-127 (user area):\n");
+				   printf("Select Program number:\n");
+				  
+				  }break;
+				  case SC_I:{
+				   printHelpScreen();
+				  }break;
  
 				}
 				
@@ -222,63 +283,65 @@ int main(void) {
 				switch(i){
 				  //note off handling
 				  case SC_Q:{
-				  
+				     note_off(noteBaseArray[currentOctave]+0,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_A:{
+				    note_off(noteBaseArray[currentOctave]+1,currentChannel,currentVelocity);
 				  
 				  }
 				  
 				  case SC_W:{
-				  
+				    note_off(noteBaseArray[currentOctave]+2,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_S:{
-				  
+				    note_off(noteBaseArray[currentOctave]+3,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_E:{
-				  
+				    note_off(noteBaseArray[currentOctave]+4,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_D:{
-				  
+				    note_off(noteBaseArray[currentOctave]+5,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_R:{
-				  
+				    note_off(noteBaseArray[currentOctave]+6,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_F:{
-				  
+				    note_off(noteBaseArray[currentOctave]+7,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_T:{
-				  
+				    note_off(noteBaseArray[currentOctave]+8,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_G:{
-				  
+				    note_off(noteBaseArray[currentOctave]+9,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_Y:{
-				  
+				    note_off(noteBaseArray[currentOctave]+10,currentChannel,currentVelocity);
 				  }
 				  
 				  case SC_H:{
-				  
+				    note_off(noteBaseArray[currentOctave]+11,currentChannel,currentVelocity);
 				  }
 		
 				  // send chosen program number
-				  case SC_SQ_LEFT_BRACE:{
-				  
-				  }break;
-				  
+				  case SC_SQ_LEFT_BRACE:
 				  case SC_SQ_RIGHT_BRACE:{
-				  
+				    program_change(currentChannel, currentPN);
 				  }break;
 				
+				  case SC_SPACEBAR:{
+				    printf("Turned all all channels.\n");
+				    am_allNotesOff(15);
 				  
+				  }break;
 				  
 				};
 				

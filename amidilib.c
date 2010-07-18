@@ -1614,7 +1614,7 @@ else
 const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
   /* 0-127 range check */
   if((noteNumber>=0&&noteNumber<=127)) {  
-    if((currentChannel!=11&&currentPN!=128)){
+    if((currentChannel!=9&&currentPN!=128)){
 	return(g_arMIDI2key[noteNumber]);
     }
     else{

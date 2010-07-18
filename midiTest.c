@@ -95,7 +95,7 @@ void printHelpScreen(){
 
 void changeGSprogramNumber(U8 channel,U8 bank,U8 pn){
   printf("Change GS instrument, bank: %d, pn: %d\n", bank,pn);
-  control_change(0x00, channel, 0x00, bank);
+  control_change(0x00, channel, bank,0x00);
   program_change(channel, pn);
 }
 
@@ -133,6 +133,7 @@ int main(void) {
   U32 iError=am_init();
  
   //set current channel as 1, default is 0 in external module
+  control_change(0x00, currentChannel, currentBankSelect,0x00);
   program_change(currentChannel, currentPN);
 				  
   printHelpScreen();
@@ -328,7 +329,7 @@ int main(void) {
 				    else{
 				      currentBankSelect=0;
 				    }
-				  
+				  printf("Current bank: %d \n",currentBankSelect);
 				  }break;
 				  case SC_ARROW_DOWN:{
 				    if(currentBankSelect!=0){
@@ -337,6 +338,8 @@ int main(void) {
 				    else{
 				      currentBankSelect=127;
 				    }
+				  printf("Current bank: %d \n",currentBankSelect);
+				  
 				  }break;
 				  case SC_B:{
 				    changeGSprogramNumber(currentChannel,currentBankSelect,currentPN);

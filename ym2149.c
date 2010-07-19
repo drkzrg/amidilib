@@ -7,37 +7,47 @@
 
 #include "ym2149.h"
 
-void ymDoSound(U8 hByte,U8 lByte, U8 envelope, U8 amp, U16 period,U8 noiseGenPeriod){
+U8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
+  
+void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod){
+  
+    U8 mixerSet=0b11111111; 		// all off
     
-    Giaccess(0b11000000,MIXER+128);	// sound chip setup
-					//enable 3 oscillators on all channels
+    if(ch[CH_A].noiseEnable)mixerSet&=0b11110111;
+    if(ch[CH_A].toneEnable) mixerSet&=0b11111110;
+    if(ch[CH_B].noiseEnable)mixerSet&=0b11101111;
+    if(ch[CH_B].toneEnable) mixerSet&=0b11111101;
+    if(ch[CH_C].noiseEnable)mixerSet&=0b11011111;
+    if(ch[CH_C].toneEnable) mixerSet&=0b11111011;
+      
+    Giaccess(mixerSet,MIXER+128);		//sound chip setup
+						//enable 3 oscillators on all channels
 					
-    Giaccess(amp,AMP_OSC1+128);		// set osc1
-    Giaccess(lByte,LB_OSC1+128);	
-    Giaccess(hByte,HB_OSC1+128);
+    Giaccess(ch[CH_A].amp,AMP_OSC1+128);	// set osc1 CH A
+    Giaccess(ch[CH_A].oscFreq,LB_OSC1+128);	
+    Giaccess(ch[CH_A].oscStepSize,HB_OSC1+128);
     
-    Giaccess(amp,AMP_OSC2+128);		// set osc2
-    Giaccess(lByte,LB_OSC2+128);	
-    Giaccess(hByte,HB_OSC2+128);
+    Giaccess(ch[CH_B].amp,AMP_OSC2+128);	// set osc2 CH B
+    Giaccess(ch[CH_B].oscFreq,LB_OSC2+128);	
+    Giaccess(ch[CH_B].oscStepSize,HB_OSC2+128);
     
-    Giaccess(amp,AMP_OSC3+128);		// set osc3
-    Giaccess(lByte,LB_OSC3+128);	
-    Giaccess(hByte,HB_OSC3+128);
-    
+    Giaccess(ch[CH_C].amp,AMP_OSC3+128);	// set osc3	CH C
+    Giaccess(ch[CH_C].oscFreq,LB_OSC3+128);	
+    Giaccess(ch[CH_B].oscStepSize,HB_OSC3+128);
+ 
     //set noise generator period 0-31
     if(noiseGenPeriod>31) noiseGenPeriod=31;
     Giaccess(noiseGenPeriod,NOISE_GEN+128);
     
     //set envelope period
-    U8 lPeriod=(U8)(0x00FF&period);
-    U8 hPeriod=(U8)(0x00FF&(period>>4));
+    U8 lPeriod=(U8)(0x00FF&envPeriod);
+    U8 hPeriod=(U8)(0x00FF&(envPeriod>>4));
     
     Giaccess(lPeriod,LB_ENV_PERIOD+128);
     Giaccess(hPeriod,HB_ENV_PERIOD+128);
     
     //set envelopes
     Giaccess(envelope,ENV_SELECT+128);
-    
 }
 
 void ymSoundOff(){
@@ -60,4 +70,19 @@ void ymSoundOff(){
   Giaccess(0,HB_OSC3+128);
 }
 
+void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod){
+     U8 hByte=g_arMIDI2ym2149Tone[noteIdx].highbyte;
+     U8 lByte=g_arMIDI2ym2149Tone[noteIdx].lowbyte;
+     U8 envelope=envelopeArray[currentEnvelopeIdx];
+     U16 period=g_arMIDI2ym2149Tone[noteIdx].period;
+	  
+      ch[CH_A].oscFreq=lByte;
+      ch[CH_A].oscStepSize=hByte;
+      ch[CH_B].oscFreq=lByte;
+      ch[CH_B].oscStepSize=hByte;
+      ch[CH_C].oscFreq=lByte;
+      ch[CH_C].oscStepSize=hByte;
+	    
+      ymDoSound(ch,envelope,period,noisegenPeriod);
+}
 

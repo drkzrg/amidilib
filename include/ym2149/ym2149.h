@@ -28,28 +28,34 @@ static const U8 HB_ENV_PERIOD=12;
 static const U8 ENV_SELECT=13;
 
 // envelopes
-static const U8 ENV_1=0b1001;
-static const U8 ENV_2=0b1101;
-static const U8 ENV_3=0b1011;
-static const U8 ENV_4=0b1111;
-static const U8 ENV_5=0b1000;
-static const U8 ENV_6=0b1100;
-static const U8 ENV_7=0b1010;
-static const U8 ENV_8=0b1110;
-
-
-
-/* 
-  \
-  \__________________________
-*/
-
+#define ENV_1 0b1001  
+#define ENV_2 0b1101 
+#define ENV_3 0b1011 
+#define ENV_4 0b1111 
+#define ENV_5 0b1000 
+#define ENV_6 0b1100 
+#define ENV_7 0b1010
+#define ENV_8 0b1110
 
 typedef struct  {
   U16 period;
   U8 highbyte;
   U8 lowbyte;
 }ymData;
+
+typedef struct{
+ U8 amp;	
+ U8 oscFreq;		// if 4th bit is set, current envelope is used
+ U8 oscStepSize;	// period lenght, pitch
+ U8 noiseEnable;	// 0-disabled, 1-enabled
+ U8 toneEnable;		// 0-disabled, 1-enabled
+} ymChannelData;
+
+enum{
+  CH_A=0,
+  CH_B=1,
+  CH_C=2
+};
 
 /* MIDI notes to ym2149 tone mapping */
 /* notes are mapped from 21 to 108 */
@@ -186,13 +192,9 @@ static const ymData g_arMIDI2ym2149Tone[128]={
 /* 127 */ {0x0000,0x00,0x00}  /* undefined */                                    
 };
 
-
-void ymDoSound(U8 hByte,U8 lByte, U8 envelope, U8 amp, U16 period,U8 noiseGenPeriod);
+void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod);
+void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod);
 void ymSoundOff();
-
-
-
-
 
 #endif
 

@@ -74,7 +74,6 @@ void pitch_bend_2 (U8 channel, U8 fbyte, U8 sbyte)
 	g_midi_cmd_buffer[1]=fbyte;
 	g_midi_cmd_buffer[2]=sbyte;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
-
 }
 
 /* channel mode messages */
@@ -130,8 +129,7 @@ void mono(U8 channel, U8 numberOfMono)
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
 }
 
-void poly(U8 channel, U8 numberOfPoly)
-{
+void poly(U8 channel, U8 numberOfPoly){
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_POLY;
 	g_midi_cmd_buffer[2]=numberOfPoly;

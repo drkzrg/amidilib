@@ -95,7 +95,7 @@ void printHelpScreen(){
 
 void changeGSprogramNumber(U8 channel,U8 bank,U8 pn){
   printf("Change GS instrument, bank: %d, pn: %d\n", bank,pn);
-  control_change(0x00, channel, bank,0x00);
+  control_change(C_BANK_SELECT, channel, bank,0x00);
   program_change(channel, pn);
 }
 

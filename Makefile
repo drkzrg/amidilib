@@ -20,6 +20,9 @@ YM_TEST_EXE = ym2149.tos
 # midi test output program
 MIDI_TEST_EXE = midiTest.tos
 
+#timing test output program
+TIMING_TEST_EXE = timTest.tos
+
 #copies output binary to emulator folder ready to launch
 ST_HD_PATH=$(HOME)/Dokumenty/Pulpit/tos/dyskST
 
@@ -31,6 +34,9 @@ MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_3
 
 YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o
+
+TIMING_TEST_SRCS = timTest.c c_vars.c ym2149.c
+TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o
 
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o
@@ -49,6 +55,12 @@ $(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o
 	echo "Copying midi output test program to emulator directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
+$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o  
+	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o -o $@ -lm 
+	echo "Copying midi delta timing test program to emulator directory."
+	cp $(TIMING_TEST_EXE) $(ST_HD_PATH)
+
+
 amidi.o:	amidi.s
 		$(ASM) amidi.s $(ASMFLAGS) -o amidi.o
 
@@ -67,8 +79,13 @@ $(YM_TEST_OBJECTS): %.o: %.c
 $(MIDITEST_OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(TIMING_TEST_OBJECTS): %.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
 ym: $(YM_TEST_SRCS) $(YM_TEST_EXE)	
 midi: $(MIDITEST_SRCS) $(MIDI_TEST_EXE)	
+timing: $(TIMING_TEST_SRCS) $(TIMING_TEST_EXE)
 
 all: $(SRCS) $(EXE)
 	
@@ -76,6 +93,7 @@ clean:
 	rm -rf *o $(EXE)
 	rm -rf *o $(YM_TEST_EXE)
 	rm -rf *o $(MIDI_TEST_EXE)
+	rm -rf *o $(TIMING_TEST_EXE)
 
 .PHONY: default clean
 

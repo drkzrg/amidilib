@@ -152,6 +152,19 @@ int main(void){
 	    }
 	    printf("Current tempo: %ld\n",defaultTempo);
 	  }break;
+	  
+	  case SC_I:{
+	    printHelpScreen();
+	  }break;
+	  case SC_P:{
+	    printf("Pause/Resume sequence\n");
+	    
+	  }break;
+	  case SC_SPACEBAR:{
+	    printf("Stop sequence\n");
+	    
+	  }break;
+	  
 	}
      
      }

@@ -56,12 +56,14 @@ typedef struct  {
 
 enum{
  STOP=0, 
- PLAYING, 
+ PLAY_ONCE, 
+ PLAY_LOOP, 
  PAUSED
 } eSeqState;
 
 sCurrentSequenceState currentState;
 
+// plays sample sequence 
 int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;
   pInitialState->currentTempo=tempo;
@@ -166,23 +168,37 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-	    defaultTempo++;
-	    printf("Current tempo: %ld [ms]\n",defaultTempo);
+	    currentState.currentTempo++;
+	    printf("Current tempo: %ld [ms]\n",currentState.currentTempo);
 	  }break;
 	  case SC_ARROW_DOWN:{
-	    if(defaultTempo!=0){
-	      defaultTempo--;
+	    if(currentState.currentTempo!=0){
+	      currentState.currentTempo--;
+	      
 	    }
-	    printf("Current tempo: %ld\n",defaultTempo);
+	    printf("Current tempo: %ld\n",currentState.currentTempo);
 	  }break;
 	  case SC_I:{
 	    printHelpScreen();
 	  }break;
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
+	    static U32 iFormerState;
+	    if(currentState.state==STOP){
+	      currentState.state=iFormerState;
+	    }else if(currentState.state==PLAY_ONCE){
+	      iFormerState=currentState.state; 
+	      currentState.state=PAUSED;
+	    }
+	    else if(currentState.state==PLAY_ONCE){
+	      iFormerState=currentState.state;
+	      currentState.state=PAUSED;
+	    }
+	    
 	  }break;
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
+	    currentState.state=STOP;
 	  }break;
 	  
 	}

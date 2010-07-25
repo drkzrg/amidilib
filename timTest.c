@@ -26,10 +26,9 @@ typedef struct{
   U32 tempo;	// 0 == stop
 } sSequence; 
 
-///////////////////////////////////////////////
-
 // output, test sequence for channel 1 
 static const sSequence testSequenceChannel1[]={
+  {0,56,500},
   {32,127,500},
   {32,110,500},
   {0,0,0}
@@ -37,21 +36,47 @@ static const sSequence testSequenceChannel1[]={
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel2[]={
+  {0,56,500},
   {32,127,500},
   {32,110,500},
+  {0,111,500},
   {0,0,0}
 };
 
 /////////////////////////////////////////////////
 //check if we are on the end of test sequence
 
+typedef struct  {
+
+  U32 currentTempo;
+  U32 currentIdx;	//current position in table
+  sSequence *seqPtr;	//sequence ptr
+  U32 state;	// 0=STOP, 1-PLAYING, 2-PAUSED
+} sCurrentSequenceState;
+
+enum{
+ STOP=0, 
+ PLAYING, 
+ PAUSED
+} eSeqState;
+
+sCurrentSequenceState currentState;
+
+int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
+  pInitialState->currentIdx=0;
+  pInitialState->currentTempo=tempo;
+  pInitialState->state=STOP;
+  pInitialState->seqPtr=testSequenceChannel1;
+  
+  //install replay routine 
+  
+  return 0;
+}
 
 BOOL isEOT(sSequence *pSeqPtr){
 
-if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)){
-  return TRUE;
-} else 
-  return FALSE;
+  if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)) return TRUE;
+   else return FALSE;
 }
 
 void printHelpScreen(){
@@ -105,6 +130,9 @@ int main(void){
   memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
+  //prepare sequence
+  playSampleSequence(testSequenceChannel2,defaultTempo, &currentState);
+  
   //enter main loop
   while(bQuit==FALSE){
   
@@ -129,7 +157,6 @@ int main(void){
  	  }break;
 	  case SC_2:{
 	    printf("ym2149 output ");
-
 	    if(ymOutputEnabled==TRUE){
 	      ymOutputEnabled=FALSE;
 	      printf("disabled.\n");
@@ -137,32 +164,25 @@ int main(void){
 	      ymOutputEnabled=TRUE;
 	      printf("enabled.\n");
 	    }
-  
 	  }break;
-	  
 	  case SC_ARROW_UP:{
 	    defaultTempo++;
-	    printf("Current tempo: %ld\n",defaultTempo);
+	    printf("Current tempo: %ld [ms]\n",defaultTempo);
 	  }break;
-	  
 	  case SC_ARROW_DOWN:{
-
 	    if(defaultTempo!=0){
 	      defaultTempo--;
 	    }
 	    printf("Current tempo: %ld\n",defaultTempo);
 	  }break;
-	  
 	  case SC_I:{
 	    printHelpScreen();
 	  }break;
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
-	    
 	  }break;
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
-	    
 	  }break;
 	  
 	}

@@ -13,11 +13,10 @@
 #include <stdio.h>
 #include <ctype.h> 
 #include <osbind.h>
+#include "amidilib.h"
+#include "ikbd.h"
 #include "ym2149.h" 
- 
-void hMidiEvent(){
-  //dummy, TODO: remove it  
-}
+#include "scancode.h"
 
 extern void turnOffKeyclick(void);
 
@@ -46,6 +45,7 @@ static const sSequence testSequenceChannel2[]={
 /////////////////////////////////////////////////
 //check if we are on the end of test sequence
 
+
 BOOL isEOT(sSequence *pSeqPtr){
 
 if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)){
@@ -68,28 +68,110 @@ void printHelpScreen(){
   printf("================================================\n");
 }
 
-
+extern U8 envelopeArray[8];
+static const U8 KEY_PRESSED = 0xff;
+static const U8 KEY_UNDEFINED=0x80;
+static const U8 KEY_RELEASED=0x00;
 
 
 int main(void){
   U32 defaultTempo=500;
+  
+  // midi initial settings
+  U8 currentChannel=1;
+  U8 currentVelocity=127;
+  U8 currentPN=1;
+  U8 currentBankSelect=0;
+  
   BOOL midiOutputEnabled=FALSE;
   BOOL ymOutputEnabled=TRUE;
   BOOL bPause=FALSE;
   BOOL bQuit=FALSE;
+
+  /* init library */
+  U32 iError=am_init();
+ 
+  //set current channel as 1, default is 0 in external module
+  control_change(0x00, currentChannel, currentBankSelect,0x00);
+  program_change(currentChannel, currentPN);
   
   turnOffKeyclick();
+
+  /* Install our asm ikbd handler */
+  Supexec(IkbdInstall);
   
   printHelpScreen();
 
+  memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
+  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+
   //enter main loop
-  
   while(bQuit==FALSE){
   
+    for (int i=0; i<128; i++) {
+     
+     if (Ikbd_keyboard[i]==KEY_PRESSED) {
+	Ikbd_keyboard[i]=KEY_UNDEFINED;
+	
+	switch(i){
+	  case SC_ESC:{
+	    bQuit=TRUE;
+	 }break;
+	  case SC_1:{
+	    printf("MIDI output ");
+	    if(midiOutputEnabled==TRUE){
+	      midiOutputEnabled=FALSE;
+	      printf("disabled.\n");
+	    }else{
+	      midiOutputEnabled=TRUE;
+	      printf("enabled.\n");
+	    }
+ 	  }break;
+	  case SC_2:{
+	    printf("ym2149 output ");
+
+	    if(ymOutputEnabled==TRUE){
+	      ymOutputEnabled=FALSE;
+	      printf("disabled.\n");
+	    }else{
+	      ymOutputEnabled=TRUE;
+	      printf("enabled.\n");
+	    }
   
+	  }break;
+	  
+	  case SC_ARROW_UP:{
+	    defaultTempo++;
+	    printf("Current tempo: %ld\n",defaultTempo);
+	  }break;
+	  
+	  case SC_ARROW_DOWN:{
+
+	    if(defaultTempo!=0){
+	      defaultTempo--;
+	    }
+	    printf("Current tempo: %ld\n",defaultTempo);
+	  }break;
+	}
+     
+     }
+     
+     if (Ikbd_keyboard[i]==KEY_RELEASED) {
+	Ikbd_keyboard[i]=KEY_UNDEFINED;
+     }
+     
+     
+    }
+    
+    
   }
 
+  /* Uninstall our asm handler */
+  Supexec(IkbdUninstall);
 
+  /* clean up, free internal library buffers etc..*/
+  am_deinit();
+   
  return 0;
 }
 

@@ -35,7 +35,7 @@ MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_3
 YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o
 
-TIMING_TEST_SRCS = timTest.c c_vars.c ym2149.c
+TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c
 TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o
 
 

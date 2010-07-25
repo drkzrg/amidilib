@@ -76,13 +76,13 @@ void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisege
      U8 envelope=envelopeArray[currentEnvelopeIdx];
      U16 period=g_arMIDI2ym2149Tone[noteIdx].period;
 	  
-      ch[CH_A].oscFreq=lByte;
-      ch[CH_A].oscStepSize=hByte;
-      ch[CH_B].oscFreq=lByte;
-      ch[CH_B].oscStepSize=hByte;
-      ch[CH_C].oscFreq=lByte;
-      ch[CH_C].oscStepSize=hByte;
+     ch[CH_A].oscFreq=lByte;
+     ch[CH_A].oscStepSize=hByte;
+     ch[CH_B].oscFreq=lByte;
+     ch[CH_B].oscStepSize=hByte;
+     ch[CH_C].oscFreq=lByte;
+     ch[CH_C].oscStepSize=hByte;
 	    
-      ymDoSound(ch,envelope,period,noisegenPeriod);
+     ymDoSound(ch,envelope,period,noisegenPeriod);
 }
 

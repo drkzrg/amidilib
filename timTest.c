@@ -46,13 +46,15 @@ static const sSequence testSequenceChannel1[]={
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel2[]={
-  {0,500,32,0xAD},
-  {64,500,64,0xAD},
-  {64,500,100,0xAD},
-  {64,500,78,0xAD},
-  {64,500,13,0xAD},
-  {64,500,115,0xAD},
-  {0,0,0,0,0xAD}
+  {0L,500L,32,0xAD},
+  {64L,500L,64,0xAD},
+  {64L,500L,100,0xAD},
+  {64L,500L,78,0xAD},
+  {64L,500L,13,0xAD},
+  {64L,500L,115,0xAD},
+  {128L,500L,50,0xAD},
+  {128L,500L,100,0xAD},
+  {0L,0L,0,0,0xAD}
 };
 
 /////////////////////////////////////////////////
@@ -204,7 +206,7 @@ int main(void){
   
   //enter main loop
   while(bQuit==FALSE){
-  printf("%ld, %ld \n",counter,currentState.currentIdx);
+  //printf("%ld, %ld \n",counter,currentState.currentIdx);
     
   for (int i=0; i<128; i++) {
      

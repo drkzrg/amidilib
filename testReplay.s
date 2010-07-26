@@ -32,6 +32,7 @@ MFP_DEL100	equ	%1110  ;delay 100
 MFP_DEL200	equ	%1111  ;delay 200;
 
 _installReplayRout:
+	move.l	a0,_currentSeqPtr
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	  super_on
 	move.w	sr,-(sp)	;save status register
@@ -45,7 +46,7 @@ _installReplayRout:
 	clr.b     $fffffa1b		;turn off tb
 	move.l	  #0,_counter		;init counter 
 	move.l	  $120,_oldTB	
-	move.l    #update,$120	;slap interrupt
+	move.l    #update,$120		;slap interrupt
 	
 	move.b    d0,$fffffa21		;put data 
 	move.b    d1,$fffffa1b		;put mode 
@@ -57,18 +58,41 @@ _installReplayRout:
 	movem.l (sp)+,d0-d7/a0-a6		;restore registers
 	rts
 
-	rts
-
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240
+
 ;<----- insert your code here ----- >
-	move.l	_counter,d0
+	move.l	_currentSeqPtr,a0
+	move.l	currentTempo(a0),d0 ;get current tempo, current slot in the sequence,
+	move.l	currentIdx(a0),d1   ;ptr to current sequence
+	move.l	seqPtr(a0),a1       
+	move.l	state(a0),d2	    ;current state of sequence
+
+        cmp.l	#0,d2		    ;is sequence stopped?
+	bne.s	.paused		    ;not equal check if we have pause
+        
+	;we have stop so we have to reset all counters and set
+	;current track to 0 index
+	move.l	#0,currentTempo(a0) 
+	move.l	#0,currentIdx(a0)   
+	move.l	#0,_counter
+	;we go straight to exit, nothing to do
+	bra.s  .exit
+
+.paused:
+	cmp.l	#4,d2		    ;is sequence paused?
+	bne.s	.increaseCounter
+	
+	bra.s  .exit
+
+.increaseCounter:
+;======================================
+        move.l	_counter,d0
 	addq.l	#1,d0
 	move.l	d0,_counter
-
-
+;======================================
 .exit:
 ;<----- insert your code here ----- >
         move.l    #update,$120	;slap interrupt 
@@ -98,5 +122,16 @@ _deinstallReplayRout:
 	bsr.w	super_off
 	movem.l (sp)+,d0-d7/a0-a6
 	rts
+
+
+	bss
+	even
+_currentSeqPtr:		ds.l	1
+
+	RSRESET ;
+currentTempo	rs.l	1
+currentIdx	rs.l	1
+seqPtr		rs.l	1
+state		rs.l	1
 
 

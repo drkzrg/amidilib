@@ -46,24 +46,26 @@ static const sSequence testSequenceChannel2[]={
 /////////////////////////////////////////////////
 //check if we are on the end of test sequence
 
-typedef struct  {
-  U32 currentTempo;
-  U32 currentIdx;	//current position in table
-  sSequence *seqPtr;	//sequence ptr
-  U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
+typedef struct{
+  volatile U32 currentTempo;
+  volatile U32 currentIdx;	//current position in table
+  volatile sSequence *seqPtr;	//sequence ptr
+  volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
 } sCurrentSequenceState;
 
 enum{
  STOP=0, 
- PLAY_ONCE, 
- PLAY_LOOP,
- PLAY_RANDOM,
- PAUSED
+ PLAY_ONCE=1, 
+ PLAY_LOOP=2,
+ PLAY_RANDOM=3,
+ PAUSED=4
 } eSeqState;
 
 sCurrentSequenceState currentState;
-ymChannelData ch[3];
 volatile extern U32 counter;
+
+ymChannelData ch[3];
+
 extern void installReplayRout(sCurrentSequenceState *pPtr);
 extern void deinstallReplayRout();
 
@@ -238,26 +240,31 @@ int main(void){
 	  }break;
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
-	    static U32 iFormerState;
+	    static U32 iFormerState=PLAY_ONCE;
 	    if(currentState.state==STOP){
 	      currentState.state=iFormerState;
 	    }else if(currentState.state==PLAY_ONCE){
 	      iFormerState=currentState.state; 
 	      currentState.state=PAUSED;
 	    }
-	    else if(currentState.state==PLAY_ONCE){
+	    else if(currentState.state==PLAY_LOOP){
 	      iFormerState=currentState.state;
 	      currentState.state=PAUSED;
 	    }
-	    
+	    else if(currentState.state==PLAY_RANDOM){
+	      iFormerState=currentState.state;
+	      currentState.state=PAUSED;
+	    }
+	    else if(currentState.state==PAUSED){
+	      currentState.state=iFormerState;
+	      
+	    }
 	  }break;
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
 	    currentState.state=STOP;
-	    deinstallReplayRout();   
 	    am_allNotesOff(16);
 	    ymSoundOff();
-    
 	  }break;
 	  
 	}

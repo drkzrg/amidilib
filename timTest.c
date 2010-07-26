@@ -7,7 +7,7 @@
 
 /////////////////////////////// timing test program
 // program reads delta times from table and outputs sound through ym2149
-// with given tempo
+// with given, adjustable tempo
 /////////////////////////////////////////////////////////////////////////
  
 #include <stdio.h>
@@ -47,7 +47,6 @@ static const sSequence testSequenceChannel2[]={
 //check if we are on the end of test sequence
 
 typedef struct  {
-
   U32 currentTempo;
   U32 currentIdx;	//current position in table
   sSequence *seqPtr;	//sequence ptr
@@ -62,6 +61,33 @@ enum{
 } eSeqState;
 
 sCurrentSequenceState currentState;
+ymChannelData ch[3];
+
+//plays given note and outputs it to midi/ym2149
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
+  
+  if(bMidiOutput==TRUE){
+    note_on(noteNb,1,127);	//output on channel 2, max velocity
+  }
+
+  if(bYmOutput==TRUE){
+
+     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
+     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
+     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
+	  
+     ch[CH_A].oscFreq=lByte;
+     ch[CH_A].oscStepSize=hByte;
+     ch[CH_B].oscFreq=lByte;
+     ch[CH_B].oscStepSize=hByte;
+     ch[CH_C].oscFreq=lByte;
+     ch[CH_C].oscStepSize=hByte;
+    
+    ymDoSound( ch, 0, 0,0);
+    
+  }
+
+}
 
 // plays sample sequence 
 int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
@@ -115,6 +141,27 @@ int main(void){
   BOOL bPause=FALSE;
   BOOL bQuit=FALSE;
 
+  //set up ym2149 sound
+  /////////////////////////////////////
+  ch[CH_A].amp=15;
+  ch[CH_A].oscFreq=0;
+  ch[CH_A].oscStepSize=0;
+  ch[CH_A].toneEnable=TRUE;
+  ch[CH_A].noiseEnable=FALSE;
+  
+  ch[CH_B].amp=15;
+  ch[CH_B].oscFreq=0;
+  ch[CH_B].oscStepSize=0;
+  ch[CH_B].toneEnable=TRUE;
+  ch[CH_B].noiseEnable=FALSE;
+  
+  ch[CH_C].amp=15;
+  ch[CH_C].oscFreq=0;
+  ch[CH_C].oscStepSize=0;
+  ch[CH_C].toneEnable=TRUE;
+  ch[CH_C].noiseEnable=FALSE;
+  ////////////////////////////////////////
+  
   /* init library */
   U32 iError=am_init();
  

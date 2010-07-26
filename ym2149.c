@@ -11,7 +11,7 @@ U8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
   
 void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod){
   
-    U8 mixerSet=0b11111111; 		// all off
+    U8 mixerSet=0b11111111; 				// all off
     
     if(ch[CH_A].noiseEnable)mixerSet&=0b11110111;
     if(ch[CH_A].toneEnable) mixerSet&=0b11111110;

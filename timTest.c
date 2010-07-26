@@ -22,25 +22,26 @@ extern void turnOffKeyclick(void);
 
 typedef struct{
   U32 delta;
-  U8 note;	// 0-127 range
   U32 tempo;	// 0 == stop
+  U8 note;	// 0-127 range
+  U8 dummy;	// just fill in
 } sSequence; 
 
 // output, test sequence for channel 1 
 static const sSequence testSequenceChannel1[]={
-  {0,56,500},
-  {32,127,500},
-  {32,110,500},
-  {0,0,0}
+  {0,56,500,0},
+  {32,127,500,0},
+  {32,110,500,0},
+  {0,0,0,0}
 };
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel2[]={
-  {0,56,500},
-  {32,127,500},
-  {32,110,500},
-  {0,111,500},
-  {0,0,0}
+  {0,56,500,0},
+  {32,127,500,0},
+  {32,110,500,0},
+  {0,111,500,0},
+  {0,0,0,0}
 };
 
 /////////////////////////////////////////////////

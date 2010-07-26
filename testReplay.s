@@ -12,6 +12,7 @@
     xref _counter
     xref _tbMode
     xref _tbData
+    xref _playNote
 
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
@@ -66,8 +67,8 @@ update:
 ;<----- insert your code here ----- >
 	move.l	_currentSeqPtr,a0
 	move.l	currentTempo(a0),d0 ;get current tempo, current slot in the sequence,
-	move.l	currentIdx(a0),d1   ;ptr to current sequence
-	move.l	seqPtr(a0),a1       
+	move.l	currentIdx(a0),d1   ;idx of current event in sequence
+	move.l	seqPtr(a0),a1       ;ptr to sequence
 	move.l	state(a0),d2	    ;current state of sequence
 
         cmp.l	#0,d2		    ;is sequence stopped?
@@ -78,21 +79,57 @@ update:
 	move.l	#0,currentTempo(a0) 
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
+
 	;we go straight to exit, nothing to do
 	bra.s  .exit
 
 .paused:
 	cmp.l	#4,d2		    ;is sequence paused?
-	bne.s	.increaseCounter
-	
+	bne.s	.handleSeq
+	;we go straight to the exit, nothing to do
 	bra.s  .exit
 
+.handleSeq:
+	; here we handle our note from sample sequence 
+	; if internal tick counter has reached our current event delta value
+	; we play note read from the sequence and we are increasing current note index
+	
+	; firstly we check if we are on the end of sequence
+	; if yest then we handle following modes
+	; PLAY_ONCE=1, PLAY_LOOP=2, PLAY_RANDOM=3
+	; a1 should contain our sequence pointer
+	
+	
+	move.l	delta(a1),d3
+	move.l	tempo(a1),d4
+	moveq.l	#0,d5
+
+	move.b	note(a1),d5
+	or.l	d3,d4	
+	or.l	d5,d4	
+
+	cmp.l	#0,d4
+	beq.s	.endSeqHandle
+	; nope
+	;check _counter if is equal to the current events delta time
+	;if yes, play note, increase current event index and reset _counter
+	
+	
+
+
 .increaseCounter:
-;======================================
+	; increase internal tick counter
         move.l	_counter,d0
 	addq.l	#1,d0
 	move.l	d0,_counter
-;======================================
+
+	bra.s	.exit
+
+.endSeqHandle:
+	;reset current indexes and delta times ticks
+	move.l	#0,currentIdx(a0)   
+	move.l	#0,_counter
+
 .exit:
 ;<----- insert your code here ----- >
         move.l    #update,$120	;slap interrupt 
@@ -117,7 +154,7 @@ _deinstallReplayRout:
 	clr.b     $fffffa1b	;turn off tb
 	move.l	 _oldTB,$120	;save old tb
 	
-        move.w	(sp)+,sr		;restore Status Register
+        move.w	(sp)+,sr	;restore Status Register
 
 	bsr.w	super_off
 	movem.l (sp)+,d0-d7/a0-a6
@@ -128,10 +165,15 @@ _deinstallReplayRout:
 	even
 _currentSeqPtr:		ds.l	1
 
-	RSRESET ;
+	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
 currentIdx	rs.l	1
 seqPtr		rs.l	1
 state		rs.l	1
 
+      RSRESET
+delta 	rs.l	1
+tempo	rs.l	1	; 0 == stop
+note	rs.b	1	; 0-127 range
+dummy	rs.b	1	; just fill in
 

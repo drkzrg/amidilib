@@ -17,6 +17,7 @@
 #include "ikbd.h"
 #include "ym2149.h" 
 #include "scancode.h"
+#include "mfp.h"
 
 extern void turnOffKeyclick(void);
 
@@ -29,19 +30,29 @@ typedef struct{
 
 // output, test sequence for channel 1 
 static const sSequence testSequenceChannel1[]={
-  {0,56,500,0},
-  {32,127,500,0},
-  {32,110,500,0},
-  {0,0,0,0}
+  {0L,500,56,0xAD},
+  {32L,500,127,0xAD},
+  {32L,500,110,0xAD},
+  {32L,500,127,0xAD},
+  {32L,500,110,0xAD},
+  {32L,500,127,0xAD},
+  {32L,500,110,0xAD},
+  {32L,500,127,0xAD},
+  {32L,500,110,0xAD},
+  {32L,500,127,0xAD},
+  {32L,500,110,0xAD},
+  {0,0,0,0xAD}
 };
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel2[]={
-  {0,56,500,0},
-  {32,127,500,0},
-  {32,110,500,0},
-  {0,111,500,0},
-  {0,0,0,0}
+  {0,500,32,0xAD},
+  {64,500,64,0xAD},
+  {64,500,100,0xAD},
+  {64,500,78,0xAD},
+  {64,500,13,0xAD},
+  {64,500,115,0xAD},
+  {0,0,0,0,0xAD}
 };
 
 /////////////////////////////////////////////////
@@ -62,17 +73,17 @@ enum{
  PAUSED=4
 } eSeqState;
 
-sCurrentSequenceState currentState;
+volatile sCurrentSequenceState currentState;
 volatile extern U32 counter;
 
 ymChannelData ch[3];
 
-extern void installReplayRout(sCurrentSequenceState *pPtr);
+extern void installReplayRout(U8 mode,U8 data,sCurrentSequenceState *pPtr);
 extern void deinstallReplayRout();
 
 //plays given note and outputs it to midi/ym2149
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
-  
+
   if(bMidiOutput==TRUE){
     note_on(noteNb,1,127);	//output on channel 2, max velocity
   }
@@ -90,7 +101,7 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
      ch[CH_C].oscFreq=lByte;
      ch[CH_C].oscStepSize=hByte;
     
-    ymDoSound( ch, 1, 127,127);
+    ymDoSound( ch, 1, period,0);
     
   }
 
@@ -100,11 +111,11 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;
   pInitialState->currentTempo=tempo;
-  pInitialState->state=STOP;
+  pInitialState->state=PLAY_LOOP;
   pInitialState->seqPtr=testSequenceChannel1;
   
   //install replay routine 
-  installReplayRout(pInitialState);
+  installReplayRout(MFP_DIV10, 59, pInitialState);
   return 0;
 }
 
@@ -193,8 +204,9 @@ int main(void){
   
   //enter main loop
   while(bQuit==FALSE){
-  printf("%ld\n",counter);
-    for (int i=0; i<128; i++) {
+  printf("%ld, %ld \n",counter,currentState.currentIdx);
+    
+  for (int i=0; i<128; i++) {
      
      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	Ikbd_keyboard[i]=KEY_UNDEFINED;

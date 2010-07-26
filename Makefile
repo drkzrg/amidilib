@@ -8,10 +8,10 @@ CC = m68k-atari-mint-gcc
 GAS = m68k-atari-mint-as
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
-CFLAGS += -g -std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
+CFLAGS +=-std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
-ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
+ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.tos
 
 # ym2149 test output program 

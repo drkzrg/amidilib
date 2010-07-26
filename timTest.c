@@ -83,7 +83,7 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
      ch[CH_C].oscFreq=lByte;
      ch[CH_C].oscStepSize=hByte;
     
-    ymDoSound( ch, 0, 0,0);
+    ymDoSound( ch, 1, 127,127);
     
   }
 
@@ -145,21 +145,21 @@ int main(void){
   /////////////////////////////////////
   ch[CH_A].amp=15;
   ch[CH_A].oscFreq=0;
-  ch[CH_A].oscStepSize=0;
-  ch[CH_A].toneEnable=TRUE;
-  ch[CH_A].noiseEnable=FALSE;
+  ch[CH_A].oscStepSize=0;  
+  ch[CH_A].toneEnable=1;
+  ch[CH_A].noiseEnable=0;
   
   ch[CH_B].amp=15;
   ch[CH_B].oscFreq=0;
   ch[CH_B].oscStepSize=0;
-  ch[CH_B].toneEnable=TRUE;
-  ch[CH_B].noiseEnable=FALSE;
+  ch[CH_B].toneEnable=1;
+  ch[CH_B].noiseEnable=0;
   
   ch[CH_C].amp=15;
   ch[CH_C].oscFreq=0;
   ch[CH_C].oscStepSize=0;
-  ch[CH_C].toneEnable=TRUE;
-  ch[CH_C].noiseEnable=FALSE;
+  ch[CH_C].toneEnable=1;
+  ch[CH_C].noiseEnable=0;
   ////////////////////////////////////////
   
   /* init library */
@@ -225,6 +225,9 @@ int main(void){
 	    }
 	    printf("Current tempo: %ld\n",currentState.currentTempo);
 	  }break;
+	  case SC_Q:{
+	    playNote(33,midiOutputEnabled,ymOutputEnabled);
+	  }break;
 	  case SC_I:{
 	    printHelpScreen();
 	  }break;
@@ -246,6 +249,9 @@ int main(void){
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
 	    currentState.state=STOP;
+	    am_allNotesOff(16);
+	    ymSoundOff();
+    
 	  }break;
 	  
 	}
@@ -261,6 +267,10 @@ int main(void){
     
     
   }
+
+  am_allNotesOff(16);
+  ymSoundOff();
+   
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);

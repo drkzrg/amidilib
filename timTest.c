@@ -50,7 +50,7 @@ typedef struct  {
   U32 currentTempo;
   U32 currentIdx;	//current position in table
   sSequence *seqPtr;	//sequence ptr
-  U32 state;	// 0=STOP, 1-PLAYING, 2-PAUSED
+  U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
 } sCurrentSequenceState;
 
 enum{
@@ -62,6 +62,8 @@ enum{
 
 sCurrentSequenceState currentState;
 ymChannelData ch[3];
+
+extern void installReplayRout(sCurrentSequenceState *pPtr);
 
 //plays given note and outputs it to midi/ym2149
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
@@ -97,7 +99,7 @@ int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSeque
   pInitialState->seqPtr=testSequenceChannel1;
   
   //install replay routine 
-  
+  installReplayRout(pInitialState);
   return 0;
 }
 
@@ -126,7 +128,9 @@ static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;
 
-
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
+  
 int main(void){
   U32 defaultTempo=500;
   
@@ -135,9 +139,9 @@ int main(void){
   U8 currentVelocity=127;
   U8 currentPN=1;
   U8 currentBankSelect=0;
+  midiOutputEnabled=FALSE;
+  ymOutputEnabled=TRUE;
   
-  BOOL midiOutputEnabled=FALSE;
-  BOOL ymOutputEnabled=TRUE;
   BOOL bPause=FALSE;
   BOOL bQuit=FALSE;
 
@@ -221,7 +225,6 @@ int main(void){
 	  case SC_ARROW_DOWN:{
 	    if(currentState.currentTempo!=0){
 	      currentState.currentTempo--;
-	      
 	    }
 	    printf("Current tempo: %ld\n",currentState.currentTempo);
 	  }break;

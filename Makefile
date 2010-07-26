@@ -55,8 +55,8 @@ $(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o
 	echo "Copying midi output test program to emulator directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
-$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o  
-	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o -o $@ -lm 
+$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o testReplay.o 
+	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o testReplay.o -o $@ -lm 
 	echo "Copying midi delta timing test program to emulator directory."
 	cp $(TIMING_TEST_EXE) $(ST_HD_PATH)
 
@@ -67,8 +67,14 @@ amidi.o:	amidi.s
 int_rout.o:	int_rout.s
 		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
 
+testReplay.o:	testReplay.s
+		$(ASM) testReplay.s $(ASMFLAGS) -o testReplay.o
+
+
 ikbd_asm.o:	ikbd.S
 		$(GAS) ikbd.S -o ikbd.o
+
+
 
 $(OBJECTS): %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

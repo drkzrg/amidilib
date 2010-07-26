@@ -87,7 +87,10 @@ extern void deinstallReplayRout();
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 
   if(bMidiOutput==TRUE){
-    note_on(noteNb,1,127);	//output on channel 2, max velocity
+    note_on(1,noteNb,127);	//output on channel 2, max velocity
+    note_on(2,noteNb+12,127);	//output on channel 2, max velocity
+    note_on(3,noteNb-12,127);	//output on channel 2, max velocity
+  
   }
 
   if(bYmOutput==TRUE){

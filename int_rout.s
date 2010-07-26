@@ -9,7 +9,14 @@
 	  xdef	_installTA
 	  xdef	_counter
 	  xdef  _cA
-          
+	  
+	  xdef super_on
+	  xdef super_off
+
+	  xref _oldTB
+	  xdef _counter
+	  xdef _tbMode
+	  xdef _tbData
 ;external references
 	  xref 		_hMidiEvent
 	  

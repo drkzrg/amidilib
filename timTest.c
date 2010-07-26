@@ -56,14 +56,16 @@ typedef struct  {
 enum{
  STOP=0, 
  PLAY_ONCE, 
- PLAY_LOOP, 
+ PLAY_LOOP,
+ PLAY_RANDOM,
  PAUSED
 } eSeqState;
 
 sCurrentSequenceState currentState;
 ymChannelData ch[3];
-
+volatile extern U32 counter;
 extern void installReplayRout(sCurrentSequenceState *pPtr);
+extern void deinstallReplayRout();
 
 //plays given note and outputs it to midi/ym2149
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
@@ -188,7 +190,7 @@ int main(void){
   
   //enter main loop
   while(bQuit==FALSE){
-  
+  printf("%ld\n",counter);
     for (int i=0; i<128; i++) {
      
      if (Ikbd_keyboard[i]==KEY_PRESSED) {
@@ -252,6 +254,7 @@ int main(void){
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
 	    currentState.state=STOP;
+	    deinstallReplayRout();   
 	    am_allNotesOff(16);
 	    ymSoundOff();
     
@@ -273,7 +276,7 @@ int main(void){
 
   am_allNotesOff(16);
   ymSoundOff();
-   
+  deinstallReplayRout();   
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);

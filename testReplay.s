@@ -53,13 +53,18 @@ _installReplayRout:
 	move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
-	move.w	$54(sp),d1  ;mode
-	move.w  $58(sp),d0  ;data
-        move.b	d1,_tbMode  ;save parameters for later
+	;move.w	$54(sp),d1  ;mode
+	move.l	$42(sp),d1  ;mode
+	;move.w  $58(sp),d0  ;data
+        move.l  $46(sp),d0  ;data
+        
+	move.b	d1,_tbMode  ;save parameters for later
 	move.b	d0,_tbData
 
 	clr.b     $fffffa1b		;turn off tb
 	move.l	  #0,_counter		;init counter 
+	move.l	  #0,_elapsedDelta
+	
 	move.l	  $120,_oldTB	
 	move.l    #update,$120		;slap interrupt
 	
@@ -100,6 +105,7 @@ update:
 	;current track to 0 index
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
+	move.l	#0,_elapsedDelta
 
 	;we go straight to exit, nothing to do
 	bra  .exit
@@ -128,18 +134,29 @@ update:
 	or.l	d5,d4	
 
 	cmpi.l	#0,d4
-	beq.s	.endSeqHandle
+	beq.w	.endSeqHandle
 
 	;check _counter if is equal to the current events delta time
 	;if yes, play note, increase current event index and reset _counter
 	;if no, then increase counter
-	
-	move.l	delta(a1),d3
 	move.l _counter,d6
+	cmp.l	#96,d6
+	bne.s .increaseCounter
+	;now we can increase delta 
+	
+	move.l	_elapsedDelta,d6
+	move.l	delta(a1),d3
         cmp.l	d6,d3
 	beq.s	.sendNote
-	bra.s .increaseCounter
+	;increase elapsed delta
+	move.l	_elapsedDelta,d3
+	addq.l	#1,d3
+	move.l	d3,_elapsedDelta
+	;reset tick counter _counter
+	move.l	#0,_counter
+	;exit
 
+	bra.s	.exit
 .sendNote:
 	;sub.l	#savamt,savptr
 
@@ -156,6 +173,7 @@ update:
 	;add.l	#savamt,savptr
 	movem.l	(sp)+,d0-d2/a0-a2
 
+	move.l	#0,_elapsedDelta
 	move.l	#0,_counter
 	move.l	currentIdx(a0),d6   
 	addq.l	#1,d6
@@ -179,8 +197,10 @@ update:
 ;reset current indexes and delta times ticks
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
+	move.l	#0,_elapsedDelta
 
 .exit:
+	;prepare next tick
         move.l    #update,$120		;slap interrupt 
 	move.b    _tbData,$fffffa21	;set data
 	move.b    _tbMode,$fffffa1b	;div mode
@@ -214,7 +234,7 @@ _deinstallReplayRout:
 	bss
 	even
 _currentSeqPtr:		ds.l	1
-
+_elapsedDelta:		ds.l	1
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
 currentIdx	rs.l	1

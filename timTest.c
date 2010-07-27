@@ -103,40 +103,37 @@ U32 cntrl,count;
 cntrl=0;
 
 if( freq<=614400 && freq>=2400 ) {
-  cntrl=1;		/* divide by 4  	*/
+  cntrl=MFP_DIV4;		/* divide by 4  	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
   
   *mode=cntrl;
   *data=count;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;	 
 }
 	
 if( freq<2400 && freq>=960 ) {
-  cntrl=2;		/* divide by 10 	*/
+  cntrl=MFP_DIV10;		/* divide by 10 	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 
 if( freq<960  && freq>=600 ) {
-  cntrl=3;		/* divide by 16 	*/
+  cntrl=MFP_DIV16;		/* divide by 16 	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 
 if( freq<600  && freq>=192 ) {
-  cntrl=4;		/* divide by 50 	*/
+  cntrl=MFP_DIV50;		/* divide by 50 	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
@@ -144,39 +141,35 @@ if( freq<600  && freq>=192 ) {
 }
 
 if( freq<192  && freq>=150 ) {
-  cntrl=5;		/* divide by 64 	*/
+  cntrl=MFP_DIV64;		/* divide by 64 	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 
 if( freq<150  && freq>=96  ) {
-  cntrl=6;		/* divide by 100	*/
+  cntrl=MFP_DIV100;		/* divide by 100	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 		
 if( freq<96&&freq>=48) {
-  cntrl=7; 		/* divide by 200	*/
+  cntrl=MFP_DIV200; 		/* divide by 200	*/
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp) ;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 	
 if( cntrl==0 ) {
   count=0;
-  printf("%d %d\n",cntrl,count);
-
+  
   return;
 }
 

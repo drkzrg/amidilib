@@ -195,11 +195,13 @@ update:
 	; if yest then we handle following modes
 	; PLAY_ONCE=1, PLAY_LOOP=2, PLAY_RANDOM=3(TODO)
 	; a1 should contain our sequence pointer
-
+	move.l	state(a0),d0
+	
 ;reset current indexes and delta times ticks
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
 	move.l	#0,_elapsedDelta
+	
 	cmp.l	#PLAY_LOOP,d0
 	beq.s	.exit
 	;change state to STOP, turn off all instruments and ym2149 too

@@ -139,7 +139,7 @@ int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSeque
   pInitialState->seqPtr=testSequenceChannel1;
   
   //install replay routine 96 ticks per 500ms interval 
-  installReplayRout(MFP_DIV10, 59, pInitialState);
+  installReplayRout(MFP_DIV4, 118, pInitialState);
   return 0;
 }
 

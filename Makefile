@@ -62,8 +62,8 @@ $(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o
 	
 $(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o testReplay.o 
 	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o testReplay.o -o $@ -lm 
-	#echo "Stripping symbols"
-	#$(STRIP) $(TIMING_TEST_EXE)
+	echo "Stripping symbols"
+	$(STRIP) $(TIMING_TEST_EXE)
 	echo "Copying midi delta timing test program to emulator directory."
 	cp $(TIMING_TEST_EXE) $(ST_HD_PATH)
 

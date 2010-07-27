@@ -46,14 +46,34 @@ static const sSequence testSequenceChannel1[]={
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel2[]={
-  {0L,500L,32,0xAD},
-  {64L,500L,64,0xAD},
-  {64L,500L,100,0xAD},
-  {64L,500L,78,0xAD},
-  {64L,500L,13,0xAD},
-  {64L,500L,115,0xAD},
-  {128L,500L,50,0xAD},
-  {128L,500L,100,0xAD},
+  {0L,500L,36,0xAD},
+  {64L,500L,37,0xAD},
+  {128L,500L,36,0xAD},
+  {64L,500L,37,0xAD},
+  {128L,500L,36,0xAD},
+  {64L,500L,37,0xAD},
+  {128L,500L,36,0xAD},
+  {64L,500L,37,0xAD},
+  {0L,500L,40,0xAD},
+  {0L,500L,41,0xAD},
+  {0L,500L,42,0xAD},
+  {0L,500L,43,0xAD},
+  {1L,500L,65,0xAD},
+  {2L,500L,66,0xAD},
+  {3L,500L,65,0xAD},
+  {4L,500L,66,0xAD},
+  {5L,500L,65,0xAD},
+  {6L,500L,66,0xAD},
+  {7L,500L,65,0xAD},
+  {8L,500L,66,0xAD},
+  {9L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {15L,500L,65,0xAD},
+  {20L,500L,66,0xAD},
+  {40L,500L,65,0xAD},
+  {80L,500L,66,0xAD},
+  {160L,500L,65,0xAD},
+  {320L,500L,66,0xAD},
   {0L,0L,0,0,0xAD}
 };
 
@@ -87,10 +107,7 @@ extern void deinstallReplayRout();
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 
   if(bMidiOutput==TRUE){
-    note_on(1,noteNb,127);	//output on channel 2, max velocity
-    note_on(2,noteNb+12,127);	//output on channel 2, max velocity
-    note_on(3,noteNb-12,127);	//output on channel 2, max velocity
-  
+    note_on(9,noteNb,127);	//output on channel 2, max velocity
   }
 
   if(bYmOutput==TRUE){
@@ -138,7 +155,7 @@ void printHelpScreen(){
   printf("[p] - pause/resume sequence \n");
   printf("[i] - show this help screen \n");
   
-  printf("[spacebar] - turn off all sounds / stop \n");
+  printf("[spacebar] - turn off all sounds / stop sequence \n");
   printf("[Esc] - quit\n");
   printf("(c) Nokturnal 2010\n");
   printf("================================================\n");
@@ -158,7 +175,7 @@ int main(void){
   // midi initial settings
   U8 currentChannel=1;
   U8 currentVelocity=127;
-  U8 currentPN=1;
+  U8 currentPN=127;
   U8 currentBankSelect=0;
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
@@ -264,14 +281,20 @@ int main(void){
 	    }else if(currentState.state==PLAY_ONCE){
 	      iFormerState=currentState.state; 
 	      currentState.state=PAUSED;
+	      am_allNotesOff(16);
+	      ymSoundOff();
 	    }
 	    else if(currentState.state==PLAY_LOOP){
 	      iFormerState=currentState.state;
 	      currentState.state=PAUSED;
+	      am_allNotesOff(16);
+	      ymSoundOff();
 	    }
 	    else if(currentState.state==PLAY_RANDOM){
 	      iFormerState=currentState.state;
 	      currentState.state=PAUSED;
+	      am_allNotesOff(16);
+	      ymSoundOff();
 	    }
 	    else if(currentState.state==PAUSED){
 	      currentState.state=iFormerState;
@@ -289,9 +312,9 @@ int main(void){
      
      }
      
-     if (Ikbd_keyboard[i]==KEY_RELEASED) {
+     /*if (Ikbd_keyboard[i]==KEY_RELEASED) {
 	Ikbd_keyboard[i]=KEY_UNDEFINED;
-     }
+     }*/
      
      
     }

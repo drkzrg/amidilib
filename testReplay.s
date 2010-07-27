@@ -73,8 +73,8 @@ _installReplayRout:
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
-	move.w	sr,-(sp)	;save status register
-        or.w	#$0700,sr	;turn off all interupts
+	;move.w	sr,-(sp)	;save status register
+        ;or.w	#$0700,sr	;turn off all interupts
 
 	clr.b     $fffffa1b
 
@@ -142,7 +142,7 @@ update:
 	bra.s .increaseCounter
 
 .sendNote:
-	sub.l	#savamt,savptr
+	;sub.l	#savamt,savptr
 
 	movem.l	d0-d2/a0-a2,-(sp)
 	
@@ -153,7 +153,7 @@ update:
 	move.l	d5,-(sp)
 	jsr.w	_playNote
 	lea 	(12,sp),sp
-	add.l	#savamt,savptr
+	;add.l	#savamt,savptr
 	movem.l	(sp)+,d0-d2/a0-a2
 
 	move.l	#0,_counter
@@ -182,7 +182,7 @@ update:
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
 .finish:	
-	move.w 	  (sp)+,sr 		;restore Status Register
+	;move.w 	  (sp)+,sr 		;restore Status Register
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer

@@ -17,6 +17,7 @@
 #define SC_G 0x22
 #define SC_Y 0x15
 #define SC_H 0x23
+#define SC_M 0x32
 
 #define SC_SQ_LEFT_BRACE 0x1a
 #define SC_SQ_RIGHT_BRACE 0x1b

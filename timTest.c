@@ -98,6 +98,7 @@ enum{
 
 volatile sCurrentSequenceState currentState;
 volatile extern U32 counter;
+extern U32 defaultPlayMode;
 
 ymChannelData ch[3];
 
@@ -134,10 +135,10 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;
   pInitialState->currentTempo=tempo;
-  pInitialState->state=PLAY_LOOP;
+  pInitialState->state=STOP;
   pInitialState->seqPtr=testSequenceChannel1;
   
-  //install replay routine 
+  //install replay routine 96 ticks per 500ms interval 
   installReplayRout(MFP_DIV10, 59, pInitialState);
   return 0;
 }
@@ -151,8 +152,9 @@ BOOL isEOT(sSequence *pSeqPtr){
 void printHelpScreen(){
   printf("===============================================\n");
   printf("/|\\ delta timing and sound output test..\n");
-  printf("[arrow up/ arrow down] - change tempo [500 ms default]\n");
+  printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
   printf("[1/2] - enable/disable midi out/ym2149 output \n");
+  printf("[m] - toggle [PLAY ONCE/LOOP] sequence replay mode \n");
   printf("[p] - pause/resume sequence \n");
   printf("[i] - show this help screen \n");
   
@@ -178,6 +180,8 @@ int main(void){
   U8 currentVelocity=127;
   U8 currentPN=127;
   U8 currentBankSelect=0;
+  BOOL bFirstPlay=FALSE;
+  
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
   
@@ -270,14 +274,39 @@ int main(void){
 	    }
 	    printf("Current tempo: %ld[ms]\n",currentState.currentTempo);
 	  }break;
+	  
 	  case SC_I:{
 	    printHelpScreen();
 	  }break;
+	  case SC_M:{
+	    // toggle play mode PLAY ONCE / LOOP
+	    
+	    if(currentState.state==PLAY_LOOP){
+	      printf("Play sequence once.\n");
+	      currentState.state=PLAY_ONCE;
+	    }
+	    else if(currentState.state==PLAY_ONCE){
+	      printf("Play sequence in loop.\n");
+	      currentState.state=PLAY_LOOP;
+	    }else{
+	      if(defaultPlayMode==PLAY_LOOP){
+		printf("Play sequence once.\n");
+		defaultPlayMode=PLAY_ONCE;
+	      }
+	      else if(defaultPlayMode==PLAY_ONCE){
+		printf("Play sequence in loop.\n");
+		defaultPlayMode=PLAY_LOOP;
+	      }
+	    
+	    }
+	    
+	  }break;
+	  
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
-	    static U32 iFormerState=PLAY_ONCE;
+	    static U32 iFormerState;
 	    if(currentState.state==STOP){
-	      currentState.state=iFormerState;
+	      currentState.state=defaultPlayMode;
 	    }else if(currentState.state==PLAY_ONCE){
 	      iFormerState=currentState.state; 
 	      currentState.state=PAUSED;

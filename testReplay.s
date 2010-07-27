@@ -5,7 +5,7 @@
 
     xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
     xdef _deinstallReplayRout	;removes replay routine from system 
-
+    xdef _defaultPlayMode
     xref _playNote	;output note to external midi module and/or ym2149
     xref super_on	; self explanatory 
     xref super_off	;
@@ -17,7 +17,9 @@
     
     xref _midiOutputEnabled
     xref _ymOutputEnabled
-  
+    xref _ymSoundOff
+    xref _am_allNotesOff
+
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
 MFP_DIV4	equ 	%0001  ;div 4
@@ -44,7 +46,7 @@ PLAY_RANDOM 	equ	3
 PAUSED 		equ 	4
 ;=========================================
 
-;hokus-pokus 
+;hokus-pokus from Atari Compedium
 savptr		equ	$4a2
 savamt		equ	$23*2
 
@@ -55,9 +57,7 @@ _installReplayRout:
 	move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
-	;move.w	$54(sp),d1  ;mode
 	move.l	$42(sp),d1  ;mode
-	;move.w  $58(sp),d0  ;data
         move.l  $46(sp),d0  ;data
         
 	move.b	d1,_tbMode  ;save parameters for later
@@ -66,6 +66,7 @@ _installReplayRout:
 	clr.b     $fffffa1b		;turn off tb
 	move.l	  #0,_counter		;init counter 
 	move.l	  #0,_elapsedDelta
+	move.l	  #PLAY_ONCE,_defaultPlayMode
 	
 	move.l	  $120,_oldTB	
 	move.l    #update,$120		;slap interrupt
@@ -158,7 +159,7 @@ update:
 	move.l	#0,_counter
 	;exit
 
-	bra.s	.exit
+	bra	.exit
 .sendNote:
 	;sub.l	#savamt,savptr
 
@@ -194,13 +195,23 @@ update:
 	; if yest then we handle following modes
 	; PLAY_ONCE=1, PLAY_LOOP=2, PLAY_RANDOM=3(TODO)
 	; a1 should contain our sequence pointer
-		
 
 ;reset current indexes and delta times ticks
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
 	move.l	#0,_elapsedDelta
-
+	cmp.l	#PLAY_LOOP,d0
+	beq.s	.exit
+	;change state to STOP, turn off all instruments and ym2149 too
+	
+	movem.l	d0-d2/a0-a2,-(sp)
+	jsr _ymSoundOff	
+	pea 16.w
+	jsr _am_allNotesOff
+	addq.l #4,sp
+	movem.l	(sp)+,d0-d2/a0-a2
+	
+	move.l	#STOP,state(a0)		;set state to STOP
 .exit:
 	;prepare next tick
         move.l    #update,$120		;slap interrupt 
@@ -237,6 +248,8 @@ _deinstallReplayRout:
 	even
 _currentSeqPtr:		ds.l	1
 _elapsedDelta:		ds.l	1
+_defaultPlayMode:	ds.l	1
+
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
 currentPPQN	rs.l	1

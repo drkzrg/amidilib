@@ -241,6 +241,7 @@ int main(void){
 	    printf("MIDI output ");
 	    if(midiOutputEnabled==TRUE){
 	      midiOutputEnabled=FALSE;
+	      am_allNotesOff(16);
 	      printf("disabled.\n");
 	    }else{
 	      midiOutputEnabled=TRUE;
@@ -251,6 +252,7 @@ int main(void){
 	    printf("ym2149 output ");
 	    if(ymOutputEnabled==TRUE){
 	      ymOutputEnabled=FALSE;
+	      ymSoundOff();
 	      printf("disabled.\n");
 	    }else{
 	      ymOutputEnabled=TRUE;
@@ -266,9 +268,6 @@ int main(void){
 	      currentState.currentTempo--;
 	    }
 	    printf("Current tempo: %ld\n",currentState.currentTempo);
-	  }break;
-	  case SC_Q:{
-	    playNote(33,midiOutputEnabled,ymOutputEnabled);
 	  }break;
 	  case SC_I:{
 	    printHelpScreen();

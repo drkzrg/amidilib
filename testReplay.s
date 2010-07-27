@@ -13,7 +13,9 @@
     xref _tbMode
     xref _tbData
     xref _playNote
-
+    xref _midiOutputEnabled
+    xref _ymOutputEnabled
+  
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
 MFP_DIV4	equ 	%0001  ;div 4
@@ -114,9 +116,6 @@ update:
 	; we play note read from the sequence and we are increasing current note index
 	
 	; firstly we check if we are on the end of sequence
-	; if yest then we handle following modes
-	; PLAY_ONCE=1, PLAY_LOOP=2, PLAY_RANDOM=3
-	; a1 should contain our sequence pointer
 	moveq	#0,d3
 	move.l	d3,d4
 	move.l	d4,d5
@@ -147,9 +146,10 @@ update:
 	movem.l	d0-d2/a0-a2,-(sp)
 	
 	move.b	note(a1),d5
+
+	move.l	_ymOutputEnabled,-(sp)
+	move.l	_midiOutputEnabled,-(sp)
 	
-	move.l	#1,-(sp)
-	move.l	#1,-(sp)
 	move.l	d5,-(sp)
 	jsr.w	_playNote
 	lea 	(12,sp),sp
@@ -171,7 +171,12 @@ update:
 	bra.s	.exit
 
 .endSeqHandle:
-	;reset current indexes and delta times ticks
+	; if yest then we handle following modes
+	; PLAY_ONCE=1, PLAY_LOOP=2, PLAY_RANDOM=3(TODO)
+	; a1 should contain our sequence pointer
+		
+
+;reset current indexes and delta times ticks
 	move.l	#0,currentIdx(a0)   
 	move.l	#0,_counter
 

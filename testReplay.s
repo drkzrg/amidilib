@@ -3,16 +3,18 @@
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
 
-    xdef _installReplayRout
-    xdef _deinstallReplayRout
-    xref _playNote
-    xref super_on
-    xref super_off
-    xref _oldTB
-    xref _counter
-    xref _tbMode
-    xref _tbData
-    xref _playNote
+    xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
+    xdef _deinstallReplayRout	;removes replay routine from system 
+
+    xref _playNote	;output note to external midi module and/or ym2149
+    xref super_on	; self explanatory 
+    xref super_off	;
+    xref _oldTB		;saved old Timer B vector
+    
+    xref _counter	;ticks counted in quaternote span
+    xref _tbMode	;data feed to timer, which control
+    xref _tbData	;individual tick duration
+    
     xref _midiOutputEnabled
     xref _ymOutputEnabled
   
@@ -237,6 +239,7 @@ _currentSeqPtr:		ds.l	1
 _elapsedDelta:		ds.l	1
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
+currentPPQN	rs.l	1
 currentIdx	rs.l	1
 seqPtr		rs.l	1
 state		rs.l	1

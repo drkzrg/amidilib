@@ -12,7 +12,7 @@ STRIP = m68k-atari-mint-strip
 CFLAGS +=-std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
-ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
+ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
 EXE = amidi.tos
 
 # ym2149 test output program 

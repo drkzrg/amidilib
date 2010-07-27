@@ -81,7 +81,8 @@ static const sSequence testSequenceChannel2[]={
 //check if we are on the end of test sequence
 
 typedef struct{
-  volatile U32 currentTempo;
+  volatile U32 currentTempo;	//quaternote duration in ms, 500ms default
+  volatile U32 currentPPQN;	//pulses per quater note
   volatile U32 currentIdx;	//current position in table
   volatile sSequence *seqPtr;	//sequence ptr
   volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
@@ -267,7 +268,7 @@ int main(void){
 	    if(currentState.currentTempo!=0){
 	      currentState.currentTempo--;
 	    }
-	    printf("Current tempo: %ld\n",currentState.currentTempo);
+	    printf("Current tempo: %ld[ms]\n",currentState.currentTempo);
 	  }break;
 	  case SC_I:{
 	    printHelpScreen();

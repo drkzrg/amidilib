@@ -8,11 +8,11 @@ CC = m68k-atari-mint-gcc
 GAS = m68k-atari-mint-as
 STRIP = m68k-atari-mint-strip
 
-# extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG
-CFLAGS +=-std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
+# extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG  
+CFLAGS += -g -std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
 LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
-ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt 
+ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.tos
 
 # ym2149 test output program 
@@ -61,9 +61,9 @@ $(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
 $(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o testReplay.o 
-	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o testReplay.o -o $@ -lm 
-	echo "Stripping symbols"
-	$(STRIP) $(TIMING_TEST_EXE)
+	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o testReplay.o -o $@ -lgem -lm 
+#echo "Stripping symbols"
+#$(STRIP) $(TIMING_TEST_EXE)
 	echo "Copying midi delta timing test program to emulator directory."
 	cp $(TIMING_TEST_EXE) $(ST_HD_PATH)
 

@@ -19,7 +19,7 @@
 #include "scancode.h"
 #include "mfp.h"
 
-extern void turnOffKeyclick(void);
+
 
 typedef struct{
   U32 delta;
@@ -27,6 +27,191 @@ typedef struct{
   U8 note;	// 0-127 range
   U8 dummy;	// just fill in
 } sSequence; 
+
+
+/////////////////////////////////////////////////
+//check if we are on the end of test sequence
+
+typedef struct{
+  volatile U32 currentTempo;	//quaternote duration in ms, 500ms default
+  volatile U32 currentPPQN;	//pulses per quater note
+  volatile U32 currentIdx;	//current position in table
+  volatile sSequence *seqPtr;	//sequence ptr
+  volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
+} sCurrentSequenceState;
+
+enum{
+ STOP=0, 
+ PLAY_ONCE=1, 
+ PLAY_LOOP=2,
+ PLAY_RANDOM=3,
+ PAUSED=4
+} eSeqState;
+extern void turnOffKeyclick(void);
+extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
+extern void deinstallReplayRout();
+
+void setTm(U32 freq,U32 *mode,U32 *data);
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
+
+volatile sCurrentSequenceState currentState;
+volatile extern U32 counter;
+extern U32 defaultPlayMode;
+
+ymChannelData ch[3];
+
+//plays given note and outputs it to midi/ym2149
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
+
+  if(bMidiOutput==TRUE){
+    note_on(9,noteNb,127);	//output on channel 2, max velocity
+  }
+
+  if(bYmOutput==TRUE){
+
+     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
+     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
+     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
+	  
+     ch[CH_A].oscFreq=lByte;
+     ch[CH_A].oscStepSize=hByte;
+     ch[CH_B].oscFreq=lByte;
+     ch[CH_B].oscStepSize=hByte;
+     ch[CH_C].oscFreq=lByte;
+     ch[CH_C].oscStepSize=hByte;
+    
+    ymDoSound( ch, 1, period,0);
+    
+  }
+
+}
+
+// plays sample sequence 
+int playSampleSequence(sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
+  pInitialState->currentIdx=0;			//initial position
+  pInitialState->state=STOP;			//track state
+  pInitialState->seqPtr=testSequenceChannel1;	//ptr to sequence
+  
+  //install replay routine 96 ticks per 500ms interval 
+  installReplayRout(mode, data, pInitialState);
+  return 0;
+}
+
+void setTm(U32 freq,U32 *mode,U32 *data){
+static const U32 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
+U32 cntrl,count;
+cntrl=0;
+
+if( freq<=614400 && freq>=2400 ) {
+  cntrl=1;		/* divide by 4  	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  
+  *mode=cntrl;
+  *data=count;
+  printf("%d %d\n",cntrl,count);
+
+  return;	 
+}
+	
+if( freq<2400 && freq>=960 ) {
+  cntrl=2;		/* divide by 10 	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+
+if( freq<960  && freq>=600 ) {
+  cntrl=3;		/* divide by 16 	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+
+if( freq<600  && freq>=192 ) {
+  cntrl=4;		/* divide by 50 	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  return;
+}
+
+if( freq<192  && freq>=150 ) {
+  cntrl=5;		/* divide by 64 	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+
+if( freq<150  && freq>=96  ) {
+  cntrl=6;		/* divide by 100	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+		
+if( freq<96&&freq>=48) {
+  cntrl=7; 		/* divide by 200	*/
+  U32 presc=prescales[cntrl];
+  U32 temp=presc*freq;
+  count=(2457600/temp) ;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+	
+if( cntrl==0 ) {
+  count=0;
+  printf("%d %d\n",cntrl,count);
+
+  return;
+}
+
+}
+
+
+
+BOOL isEOT(sSequence *pSeqPtr){
+
+  if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)) return TRUE;
+   else return FALSE;
+}
+
+void printHelpScreen(){
+  printf("===============================================\n");
+  printf("/|\\ delta timing and sound output test..\n");
+  printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
+  printf("[1/2] - enable/disable midi out/ym2149 output \n");
+  printf("[m] - toggle [PLAY ONCE/LOOP] sequence replay mode \n");
+  printf("[p] - pause/resume sequence \n");
+  printf("[i] - show this help screen \n");
+  
+  printf("[spacebar] - turn off all sounds / stop sequence \n");
+  printf("[Esc] - quit\n");
+  printf("(c) Nokturnal 2010\n");
+  printf("================================================\n");
+}
+
+extern U8 envelopeArray[8];
+static const U8 KEY_PRESSED = 0xff;
+static const U8 KEY_UNDEFINED=0x80;
+static const U8 KEY_RELEASED=0x00;
+
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
 
 // output, test sequence for channel 1 
 static const sSequence testSequenceChannel1[]={
@@ -74,106 +259,15 @@ static const sSequence testSequenceChannel2[]={
   {80L,500L,66,0xAD},
   {160L,500L,65,0xAD},
   {320L,500L,66,0xAD},
-  {0L,0L,0,0,0xAD}
+  {0L,0L,0,0xAD}
 };
 
-/////////////////////////////////////////////////
-//check if we are on the end of test sequence
 
-typedef struct{
-  volatile U32 currentTempo;	//quaternote duration in ms, 500ms default
-  volatile U32 currentPPQN;	//pulses per quater note
-  volatile U32 currentIdx;	//current position in table
-  volatile sSequence *seqPtr;	//sequence ptr
-  volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
-} sCurrentSequenceState;
-
-enum{
- STOP=0, 
- PLAY_ONCE=1, 
- PLAY_LOOP=2,
- PLAY_RANDOM=3,
- PAUSED=4
-} eSeqState;
-
-volatile sCurrentSequenceState currentState;
-volatile extern U32 counter;
-extern U32 defaultPlayMode;
-
-ymChannelData ch[3];
-
-extern void installReplayRout(U8 mode,U8 data,sCurrentSequenceState *pPtr);
-extern void deinstallReplayRout();
-
-//plays given note and outputs it to midi/ym2149
-void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
-
-  if(bMidiOutput==TRUE){
-    note_on(9,noteNb,127);	//output on channel 2, max velocity
-  }
-
-  if(bYmOutput==TRUE){
-
-     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
-     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
-     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
-	  
-     ch[CH_A].oscFreq=lByte;
-     ch[CH_A].oscStepSize=hByte;
-     ch[CH_B].oscFreq=lByte;
-     ch[CH_B].oscStepSize=hByte;
-     ch[CH_C].oscFreq=lByte;
-     ch[CH_C].oscStepSize=hByte;
-    
-    ymDoSound( ch, 1, period,0);
-    
-  }
-
-}
-
-// plays sample sequence 
-int playSampleSequence(sSequence *testSequenceChannel1, U32 tempo, sCurrentSequenceState *pInitialState){
-  pInitialState->currentIdx=0;
-  pInitialState->currentTempo=tempo;
-  pInitialState->state=STOP;
-  pInitialState->seqPtr=testSequenceChannel1;
-  
-  //install replay routine 96 ticks per 500ms interval 
-  installReplayRout(MFP_DIV4, 118, pInitialState);
-  return 0;
-}
-
-BOOL isEOT(sSequence *pSeqPtr){
-
-  if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)) return TRUE;
-   else return FALSE;
-}
-
-void printHelpScreen(){
-  printf("===============================================\n");
-  printf("/|\\ delta timing and sound output test..\n");
-  printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
-  printf("[1/2] - enable/disable midi out/ym2149 output \n");
-  printf("[m] - toggle [PLAY ONCE/LOOP] sequence replay mode \n");
-  printf("[p] - pause/resume sequence \n");
-  printf("[i] - show this help screen \n");
-  
-  printf("[spacebar] - turn off all sounds / stop sequence \n");
-  printf("[Esc] - quit\n");
-  printf("(c) Nokturnal 2010\n");
-  printf("================================================\n");
-}
-
-extern U8 envelopeArray[8];
-static const U8 KEY_PRESSED = 0xff;
-static const U8 KEY_UNDEFINED=0x80;
-static const U8 KEY_RELEASED=0x00;
-
-BOOL midiOutputEnabled;
-BOOL ymOutputEnabled;
-  
 int main(void){
-  U32 defaultTempo=500;
+  U32 defaultTempo=60000000/120;
+  
+  currentState.currentTempo=defaultTempo;
+  currentState.currentPPQN=96;
   
   // midi initial settings
   U8 currentChannel=1;
@@ -225,9 +319,15 @@ int main(void){
 
   memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-
+  U32 mode,data;
+  
+  U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
+  
+  setTm(freq,&mode,&data);
+  
   //prepare sequence
-  playSampleSequence(testSequenceChannel2,defaultTempo, &currentState);
+  
+  playSampleSequence(testSequenceChannel2,mode,data, &currentState);
   
   //enter main loop
   while(bQuit==FALSE){

@@ -86,8 +86,8 @@ _installReplayRout:
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
-	move.w	sr,-(sp)	;save status register
-        or.w	#$0700,sr	;turn off all interupts
+	;move.w	sr,-(sp)	;save status register
+        ;or.w	#$0700,sr	;turn off all interupts
 
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
@@ -126,7 +126,8 @@ update:
         move.l	timerData,d1
 	or.l	d0,d1
         cmp.l	#0,d1	;if data or mode 0 skip change
-	
+	beq.s	.skipTempo
+
         move.b	d0,_tbMode
         move.b	d1,_tbData
       
@@ -263,7 +264,7 @@ update:
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
 .finish:	
-	move.w 	  (sp)+,sr 		;restore Status Register
+	;move.w 	  (sp)+,sr 		;restore Status Register
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer

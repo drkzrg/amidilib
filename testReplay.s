@@ -126,12 +126,13 @@ update:
         move.l	timerData,d1
 	or.l	d0,d1
         cmp.l	#0,d1	;if data or mode 0 skip change
-	beq.s	.skipTempo
+	beq.s	.restore
 
         move.b	d0,_tbMode
         move.b	d1,_tbData
       
 	;get MFP mode and data
+.restore:
 	movem.l	(sp)+,d0-d7/a0-a6
 	
 .skipTempo:

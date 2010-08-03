@@ -316,24 +316,27 @@ int main(void){
 	    printf("Current tempo: %ld [ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
 	  }break;
 	  case SC_ARROW_DOWN:{
-	    if(currentState.currentTempo!=0){
-	      if(currentState.currentTempo<=50000&&currentState.currentTempo>5000){
-	       iCurrentStep=5000;
-	    }else if(currentState.currentTempo<=5000){
-	     iCurrentStep=100;
-	    }
-	    else iCurrentStep=TEMPO_STEP;
+	    U32 tempo=currentState.currentTempo;
 	    
+	    if(tempo!=0){
 	      
-	      currentState.currentTempo=currentState.currentTempo-iCurrentStep;
+	      if(tempo<=50000&&tempo>5000){
+		iCurrentStep=5000;
+	      }
+	      else if(tempo<=5000){
+		iCurrentStep=100;
+	      }
+	      else iCurrentStep=TEMPO_STEP;
+	      
+	      currentState.currentTempo=tempo-iCurrentStep;
 	       
 	      if(currentState.currentTempo==0){
 		am_allNotesOff(16);
 		ymSoundOff();
 	      }
-	    
+	     printf("Current tempo: %ld[ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
 	    }
-	    printf("Current tempo: %ld[ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
+	    
 	  }break;
 	  
 	  case SC_I:{

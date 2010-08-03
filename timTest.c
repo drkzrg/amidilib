@@ -309,15 +309,18 @@ int main(void){
 	  }break;
 	  case SC_ARROW_UP:{
 	    U32 tempo=currentState.currentTempo;
-	    if(tempo<1000000){
+	    if(tempo<800000){
 	    
 	      if(tempo<50000){
 	       iCurrentStep=5000;
-	    }else iCurrentStep=TEMPO_STEP;
+	    }else 
+	      iCurrentStep=TEMPO_STEP;
 	    
-	    currentState.currentTempo=tempo+iCurrentStep;
-	    printf("Current tempo: %ld [ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
-	    }
+	     currentState.currentTempo=tempo+iCurrentStep;
+	     U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
+	     
+	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",currentState.currentTempo,freq,tbMode,tbData);}
+	  
 	  }break;
 	  case SC_ARROW_DOWN:{
 	    U32 tempo=currentState.currentTempo;
@@ -331,9 +334,11 @@ int main(void){
 		iCurrentStep=100;
 	      }
 	      else iCurrentStep=TEMPO_STEP;
-	      
 	      currentState.currentTempo=tempo-iCurrentStep;
-	     printf("Current tempo: %ld[ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
+	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
+	      
+	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",currentState.currentTempo,freq,tbMode,tbData);
+	    
 	    }
 	    
 	  }break;

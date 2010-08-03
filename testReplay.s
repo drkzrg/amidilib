@@ -19,7 +19,8 @@
     xref _ymOutputEnabled
     xref _ymSoundOff
     xref _am_allNotesOff
-
+    xref _getMFPTimerSettings
+    xref ___udivsi3
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
 MFP_DIV4	equ 	%0001  ;div 4
@@ -57,6 +58,8 @@ _installReplayRout:
 	move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
+	move.l	currentTempo(a0),_currentTempo	;save current tempo
+
 	move.l	$42(sp),d1  ;mode
         move.l  $46(sp),d0  ;data
         
@@ -83,17 +86,54 @@ _installReplayRout:
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
-	;move.w	sr,-(sp)	;save status register
-        ;or.w	#$0700,sr	;turn off all interupts
+	move.w	sr,-(sp)	;save status register
+        or.w	#$0700,sr	;turn off all interupts
 
 	clr.b     $fffffa1b
-
-	eor.w	  #$0f0,$ffff8240
+	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 
 	move.l	_currentSeqPtr,a0
 	move.l	currentTempo(a0),d0 ;get current tempo, current slot in the sequence,
 	move.l	currentIdx(a0),d1   ;idx of current event in sequence
 	
+	;check if change of current tempo has occurred
+	;if yes then calculate new tick frequency and get new data/divider
+	;which will be set at the end of update rout
+	move.l	_currentTempo,d2
+	cmp.l	d0,d2
+	beq.s  .skipTempo
+;calculate frequency tempo / resolution in PPQN
+	movem.l	d0-d7/a0-a6,-(sp)
+	
+        move.l currentTempo(a0),d0
+	move.l currentPPQN(a0),d1
+	
+	move.l d1,-(sp)
+	move.l d0,-(sp)
+	jsr ___udivsi3
+	addq.l #8,sp
+	
+;get result from d0, desired tick frequency 
+	;put frequency, addr to mode/data
+        move.l	#timerData,-(sp)
+	move.l	#timerMode,-(sp)
+	move.l d0,-(sp)	
+	
+        jsr _getMFPTimerSettings
+	lea (12,sp),sp
+	
+	move.l timerMode,d0
+        move.l	timerData,d1
+	or.l	d0,d1
+        cmp.l	#0,d1	;if data or mode 0 skip change
+	
+        move.b	d0,_tbMode
+        move.b	d1,_tbData
+      
+	;get MFP mode and data
+	movem.l	(sp)+,d0-d7/a0-a6
+	
+.skipTempo:
 	mulu.w	#10,d1		    ;offset == currentIdx*10 (sizeof whole struct:2xU32+2xU8=10bytes)
 				    ;calculate ptr to current event in sequence
 	move.l	seqPtr(a0),a1       ;ptr to sequence
@@ -139,18 +179,21 @@ update:
 	cmpi.l	#0,d4
 	beq.w	.endSeqHandle
 
-	;check _counter if is equal to the current events delta time
-	;if yes, play note, increase current event index and reset _counter
-	;if no, then increase counter
+	;check _counter if is equal to PPQN-1
+	;if yes, increase delta
+	;if no, only increase _counter
 	move.l _counter,d6
-	cmp.l	#96,d6
-	bne.s .increaseCounter
+	move.l	currentPPQN(a0),d7
+	subq	#1,d7
+	cmp.l	d7,d6
+        bne.s .increaseCounter
 	;now we can increase delta 
 	
 	move.l	_elapsedDelta,d6
 	move.l	delta(a1),d3
-        cmp.l	d6,d3
+	cmp.l	d6,d3
 	beq.s	.sendNote
+
 	;increase elapsed delta
 	move.l	_elapsedDelta,d3
 	addq.l	#1,d3
@@ -162,16 +205,14 @@ update:
 	bra	.exit
 .sendNote:
 	;sub.l	#savamt,savptr
-
 	movem.l	d0-d2/a0-a2,-(sp)
-	
 	move.b	note(a1),d5
 
 	move.l	_ymOutputEnabled,-(sp)
 	move.l	_midiOutputEnabled,-(sp)
-	
+	  
 	move.l	d5,-(sp)
-	jsr.w	_playNote
+	jsr	_playNote
 	lea 	(12,sp),sp
 	;add.l	#savamt,savptr
 	movem.l	(sp)+,d0-d2/a0-a2
@@ -222,7 +263,7 @@ update:
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
 .finish:	
-	;move.w 	  (sp)+,sr 		;restore Status Register
+	move.w 	  (sp)+,sr 		;restore Status Register
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer
@@ -251,7 +292,9 @@ _deinstallReplayRout:
 _currentSeqPtr:		ds.l	1
 _elapsedDelta:		ds.l	1
 _defaultPlayMode:	ds.l	1
-
+_currentTempo:		ds.l	1
+timerData:		ds.l	1
+timerMode:		ds.l	1
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
 currentPPQN	rs.l	1

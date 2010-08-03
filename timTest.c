@@ -19,6 +19,7 @@
 #include "scancode.h"
 #include "mfp.h"
 
+#define TEMPO_STEP 50000	// tempo change step in ms
 
 
 typedef struct{
@@ -47,11 +48,11 @@ enum{
  PLAY_RANDOM=3,
  PAUSED=4
 } eSeqState;
+
 extern void turnOffKeyclick(void);
 extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
 extern void deinstallReplayRout();
-
-void setTm(U32 freq,U32 *mode,U32 *data);
+extern volatile U8 tbData,tbMode;
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
 volatile sCurrentSequenceState currentState;
@@ -59,7 +60,7 @@ volatile extern U32 counter;
 extern U32 defaultPlayMode;
 
 ymChannelData ch[3];
-
+static U32 iCurrentStep;
 //plays given note and outputs it to midi/ym2149
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 
@@ -80,7 +81,7 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
      ch[CH_C].oscFreq=lByte;
      ch[CH_C].oscStepSize=hByte;
     
-    ymDoSound( ch, 1, period,0);
+    ymDoSound( ch, 8, period,32);
     
   }
 
@@ -96,86 +97,6 @@ int playSampleSequence(sSequence *testSequenceChannel1, U32 mode,U32 data, volat
   installReplayRout(mode, data, pInitialState);
   return 0;
 }
-
-void setTm(U32 freq,U32 *mode,U32 *data){
-static const U32 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
-U32 cntrl,count;
-cntrl=0;
-
-if( freq<=614400 && freq>=2400 ) {
-  cntrl=MFP_DIV4;		/* divide by 4  	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  *mode=cntrl;
-  *data=count;
-  
-  return;	 
-}
-	
-if( freq<2400 && freq>=960 ) {
-  cntrl=MFP_DIV10;		/* divide by 10 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  return;
-}
-
-if( freq<960  && freq>=600 ) {
-  cntrl=MFP_DIV16;		/* divide by 16 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  return;
-}
-
-if( freq<600  && freq>=192 ) {
-  cntrl=MFP_DIV50;		/* divide by 50 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  return;
-}
-
-if( freq<192  && freq>=150 ) {
-  cntrl=MFP_DIV64;		/* divide by 64 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  return;
-}
-
-if( freq<150  && freq>=96  ) {
-  cntrl=MFP_DIV100;		/* divide by 100	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  return;
-}
-		
-if( freq<96&&freq>=48) {
-  cntrl=MFP_DIV200; 		/* divide by 200	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  return;
-}
-	
-if( cntrl==0 ) {
-  count=0;
-  
-  return;
-}
-
-}
-
-
 
 BOOL isEOT(sSequence *pSeqPtr){
 
@@ -255,10 +176,40 @@ static const sSequence testSequenceChannel2[]={
   {0L,0L,0,0xAD}
 };
 
+// output test sequence for channel 2
+static const sSequence testSequenceChannel3[]={
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {1L,500L,65,0xAD},
+  {1L,500L,66,0xAD},
+  {0L,0L,0,0xAD}
+};
+
+
 
 int main(void){
   U32 defaultTempo=60000000/120;
-  
+  iCurrentStep=TEMPO_STEP;
   currentState.currentTempo=defaultTempo;
   currentState.currentPPQN=96;
   
@@ -277,19 +228,19 @@ int main(void){
 
   //set up ym2149 sound
   /////////////////////////////////////
-  ch[CH_A].amp=15;
+  ch[CH_A].amp=16;
   ch[CH_A].oscFreq=0;
   ch[CH_A].oscStepSize=0;  
   ch[CH_A].toneEnable=1;
   ch[CH_A].noiseEnable=0;
   
-  ch[CH_B].amp=15;
+  ch[CH_B].amp=16;
   ch[CH_B].oscFreq=0;
   ch[CH_B].oscStepSize=0;
   ch[CH_B].toneEnable=1;
   ch[CH_B].noiseEnable=0;
   
-  ch[CH_C].amp=15;
+  ch[CH_C].amp=16;
   ch[CH_C].oscFreq=0;
   ch[CH_C].oscStepSize=0;
   ch[CH_C].toneEnable=1;
@@ -316,11 +267,10 @@ int main(void){
   
   U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
   
-  setTm(freq,&mode,&data);
+  getMFPTimerSettings(freq,&mode,&data);
   
   //prepare sequence
-  
-  playSampleSequence(testSequenceChannel2,mode,data, &currentState);
+  playSampleSequence(testSequenceChannel3,mode,data, &currentState);
   
   //enter main loop
   while(bQuit==FALSE){
@@ -358,14 +308,32 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-	    currentState.currentTempo++;
-	    printf("Current tempo: %ld [ms]\n",currentState.currentTempo);
+	    if(currentState.currentTempo<50000){
+	       iCurrentStep=5000;
+	    }else iCurrentStep=TEMPO_STEP;
+	    
+	    currentState.currentTempo=currentState.currentTempo+iCurrentStep;
+	    printf("Current tempo: %ld [ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
 	  }break;
 	  case SC_ARROW_DOWN:{
 	    if(currentState.currentTempo!=0){
-	      currentState.currentTempo--;
+	      if(currentState.currentTempo<=50000&&currentState.currentTempo>5000){
+	       iCurrentStep=5000;
+	    }else if(currentState.currentTempo<=5000){
+	     iCurrentStep=100;
 	    }
-	    printf("Current tempo: %ld[ms]\n",currentState.currentTempo);
+	    else iCurrentStep=TEMPO_STEP;
+	    
+	      
+	      currentState.currentTempo=currentState.currentTempo-iCurrentStep;
+	       
+	      if(currentState.currentTempo==0){
+		am_allNotesOff(16);
+		ymSoundOff();
+	      }
+	    
+	    }
+	    printf("Current tempo: %ld[ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
 	  }break;
 	  
 	  case SC_I:{

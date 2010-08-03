@@ -32,8 +32,10 @@
  extern void deinstallMIDIreplay(void);
 
 
-extern volatile U32 counter;
-extern volatile U32 cA;
+  extern volatile U32 counter;
+  extern volatile U32 cA;
+
+  
 
 
 #endif

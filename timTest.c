@@ -65,7 +65,7 @@ static U32 iCurrentStep;
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 
   if(bMidiOutput==TRUE){
-    note_on(9,noteNb,127);	//output on channel 2, max velocity
+    note_on(9,noteNb,127);	//output on channel 9, max velocity
   }
 
   if(bYmOutput==TRUE){
@@ -81,7 +81,7 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
      ch[CH_C].oscFreq=lByte;
      ch[CH_C].oscStepSize=hByte;
     
-    ymDoSound( ch, 8, period,32);
+    ymDoSound( ch,4 , period,128);
     
   }
 
@@ -178,30 +178,30 @@ static const sSequence testSequenceChannel2[]={
 
 // output test sequence for channel 2
 static const sSequence testSequenceChannel3[]={
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
-  {1L,500L,65,0xAD},
-  {1L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
+  {10L,500L,65,0xAD},
+  {10L,500L,66,0xAD},
   {0L,0L,0,0xAD}
 };
 
@@ -228,19 +228,19 @@ int main(void){
 
   //set up ym2149 sound
   /////////////////////////////////////
-  ch[CH_A].amp=16;
+  ch[CH_A].amp=15;
   ch[CH_A].oscFreq=0;
   ch[CH_A].oscStepSize=0;  
   ch[CH_A].toneEnable=1;
   ch[CH_A].noiseEnable=0;
   
-  ch[CH_B].amp=16;
+  ch[CH_B].amp=15;
   ch[CH_B].oscFreq=0;
   ch[CH_B].oscStepSize=0;
   ch[CH_B].toneEnable=1;
   ch[CH_B].noiseEnable=0;
   
-  ch[CH_C].amp=16;
+  ch[CH_C].amp=15;
   ch[CH_C].oscFreq=0;
   ch[CH_C].oscStepSize=0;
   ch[CH_C].toneEnable=1;
@@ -308,12 +308,16 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-	    if(currentState.currentTempo<50000){
+	    U32 tempo=currentState.currentTempo;
+	    if(tempo<1000000){
+	    
+	      if(tempo<50000){
 	       iCurrentStep=5000;
 	    }else iCurrentStep=TEMPO_STEP;
 	    
-	    currentState.currentTempo=currentState.currentTempo+iCurrentStep;
+	    currentState.currentTempo=tempo+iCurrentStep;
 	    printf("Current tempo: %ld [ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
+	    }
 	  }break;
 	  case SC_ARROW_DOWN:{
 	    U32 tempo=currentState.currentTempo;
@@ -329,11 +333,6 @@ int main(void){
 	      else iCurrentStep=TEMPO_STEP;
 	      
 	      currentState.currentTempo=tempo-iCurrentStep;
-	       
-	      if(currentState.currentTempo==0){
-		am_allNotesOff(16);
-		ymSoundOff();
-	      }
 	     printf("Current tempo: %ld[ms], timer mode: %d, count:%d\n",currentState.currentTempo,tbMode,tbData);
 	    }
 	    

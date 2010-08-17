@@ -7,10 +7,11 @@ INCLUDES = -I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./i
 CC = m68k-atari-mint-gcc
 GAS = m68k-atari-mint-as
 STRIP = m68k-atari-mint-strip
+MACHINE = -m68000
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG   
-CFLAGS += -std=c99 -m68000 $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
-LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
+LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,-t $(MACHINE)
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.tos
@@ -79,7 +80,7 @@ testReplay.o:	testReplay.s
 
 
 ikbd_asm.o:	ikbd.S
-		$(GAS) ikbd.S -o ikbd.o
+		$(GAS) $(MACHINE) ikbd.S -o ikbd.o
 
 
 $(OBJECTS): %.o: %.c

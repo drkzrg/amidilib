@@ -19,18 +19,61 @@
  * main program entry
  */
 
+
+typedef struct{
+  volatile U32 currentTempo;		// quaternote duration in ms, 500ms default
+  volatile U32 currentPPQN;		// pulses per quater note
+  volatile U32 currentIdx;		// current position in table
+  volatile sSequence_t *seqPtr[16];	// sequence ptr array, max 16 tracks, we don't need more
+  volatile U32 activeSequence;		// default 0
+  U32 numSequences;			// number of tracks in total (only valid for MIDI file type 2 or other with multiple,
+					// independent tracks)
+  
+  volatile U32 state;			// 0=STOP, 1-PLAYING, 2-PAUSED
+} sCurrentSequenceState;
+
+enum{
+ STOP=0, 
+ PLAY_ONCE=1, 
+ PLAY_LOOP=2,
+ PLAY_RANDOM=3,
+ PAUSED=4
+} eSeqState;
+
+void playSeq (sSequence_t *seq,U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState);
 void VLQtest(void);
 void memoryCheck(void);
-void playMidi(sSequence_t *pMidiSequence);
+
+
+extern volatile U8 tbData,tbMode;
+volatile sCurrentSequenceState currentState;
+volatile extern U32 counter;
+extern U32 defaultPlayMode;
+
+
 
 int main(int argc, char *argv[]){
-
+    U32 defaultTempo=60000000/120;
+    U8 currentChannel=1;
+    U8 currentVelocity=127;
+    U8 currentPN=127;
+    U8 currentBankSelect=0;
+  
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
     
+    currentState.currentTempo=defaultTempo;
+    currentState.currentPPQN=120;
+  
+    
     /* init library */
     iError=am_init();
+    
+    //set current channel as 1, default is 0 in external module
+    control_change(0x00, currentChannel, currentBankSelect,0x00);
+    program_change(currentChannel, currentPN);
+  
     
     //trace is set up in am_init()
     
@@ -87,8 +130,7 @@ int main(int argc, char *argv[]){
 	  
     if(iError==0){
      /* play preloaded tune if no error occured */
-        playMidi(&midiTune);
-	
+        playSeq(&midiTune,1,1, &currentState);
       /* loop and wait for keypress */
 	BOOL bQuit=FALSE;
 	printf("Press q to quit...\n");
@@ -163,45 +205,13 @@ void memoryCheck(void){
 
 extern volatile sEventItem *g_pEventPtr;
 
-void playMidi(sSequence_t *pMidiSequence){
-  U32 currDelta=0,lastDelta=0;
-  const sEventList *pMyEvent=NULL;	
-  
-  /* get timing info */
-  /* the smallest tick is trackTempo/td */
-  
-  U32 trackTempo=pMidiSequence->arTracks[0]->currTrackState.ulTrackTempo;
-  U16 td=pMidiSequence->uiTimeDivision;
-  double tick=(double)trackTempo/(double)td;
-  
-  amTrace((const U8*)"\nplayMidi: time division: %d[MPQ], track tempo:%u [ms], tick: %4.3f\n",td,(unsigned int)trackTempo,tick);
-  
-  //print sequence info 
-  printf("Now playing:\n");
-  printf("Sequence name: %s\n",pMidiSequence->pSequenceName);
-  
-  //retrieve track list
-  printf("Tracks: %d\n",pMidiSequence->ubNumTracks);
+void playSeq(sSequence_t *seq, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
 
-  /* get first event */
-  pMyEvent= &((pMidiSequence->arTracks[0])->trkEventList); 
-  /* play our sequence - send all events  */		      
- 
-  playSequence(&pMyEvent);
-  
-  /* deltas are relative to the last event */
-  /*amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
-  
-  while((currDelta=sendMidiEvents(lastDelta, &pMyEvent))){
-    amTrace((const U8*)"Sending all events with delta: %u\n", (unsigned int)currDelta);
-    
-    lastDelta=currDelta;
-  }*/
-  
-  amTrace((const U8*)"File processed successfully. \n");
-  
-  while(counter!=UINT_MAX){
-      //amTrace("playMidi() counter!=UINT_MAX\n",g_pEventPtr,(unsigned int)counter);
-    ;} // endless loop
-  
+    pInitialState->currentIdx=0;			//initial position
+    pInitialState->state=STOP;				//track state
+    pInitialState->seqPtr[0]=seq;			//ptr to sequence
+
+  //install replay routine 96 ticks per 500ms interval
+
+  return;
 }

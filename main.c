@@ -47,13 +47,14 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 void VLQtest(void);
 void memoryCheck(void);
 
+volatile sCurrentSequenceState currentState;
+extern U32 defaultPlayMode;
 extern void turnOffKeyclick(void);
 extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
 extern void deinstallReplayRout();
 
 extern volatile U8 tbData,tbMode;
-extern U32 defaultPlayMode;
-volatile sCurrentSequenceState currentState;
+
 volatile extern U32 counter;
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;

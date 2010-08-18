@@ -34,8 +34,8 @@ OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_5
 MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c 
 MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o  
 
-YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c
-YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o
+YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c 
+YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o 
 
 TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c
 TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o
@@ -46,23 +46,23 @@ $(EXE): $(OBJECTS) amidi.o int_rout.o
 	echo "Copying TOS binary to emulator directory."
 	cp $(EXE) $(ST_HD_PATH)
 
-$(YM_TEST_EXE): $(YM_TEST_OBJECTS) int_rout.o 
-	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS) int_rout.o -o $@ -lm 
+$(YM_TEST_EXE): $(YM_TEST_OBJECTS)  amidi.o 
+	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS)  amidi.o -o $@ -lm 
 	echo "Stripping symbols"
 	$(STRIP) $(YM_TEST_EXE)
 	echo "Copying ym2149 test program to emulator directory."
 	cp $(YM_TEST_EXE) $(ST_HD_PATH)
 
 
-$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) int_rout.o ikbd_asm.o  
-	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) int_rout.o ikbd.o -o $@ -lm
+$(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) amidi.o ikbd_asm.o  
+	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) amidi.o ikbd.o -o $@ -lm
 	echo "Stripping symbols"
 	$(STRIP) $(MIDI_TEST_EXE)
 	echo "Copying midi output test program to emulator directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	
-$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) int_rout.o ikbd_asm.o testReplay.o 
-	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) int_rout.o ikbd.o testReplay.o -o $@ -lgem -lm 
+$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) amidi.o ikbd_asm.o testReplay.o 
+	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) amidi.o ikbd.o testReplay.o -o $@ -lgem -lm 
 	echo "Stripping symbols"
 	$(STRIP) $(TIMING_TEST_EXE)
 	echo "Copying midi delta timing test program to emulator directory."

@@ -297,6 +297,12 @@ _defaultPlayMode:	ds.l	1
 _currentTempo:		ds.l	1
 timerData:		ds.l	1
 timerMode:		ds.l	1
+_counter:		ds.l	1
+_oldTB:			ds.l	1
+
+_tbData:	ds.b	1
+_tbMode:	ds.b	1
+
 
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1

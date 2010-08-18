@@ -32,16 +32,13 @@ PAUSED 		equ 	4
 	   xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
            xdef _deinstallReplayRout	;removes replay routine from system 
            xdef _defaultPlayMode
-	   xref super_on	; self explanatory 
-	   xref super_off	;
-    
-	   xref _oldTB		;saved old Timer B vector
-    
-	   xref _counter	;ticks counted in quaternote span
 	   
-	  xdef _turnOffKeyclick
-	  xdef	_counter
-	  
+	   xdef _oldTB		;saved old Timer B vector
+	   xdef _counter	;ticks counted in quaternote span
+	   
+	   xref super_on		; self explanatory 
+	   xref super_off		;
+	   xref _turnOffKeyclick  
 	 
 	  
 ;external references
@@ -53,37 +50,6 @@ PAUSED 		equ 	4
 	  xref ___udivsi3
 	  xref _playNote	;output note to external midi module and/or ym2149
     
-
-
-_turnOffKeyclick:
-      bsr.w	super_on
-      bclr	#0,$484.w
-
-      bsr.w	super_off
-      rts
-
-
-;enter supervisor mode
-super_on:
-	movem.l	d0/a0,-(sp)
-	clr.l	-(sp)
-	move.w	#$20,-(sp)
-	trap	#1
-	addq.l	#6,sp
-	move.l	d0,old_ssp
-	movem.l	(sp)+,d0/a0
-	RTS
-
-;leave supervisor mode
-super_off:
-	movem.l	d0/a0,-(sp)
-	move.l	old_ssp,-(sp)
-	move.w	#$20,-(sp)
-	trap	#1
-	addq.l	#6,sp
-	movem.l	(sp)+,d0/a0 
-	RTS
-
 
 _installReplayRout:
 	move.l	a0,_currentSeqPtr
@@ -333,7 +299,6 @@ _defaultPlayMode:	ds.l	1
 _currentTempo:		ds.l	1
 timerData:		ds.l	1
 timerMode:		ds.l	1
-old_ssp:		ds.l	1
 _counter:		ds.l	1
 _oldTB:			ds.l	1
 _tbData:	ds.b	1

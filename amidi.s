@@ -3,37 +3,42 @@
 ;   This file is part of AMIDILIB.
 ;   See license.txt for licensing information.
 
-  XDEF am_writeVarLen
-  XDEF am_readVarLen
-  XDEF am_send_midi_cmd
-  
-  
-    text
-am_readVarLen:
-    move.l  d0,d1
-    moveq   #0,d0
-    ;result now in d0 
-    ;VLC value copied in d1
+	   xdef super_on		; self explanatory 
+	   xdef super_off		;
+	   xdef _turnOffKeyclick	;
 
-    ;results in d0.l */
-    RTS
+_turnOffKeyclick:
+      bsr.w	super_on
+      bclr	#0,$484.w
+
+      bsr.w	super_off
+      rts
 
 
-am_writeVarLen:
-  ; value to write in d0.l
+;enter supervisor mode
+super_on:
+	movem.l	d0/a0,-(sp)
+	clr.l	-(sp)
+	move.w	#$20,-(sp)
+	trap	#1
+	addq.l	#6,sp
+	move.l	d0,old_ssp
+	movem.l	(sp)+,d0/a0
+	RTS
+
+;leave supervisor mode
+super_off:
+	movem.l	d0/a0,-(sp)
+	move.l	old_ssp,-(sp)
+	move.w	#$20,-(sp)
+	trap	#1
+	addq.l	#6,sp
+	movem.l	(sp)+,d0/a0 
+	RTS
 
 
-    RTS
-
-;a0 - address of midi buffer
-am_send_midi_cmd:
-  move.b  (a0)+,d0
-  btst    #1,$fffffc04          ;is data reg empty?
-  beq.s   am_send_midi_cmd          ;no, wait for empty
-  move.b  d0,$fffffc06          ;write to MIDI data reg
-  rts                             ;return
-
-
+	    bss
+old_ssp:		ds.l	1
 
 
 

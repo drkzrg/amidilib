@@ -15,11 +15,6 @@
 #include "include/list/list.h"
 #include "include/mfp.h"
 
-/* test midi file to load */
-/*#define MIDI_FILE "..\\TUNES\\ULTIMA30.MID"*/
-#define MIDI_FILE "ULTIMA01.MID"
-#define XMIDI_FILE "TUNES/UWR10.XMI"
-
 /**
  * main program entry
  */
@@ -37,9 +32,10 @@ int main(int argc, char *argv[]){
     /* init library */
     iError=am_init();
     
+    //trace is set up in am_init()
+    
     VLQtest();
     memoryCheck();
-    //trace is set up in am_init()
     
     if(argc>=1&&argv[1]!='\0'){
       amTrace("Trying to load %s\n",argv[1]);
@@ -55,9 +51,8 @@ int main(int argc, char *argv[]){
     
     U32 ulFileLenght=0L;
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
-    
-    sSequence_t midiTune;
-   
+
+    sSequence_t midiTune;	//here we store our sequence data
     
     if(pMidi!=NULL){
 
@@ -65,149 +60,52 @@ int main(int argc, char *argv[]){
      
      /* process MIDI*/
      /* check midi header */
-     iRet=am_getHeaderInfo(pMidi);
      double ms;
+     
      printf("Please wait...\n");
      
-     switch(iRet){
-	
-	case T_MIDI0:{ /* handle file */
-	  amTrace((const U8*)"Preparing MIDI type 0 file for replay\n");
+     clock_t begin=clock();
+     iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
+     clock_t end=clock();
 	  
-	  clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, T_MIDI0, ulFileLenght,&midiTune);
-	  clock_t end=clock();
-	  
-	  ms=am_diffclock(end,begin);
-	  if(iError==0){
-	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	  }else{
-	    amTrace((const U8*)"Error while parsing. Exiting... \n");
-	  }
-	}
-	break;
-	case T_MIDI1:{ /* handle file */
-	  amTrace((const U8*)"Preparing MIDI type 1 file for replay\n");
-	  
-	  
-	  clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, T_MIDI1, ulFileLenght,&midiTune);
-	  clock_t end=clock();
-	  
-	  ms=am_diffclock(end,begin);
-	  if(iError==0){
-	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    
-	    
-	  }else{
-	    amTrace((const U8*)"Error while parsing. Exiting... \n");
-	    
-	  }
-	  
-	}break;
-	
-	case T_MIDI2:{ /* handle file */
-	  amTrace((const U8*)"Preparing MIDI type 2 file for replay\n");
-	  
-	  
-	   clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, T_MIDI2, ulFileLenght,&midiTune);
-	  clock_t end=clock();
-	  
-	   ms=am_diffclock(end,begin);
-	  if(iError==0){
-	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    
-	    
-	  }else{
-	    amTrace((const U8*)"Error while parsing. Exiting... \n");
-	    
-	  }
-	  
-	}
-	break;
-	case T_XMIDI:
-	/* handle file */{
-	  amTrace((const U8*)"Preparing XMIDI file for replay\n");
-	  
-	  clock_t begin=clock();
-	  iError=am_handleMIDIfile(pMidi, iRet, ulFileLenght,&midiTune);
-	  clock_t end=clock();
-	  
-	  ms=am_diffclock(end,begin);
-	  
-	  if(iError==0){
-	    amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	    printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
-	  }else{
-	    amTrace((const U8*)"Error while parsing. Exiting... \n");
-	  }
-	}
-	break;
+      ms=am_diffclock(end,begin);
 
-	case T_RMID:{iError=1;;}break; 
-	case T_SMF:{iError=1;;}break;
-	case T_XMF:{iError=1;;}break;
-	case T_SNG:{iError=1;;}break;
-	case T_MUS:{iError=1;;}break;
-	
-	default:{
-	   iError=1;
-	   if(iRet==-1){
-	      /* not MIDI file, do nothing */
-	      amTrace((const U8*)"It's not valid MIDI file...\n");
-	      
-	      fprintf(stderr, "It's not valid MIDI file...\n");
-	   } else if(iRet==-2){
-	    /* unsupported MIDI type format, do nothing*/
-	      
-	      amTrace((const U8*)"Unsupported MIDI file format...\n");
-	      
-	      
-	      fprintf(stderr, "Unsupported MIDI file format...\n");
-	  }
-	  else{
-	    /* unknown error, do nothing */
-	    amTrace((const U8*)"Unknown error.\n");
-	    
-	    fprintf(stderr, "Unknown error ...\n");
-	    
-	  }
-	}
-	break;
-     }
+      if(iError==0){
+	printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+	amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
+      }else{
+	amTrace((const U8*)"Error while parsing. Exiting... \n");
+      }
      
-      /* free up buffer, we don't need it anymore */
-      if(pMidi!=NULL)
-	Mfree(pMidi);pMidi=NULL;
+      /* free up buffer with loaded midi file, we don't need it anymore */
+
+      if(pMidi!=NULL){
+	Mfree(pMidi);
+	pMidi=NULL;
+      }
 	  
 	  
-    if(iError!=1){
-     /* play preloaded tune */
+    if(iError==0){
+     /* play preloaded tune if no error occured */
         playMidi(&midiTune);
 	
-    /* loop and wait for keypress */
-    BOOL bQuit=FALSE;
-    printf("Press q to quit...\n");
+      /* loop and wait for keypress */
+	BOOL bQuit=FALSE;
+	printf("Press q to quit...\n");
     
-    while(bQuit!=TRUE){
-     //char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
-     printf("counter %u\n",(unsigned int)counter);
-    
-    }
+      while(bQuit!=TRUE){
+	//char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
+	printf("counter %u\n",(unsigned int)counter);
+      }
   
-  deinstallMIDIreplay();
-
+	deinstallMIDIreplay();
     }
+    
      
     } /* MIDI loading failed */
     else{
-      amTrace((const U8*)"Error: Couldn't read file...\n");
-      
-      fprintf(stderr, "Error: Couldn't read file...\n");
+      amTrace((const U8*)"Error: Couldn't read %s file...\n",argv[1]);
+      fprintf(stderr, "Error: Couldn't read %s file...\n",argv[1]);
       return(-1);
     }
 
@@ -216,9 +114,6 @@ int main(int argc, char *argv[]){
    
     /* clean up, free internal library buffers etc..*/
     am_deinit();
-   // installMIDIreplay(MFP_DIV10,59);
-    
-   
 
  return (0);
 }

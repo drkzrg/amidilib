@@ -118,7 +118,7 @@ S16 am_getHeaderInfo(void *pMidiPtr);
  * @return returns 0 if everything is OK, -1 if error occured
  **/
 
-S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence);
+S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence);
 
 /**
  * gets number of tracks in MIDI file

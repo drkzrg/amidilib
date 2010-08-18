@@ -86,7 +86,7 @@ S16 am_getHeaderInfo(void *pMidiPtr){
 return(-1);
 }
 
-S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequence){
+S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
     S16 iNumTracks=0;
     U16 iTimeDivision=0;
     U32 ulAddr;
@@ -102,18 +102,33 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
     pSequence->ubNumTracks=0;		 	/*  */
     pSequence->currentState.ubActiveTrack=0; 	/* first one from the array */
     pSequence->uiTimeDivision=DEFAULT_PPQ;	/* PPQN */
-    
+   
     /* init sequence table */
     for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
       /* we will allocate needed track tables when appropriate */
       pSequence->arTracks[iLoop]=NULL;
     }
+   
+   int iRet=am_getHeaderInfo(pMidiPtr);
     
-    switch(type){
+   if(iRet==-1){
+    /* not MIDI file, do nothing */
+    amTrace((const U8*)"It's not valid MIDI file...\n");
+    fprintf(stderr, "It's not valid MIDI file...\n");
+    return -1;
+   } else if(iRet==-2){
+    /* unsupported MIDI type format, do nothing*/
+    amTrace((const U8*)"Unsupported MIDI file format...\n");
+    fprintf(stderr, "Unsupported MIDI file format...\n");
+   return -1; 
+   }
+    
+    
+    switch(iRet){
     /* TODO: refactor this mess */
-        case 0:{
+        case T_MIDI0:{
             /* handle MIDI type 0 */
-            iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+            iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI0);
 
             if(iNumTracks!=1){
 	      return(-1);
@@ -146,12 +161,12 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
         }
         break;
 
-        case 1:{
+        case T_MIDI1:{
          /* handle MIDI type 1 */
 	 /* several tracks, one sequence */
 	 /* prepare our structure */
 	  pSequence->ubNumTracks=1;	/* one by default */
-	  iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+	  iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI1);
 	  iTimeDivision = am_getTimeDivision(pMidiPtr);
           startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
@@ -177,11 +192,11 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
         }
         break;
 
-        case 2:{
+        case T_MIDI2:{
 		/* handle MIDI type 2 */
 		/* several tracks not tied to each others tracks */
 
-		iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+		iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
 		iTimeDivision = am_getTimeDivision(pMidiPtr);
 		startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		               
@@ -197,19 +212,30 @@ S16 am_handleMIDIfile(void *pMidiPtr, S16 type, U32 lenght, sSequence_t *pSequen
              return(0);
             }
         break;
-	case 3:{
+	case T_XMIDI:{
          /* handle XMIDI */
-         iNumTracks=am_getNbOfTracks(pMidiPtr,type);
+         iNumTracks=am_getNbOfTracks(pMidiPtr,T_XMIDI);
          iTimeDivision = am_getTimeDivision(pMidiPtr);
 
          /* processing (X)MIDI file */
 	/* TODO: handle + process */
 
-         return(0);
+         return(-1); /*xmidi isn't handled yet*/
         }
-
-        break;
-	default:;
+	break;
+	case T_RMID:{return(-1);}break; 
+	case T_SMF:{return(-1);}break;
+	case T_XMF:{return(-1);}break;
+	case T_SNG:{return(-1);}break;
+	case T_MUS:{return(-1);}break;
+	
+	default:{
+	  /* unknown error, do nothing */
+	  amTrace((const U8*)"Unknown error.\n");
+	  fprintf(stderr, "Unknown error ...\n");
+        
+	  return(-1);
+	}
 	/* unsupported file type */
  }
  return(-1);

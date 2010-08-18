@@ -297,6 +297,7 @@ _defaultPlayMode:	ds.l	1
 _currentTempo:		ds.l	1
 timerData:		ds.l	1
 timerMode:		ds.l	1
+
 	RSRESET 	;current sequence structure
 currentTempo	rs.l	1
 currentPPQN	rs.l	1

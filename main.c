@@ -13,6 +13,8 @@
 
 #include "include/amidilib.h"
 #include "include/list/list.h"
+#include "ym2149.h" 
+
 #include "include/mfp.h"
 
 /**
@@ -41,15 +43,23 @@ enum{
 } eSeqState;
 
 void playSeq (sSequence_t *seq,U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState);
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 void VLQtest(void);
 void memoryCheck(void);
 
+extern void turnOffKeyclick(void);
+extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
+extern void deinstallReplayRout();
 
 extern volatile U8 tbData,tbMode;
+extern U32 defaultPlayMode;
 volatile sCurrentSequenceState currentState;
 volatile extern U32 counter;
-extern U32 defaultPlayMode;
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
 
+
+ymChannelData ch[3];
 
 
 int main(int argc, char *argv[]){
@@ -140,7 +150,7 @@ int main(int argc, char *argv[]){
 	printf("counter %u\n",(unsigned int)counter);
       }
   
-	deinstallMIDIreplay();
+	
     }
     
      
@@ -151,11 +161,10 @@ int main(int argc, char *argv[]){
       return(-1);
     }
 
-    /* turn off all notes on channels 0-15 */
-    am_allNotesOff(16);
-   
-    /* clean up, free internal library buffers etc..*/
-    am_deinit();
+      am_allNotesOff(16);
+      ymSoundOff();
+      deinstallReplayRout();   
+      am_deinit();
 
  return (0);
 }
@@ -212,6 +221,33 @@ void playSeq(sSequence_t *seq, U32 mode,U32 data, volatile sCurrentSequenceState
     pInitialState->seqPtr[0]=seq;			//ptr to sequence
 
   //install replay routine 96 ticks per 500ms interval
-
+    installReplayRout(mode, data, pInitialState);
   return;
 }
+
+//plays given note and outputs it to midi/ym2149
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
+
+  if(bMidiOutput==TRUE){
+    note_on(9,noteNb,127);	//output on channel 9, max velocity
+  }
+
+  if(bYmOutput==TRUE){
+
+     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
+     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
+     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
+	  
+     ch[CH_A].oscFreq=lByte;
+     ch[CH_A].oscStepSize=hByte;
+     ch[CH_B].oscFreq=lByte;
+     ch[CH_B].oscStepSize=hByte;
+     ch[CH_C].oscFreq=lByte;
+     ch[CH_C].oscStepSize=hByte;
+    
+    ymDoSound( ch,4 , period,128);
+    
+  }
+
+}
+

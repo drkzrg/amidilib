@@ -13,8 +13,6 @@
 #include "include/list/list.h"
 #include <limits.h>
 
-extern volatile sEventItem *g_pEventPtr;
-extern volatile U32 iCurrentDelta;
 
 /* current version */
 typedef struct AMIDI_version {
@@ -1651,37 +1649,6 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
 }
 
 
-void hMidiEvent(void){
-
-if(counter!=0){
-  counter--;
-  amTrace("hMidiEvent() counter!=0 Decreasing counter.\n");
-}else{
-  amTrace("hMidiEvent() counter==0 send current event and update g_pEventPtr.\n");
-    /* 	
-	counter is 0 so we have to:
-	send current event
-	set g_pEventPtr to next event in the list
-    */
-    //sending event
-    printEventBlock(counter, (sEventBlockPtr_t)&((*g_pEventPtr).eventBlock));
-     
-    // get next event
-    g_pEventPtr=g_pEventPtr->pNext;	
-    amTrace("hMidiEvent() setting pointer to new event: %p\n",g_pEventPtr);
-    
-    if(((g_pEventPtr!=NULL)&&(g_pEventPtr->eventBlock.type!=MT_EOT))){
-     //set up counter
-     counter=g_pEventPtr->eventBlock.uiDeltaTime;
-     amTrace("hMidiEvent() setting counter to new delta value: %d\n",counter);
-    
-    }else{ 
-      amTrace("hMidiEvent() counter=UINT_MAX.\n");
-      counter=UINT_MAX;
-    }
- }
-
-}
 
 /* sends all midi events with given delta */
 /* returns next delta time or 0, if end of track */
@@ -1697,15 +1664,6 @@ sEventItem *pTemp
 */
 
 
-void playSequence(const sEventList **listPtr){
-  
-  if((*listPtr)->pEventList!=NULL){
-    g_pEventPtr=(*listPtr)->pEventList;
-    iCurrentDelta=0;
-    //getTempo 
-    installMIDIreplay(MFP_DIV10,59);
-  }
-}
 
 void am_log(const U8 *mes,...){
 static char buffer[256];

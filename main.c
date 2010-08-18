@@ -28,24 +28,37 @@ void VLQtest(void);
 void memoryCheck(void);
 void playMidi(sSequence_t *pMidiSequence);
 
-int main(void){
+int main(int argc, char *argv[]){
 
-  void *pMidi=NULL;
+    void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
     
-    VLQtest();
-    memoryCheck();
-
     /* init library */
     iError=am_init();
     
+    VLQtest();
+    memoryCheck();
+    //trace is set up in am_init()
+    
+    if(argc>=1&&argv[1]!='\0'){
+      amTrace("Trying to load %s\n",argv[1]);
+    }
+    else{
+      amTrace("No specified midi filename! exiting\n");
+      am_deinit();
+      return 0;
+    }
+       
     /* get connected device info */
     getConnectedDeviceInfo();
+    
     U32 ulFileLenght=0L;
-    pMidi=loadFile((U8 *)MIDI_FILE, PREFER_TT, &ulFileLenght);
+    pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
     
     sSequence_t midiTune;
+   
+    
     if(pMidi!=NULL){
 
      amTrace((const U8*)"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
@@ -217,6 +230,9 @@ void VLQtest(void){
     U32 result=0,iCounter;
     U8 *pValPtr=NULL;
     U8 valsize;
+    
+    amTrace((const U8*)"VLQ decoding test\n");
+	
     
     for (iCounter=0;iCounter<10;iCounter++)   {
         pValPtr=(U8 *)(&val[iCounter]);

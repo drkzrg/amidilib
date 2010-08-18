@@ -14,7 +14,7 @@ CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -fsigned-char -fomit-frame-point
 LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,-t $(MACHINE)
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
-EXE = amidi.tos
+EXE = amidi.ttp
 
 # ym2149 test output program 
 YM_TEST_EXE = ym2149.tos

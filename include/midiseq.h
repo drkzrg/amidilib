@@ -68,7 +68,6 @@ typedef struct ChannelAft_EventBlock_t{
 
 /* Pitch bend eventblock */
 typedef struct PitchBend_EventBlock_t{
- 
  U8 ubChannelNb;
  sPitchBend_t eventData;
 } sPitchBend_EventBlock_t;
@@ -82,26 +81,22 @@ typedef struct Tempo_EventBlock_t{
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
 
-/** IMPORTANT! this structure is associated with static table g_arSeqCmdTable[T_EVT_COUNT] 
+/** IMPORTANT! structure EventInfoBlock_t is associated with static table g_arSeqCmdTable[T_EVT_COUNT] 
     from MIDISEQ.C file changing the order of members here will affect structure of g_arSeqCmdTable[T_EVT_COUNT]. 
 */
 
 typedef struct EventInfoBlock_t{
-	U32	size;			/* size of command string in bytes */
+	U32	size;		/* size of command string in bytes */
 	evntFuncPtr func;  	/* pointer to event handler */ 
 } sEventInfoBlock_t;
 
 typedef struct EventBlock_t{
- U32 uiDeltaTime;			/* event delta time */
- U8	type;				/* event type */
+ U32 uiDeltaTime;			/* event delta time */	
  sEventInfoBlock_t infoBlock;		/* function info block */ 
  void *dataPtr;				/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
+ U8	type;				/* event type */
+ U8 pad; 
 }sEventBlock_t, *sEventBlockPtr_t;
-
-typedef struct EventItem{
- sEventBlock_t eventBlock;
- struct EventItem *pPrev,*pNext;
-}sEventItem;
 
 /** SysEX */
 typedef struct SysEx_t{
@@ -114,6 +109,7 @@ sEventInfoBlock_t getEventFuncInfo(U8 eventType);
 
 /****************** event function prototypes */
 const U8 *getEventName(U32 id);
+
 void  fNoteOn (void *pEvent);
 void  fNoteOff (void *pEvent);
 void  fNoteAft (void *pEvent);

@@ -176,7 +176,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
 	  (pSequence->arTracks[i])->pInstrumentName=NULL;
-	  (pSequence->arTracks[i])->currentState.currentIdx=0;
 	  (pSequence->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
 	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
       
@@ -209,7 +208,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
 	  (pSequence->arTracks[i])->pInstrumentName=NULL;
-	  (pSequence->arTracks[i])->currentState.currentIdx=0;
 	  (pSequence->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
 	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
       
@@ -220,6 +218,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
            while (((startPtr!=endPtr)&&(startPtr!=NULL))){
                   startPtr=processMidiTrackData(startPtr,T_MIDI2,iNumTracks,pSequence);
            }
+           
              return(0);
             }
         break;
@@ -446,7 +445,6 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=pCurSequence->arTracks[0];
 
 	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[0]->currentState.currentIdx=0;
 	  pCurSequence->arTracks[0]->currentState.currentTempo=defaultTempo;
 	  pCurSequence->arTracks[0]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[0]->currentState.playState=S_STOPPED;
@@ -455,7 +453,12 @@ switch(fileTypeFlag){
 	  const void *pTemp=(const void *)endAddr;
 	  const void **end=&pTemp;
 	  
-	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
+	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
+	  
+	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  
+	  
     }
     break;
      case T_MIDI1:{
@@ -466,7 +469,6 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
 	  
 	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[trackCounter]->currentState.currentIdx=0;
 	  pCurSequence->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
 	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
@@ -477,6 +479,9 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 	
+	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  
 	  /* get next data chunk info */
 	  memcpy(&header, startPtr,sizeof(sChunkHeader));
 	  ulChunkSize=header.headLenght;
@@ -508,7 +513,6 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
 	  
 	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[trackCounter]->currentState.currentIdx=0;
 	  pCurSequence->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
 	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
@@ -518,7 +522,10 @@ switch(fileTypeFlag){
 	  const void **end=&pTemp;
 	
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
-	
+	  
+	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  
 	  /* get next data chunk info */
 	  memcpy(&header, startPtr,sizeof(sChunkHeader));
 	  ulChunkSize=header.headLenght;

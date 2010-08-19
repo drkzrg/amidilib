@@ -11,38 +11,37 @@
 #include "include/list/list.h"
 #include "include/mfp.h"
 
-void initEventList(sEventList *listPtr)
-{
+void initEventList(sEventList *listPtr){
 	/*assert(listPtr!=NULL);*/
-	listPtr->pEventList=NULL;
-	listPtr->uiNbOfItems=0;
+	listPtr=NULL;
+
 }
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
-/* adds event to linked list, list has to be inintialised with initEventList() function */
 U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
- sEventItem *pTempPtr=NULL;
- sEventItem *pNewItem=NULL;
+ 
+ sEventList *pTempPtr=NULL;
+ sEventList *pNewItem=NULL;
+ 
  U32 uiDeltaNew=0;
 
-	if((listPtr->pEventList!=NULL)){
-			/* list not empty, start at very first element */
-			/* find the element with higher delta and insert item */
+	if((listPtr!=NULL)){
+		/* list not empty, start at very first element */
+		/* find the element with higher delta and insert item */
 		
-			pTempPtr=listPtr->pEventList;
+		pTempPtr=listPtr;
+		uiDeltaNew=eventBlockPtr->uiDeltaTime;
 			
-			uiDeltaNew=eventBlockPtr->uiDeltaTime;
 			
-			
-			while(((pTempPtr->pNext != NULL) && (pTempPtr->pNext->eventBlock.uiDeltaTime<=uiDeltaNew)) ){
-				pTempPtr=pTempPtr->pNext;
-			}
+		while((pTempPtr->pNext != NULL)){
+		  pTempPtr=pTempPtr->pNext;
+		}
 
-			/* insert event */
+		/* insert event */
 
 			if(pTempPtr->pNext==NULL){
 				/* insert at the end of list */
-				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
+				pNewItem=(sEventList *)malloc(sizeof(sEventList));
 				/*assert(pNewItem>0);*/					
 				/* assert malloc ok, TODO: proper disaster handling */
 
@@ -62,12 +61,12 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 				
 				/* add newly created list node to our list */
 				pTempPtr->pNext=pNewItem;
-				listPtr->uiNbOfItems++;				/* increase event counter */
+				
 				return 0;
 			}
 			else{
 				/* insert between current and next one */
-				pNewItem=(sEventItem *)malloc(sizeof(sEventItem));
+				pNewItem=(sEventList *)malloc(sizeof(sEventList));
 				/*assert(pNewItem>0);*/						/* assert malloc ok, TODO: proper disaster handling */
 
 				/* add data to new list node */
@@ -89,8 +88,6 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 				pTempPtr->pNext->pPrev=pNewItem;					/* next item points to new element */
 				pTempPtr->pNext=pNewItem;							/* current node points to new item */
 
-				/* increase list event counter */
-				listPtr->uiNbOfItems++; /* increase event counter */
 				return 0;
 			}
 
@@ -98,53 +95,47 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 	}
 	else {
 		/* add first element */
-		listPtr->pEventList=(sEventItem *)malloc(sizeof(sEventItem));
-		listPtr->pEventList->eventBlock.uiDeltaTime=eventBlockPtr->uiDeltaTime;
-		listPtr->pEventList->eventBlock.type = eventBlockPtr->type;
-		listPtr->pEventList->eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
-		listPtr->pEventList->eventBlock.infoBlock.func=eventBlockPtr->infoBlock.func;
-		listPtr->pEventList->eventBlock.dataPtr=NULL;
+		listPtr=(sEventList *)malloc(sizeof(sEventList));
+		listPtr->eventBlock.uiDeltaTime=eventBlockPtr->uiDeltaTime;
+		listPtr->eventBlock.type = eventBlockPtr->type;
+		listPtr->eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
+		listPtr->eventBlock.infoBlock.func=eventBlockPtr->infoBlock.func;
+		listPtr->eventBlock.dataPtr=NULL;
 		
 		/* allocate memory for event data and copy them to the new destination */
-		listPtr->pEventList->eventBlock.dataPtr = malloc( eventBlockPtr->infoBlock.size * sizeof(U8));
-		memcpy(listPtr->pEventList->eventBlock.dataPtr,eventBlockPtr->dataPtr,eventBlockPtr->infoBlock.size * sizeof(U8));
+		listPtr->eventBlock.dataPtr = malloc( eventBlockPtr->infoBlock.size * sizeof(U8));
+		memcpy(listPtr->eventBlock.dataPtr,eventBlockPtr->dataPtr,eventBlockPtr->infoBlock.size * sizeof(U8));
 
-		listPtr->pEventList->pPrev=NULL;	/* first element in the list, no previous item */
-		listPtr->pEventList->pNext=NULL;
+		listPtr->pPrev=NULL;	/* first element in the list, no previous item */
+		listPtr->pNext=NULL;
 		
-		/* increase event counter */
-		listPtr->uiNbOfItems++;
 		return 0;
 	}
-		
-
 }
 
 U32 destroyList(sEventList *listPtr)
 {
-	sEventItem *pTemp=NULL,*pCurrentPtr=NULL;
+	sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 	
+	if(listPtr!=NULL){
 	
-
-		if(listPtr->pEventList!=NULL){
+	  /*go to the end of the list */
+	  pTemp=listPtr;
 			
-			/*go to the end of the list */
-			pTemp=listPtr->pEventList;
+	  while(pTemp->pNext!=NULL){
+	    pTemp=pTemp->pNext;
+	  }
 			
-			while(pTemp->pNext!=NULL){
-				pTemp=pTemp->pNext;
-			}
+	  /* we are at the end of list, rewind to the previous element */
+	  pCurrentPtr=pTemp->pPrev;
 			
-			/* we are at the end of list, rewind to the previous element */
-			pCurrentPtr=pTemp->pPrev;
-			
-			/* iterate to the begining */
+	  /* iterate to the begining */
 			while(pCurrentPtr!=NULL){
 				
-				if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
-					free(pCurrentPtr->eventBlock.dataPtr);
-					pCurrentPtr->eventBlock.dataPtr=NULL;
-				}
+			  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
+			    free(pCurrentPtr->eventBlock.dataPtr);
+			    pCurrentPtr->eventBlock.dataPtr=NULL;
+			  }
 
 				free(pCurrentPtr->pNext);
 				pCurrentPtr->pNext=NULL;
@@ -153,28 +144,24 @@ U32 destroyList(sEventList *listPtr)
 			
 			/* we are at first element */
 			/* remove it */
-			free(listPtr->pEventList);
-			listPtr->pEventList=NULL;
+			free(listPtr);
+			listPtr=NULL;
 			
-			/* reset number of items */
-			listPtr->uiNbOfItems=0;
 			return 0;
 		}
-	
-	
 return 0;
 }
 
 void printEventList(const sEventList **listPtr){
-	sEventItem *pTemp=NULL;	
+	sEventList *pTemp=NULL;	
 
 	U32 counter=0;
 		
 	/*assert(listPtr!=NULL);*/
 
-	if((*listPtr)->pEventList!=NULL){
+	if((*listPtr)!=NULL){
 		/* iterate through list */
-		pTemp=(*listPtr)->pEventList;
+		pTemp=(*listPtr);
 
 		
 		while(pTemp!=NULL){
@@ -268,14 +255,14 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
 
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 {
-	sEventItem *pTemp=NULL;	
+	sEventList *pTemp=NULL;	
 	U32 counter=0;
 		
 	/*assert(listPtr!=NULL);*/
 
-	if((*listPtr)->pEventList!=NULL){
+	if((*listPtr)!=NULL){
 		/* iterate through list */
-		pTemp=(*listPtr)->pEventList;
+		pTemp=(*listPtr);
 
 		/* find first event with given delta */
 

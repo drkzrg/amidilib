@@ -13,8 +13,6 @@
 
 #include "include/amidilib.h"
 #include "include/list/list.h"
-#include "ym2149.h" 
-
 #include "include/mfp.h"
 
 /**
@@ -22,9 +20,7 @@
  */
 
 
-  volatile sSequence_t *currentState;	
-  
-
+volatile sSequence_t *currentState;	
 
 enum{
  STOP=0, 
@@ -35,7 +31,6 @@ enum{
 } eSeqState;
 
 void playSeq (sSequence_t *seq);
-void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 void VLQtest(void);
 void memoryCheck(void);
 
@@ -46,13 +41,6 @@ extern void deinstallReplayRout();
 
 extern volatile U8 tbData,tbMode;
 volatile extern U32 counter;
-
-BOOL midiOutputEnabled;
-BOOL ymOutputEnabled;
-
-
-ymChannelData ch[3];
-
 
 int main(int argc, char *argv[]){
     U8 currentChannel=1;
@@ -70,7 +58,6 @@ int main(int argc, char *argv[]){
     //set current channel as 1, default is 0 in external module
     control_change(0x00, currentChannel, currentBankSelect,0x00);
     program_change(currentChannel, currentPN);
-  
     
     //trace is set up in am_init()
     
@@ -127,8 +114,8 @@ int main(int argc, char *argv[]){
 	  
     if(iError==0){
      /* play preloaded tune if no error occured */
-      
-        playSeq(&midiTune);
+
+      playSeq(&midiTune);
       /* loop and wait for keypress */
 	BOOL bQuit=FALSE;
 	printf("Press q to quit...\n");
@@ -150,7 +137,6 @@ int main(int argc, char *argv[]){
     }
 
       am_allNotesOff(16);
-      ymSoundOff();
       deinstallReplayRout();   
       am_deinit();
 
@@ -166,7 +152,6 @@ void VLQtest(void){
     U8 valsize;
     
     amTrace((const U8*)"VLQ decoding test\n");
-	
     
     for (iCounter=0;iCounter<10;iCounter++)   {
         pValPtr=(U8 *)(&val[iCounter]);
@@ -201,40 +186,12 @@ void memoryCheck(void){
 }
 
 void playSeq(sSequence_t *seq){
-
   U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
   U32 mode,data;
 
   getMFPTimerSettings(freq,&mode,&data);
-
   installReplayRout(mode, data, seq);
-  
   return;
 }
 
-//plays given note and outputs it to midi/ym2149
-void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
-
-  if(bMidiOutput==TRUE){
-    note_on(9,noteNb,127);	//output on channel 9, max velocity
-  }
-
-  if(bYmOutput==TRUE){
-
-     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
-     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
-     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
-	  
-     ch[CH_A].oscFreq=lByte;
-     ch[CH_A].oscStepSize=hByte;
-     ch[CH_B].oscFreq=lByte;
-     ch[CH_B].oscStepSize=hByte;
-     ch[CH_C].oscFreq=lByte;
-     ch[CH_C].oscStepSize=hByte;
-    
-    ymDoSound( ch,4 , period,128);
-    
-  }
-
-}
 

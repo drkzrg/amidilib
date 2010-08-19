@@ -22,17 +22,9 @@
  */
 
 
-typedef struct{
-  volatile U32 currentTempo;		// quaternote duration in ms, 500ms default
-  volatile U32 currentPPQN;		// pulses per quater note
-  volatile U32 currentIdx;		// current position in table
-  volatile sSequence_t *seqPtr[16];	// sequence ptr array, max 16 tracks, we don't need more
-  volatile U32 activeSequence;		// default 0
-  U32 numSequences;			// number of tracks in total (only valid for MIDI file type 2 or other with multiple,
-					// independent tracks)
+  volatile sSequence_t *currentState;	
   
-  volatile U32 state;			// 0=STOP, 1-PLAYING, 2-PAUSED
-} sCurrentSequenceState;
+
 
 enum{
  STOP=0, 
@@ -42,20 +34,19 @@ enum{
  PAUSED=4
 } eSeqState;
 
-void playSeq (sSequence_t *seq,U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState);
+void playSeq (sSequence_t *seq);
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 void VLQtest(void);
 void memoryCheck(void);
 
-volatile sCurrentSequenceState currentState;
 extern U32 defaultPlayMode;
 extern void turnOffKeyclick(void);
-extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
+extern void installReplayRout(U8 mode,U8 data,volatile sSequence_t *pPtr);
 extern void deinstallReplayRout();
 
 extern volatile U8 tbData,tbMode;
-
 volatile extern U32 counter;
+
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
 
@@ -64,7 +55,6 @@ ymChannelData ch[3];
 
 
 int main(int argc, char *argv[]){
-    U32 defaultTempo=60000000/120;
     U8 currentChannel=1;
     U8 currentVelocity=127;
     U8 currentPN=127;
@@ -73,10 +63,6 @@ int main(int argc, char *argv[]){
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-    
-    currentState.currentTempo=defaultTempo;
-    currentState.currentPPQN=120;
-  
     
     /* init library */
     iError=am_init();
@@ -141,12 +127,8 @@ int main(int argc, char *argv[]){
 	  
     if(iError==0){
      /* play preloaded tune if no error occured */
-        U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
-        U32 mode,data;
-	getMFPTimerSettings(freq,&mode,&data);
-  
-     
-        playSeq(&midiTune,mode,data, &currentState);
+      
+        playSeq(&midiTune);
       /* loop and wait for keypress */
 	BOOL bQuit=FALSE;
 	printf("Press q to quit...\n");
@@ -218,16 +200,15 @@ void memoryCheck(void){
 	
 }
 
-extern volatile sEventItem *g_pEventPtr;
+void playSeq(sSequence_t *seq){
 
-void playSeq(sSequence_t *seq, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
+  U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
+  U32 mode,data;
 
-    pInitialState->currentIdx=0;			//initial position
-    pInitialState->state=STOP;				//track state
-    pInitialState->seqPtr[0]=seq;			//ptr to sequence
+  getMFPTimerSettings(freq,&mode,&data);
 
-  //install replay routine 96 ticks per 500ms interval
-    installReplayRout(mode, data, pInitialState);
+  installReplayRout(mode, data, seq);
+  
   return;
 }
 

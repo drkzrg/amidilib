@@ -37,45 +37,30 @@ typedef struct EventList{
  sEventItem *pEventList;
 } sEventList;
 
-typedef struct sTrackState{
- U32 currentPos;              /* current delta position, 0 at start */
- U8 ubVolume;                 /* sequence current track volume */
- U32 ulTimeStep;              /* sequence current update time step */
- U32 ulTrackTempo;	      /* miliseconds per quarter note, default 500 000ms */
-} sTrackState;
-
-typedef struct Track_t{
-  U8 *pInstrumentName;		/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
-  sTrackState currTrackState;	/* current track state */
-  sEventList trkEventList;  	/* track event list */
-} sTrack_t;
-
 typedef struct SequenceState_t{
- U8 ubVolume;                 /* sequence master volume */
- U8 ubActiveTrack;            /* sets the active track, by default 0 */
- U8 bPlayState;		      /* indicates if sequence is currently being played or not: 
-				S_STOPPED (stopped), 
-				S_PLAYING (playing),
-				S_PAUSED (paused)sequence is being played / FALSE */          
- U8 ubPlayModeState;	      /* current play mode (loop, play_once) */
- U32 timeElapsed;	      /* TODO: move time/timeElapsed to global space (?)*/
- U32 time;
-} sSequenceState_t;
+ volatile U32 currentTempo;		// quaternote duration in ms, 500ms default
+ volatile U32 currentIdx;		// current position in track table
+ volatile U32 playState;		// STOP, PLAY, PAUSED	
+ volatile U32 playMode;	      		// current play mode (loop, play_once, random) 
+				        // sets the active track, by default 0 
+ } sSequenceState_t;
+
+ typedef struct Track_t{
+  U8 *pInstrumentName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
+  sSequenceState_t currentState;        /* current sequence state */
+  sEventList trkEventList;  		/* track event list */
+} sTrack_t;
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
-   U8 *pSequenceName;			/* NULL terminated string */
-   U8 ubNumTracks;            	        /* number of tracks */
-   U16 uiTimeDivision;			/* PPQN */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];/* up to AMIDI_MAX_TRACKS tracks available */
-   sSequenceState_t currentState;       /* current sequence state */
+   U8 *pSequenceName;				/* NULL terminated string */
+   U32 timeDivision;				// pulses per quater note(time division)
+   U8 ubNumTracks;            	        	/* number of tracks */
+   U8 ubDummy;
+   U8 ubActiveTrack;
+   U8 ubDummy1;
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
 } sSequence_t;
 
-
-/** Plays loaded sequence
- 
-*/
-/** returns next delta */
-U32 am_playSequence(sSequence_t *pTune,U32 start_delta, U32 playMode);
 
 #endif

@@ -357,7 +357,9 @@ stCurrentState	rs.l	3	; current sequence state
 currentTempo	rs.l	1
 currentPPQN	rs.l	1
 currentIdx	rs.l	1
-seqPtr		rs.l	1
+seqPtr		rs.l	16
+activeSequence  rs.l	1
+numSequences	rs.l	1
 state		rs.l	1
 
       RSRESET

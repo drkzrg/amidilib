@@ -141,7 +141,12 @@ int main(int argc, char *argv[]){
 	  
     if(iError==0){
      /* play preloaded tune if no error occured */
-        playSeq(&midiTune,1,1, &currentState);
+        U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
+        U32 mode,data;
+	getMFPTimerSettings(freq,&mode,&data);
+  
+     
+        playSeq(&midiTune,mode,data, &currentState);
       /* loop and wait for keypress */
 	BOOL bQuit=FALSE;
 	printf("Press q to quit...\n");

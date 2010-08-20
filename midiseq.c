@@ -5,19 +5,13 @@
     See license.txt for licensing information.
 */
 
-
 #include "include/midiseq.h"
 #include "include/amidilib.h"
 #include "include/midi_cmd.h"	/* for sending midi commands */
 
-#include <stdio.h> /* just for dummy printf in event handling messages */
-				   /* remove this include when all the handlers will be implemented */
-				   
 /* string table with all event names */
-/*  */
 
-static const char *g_arEventNames[T_EVT_COUNT]=
-{
+static const char *g_arEventNames[T_EVT_COUNT]={
 	"Note On",
 	"Note Off", 
 	"Note Aftertouch", 
@@ -44,12 +38,11 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sTempo_EventBlock_t),fSetTempo}
 };
 
-sEventInfoBlock_t getEventFuncInfo(U8 eventType)
-{
-	sEventInfoBlock_t infoBlock;
-	infoBlock.size=g_arSeqCmdTable[eventType].size;
-	infoBlock.func=g_arSeqCmdTable[eventType].func;
-	return infoBlock;
+void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk){
+	
+	infoBlk->size=g_arSeqCmdTable[eventType].size;
+	infoBlk->func=g_arSeqCmdTable[eventType].func;
+	
 }
 
 
@@ -115,5 +108,4 @@ sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Setting new replay tempo...\n");
 	
 }
-
 

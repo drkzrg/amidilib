@@ -16,7 +16,6 @@
 #define DEFAULT_TEMPO 0x007A120		/* 500000ms */
 #define DEFAULT_PPQ	120		/* pulses per quarternote */
 #define DEFAULT_TIME_SIG 0x0404	
-
 	
 /** current play mode */
 typedef enum{
@@ -38,10 +37,10 @@ typedef struct EventList{
 } sEventList;
 
 typedef struct SequenceState_t{
- volatile U32 currentTempo;		// quaternote duration in ms, 500ms default
- volatile U32 playState;		// STOP, PLAY, PAUSED	
- volatile U32 playMode;	      		// current play mode (loop, play_once, random) 
-				        // sets the active track, by default 0 
+ volatile U32 currentTempo;			// quaternote duration in ms, 500ms default
+ volatile U32 playState;			// STOP, PLAY, PAUSED	
+ volatile U32 playMode;	      			// current play mode (loop, play_once, random) 
+						// sets the active track, by default 0 
  volatile struct EventItem *pStart,*pCurrent;	//start of track and current event pointer
 } sSequenceState_t;
 

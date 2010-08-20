@@ -712,7 +712,7 @@ if((*recallRS)==0){
 	
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.infoBlock);
   tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
   /*assert(tempEvent.dataPtr>0);*/
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
@@ -745,7 +745,7 @@ else {
   /* get last note info */
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  tempEvent.infoBlock=getEventFuncInfo(T_NOTEOFF);
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.infoBlock);
   tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
   /*assert(tempEvent.dataPtr>0);*/
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
@@ -787,7 +787,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEON;
-    tempEvent.infoBlock=getEventFuncInfo(T_NOTEON);
+    getEventFuncInfo(T_NOTEON,&tempEvent.infoBlock);
     tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
     /*assert(tempEvent.dataPtr>0);*/
     pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -819,7 +819,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEON;
-	tempEvent.infoBlock=getEventFuncInfo(T_NOTEON);
+	getEventFuncInfo(T_NOTEON,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -860,7 +860,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEAFT;
-	tempEvent.infoBlock=getEventFuncInfo(T_NOTEAFT);
+	getEventFuncInfo(T_NOTEAFT,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
@@ -886,7 +886,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
         /* get parameters */
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEAFT;
-	tempEvent.infoBlock=getEventFuncInfo(T_NOTEAFT);
+	getEventFuncInfo(T_NOTEAFT,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
@@ -924,7 +924,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CONTROL;
-	tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
+	getEventFuncInfo(T_CONTROL,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
@@ -951,7 +951,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 		
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CONTROL;
-	tempEvent.infoBlock=getEventFuncInfo(T_CONTROL);
+	getEventFuncInfo(T_CONTROL,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
@@ -996,7 +996,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PRG_CH;
-	tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
+	getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
@@ -1015,7 +1015,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
           channel=(g_runningStatus&0x0F)+1;
 	  tempEvent.uiDeltaTime=delta;
 	  tempEvent.type=T_PRG_CH;
-	  tempEvent.infoBlock=getEventFuncInfo(T_PRG_CH);
+	  getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
 	  tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	  /*assert(tempEvent.dataPtr>0);*/
 	  pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
@@ -1052,7 +1052,7 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CHAN_AFT;
-	tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
+	getEventFuncInfo(T_CHAN_AFT,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
@@ -1072,7 +1072,7 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
     else{
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CHAN_AFT;
-	tempEvent.infoBlock=getEventFuncInfo(T_CHAN_AFT);
+	getEventFuncInfo(T_CHAN_AFT,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*		assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
@@ -1108,7 +1108,7 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PITCH_BEND;
-	tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
+	getEventFuncInfo(T_PITCH_BEND,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
@@ -1132,7 +1132,7 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PITCH_BEND;
-	tempEvent.infoBlock=getEventFuncInfo(T_PITCH_BEND);
+	getEventFuncInfo(T_PITCH_BEND,&tempEvent.infoBlock);
 	tempEvent.dataPtr=malloc(tempEvent.infoBlock.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;

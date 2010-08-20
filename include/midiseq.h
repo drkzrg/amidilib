@@ -105,7 +105,7 @@ typedef struct SysEx_t{
 } sSysEx_t;
 
 /* returns the info struct about event: size and pointer to the handler  */
-sEventInfoBlock_t getEventFuncInfo(U8 eventType);
+void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);
 
 /****************** event function prototypes */
 const U8 *getEventName(U32 id);

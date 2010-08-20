@@ -11,6 +11,9 @@ S_STOPPED 	equ	$00
 S_PLAYING 	equ	$02
 S_PAUSED 	equ	$04
 
+AMIDI_MAX_TRACKS	equ	16
+
+
 ;=========================================
 	   xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
            xdef _deinstallReplayRout	;removes replay routine from system 
@@ -88,7 +91,7 @@ update:
 ;calculate frequency tempo / resolution in PPQN
 	movem.l	d0-d7/a0-a6,-(sp)
 	
-	move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
+	move.l arTracks(a0),a1 ;get current tempo, current slot in the sequence,
         move.l currentTempo(a1),d0 ;get tempo from current/active track
 	move.l timeDivision(a0),d1 ;get time division
 	
@@ -120,24 +123,22 @@ update:
 	movem.l	(sp)+,d0-d7/a0-a6
 	
 .skipTempo:
-	mulu.w	#10,d1		    ;offset == currentIdx*10 (sizeof whole struct:2xU32+2xU8=10bytes)
-				    ;calculate ptr to current event in sequence
-	move.l	arTracks(a0),a1     ;ptr to TRACK
+	move.l	arTracks(a0),a1     	    ;ptr to TRACK
         move.l  currentState(a1),a1
-	
-	add.l 	d1,a1
-	
 	move.l	playState(a1),d2	    ;current state of sequence
 
         cmp.l	#S_STOPPED,d2		    ;is sequence stopped?
-	bne.s	.paused		    ;not equal check if we have pause
+	bne.s	.paused		    	    ;not equal check if we have pause
         
 	;we have stop so we have to reset all counters and set
 	;current track to 0 index
 	move.l	#0,_counter
 	move.l	#0,_elapsedDelta
 
-	;we go straight to exit, nothing to do
+	;update current track state 
+        move.l	pStart(a1),pCurrent(a1)
+	
+        ;we go straight to exit, nothing to do
 	bra  .exit
 
 .paused:
@@ -147,41 +148,39 @@ update:
 	bra.w  .exit
 
 .handleSeq:
-	; here we handle our note from sample sequence 
+	; here we handle our note from event list 
 	; if internal tick counter has reached our current event delta value
-	; we play note read from the sequence and we are increasing current note index
-	
-	; firstly we check if we are on the end of sequence
-	; TODO
-	
-	;move.l	delta(a1),d3	;get current pointer in sequence 
-	;move.l	tempo(a1),d4	;get current event delta/tempo
-	
-	
-	;cmpi.l	#0,d4
-	;beq.w	.endSeqHandle
+	; we play note read from the sequence and we set next event as current
+	; firstly we check if we are on the end of sequence (current event is null)
 
+	cmpi.l	#0,pCurrent(a1)		;a1 current track state
+	beq.w	.endSeqHandle
+	;nope, so
 	;check _counter if is equal to PPQN-1
 	;if yes, increase delta
 	;if no, only increase _counter
+
 	move.l _counter,d6
-	move.l	timeDivision(a0),d7 ;get timeDivision from current sequence
+	move.l	timeDivision(a0),d7  ;get timeDivision from current sequence(a0)
 	subq	#1,d7
 	cmp.l	d7,d6
         bne.s .increaseCounter
 	;now we can increase delta 
 	
 	move.l	_elapsedDelta,d6
+	; now,
+	; a0 - current sequence ptr
+	; a1 - current track state ptr
 	
-	move.l	arTracks(a1),a1
-	move.l	trkEventList(a1),a1
-	move.l	pEventList(a1),a1
-
-;,d3	;TODO get delta
+        move.l	pCurrent(a1),a2
+        
+	;we have pointer to current sEventList in a2
+	move.l	eventBlock(a2),a3
+	move.l	delta(a3),d3	;get delta
 	
         cmp.l	d6,d3
 	beq.s	.sendNote
-
+	
 	;increase elapsed delta
 	move.l	_elapsedDelta,d3
 	addq.l	#1,d3
@@ -192,12 +191,23 @@ update:
 
 	bra	.exit
 .sendNote:
-	;sub.l	#savamt,savptr
-	movem.l	d0-d2/a0-a2,-(sp)
-	;TODO trigger handler for current event
-	;update current event pointer to the next event
+	; a0 - current sequence ptr
+	; a1 - current track state ptr
+	; a2 - current sEventList
+	; a3 - current eventBlock
 
-	movem.l	(sp)+,d0-d2/a0-a2
+	;sub.l	#savamt,savptr
+	movem.l	d0-d2/a0-a3,-(sp)
+	
+        ;TODO trigger handler for current event
+	move.l	dataPtr(a3),-(sp)
+	move.l	infoBlock(a3),a3
+	addq.l	#4,a3
+	jsr	(a3)
+	;update current event pointer to the next event
+	move.l	pNext(a2),pCurrent(a1)	;get next event and save it to current one
+
+	movem.l	(sp)+,d0-d2/a0-a3
 
 	move.l	#0,_elapsedDelta
 	move.l	#0,_counter
@@ -227,7 +237,7 @@ update:
 	
 	cmp.l	#S_PLAY_LOOP,d0
 	beq.s	.exit
-	;change state to STOP, turn off all instruments and ym2149 too
+	;change state to STOP, turn off all instruments 
 	
 	movem.l	d0-d2/a0-a2,-(sp)
 	pea 16.w
@@ -279,32 +289,29 @@ _counter:		ds.l	1
 _oldTB:			ds.l	1
 _tbData:		ds.b	1
 _tbMode:		ds.b	1
+
 ;================================== structs ==========================================================================================
 ;offsets has to be like in AMIDISEQ.H
-AMIDI_MAX_TRACKS	equ	16
 
 ;sequence structures as defined in amidiseq.h
-
-  RSRESET			;eventItem
-eipEventBlock  	rs.b	17	;EventBlock_t
-eipPrev		rs.l	1	;ptr
-eipNext		rs.l	1	;ptr
  
-  RSRESET	;EventBlock_t
-ebDT		rs.l	1	; event delta time 
-ebEventType	rs.b	1	; event type 
-ebInfoBlock	rs.l 	2 	; function info block (EventInfoBlock_t) 
-ebDataPtr	rs.l 	1	; pointer to event data of sEventInfoBlock_t.size * 1 byte (U8)
-
   RSRESET	;EventInfoBlock_t
-eibSize 	rs.l	1	;size of command string in bytes
-eibFuncPtr 	rs.l	1	;pointer to event handler 
+cmdSize 	rs.l	1	;size of command string in bytes
+cmdFuncPtr 	rs.l	1	;pointer to event handler 
 
+
+  RSRESET	;EventBlock_t
+delta		rs.l	1	; event delta time  
+infoBlock	rs.l 	2 	; function info block (EventInfoBlock_t) 
+dataPtr		rs.l 	1	; pointer to event data of sEventInfoBlock_t.size * 1 byte (U8)
+eventType	rs.b	1	; event type
+fillpad		rs.b	1	; filler
 
 ; sEventList
   RSRESET
-uiNbOfItems	rs.l	1
-pEventList	rs.l	1
+eventBlock	rs.b	18;
+pPrev		rs.l	1
+pNext		rs.l	1
 
 ;SequenceState_t
   RSRESET
@@ -320,13 +327,14 @@ pInstrumentName		rs.l	1	; NULL terminated string with instrument name, track dat
 currentState		rs.l	4	; current sequence state 
 trkEventList		rs.l	2	; track event list 
 
+;Sequence_t
   RSRESET
 pSequenceName 	rs.l	1	; NULL terminated string 
 timeDivision	rs.l	1	; pulses per quater note(time division)
 ubNumTracks 	rs.b	1	; number of tracks 
-ubDummy		rs.b	1	;
-ubActiveTrack	rs.b	1	;
-ubDummy1	rs.b	1	;
+ubDummy		rs.b	1	; filler
+ubActiveTrack	rs.b	1	; currently active track
+ubDummy1	rs.b	1	; filler
 arTracks	rs.l	16	; up to AMIDI_MAX_TRACKS (16) tracks available 
 
 

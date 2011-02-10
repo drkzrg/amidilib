@@ -41,7 +41,7 @@ typedef struct  {
   U16 period;
   U8 highbyte;
   U8 lowbyte;
-}ymData;
+}__attribute__((packed)) ymData;
 
 typedef struct{
  U8 amp;	
@@ -49,7 +49,7 @@ typedef struct{
  U8 oscStepSize;	// period lenght, pitch
  U8 noiseEnable;	// 0-disabled, 1-enabled
  U8 toneEnable;		// 0-disabled, 1-enabled
-} ymChannelData;
+}__attribute__((packed)) ymChannelData;
 
 enum{
   CH_A=0,

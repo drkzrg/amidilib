@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <ctype.h> 
 #include <osbind.h>
-#include <stdio.h>
+
 #include <string.h>
 #include "amidilib.h"
 

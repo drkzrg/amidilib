@@ -33,7 +33,7 @@ typedef struct MThd
 	U16 format;
 	U16 nTracks;
 	U16 division;
-}sMThd;
+}__attribute__((packed)) sMThd;
 
 
 /**
@@ -55,7 +55,7 @@ typedef struct MTrk
 {	U32 id;
 	U32 headLenght;
 	/* offset track event data 0x08 offset */
-} sMTrk;
+}__attribute__((packed)) sMTrk;
 
 
 /**
@@ -69,7 +69,7 @@ typedef struct DeviceInfo
   U16 deviceFamilyID;           /* ff ff	Device family code (14 bits, LSB first) */
   U16 deviceFamilyMC;           /* dd dd	Device family member code (14 bits, LSB first) */
   U16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
-} sDeviceInfo,*pDeviceInfo;
+}__attribute__((packed)) sDeviceInfo,*pDeviceInfo;
 
 
 /*
@@ -80,7 +80,7 @@ typedef struct MIDItrackInfo
     U16 usiTrackNb;
     U32   ulTrackLenght;
     U32   trackOffset;      /* offset relative to start address of loaded midi file */
-} sMIDItrackInfo,*pMidiTrackInfo;
+}__attribute__((packed)) sMIDItrackInfo,*pMidiTrackInfo;
 
 
 /* SMPTE OFFSET struct */
@@ -91,7 +91,7 @@ typedef struct SMPTEoffset
     U8 se;
     U8 fr;
     U8 ff;
-} sSMPTEoffset;
+}__attribute__((packed)) sSMPTEoffset;
 
 /* Time signature struct */
 
@@ -101,7 +101,7 @@ typedef struct TimeSignature
  U8 dd;
  U8 cc;
  U8 bb;
-} sTimeSignature;
+}__attribute__((packed)) sTimeSignature;
 
 /*************** event structs */
 
@@ -109,48 +109,48 @@ typedef struct
 {
  S8 noteNb;
  S8 velocity;
-} sNoteOn_t;
+}__attribute__((packed)) sNoteOn_t;
 
 typedef struct 
 {
  S8 noteNb;
  S8 velocity;
-} sNoteOff_t;
+}__attribute__((packed)) sNoteOff_t;
 
 typedef struct 
 {
  S8 noteNb;
  S8 pressure;
-} sNoteAft_t;
+}__attribute__((packed)) sNoteAft_t;
 
 typedef struct 
 {
  S8 controllerNb;
  S8 value;
-} sController_t;
+}__attribute__((packed)) sController_t;
 
 typedef struct ProgramChange_t 
 {
  S8 programNb;
-} sProgramChange_t;
+}__attribute__((packed)) sProgramChange_t;
 
 typedef struct 
 {
  S8 pressure;
-} sChannelAft_t;
+}__attribute__((packed)) sChannelAft_t;
 
 typedef struct 
 {
  S8  LSB;
  S8  MSB;
-} sPitchBend_t;
+}__attribute__((packed)) sPitchBend_t;
 
 typedef struct 
 {
  U8 A;  /* msec in three bytes */
  U8 B;
  U8 C;
-} sTempo_t;
+}__attribute__((packed)) sTempo_t;
 
 
 

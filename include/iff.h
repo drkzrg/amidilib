@@ -17,7 +17,7 @@ typedef S8 ID[4];             /* 4 chars in ' ' through '~' */
 typedef struct {
   U32 chunkID;
   U32 chSize;  /* sizeof(chData) */
-  } IFF_Chunk;
+  }__attribute__((packed)) IFF_Chunk;
 
 
 /* IFF ID's*/

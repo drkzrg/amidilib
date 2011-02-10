@@ -26,7 +26,7 @@ MIDI_TEST_EXE = midiTest.tos
 TIMING_TEST_EXE = timTest.tos
 
 #copies output binary to emulator folder ready to launch
-ST_HD_PATH=$(HOME)/Dokumenty/Pulpit/tos/dyskST
+ST_HD_PATH=$(HOME)/STEEM/HD
 
 SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c
 OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o

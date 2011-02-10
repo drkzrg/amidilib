@@ -44,9 +44,11 @@ TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midiseq.o fm
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
-	echo "Copying TOS binary to emulator directory."
+	echo "Stripping symbols."
+	$(STRIP) $(EXE)
+	echo "Copying AMIDI.TTP binary to emulator/shared directory."
 	cp $(EXE) $(ST_HD_PATH)
-	cp $(EXE) $(TIMING_TEST_EXE)
+	cp $(EXE) $(SHARED_DIR_PATH)
 
 $(YM_TEST_EXE): $(YM_TEST_OBJECTS)  amidi.o 
 	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS)  amidi.o -o $@ -lm 
@@ -60,7 +62,7 @@ $(MIDI_TEST_EXE): $(MIDITEST_OBJECTS) amidi.o ikbd_asm.o
 	$(CC) $(LDFLAGS) $(MIDITEST_OBJECTS) amidi.o ikbd.o -o $@ -lm
 	echo "Stripping symbols"
 	$(STRIP) $(MIDI_TEST_EXE)
-	echo "Copying midi output test program to emulator directory."
+	echo "Copying midi output test program to emulator/shared directory."
 	cp $(MIDI_TEST_EXE) $(ST_HD_PATH)
 	cp $(MIDI_TEST_EXE) $(SHARED_DIR_PATH)
 
@@ -69,7 +71,7 @@ $(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) amidi.o ikbd_asm.o testReplay.o
 	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) amidi.o ikbd.o testReplay.o -o $@ -lgem -lm 
 	echo "Stripping symbols"
 	$(STRIP) $(TIMING_TEST_EXE)
-	echo "Copying midi delta timing test program to emulator directory."
+	echo "Copying midi delta timing test program to emulator/shared directory."
 	cp $(TIMING_TEST_EXE) $(ST_HD_PATH)
 	cp $(TIMING_TEST_EXE) $(SHARED_DIR_PATH)
 

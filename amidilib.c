@@ -1720,6 +1720,7 @@ if(CON_LOG==TRUE) fprintf(stdout,buffer);
 
 #ifdef DEBUG_FILE_OUTPUT
     fprintf(ofp,buffer);
+    fflush(ofp);
 #endif
 
 return;

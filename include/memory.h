@@ -20,13 +20,10 @@
 
 inline void *amMemMove (void *pDest,const void *pSrc,tMEMSIZE iSize){
 #ifdef PORTABLE
-
+  return memmove(pDest,pSrc,iSize);
 #else
-
+ return memmove(pDest,pSrc,iSize);
 #endif
-
-  
-return 0;
 }
 
 
@@ -69,21 +66,18 @@ inline void *amMemSet (void *pSrc,S32 iCharacter,tMEMSIZE iNum)
 
 inline int amMemCmp (const void *pSrc1,const void *pSrc2, tMEMSIZE iNum){
 #ifdef PORTABLE
-
+  return memcmp(pSrc1,pSrc2,iNum);
 #else
-
+  return memcmp(pSrc1,pSrc2,iNum);
 #endif
-
-  return 0;
 }
 
 inline void *amMemChr (const void *pSrc, S32 iCharacter, tMEMSIZE iNum){
 #ifdef PORTABLE
-
+  return memchr(pSrc,iCharacter,iNum);
 #else
-
+  return memchr(pSrc,iCharacter,iNum);
 #endif
-  return 0;
 }
 
 

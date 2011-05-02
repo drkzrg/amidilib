@@ -59,10 +59,10 @@ int main(int argc, char *argv[]){
     program_change(currentChannel, currentPN);
     
     if(argc>=1&&argv[1]!='\0'){
-      amTrace("Trying to load %s\n",argv[1]);
+      amTrace((const U8 *)"Trying to load %s\n",argv[1]);
     }
     else{
-      amTrace("No specified midi filename! exiting\n");
+      amTrace((const U8 *)"No specified midi filename! exiting\n");
       am_deinit();
       return 0;
     }

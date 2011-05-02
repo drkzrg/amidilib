@@ -162,7 +162,7 @@ void printEventList(const sEventList **listPtr){
 
 	if((*listPtr)!=NULL){
 		/* iterate through list */
-		pTemp=(*listPtr);
+		pTemp=(sEventList *)(*listPtr);
 
 		
 		while(pTemp!=NULL){
@@ -263,7 +263,7 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 
 	if((*listPtr)!=NULL){
 		/* iterate through list */
-		pTemp=(*listPtr);
+		pTemp=(sEventList *)(*listPtr);
 
 		/* find first event with given delta */
 

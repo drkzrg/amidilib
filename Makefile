@@ -11,7 +11,7 @@ MACHINE = -m68000
 
 # extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG   
 CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -m68000 -Wall -fsigned-char -DPORTABLE -ffast-math -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
-LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,-t -Wl,-stack=256k $(MACHINE)
+LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,-stack=256k $(MACHINE)
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.ttp

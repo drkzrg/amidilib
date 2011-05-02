@@ -14,6 +14,7 @@
 #ifdef PORTABLE
 #include <stdlib.h>
 #else
+#include <stdlib.h>
 #include <mint/sysbind.h>
 #endif
 
@@ -34,10 +35,11 @@ inline void *amMemCpy (void *pDest,const void *pSrc,tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
 
-  amTrace("amMemCpy overlaps. Using amMemMove()\n");
+  amTrace((const U8 *)"amMemCpy overlaps. Using amMemMove()\n");
   
-  if( (pSrc<pDest && pSrc + iSize>pDest ) ||
-    (pDest<pSrc && pDest +iSize >pSrc)){
+  if( (pbSrc<pbDest && pbSrc + iSize>pbDest ) ||
+    (pbDest<pbSrc && pbDest +iSize >pbSrc)){
+    
     return amMemMove(pDest,pSrc,iSize);
   }
   
@@ -46,8 +48,10 @@ inline void *amMemCpy (void *pDest,const void *pSrc,tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
   
-  if( (pSrc<pDest && pSrc + iSize>pDest ) ||
-    (pDest<pSrc && pDest +iSize >pSrc)){
+  if( (pbSrc<pbDest && pbSrc + iSize>pbDest ) ||
+    (pbDest<pbSrc && pbDest +iSize >pbSrc)){
+
+    amTrace((const U8 *)"amMemCpy overlaps. Using amMemMove()\n");
     return amMemMove(pDest,pSrc,iSize);
   }
   return memcpy(pDest,pSrc,iSize);

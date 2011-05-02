@@ -288,5 +288,5 @@ void am_setSuperOn(void) {
 }
 
 void am_setSuperOff(void) {
-   ssp = (long)Super((void*)ssp);         /* return processor to user mode */
+	SuperToUser(ssp); /* return processor to user mode */
 }

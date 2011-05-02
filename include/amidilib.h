@@ -342,7 +342,7 @@ double am_diffclock(clock_t end,clock_t begin);
 const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
 /** Utility function sends text buffer to console and text log.
-*   @param mes - null terminated string
+*   @param mes - null terminated string. Accepts additional formatting variables like sprintf/printf.
 */
 void am_log(const U8 *mes,...);
 
@@ -353,8 +353,12 @@ void playSequence(const sEventList **listPtr);
 
 const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
+/** Utility function returns MFP mode and data settings for MFP.
+*   @param freq - desired frequency
+*   @param mode - pointer to unsigned long int for MFP mode of operation value
+*   @param data - pointer to unsigned long int for MFP data value
+*/
+
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
-
-
 
 #endif

@@ -69,8 +69,8 @@ _installReplayRout:
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
-	;move.w	sr,-(sp)	;save status register
-        ;or.w	#$0700,sr	;turn off all interupts
+	move.w	sr,-(sp)	;save status register
+    or.w	#$0700,sr	;turn off all interupts
 
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
@@ -92,7 +92,7 @@ update:
 	movem.l	d0-d7/a0-a6,-(sp)
 	
 	move.l arTracks(a0),a1 ;get current tempo, current slot in the sequence,
-        move.l currentTempo(a1),d0 ;get tempo from current/active track
+    move.l currentTempo(a1),d0 ;get tempo from current/active track
 	move.l timeDivision(a0),d1 ;get time division
 	
 	move.l d1,-(sp)		
@@ -102,11 +102,11 @@ update:
 	
 	;get result from d0, desired tick frequency 
 	;put frequency, addr to mode/data
-        move.l	#timerData,-(sp)
+    move.l	#timerData,-(sp)
 	move.l	#timerMode,-(sp)
 	move.l d0,-(sp)	
 	
-        jsr _getMFPTimerSettings
+    jsr _getMFPTimerSettings
 	lea (12,sp),sp
 	
 	move.l timerMode,d0
@@ -178,7 +178,7 @@ update:
 	move.l	eventBlock(a2),a3
 	move.l	delta(a3),d3	;get delta
 	
-        cmp.l	d6,d3
+    cmp.l	d6,d3
 	beq.s	.sendNote
 	
 	;increase elapsed delta
@@ -254,7 +254,7 @@ update:
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
 .finish:	
-	;move.w 	  (sp)+,sr 		;restore Status Register
+	move.w 	  (sp)+,sr 		;restore Status Register
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer

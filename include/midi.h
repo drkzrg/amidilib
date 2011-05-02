@@ -24,7 +24,7 @@ typedef struct ChunkHeader
 {
   U32 id;
   U32 headLenght;
-} sChunkHeader,*pChunkHeader;
+} __attribute__((__packed__)) sChunkHeader,*pChunkHeader;
 
 typedef struct MThd
 {

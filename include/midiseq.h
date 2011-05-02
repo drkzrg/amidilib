@@ -30,53 +30,53 @@ enum eEventType{
 /******************** event block structs */
 /*  Note On event block */
 typedef struct NoteOn_EventBlock_t{
-U8 ubChannelNb;
-sNoteOn_t eventData;
-} sNoteOn_EventBlock_t;
+U8 ubChannelNb;			/* channel number */
+sNoteOn_t eventData;	/*note on data */
+} __attribute__((__packed__)) sNoteOn_EventBlock_t;
 
 /* Note Off event block */
 
 typedef struct NoteOff_EventBlock_t{
-U8 ubChannelNb;
-sNoteOff_t eventData;
-} sNoteOff_EventBlock_t;
+U8 ubChannelNb;				/* channel number */
+sNoteOff_t eventData;		/* note off data */
+} __attribute__((__packed__)) sNoteOff_EventBlock_t;
 
 /* Note aftertouch eventblock */
 typedef struct NoteAft_EventBlock_t{
  
  U8 ubChannelNb;
  sNoteAft_t eventData;
-}sNoteAft_EventBlock_t;
+}__attribute__((__packed__)) sNoteAft_EventBlock_t;
 
 /* Controller change event block */
 typedef struct Controller_EventBlock_t{
- U8 ubChannelNb;
- sController_t eventData;
-} sController_EventBlock_t;
+ U8 ubChannelNb;			 /* channel number */
+ sController_t eventData;	 /* controller event data */
+} __attribute__((__packed__)) sController_EventBlock_t;
 
 /* Program change event block */
 typedef struct PrgChng_EventBlock_t{
- U8 ubChannelNb;
- sProgramChange_t eventData;
-} sPrgChng_EventBlock_t;
+ U8 ubChannelNb;				/* channel number */
+ sProgramChange_t eventData;	/* program change data */
+} __attribute__((__packed__)) sPrgChng_EventBlock_t;
 
 /* Channel aftertouch eventblock */
 typedef struct ChannelAft_EventBlock_t{  
-  U8 ubChannelNb;
-  sChannelAft_t eventData;
-}sChannelAft_EventBlock_t;
+  U8 ubChannelNb;				/* channel number */
+  sChannelAft_t eventData;		/* channel after touch data */
+}__attribute__((__packed__)) sChannelAft_EventBlock_t;
 
 /* Pitch bend eventblock */
 typedef struct PitchBend_EventBlock_t{
- U8 ubChannelNb;
- sPitchBend_t eventData;
-} sPitchBend_EventBlock_t;
+ U8 ubChannelNb;			/* channel number  */
+ sPitchBend_t eventData;    /* pitch bend data */
+} __attribute__((__packed__)) sPitchBend_EventBlock_t;
 
 /* Set tempo eventblock */
 typedef struct Tempo_EventBlock_t{
- U8 ubChannelNb;
- sTempo_t eventData;
-} sTempo_EventBlock_t;
+ U8 ubChannelNb; 		/* channel number */
+ sTempo_t eventData;	/* tempo event data  */
+} __attribute__((__packed__)) sTempo_EventBlock_t;
 
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
@@ -88,21 +88,21 @@ typedef void (*evntFuncPtr)(void *pEvent);
 typedef struct EventInfoBlock_t{
 	U32	size;		/* size of command string in bytes */
 	evntFuncPtr func;  	/* pointer to event handler */ 
-} sEventInfoBlock_t;
+} __attribute__((__packed__)) sEventInfoBlock_t;
 
 typedef struct EventBlock_t{
- U32 uiDeltaTime;			/* event delta time */	
+ U32 uiDeltaTime;					/* event delta time */	
  sEventInfoBlock_t infoBlock;		/* function info block */ 
- void *dataPtr;				/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
- U8	type;				/* event type */
- U8 pad; 
-}sEventBlock_t, *sEventBlockPtr_t;
+ void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
+ U8	type;							/* event type */
+ U8 pad ; 							/* padding for word alignment */
+}__attribute__((__packed__)) sEventBlock_t, *sEventBlockPtr_t;
 
 /** SysEX */
 typedef struct SysEx_t{
- U32 bufferSize;
- U8 *pBuffer;
-} sSysEx_t;
+ U32 bufferSize ; 					/* size of SysEX buffer */
+ U8 *pBuffer;						/* pointer to data */
+} __attribute__((__packed__)) sSysEx_t;
 
 /* returns the info struct about event: size and pointer to the handler  */
 void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);

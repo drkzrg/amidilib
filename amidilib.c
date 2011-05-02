@@ -8,11 +8,11 @@
 #include <string.h>
 #include <stdarg.h>
 #include <mint/ostruct.h>
+#include <limits.h>
+
 #include "include/amidilib.h"
 #include "include/mfp.h"
 #include "include/list/list.h"
-#include <limits.h>
-
 
 /* current version */
 typedef struct AMIDI_version {
@@ -419,8 +419,7 @@ because we have to know if we have to dump event data to one eventlist or severa
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
 void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence){   
-
-  static U32 trackCounter=0;
+static U32 trackCounter=0;
       
 U32 endAddr=0L;
 U32 ulChunkSize=0;
@@ -632,32 +631,32 @@ BOOL bEOF=FALSE;
     /* decode event and write it to our custom structure */
     switch(usSwitch){
       case EV_NOTE_OFF:
-	am_noteOff(&pCmd,&recallStatus, delta, pCurTrack );
+		am_noteOff(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_NOTE_ON:
-	am_noteOn(&pCmd,&recallStatus, delta, pCurTrack );
+		am_noteOn(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_NOTE_AFTERTOUCH:
-	am_noteAft(&pCmd,&recallStatus, delta, pCurTrack );
+		am_noteAft(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_CONTROLLER:
-	am_Controller(&pCmd,&recallStatus, delta, pCurTrack );
+		am_Controller(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_PROGRAM_CHANGE:
-	am_PC(&pCmd,&recallStatus, delta, pCurTrack );
+		am_PC(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_CHANNEL_AFTERTOUCH:
-	am_ChannelAft(&pCmd,&recallStatus, delta, pCurTrack );
+		am_ChannelAft(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_PITCH_BEND:
-	am_PitchBend(&pCmd,&recallStatus, delta, pCurTrack );
+		am_PitchBend(&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_META:
-	bEOF=am_Meta(&pCmd, delta, pCurTrack );
+		bEOF=am_Meta(&pCmd, delta, pCurTrack );
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
-	recallStatus=0; 	                /* cancel out midi running status */
-	am_Sysex(&pCmd,delta, pCurTrack);
+		recallStatus=0; 	                /* cancel out midi running status */
+		am_Sysex(&pCmd,delta, pCurTrack);
       break;
       case SC_MTCQF:
 	recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
@@ -1285,7 +1284,6 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
         amTrace((const U8*)"meta size: %d ",ubLenght);
-	
         amTrace((const U8*)"%s \n",textBuffer);
 	
 	return FALSE;
@@ -1318,9 +1316,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
         amTrace((const U8*)"meta size: %d ",ubLenght);
-	
-        amTrace((const U8*)"%s \n",textBuffer);
-	
+        amTrace((const U8*)"%s \n",textBuffer);	
 	return FALSE;
     break;
     case MT_DEVICE_NAME:
@@ -1501,6 +1497,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
 /* reads Variable Lenght Quantity */
 U32 readVLQ(U8 *pChar,U8 *ubSize){
+// TODO: rewrite this in assembly, maybe make as inline 
 U32 value=0;
 U8 c=0;
 (*ubSize)=0;
@@ -1586,7 +1583,7 @@ const S8 *getConnectedDeviceInfo(void){
     getDeviceInfoResponse(channel);
    }
  
-   //am_dumpMidiBuffer();
+ am_dumpMidiBuffer();
  return NULL;
 }
 
@@ -1706,8 +1703,6 @@ sEventItem *pTemp
 
 */
 
-
-
 void am_log(const U8 *mes,...){
 static char buffer[256];
 
@@ -1731,7 +1726,6 @@ return;
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data){
 static const U32 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
 U32 cntrl,count;
-
 cntrl=0;
 
 if( freq<=614400 && freq>=2400 ) {

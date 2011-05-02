@@ -18,9 +18,8 @@
 /**
  * main program entry
  */
-
-
-volatile sSequence_t *currentState;	
+ 
+ volatile sSequence_t *currentState;	
 
 enum{
  STOP=0, 
@@ -87,15 +86,23 @@ int main(int argc, char *argv[]){
      
      /* process MIDI*/
      /* check midi header */
-     double ms;
-     
+
+#ifdef TIME_CHECK_PORTABLE     
      printf("Please wait...\n");
-     
+     double ms;
      clock_t begin=clock();
+#else
+	// get Atari native system 200hz counter
+	 long usp=Super(0);
+	 unsigned long begin=*((long *)0x4ba);
+     SuperToUser(usp);
+#endif	 
+
      iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
+
+#ifdef TIME_CHECK_PORTABLE	 
      clock_t end=clock();
-	  
-      ms=am_diffclock(end,begin);
+     ms=am_diffclock(end,begin);
 
       if(iError==0){
 	printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min](%6.4f [ms])\n",ms/1000.0f,ms/1000.0f/60.0f,ms);
@@ -103,7 +110,23 @@ int main(int argc, char *argv[]){
       }else{
 	amTrace((const U8*)"Error while parsing. Exiting... \n");
       }
-     
+#else
+	//calculate delta in seconds
+    usp=Super(0);
+    unsigned long end=*((long *)0x4ba);
+    SuperToUser(usp);
+
+    float delta=((float)end-(float)begin)/200.0f;
+
+      if(iError==0){
+		printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+		amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+      }else{
+		amTrace((const U8*)"Error while parsing. Exiting... \n");
+      }
+
+#endif
+	  
       /* free up buffer with loaded midi file, we don't need it anymore */
 
       if(pMidi!=NULL){

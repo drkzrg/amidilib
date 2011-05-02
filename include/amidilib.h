@@ -15,7 +15,10 @@
 #include "roland.h"
 #include "amidiseq.h"
 #include "midi_cmd.h"
+
+#ifdef TIME_CHECK_PORTABLE
 #include <time.h>
+#endif
 
 #define LIB_NAME "Atari (X)MIDI library"
 #define AMIDI_INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
@@ -330,11 +333,13 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 */
 void am_allNotesOff(U16 numChannels);
 
+#ifdef TIME_CHECK_PORTABLE
 /** utility for measuring function execution time (end-begin timestamp in ms) 
 *   @param end - end timestamp
 *   @param begin - begin timestamp
 */
-double am_diffclock(clock_t end,clock_t begin);
+double am_diffclock(clock_t end, clock_t begin);
+#endif
 
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range
@@ -360,5 +365,10 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 */
 
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
+ 
+ float getTimeStamp();
+ float getTimeDelta();
+
 
 #endif
+

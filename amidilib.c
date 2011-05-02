@@ -36,6 +36,16 @@ static sSequence_t *gpCurrentSequence;
 static FILE *ofp;
 #endif
 
+#ifdef TIME_CHECK_PORTABLE	
+ clock_t begin;
+ clock_t end;
+#else
+ unsigned long begin;
+ unsigned long end;
+ long usp;
+#endif
+
+
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
 
@@ -45,6 +55,8 @@ extern const char *g_arMIDI2key[];
 /* static table with CM32 rhytm part */
 extern const char *g_arCM32Lrhythm[];
 static sEventBlock_t tempEvent;
+
+
 
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
@@ -1536,6 +1548,8 @@ const U8 *getMIDIcontrollerName(U8 iNb)
  return(g_arMIDIcontrollers[iNb]);
 }
 
+#define DEVICE_RESPONSE_TIMEOUT 500
+
 void getDeviceInfoResponse(U8 channel){
   static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
@@ -1550,19 +1564,21 @@ void getDeviceInfoResponse(U8 channel){
     
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
-
+    
+	
+	
     /* get reply */
-    while(MIDI_DATA_READY) {
+    while((MIDI_DATA_READY)) {
       data = GET_MIDI_DATA;
       
       if(data!=0){
-	if(bFlag==FALSE){
-	 amTrace((const U8*)"Received device info on ch: %d\t",channel);
- 	 bFlag=TRUE;
+	  if(bFlag==FALSE){
+		amTrace((const U8*)"Received device info on ch: %d\t",channel);
+ 	    bFlag=TRUE;
 	}
 	
-	amTrace((const U8*)"%x\t",(unsigned int)data);
-      }
+		amTrace((const U8*)"%x\t",(unsigned int)data);
+    }
     
     
 }
@@ -1652,14 +1668,14 @@ void am_allNotesOff(U16 numChannels){
   all_notes_off(iCounter);
  }
 }        
-
-/* utility for measuring function time execution */
+#ifdef TIME_CHECK_PORTABLE	
+/* utility for measuring function time execution in ms */
 double am_diffclock(clock_t end,clock_t begin){
  double diffticks=end-begin;
  double diffms=(diffticks)/(CLOCKS_PER_SEC/1000.0f);
 return diffms;
 }
-
+#endif
 
 const U8 *am_getMIDInoteName(U8 ubNoteNb){
 if((ubNoteNb>=0&&ubNoteNb<=127)) /* 0-127 range check */
@@ -1806,6 +1822,34 @@ if( freq<96&&freq>=48) {
  
  }
 return;
+}
+
+
+ float getTimeStamp(){
+#ifdef TIME_CHECK_PORTABLE	 
+	begin=clock();
+#else
+// get Atari native system 200hz counter
+	 usp=Super(0);
+	 unsigned long begin=*((long *)0x4ba);
+     SuperToUser(usp);
+	 return (float)begin;
+#endif	 
+}
+
+float getTimeDelta(){
+#ifdef TIME_CHECK_PORTABLE	 
+     end=clock();
+	 float delta=(float)(am_diffclock(end,begin)/1000.0f);
+     return(delta);
+#else
+//calculate delta in seconds
+    usp=Super(0);
+    end=*((long *)0x4ba);
+    SuperToUser(usp);
+	float delta=((float)end-(float)begin)/200.0f;
+    return(delta);
+#endif
 }
 
 

@@ -16,8 +16,8 @@ AMIDI_MAX_TRACKS	equ	16
 
 ;=========================================
 	   xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
-           xdef _deinstallReplayRout	;removes replay routine from system 
-           xdef _defaultPlayMode
+       xdef _deinstallReplayRout	;removes replay routine from system 
+       xdef _defaultPlayMode
 	   
 	   xdef _oldTB		;saved old Timer B vector
 	   xdef _counter	;ticks counted in quaternote span
@@ -37,11 +37,11 @@ _installReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	  super_on
 	move.w	sr,-(sp)	;save status register
-        or.w	#$0700,sr	;turn off all interupts
+    or.w	#$0700,sr	;turn off all interupts
 
 	move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
 	move.l	currentTempo(a1),d0
-        move.l	d0,_currentTempo	;save current tempo
+    move.l	d0,_currentTempo	;save current tempo
 
 	move.l	$42(sp),d1  ;mode
         move.l  $46(sp),d0  ;data
@@ -77,9 +77,9 @@ update:
 
 	move.l	_currentSeqPtr,a0
 	
-        move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
+    move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
 	move.l	currentState(a1),a1 
-        move.l	currentTempo(a1),d0
+    move.l	currentTempo(a1),d0
 	
 	;check if change of current tempo has occurred
 	;if yes then calculate new tick frequency and get new data/divider
@@ -110,13 +110,13 @@ update:
 	lea (12,sp),sp
 	
 	move.l timerMode,d0
-        move.l	timerData,d1
+    move.l	timerData,d1
 	or.l	d0,d1
-        cmp.l	#0,d1	;if data or mode 0 skip change
+    cmp.l	#0,d1	;if data or mode 0 skip change
 	beq.s	.restore
 
-        move.b	d0,_tbMode
-        move.b	d1,_tbData
+    move.b	d0,_tbMode
+    move.b	d1,_tbData
       
 	;get MFP mode and data
 .restore:

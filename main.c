@@ -18,7 +18,7 @@
  * main program entry
  */
  
- volatile sSequence_t *currentState;	
+volatile sSequence_t *currentState;	
 
 enum{
  STOP=0, 
@@ -57,11 +57,6 @@ int main(int argc, char *argv[]){
     control_change(0x00, currentChannel, currentBankSelect,0x00);
     program_change(currentChannel, currentPN);
     
-    //trace is set up in am_init()
-    
-    VLQtest();
-    memoryCheck();
-    
     if(argc>=1&&argv[1]!='\0'){
       amTrace("Trying to load %s\n",argv[1]);
     }
@@ -85,51 +80,47 @@ int main(int argc, char *argv[]){
      
      /* process MIDI*/
      /* check midi header */
-	printf("Please wait...\n");
-	float time = getTimeStamp();
+	 printf("Please wait...\n");
+	 float time = getTimeStamp();
 
      iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
-	 
-     float delta=getTimeDelta();
+  
+	 float delta=getTimeDelta();
 	 
 	 if(iError==0){
-		printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
-		amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+	   printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+	   amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+	   
+	   /* free up buffer with loaded midi file, we don't need it anymore */
+	   Mfree(pMidi);
+	   pMidi=NULL;
+		
+	    // MAIN LOOP 
+		/* play preloaded tune if no error occured */
+		playSeq(&midiTune);
+		
+		/* loop and wait for keypress */
+		BOOL bQuit=FALSE;
+		printf("Press q to quit...\n");
+    
+		while(bQuit!=TRUE){
+		 //char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
+		 printf("counter %u\n",(unsigned int)counter);
+		}
+		
+		
+	  //END of MAINLOOP	
       }else{
 		amTrace((const U8*)"Error while parsing. Exiting... \n");
+		am_deinit(); //deinit our stuff
+        return(-1);
       }
-	  
-
-	  
-      /* free up buffer with loaded midi file, we don't need it anymore */
-
-      if(pMidi!=NULL){
-	Mfree(pMidi);
-	pMidi=NULL;
-      }
-	  
-	  
-    if(iError==0){
-     /* play preloaded tune if no error occured */
-
-      playSeq(&midiTune);
-      /* loop and wait for keypress */
-	BOOL bQuit=FALSE;
-	printf("Press q to quit...\n");
-    
-      while(bQuit!=TRUE){
-	//char c=getchar(); if(c=='q'||c=='Q') bQuit=TRUE;
-	printf("counter %u\n",(unsigned int)counter);
-      }
-  
-	
-    }
-    
      
     } /* MIDI loading failed */
     else{
       amTrace((const U8*)"Error: Couldn't read %s file...\n",argv[1]);
       fprintf(stderr, "Error: Couldn't read %s file...\n",argv[1]);
+	  am_deinit(); //deinit our stuff
       return(-1);
     }
 

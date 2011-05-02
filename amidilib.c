@@ -778,11 +778,15 @@ else {
   addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
   free(tempEvent.dataPtr);
 }
+
+#ifdef MIDI_PARSER_DEBUG	
   amTrace((const U8*)"delta: %u\t",(unsigned int)delta);
   amTrace((const U8*)"event: Note off ");
   amTrace((const U8*)"ch: %d\t",(g_runningStatus&0x0F)+1);
   amTrace((const U8*)"note: %d(%s)\t",*(*pPtr),am_getMIDInoteName(*(*pPtr)));
   amTrace((const U8*)"vel: %d\n",*(*pPtr));
+#endif
+
 }
 
 void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -850,12 +854,13 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 		free(tempEvent.dataPtr);
  }
  /* print and handle */
+ #ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %u\t",(unsigned int)delta);
     amTrace((const U8*)"event: Note on ");
     amTrace((const U8*)"ch: %d\t",channel);
     amTrace((const U8*)"note: %d(%s)\t",note,am_getMIDInoteName(note));
     amTrace((const U8*)"vel: %d \n",velocity);
-    
+   #endif 
 }
 
 void am_noteAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -913,9 +918,9 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	free(tempEvent.dataPtr);
 
     }
-	
+	#ifdef MIDI_PARSER_DEBUG
      amTrace((const U8*)"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d\n",(unsigned int)delta, noteNb,pressure);
-     
+    #endif
 
 }
 
@@ -981,9 +986,9 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 		free(tempEvent.dataPtr);
 
     }
-
+#ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %u\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",(unsigned int)delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
-    
+   #endif 
 
 }
 
@@ -1039,10 +1044,12 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
+	#ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %u\t",(unsigned int)delta);
     amTrace((const U8*)"event: Program change ");
     amTrace((const U8*)"ch: %d\t",channel);
     amTrace((const U8*)"program nb: %d\n",PN);
+	#endif
  }
 
 void am_ChannelAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
@@ -1094,8 +1101,9 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
+	#ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %u\tevent: Channel aftertouch pressure: %d\n",(unsigned int)delta, param);
-    
+    #endif
 
 }
 
@@ -1157,8 +1165,9 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
 	free(tempEvent.dataPtr);
     }
+ #ifdef MIDI_PARSER_DEBUG
  amTrace((const U8*)"delta: %u\tevent: Pitch bend LSB: %d, MSB:%d\n",(unsigned int)delta,LSB,MSB);
- 
+ #endif
 }
 
 void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
@@ -1173,7 +1182,9 @@ void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
       /*count Sysex msg data bytes */
       ulCount++;
     }
+	#ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)" EOX, size: %ld\n",ulCount);
+	#endif
     
 }
 
@@ -1192,127 +1203,149 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
  switch(ubVal){
     case MT_SEQ_NB:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Sequence nb: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%d\n", ubLenght);
-	
+	#endif
         (*pPtr)++;
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
 	return FALSE;
     break;
     case MT_TEXT:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Text:",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
-        
+        #endif
 	/* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
     case MT_COPYRIGHT:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Copyright: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
-	
+	#endif
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+	 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
     case MT_SEQNAME:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Sequence name: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
 	
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
     case MT_INSTRNAME:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Instrument name: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d",ubLenght);
-	
+	#endif
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%s \n",textBuffer);
+		#endif
 	
 	return FALSE;
     break;
     case MT_LYRICS:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Lyrics: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
-	
+	#endif
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
 
     case MT_MARKER:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Marker: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
     case MT_CUEPOINT:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Cuepoint\n",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
 	
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
 
     case MT_PROGRAM_NAME:
         /* program(patch) name */
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Program (patch) name: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 
@@ -1320,8 +1353,10 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
         amTrace((const U8*)"%s \n",textBuffer);	
+		#endif
 	return FALSE;
     break;
     case MT_DEVICE_NAME:
@@ -1335,15 +1370,17 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         memcpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
         (*pPtr)=((*pPtr)+ubLenght);
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
 	
         amTrace((const U8*)"%s \n",textBuffer);
-	
+	#endif
 	return FALSE;
     break;
     case MT_CH_PREFIX:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Channel prefix\n",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1358,8 +1395,9 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
 
         /*get port nb*/
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Midi channel nb: %d\n",(unsigned int)delta,*(*pPtr));
-	
+	#endif
         (*pPtr)++;
 	return FALSE;
     break;
@@ -1370,14 +1408,16 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
 
         /*get port nb*/
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Midi port nb: %d\n",(unsigned int)delta,*(*pPtr));
-	
+	#endif
         (*pPtr)++;
 	return FALSE;
     break;
     case MT_EOT:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: End of track\n\n",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1388,8 +1428,9 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
     case MT_SET_TEMPO:{
         /* sets tempo in track, should be in the first track, if not 120 BPM is assumed */
 	U8 ulVal[3]={0};   /* for retrieving set tempo info */
+	#ifdef MIDI_PARSER_DEBUG
 	amTrace((const U8*)"delta: %u\tMeta event: Set tempo: ",(unsigned int)delta);
-	
+	#endif
 	(*pPtr)++;
         ubLenght=(*(*pPtr));
          (*pPtr)++;
@@ -1409,8 +1450,9 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	/* range: 0-8355711 ms, 24 bit value */
 	val1=val1|val2|val3;
 	(*pCurTrack)->currentState.currentTempo=val1;
+	#ifdef MIDI_PARSER_DEBUG
 	amTrace((const U8*)"%u ms per quarter-note\n", (unsigned int)val1);
-	
+	#endif
 	return FALSE;
     }
     break;
@@ -1425,16 +1467,19 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
     /* print out info */
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"hr: %d\n",SMPTEinfo.hr);
         amTrace((const U8*)"mn: %d\n",SMPTEinfo.mn);
         amTrace((const U8*)"se: %d\n",SMPTEinfo.fr);
         amTrace((const U8*)"fr: %d\n",SMPTEinfo.fr);
         amTrace((const U8*)"ff: %d\n",SMPTEinfo.ff);
+	#endif
 	return FALSE;
     break;
     case MT_TIME_SIG:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Time signature: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1443,20 +1488,22 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
         /* print out info */
+		#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"nn: %d\tdd: %d\tcc: %d\tbb: %d\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
-        
+        #endif
 	return FALSE;
     break;
     case MT_KEY_SIG:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Key signature: ",(unsigned int)delta);
-	
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
         param1=(*(*pPtr));
         (*pPtr)++;
         param2=(*(*pPtr));
-
+#ifdef MIDI_PARSER_DEBUG
         if (param2==0) {amTrace((const U8*)"scale: major ");}
         else if(param2==1) {amTrace((const U8*)"scale: minor ");}
          else { amTrace((const U8*)"error: wrong key signature scale. "); }
@@ -1472,11 +1519,15 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         else if (( ((S8)param1)<-1&& ((S8)param1)>=-7))
             {amTrace((const U8*)" %ld flats\n",(U32)param1);}
         else {amTrace((const U8*)" error: wrong key signature. %d\n",param1);}
+		#endif
+		
         (*pPtr)++;
 	return FALSE;
     break;
     case MT_SEQ_SPEC:
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Sequencer specific data.\n",(unsigned int)delta);
+		#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         (*pPtr)++;
@@ -1485,14 +1536,17 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	return FALSE;
     break;
     default:
+	#ifdef MIDI_PARSER_DEBUG
        amTrace((const U8*)"delta: %u\tUnknown meta event.\n",(unsigned int)delta);
+	   #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */
         /* file also could be broken */
 	U8 tempArray[128]={0};
-	
+	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"id: %d, size: %d\n" /*parameters: %ld \n"*/,ubVal,*(*pPtr));
+		#endif
         (*pPtr)=(*pPtr)+ubLenght;
 	return FALSE;
     break;
@@ -1548,30 +1602,33 @@ const U8 *getMIDIcontrollerName(U8 iNb)
  return(g_arMIDIcontrollers[iNb]);
 }
 
-#define DEVICE_RESPONSE_TIMEOUT 500
+#define DEVICE_RESPONSE_TIMEOUT_IN_SECONDS 5
 
 void getDeviceInfoResponse(U8 channel){
   static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   BOOL bFlag=FALSE;
-  
+  BOOL bTimeout=FALSE;
   U32 data=0;
   
   /* calculate checksum */
   getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
   getInfoSysEx[5]=channel;
   getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
-    
+  
+  /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
     
+	float begin=getTimeStamp(); // get current timestamp
 	
-	
-    /* get reply */
-    while((MIDI_DATA_READY)) {
+    /* get reply or there was timeout */
+    while((MIDI_DATA_READY&&(getTimeDelta()<DEVICE_RESPONSE_TIMEOUT_IN_SECONDS))) {
       data = GET_MIDI_DATA;
+      begin=getTimeStamp(); // data received, reset timestamp
       
-      if(data!=0){
+	  if(data!=0){
+	  
 	  if(bFlag==FALSE){
 		amTrace((const U8*)"Received device info on ch: %d\t",channel);
  	    bFlag=TRUE;
@@ -1582,6 +1639,9 @@ void getDeviceInfoResponse(U8 channel){
     
     
 }
+
+	if(bTimeout==TRUE)amTrace((const U8*)"Timeout on ch: %d\t",channel);
+
 }
 /* gets info about connected devices via MIDI interface */
 const S8 *getConnectedDeviceInfo(void){

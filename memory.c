@@ -7,7 +7,8 @@
 
 #include "include/memory.h"
 
-extern void *amMalloc (tMEMSIZE amount, U16 flag);
+extern void *amMallocEx (tMEMSIZE amount, U16 flag);
+extern void *amMalloc (tMEMSIZE amount);
 extern void amFree (void *pPtr);
 extern void *amMemCpy (void *pDest,const void *pSrc,tMEMSIZE iSize);
 extern void *amMemSet (void *pSrc,S32 iCharacter,tMEMSIZE iNum);

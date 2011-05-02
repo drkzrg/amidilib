@@ -16,6 +16,7 @@
 #else
 #include <stdlib.h>
 #include <mint/sysbind.h>
+#include <mint/ostruct.h>
 #endif
 
 inline void *amMemMove (void *pDest,const void *pSrc,tMEMSIZE iSize){
@@ -82,13 +83,24 @@ inline void *amMemChr (const void *pSrc, S32 iCharacter, tMEMSIZE iNum){
 
 
 
-inline void *amMalloc(tMEMSIZE amount, U16 flag){
+inline void *amMallocEx(tMEMSIZE amount, U16 flag){
 #ifdef PORTABLE
   return malloc(amount);
 #else
   return Mxalloc(amount,flag);
 #endif
 }
+
+inline void *amMalloc(tMEMSIZE amount){
+#ifdef PORTABLE
+  return malloc(amount);
+#else
+  //prefer TT-RAM by default
+  return Mxalloc(amount,MX_PREFTTRAM);
+#endif
+}
+
+
 
 inline void amFree(void *pPtr){
 

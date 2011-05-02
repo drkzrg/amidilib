@@ -87,7 +87,7 @@ inline void *amMallocEx(tMEMSIZE amount, U16 flag){
 #ifdef PORTABLE
   return malloc(amount);
 #else
-  return Mxalloc(amount,flag);
+  return (void *)Mxalloc(amount,flag);
 #endif
 }
 
@@ -96,7 +96,7 @@ inline void *amMalloc(tMEMSIZE amount){
   return malloc(amount);
 #else
   //prefer TT-RAM by default
-  return Mxalloc(amount,MX_PREFTTRAM);
+  return (void *)Mxalloc(amount,MX_PREFTTRAM);
 #endif
 }
 

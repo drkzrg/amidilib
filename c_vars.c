@@ -41,10 +41,10 @@ void compilerSanityCheck(void)
 
 BOOL checkEndianess()
 {
-  tUINT16 uint16;
+  U16 uint16;
   uint16=1;
 
- if (*(tBYTE *)&uint16==1){
+ if (*(U8 *)&uint16==1){
     //little endian - x86, PS2
    return TRUE;
  } else{

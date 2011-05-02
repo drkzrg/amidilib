@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <limits.h>
+
 #include <mint/ostruct.h>
 #include <limits.h>
 

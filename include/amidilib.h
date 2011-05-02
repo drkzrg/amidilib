@@ -9,6 +9,8 @@
 #define __AMIDILIB_H__
 
 #include "c_vars.h"
+#include "memory.h"
+
 #include "midi.h"
 #include "xmidi.h"
 #include "fmio.h"
@@ -366,9 +368,8 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
  
- float getTimeStamp();
- float getTimeDelta();
-
+float getTimeStamp();
+float getTimeDelta();
 
 #endif
 

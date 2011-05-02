@@ -7,7 +7,7 @@
 
 #include "include/fmio.h"
 #include <mint/ostruct.h>
-
+#include <mint/osbind.h>
 
 static U32 g_save_ssp;
 static long   ssp = 0;
@@ -284,7 +284,7 @@ U32 getFreeMem(eMemoryFlag memFlag){
 
 
 void am_setSuperOn(void) {
-   ssp = (long)Super((void*)0);         /* enter supervisor mode */
+   ssp = Super(0);         /* enter supervisor mode */
 }
 
 void am_setSuperOff(void) {

@@ -8,6 +8,7 @@
 #include "include/midiseq.h"
 #include "include/amidilib.h"
 #include "include/midi_cmd.h"	/* for sending midi commands */
+#include "include/amlog.h" // log
 
 /* string table with all event names */
 

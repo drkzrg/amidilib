@@ -10,7 +10,6 @@
 
 #include "c_vars.h"
 #include "memory.h"
-
 #include "midi.h"
 #include "xmidi.h"
 #include "fmio.h"
@@ -86,15 +85,6 @@
 #define MIDI_SEND_DATA(count,data) Midiws(count-1,data)
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
-
-
-/* small trick to get rid of logs/debug info in final build :D haxx0r! let the compiler do dirty work */
-#if DEBUG_BUILD
-#define amTrace am_log
-#else
-#define amTrace sizeof
-#endif
-
 
 
 /* function prototypes  */
@@ -347,12 +337,6 @@ double am_diffclock(clock_t end, clock_t begin);
 *   @param ubNoteNb - note number in 0-127 range
 */
 const U8 *am_getMIDInoteName(U8 ubNoteNb);
-
-/** Utility function sends text buffer to console and text log.
-*   @param mes - null terminated string. Accepts additional formatting variables like sprintf/printf.
-*/
-void am_log(const U8 *mes,...);
-
 
 void hMidiEvent(void);	/* handles stuff inside the replay routine */ 
 void getDeviceInfoResponse(U8 channel);

@@ -11,6 +11,7 @@
 #include <limits.h>
 
 #include "include/amidilib.h"
+#include "include/amlog.h"
 #include "include/list/list.h"
 #include "include/mfp.h"
 

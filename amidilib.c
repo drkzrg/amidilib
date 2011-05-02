@@ -6,13 +6,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
 #include <limits.h>
-
 #include <mint/ostruct.h>
-#include <limits.h>
 
 #include "include/amidilib.h"
+#include "include/amlog.h"
 #include "include/mfp.h"
 #include "include/list/list.h"
 
@@ -30,13 +28,7 @@ static AMIDI_version version =
 static U8 g_runningStatus;
 
 static U8 outputFilename[] = "amidi.log";
-static BOOL CON_LOG;
 static sSequence_t *gpCurrentSequence;
-
-/* variables for debug output to file */
-#ifdef DEBUG_FILE_OUTPUT
-static FILE *ofp;
-#endif
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -57,8 +49,6 @@ extern const char *g_arMIDI2key[];
 /* static table with CM32 rhytm part */
 extern const char *g_arCM32Lrhythm[];
 static sEventBlock_t tempEvent;
-
-
 
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
@@ -351,6 +341,10 @@ static U8 g_arMidiBuffer[MIDI_BUFFER_SIZE];
 /* Midi buffers system info */
 static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
+
+
+extern BOOL CON_LOG;
+extern FILE *ofp;
 
 S16 am_init(){
  S32 iCounter=0;
@@ -1773,25 +1767,6 @@ sEventItem *pTemp
 
 
 */
-
-void am_log(const U8 *mes,...){
-static char buffer[256];
-
-va_list va;
-va_start(va, mes);
-vsprintf(buffer,(const char *)mes,va);
-va_end(va);   
-
-if(CON_LOG==TRUE) fprintf(stdout,buffer);
-
-#ifdef DEBUG_FILE_OUTPUT
-    fprintf(ofp,buffer);
-    fflush(ofp);
-#endif
-
-return;
-}
-
 
 /* calculates settings for MFP timers for given frequency of tick */
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data){

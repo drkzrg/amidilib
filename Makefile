@@ -29,17 +29,17 @@ TIMING_TEST_EXE = timTest.tos
 ST_HD_PATH=$(HOME)/STEEM/HD
 SHARED_DIR_PATH=$(HOME)/Pulpit/shared
 
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o
 
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c
-MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o 
+MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 
-YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c
-YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o
+YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c
+YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o
 
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o
+TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o

@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef TIME_CHECK_PORTABLE
 #include <time.h>
+#endif
 #include <limits.h>
 
 #include "include/amidilib.h"

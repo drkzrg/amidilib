@@ -44,6 +44,7 @@ extern const char *g_arMIDI2key[];
 
 /* static table with CM32 rhytm part */
 extern const char *g_arCM32Lrhythm[];
+static sEventBlock_t tempEvent;
 
 S16 am_getHeaderInfo(void *pMidiPtr){
  sMThd midiInfo;
@@ -702,7 +703,6 @@ void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 U8 channel=0;
 U8 note=0;
 U8 velocity=0;
-sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 
 if((*recallRS)==0){
@@ -777,7 +777,6 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
  U8 channel=0;
  U8 note=0;
  U8 velocity=0;
- sEventBlock_t tempEvent;
  sNoteOn_EventBlock_t *pEvntBlock=NULL;
 
  if((*recallRS)==0){
@@ -850,7 +849,6 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 void am_noteAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 U8 noteNb=0;
 U8 pressure=0;
-sEventBlock_t tempEvent;
 sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
  if((*recallRS)==0){
@@ -903,6 +901,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	free(tempEvent.dataPtr);
 
     }
+	
      amTrace((const U8*)"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d\n",(unsigned int)delta, noteNb,pressure);
      
 
@@ -912,7 +911,6 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
     U8 channelNb=0;
     U8 controllerNb=0;
     U8 value=0;
-    sEventBlock_t tempEvent;
     sController_EventBlock_t *pEvntBlock=NULL;
 
     if((*recallRS)==0){
@@ -981,7 +979,6 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 {
 	U8 channel=0;
 	U8 PN=0;
-	sEventBlock_t tempEvent;
 	sPrgChng_EventBlock_t *pEvntBlock=NULL;
 
      if((*recallRS)==0){
@@ -1040,7 +1037,6 @@ void am_ChannelAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 {
 U8 channel=0;
 U8 param=0;
-sEventBlock_t tempEvent;
 sChannelAft_EventBlock_t *pEvntBlock=NULL;
 
     if((*recallRS)==0){
@@ -1078,7 +1074,7 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
 	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
         /* get parameters */
-        param=*(*pPtr);
+    param=*(*pPtr);
 	pEvntBlock->eventData.pressure=*(*pPtr);
         (*pPtr)++;
 
@@ -1094,7 +1090,7 @@ sChannelAft_EventBlock_t *pEvntBlock=NULL;
 void am_PitchBend(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 U8 MSB=0;
 U8 LSB=0;
-sEventBlock_t tempEvent;
+
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
 
     if((*recallRS)==0)
@@ -1155,7 +1151,6 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 
 void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
   U32 ulCount=0L;
-  sEventBlock_t tempEvent;
  
   amTrace((const U8*)"SOX: ");
   
@@ -1173,13 +1168,11 @@ void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
  /* TODO: maybe move these variables to static/global area and/or replace them with register vars for speed ?*/
  U8 ubLenght,ubVal,ubSize=0;
-
  U8 param1=0,param2=0;
  U32 addr;
  U8 textBuffer[128]={0};
  sSMPTEoffset SMPTEinfo;
  sTimeSignature timeSign;
- sEventBlock_t tempEvent;
 
  /*get meta event type */
  (*pPtr)++;

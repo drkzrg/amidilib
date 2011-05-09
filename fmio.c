@@ -7,6 +7,7 @@
 
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+
 #include "include/fmio.h"
 #include "include/memory.h"
 

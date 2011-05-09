@@ -10,9 +10,12 @@
 
 #include <mintbind.h>
 #include <mint/osbind.h>
-#include "memory.h"
-#include "c_vars.h"
 
+#include "c_vars.h"
+#include "amlog.h"
+#include "memory.h"
+
+#ifndef PORTABLE
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */
 #define XB_DEV_KBD 1    /* Keyboard port */
@@ -57,27 +60,9 @@
  #define GDOS_MEM_BLOCK_GROWTH_FAIL -67  /*Memory block growth failure*/
  #define GDOS_TOO_MANY_SYMLINKS -80  /*Too many symbolic links*/
  #define GDOS_MOUNT_POINT_CROSSED -200  /*Mount point crossed*/
-
-/**
- * loads file to specific type of memory(ST/TT RAM).
- *
- * @param szFileName NULL terminated full path with name
- * @param memFlag memory allocation preference flag
- * @param fileLenght file lenght in bytes
- * @return NULL - if error occured,
- * valid pointer - if file was loaded.
- */
-
-void *loadFile(U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
-
-/**
- * loads gets text description of actual GEMDOS error.
- *
- * @param iErr GEMDOS error code
- * @return pointer to const char * array with error description
- */
-
-const U8 *getGemdosError(S16 iErr);
+ 
+ 
+ const U8 *getGemdosError(S16 iErr);
 
 /**
  * gets text description of last GEMDOS error that occured.
@@ -110,6 +95,30 @@ static inline void am_setSuperOff(void) {
       amTrace((const U8*)"Leaving supervisor\n");
     #endif
  }
+ 
+#endif
+
+
+/**
+ * loads file to specific type of memory(ST/TT RAM).
+ * 
+ * @param szFileName NULL terminated full path with name
+ * @param memFlag memory allocation preference flag
+ * @param fileLenght file lenght in bytes
+ * @return NULL - if error occured,
+ * valid pointer - if file was loaded.
+ */
+
+void *loadFile(U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
+
+/**
+ * loads gets text description of actual GEMDOS error.
+ *
+ * @param iErr GEMDOS error code
+ * @return pointer to const char * array with error description
+ */
+
+
 
 
 #endif

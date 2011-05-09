@@ -26,10 +26,11 @@ static inline U16 amMidiDataReady(U8 deviceNo){
 #endif
 }
 
-static inline void amMidiSendByte(U8 deviceNo,U8 data){
+static inline U32 amMidiSendByte(U8 deviceNo,U16 data){
 #ifdef PORTABLE
 //TODO:
-  return;
+  amTrace((const U8)"WARNING: amMidiSendByte() not implemented\n");
+  return 0L;
 #else
   return Bconout(deviceNo,data);
 #endif
@@ -38,6 +39,7 @@ static inline void amMidiSendByte(U8 deviceNo,U8 data){
 static inline void amMidiSendData(U16 count,U8 *data){
 #ifdef PORTABLE
 //TODO:
+ amTrace((const U8)"WARNING: amMidiSendData() not implemented\n");
   return;
 #else
   Midiws(count,data);
@@ -48,6 +50,7 @@ static inline void amMidiSendData(U16 count,U8 *data){
 static inline U8 amMidiGetData(U8 deviceId){
 #ifdef PORTABLE
 //TODO:
+amTrace((const U8)"WARNING: amMidiGetData() not implemented\n");
   return 0;
 #else
   return (U8)Bconin(deviceId); 

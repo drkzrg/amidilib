@@ -7,13 +7,14 @@
 
 #include "include/memory.h"
 
-extern void *amMallocEx (tMEMSIZE amount, U16 flag);
-extern void *amMalloc (tMEMSIZE amount);
-extern void amFree (void *pPtr);
-extern void *amMemCpy (void *pDest,const void *pSrc,tMEMSIZE iSize);
-extern void *amMemSet (void *pSrc,S32 iCharacter,tMEMSIZE iNum);
-extern int amMemCmp (const void *pSrc1,const void *pSrc2, tMEMSIZE iNum);
-extern void *amMemChr (const void *pSrc, S32 iCharacter, tMEMSIZE iNum);
-extern void *amMemMove (void *pDest,const void *pSrc,tMEMSIZE iSize);
-extern void *amCalloc (tMEMSIZE nelements, tMEMSIZE elementSize);
-extern void *amRealloc(void *pPtr, tMEMSIZE newSize);
+extern inline void *amMallocEx (tMEMSIZE amount, U16 flag);
+extern inline void *amMalloc (tMEMSIZE amount);
+extern inline void amFree (void *pPtr);
+extern inline void *amMemCpy ( void *pDest, void *pSrc,tMEMSIZE iSize);
+extern inline void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum);
+extern inline int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum);
+extern inline void *amMemChr ( void *pSrc, S32 iCharacter, tMEMSIZE iNum);
+extern inline void *amMemMove ( void *pDest, void *pSrc,tMEMSIZE iSize);
+extern inline void *amCalloc (tMEMSIZE nelements, tMEMSIZE elementSize);
+extern inline void *amRealloc( void *pPtr, tMEMSIZE newSize);
+extern inline U32 getFreeMem(eMemoryFlag memFlag);

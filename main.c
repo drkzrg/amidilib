@@ -50,9 +50,10 @@ int main(int argc, char *argv[]){
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-    
+
     /* init library */
     iError=am_init();
+    
     
     //set current channel as 1, default is 0 in external module
     control_change(0x00, currentChannel, currentBankSelect,0x00);
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]){
     }
        
     /* get connected device info */
-    getConnectedDeviceInfo();
+    //getConnectedDeviceInfo();
     
     U32 ulFileLenght=0L;
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
@@ -84,7 +85,7 @@ int main(int argc, char *argv[]){
 	 printf("Please wait...\n");
 	 float time = getTimeStamp();
 
-     iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
+	iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
   
 	 float delta=getTimeDelta();
 	 
@@ -93,12 +94,12 @@ int main(int argc, char *argv[]){
 	   amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	   
 	   /* free up buffer with loaded midi file, we don't need it anymore */
-	   Mfree(pMidi);
+	   amFree(pMidi);
 	   pMidi=NULL;
 		
-	    // MAIN LOOP 
+	   // MAIN LOOP 
 		/* play preloaded tune if no error occured */
-		playSeq(&midiTune);
+		//playSeq(&midiTune);
 		
 		/* loop and wait for keypress */
 		BOOL bQuit=FALSE;

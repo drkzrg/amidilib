@@ -7,79 +7,64 @@
     
 #include <assert.h>
 #include <string.h>
+#include <unistd.h>
+
 #include "include/amidilib.h"
 #include "include/amlog.h"
 #include "include/list/list.h"
 #include "include/mfp.h"
 
 void initEventList(sEventList *listPtr){
+  #ifdef DEBUG_MEM
+    amTrace((const U8 *)"initEventList()\n");
+  #endif
 	/*assert(listPtr!=NULL);*/
 	listPtr=NULL;
-
 }
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
 U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
+
+#ifdef DEBUG_MEM
+  amTrace((const U8 *)"addEvent()\t");
+#endif
  
  sEventList *pTempPtr=NULL;
  sEventList *pNewItem=NULL;
  
  U32 uiDeltaNew=0;
 
-	if((listPtr!=NULL)){
+	if(listPtr!=NULL){
 		/* list not empty, start at very first element */
 		/* find the element with higher delta and insert item */
-		
 		pTempPtr=listPtr;
 		uiDeltaNew=eventBlockPtr->uiDeltaTime;
-			
 			
 		while((pTempPtr->pNext != NULL)){
 		  pTempPtr=pTempPtr->pNext;
 		}
 
 		/* insert event */
-
+		  #ifdef DEBUG_MEM
+		    amTrace((const U8 *)"insert new event\n");
+		  #endif
+		
 			if(pTempPtr->pNext==NULL){
 				/* insert at the end of list */
-				pNewItem=(sEventList *)malloc(sizeof(sEventList));
-				/*assert(pNewItem>0);*/					
-				/* assert malloc ok, TODO: proper disaster handling */
-
-				/* add data to new list node */
-				(*pNewItem).eventBlock.uiDeltaTime = eventBlockPtr->uiDeltaTime;
-				(*pNewItem).eventBlock.type = eventBlockPtr->type;
-				(*pNewItem).eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
-				(*pNewItem).eventBlock.infoBlock.func=eventBlockPtr->infoBlock.func;
-				(*pNewItem).eventBlock.dataPtr=NULL;
-		
-				/* allocate memory for event data and copy them to the new destination */
-				(*pNewItem).eventBlock.dataPtr = malloc( ((*eventBlockPtr).infoBlock.size * sizeof(U8)));
-				memcpy((void *)((*pNewItem).eventBlock.dataPtr),eventBlockPtr->dataPtr,((*eventBlockPtr).infoBlock.size * sizeof(U8)));
-
+				copyEvent(eventBlockPtr, &pNewItem);
+				
 				pNewItem->pNext=NULL;					/* next node is NULL for new node */
 				pNewItem->pPrev=pTempPtr;				/* prev node is current element node */
 				
 				/* add newly created list node to our list */
 				pTempPtr->pNext=pNewItem;
 				
-				return 0;
-			}
-			else{
+			}else{
 				/* insert between current and next one */
-				pNewItem=(sEventList *)malloc(sizeof(sEventList));
-				/*assert(pNewItem>0);*/						/* assert malloc ok, TODO: proper disaster handling */
-
-				/* add data to new list node */
-				pNewItem->eventBlock.uiDeltaTime = eventBlockPtr->uiDeltaTime;
-				pNewItem->eventBlock.type = eventBlockPtr->type;
-				pNewItem->eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
-				pNewItem->eventBlock.infoBlock.func=eventBlockPtr->infoBlock.func;
-				pNewItem->eventBlock.dataPtr=NULL;
-		
-				/* allocate memory for event data and copy them to the new destination */
-				pNewItem->eventBlock.dataPtr = malloc( eventBlockPtr->infoBlock.size * sizeof(U8));
-				memcpy(pNewItem->eventBlock.dataPtr,eventBlockPtr->dataPtr,eventBlockPtr->infoBlock.size * sizeof(U8));
+				#ifdef DEBUG_MEM
+				  amTrace((const U8 *)"insert event between\n");
+				#endif
+			        copyEvent(eventBlockPtr, &pNewItem);
 
 				/* set up pointers */
 				pNewItem->pNext=pTempPtr->pNext;					/* new element points to next node */
@@ -89,34 +74,47 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 				pTempPtr->pNext->pPrev=pNewItem;					/* next item points to new element */
 				pTempPtr->pNext=pNewItem;							/* current node points to new item */
 
-				return 0;
 			}
 
 		
-	}
-	else {
-		/* add first element */
-		listPtr=(sEventList *)malloc(sizeof(sEventList));
-		listPtr->eventBlock.uiDeltaTime=eventBlockPtr->uiDeltaTime;
-		listPtr->eventBlock.type = eventBlockPtr->type;
-		listPtr->eventBlock.infoBlock.size = eventBlockPtr->infoBlock.size;
-		listPtr->eventBlock.infoBlock.func=eventBlockPtr->infoBlock.func;
-		listPtr->eventBlock.dataPtr=NULL;
-		
-		/* allocate memory for event data and copy them to the new destination */
-		listPtr->eventBlock.dataPtr = malloc( eventBlockPtr->infoBlock.size * sizeof(U8));
-		memcpy(listPtr->eventBlock.dataPtr,eventBlockPtr->dataPtr,eventBlockPtr->infoBlock.size * sizeof(U8));
+	}else{
+	/* add first element */
+	 #ifdef DEBUG_MEM
+	  amTrace((const U8 *)"insert first event\n");
+	 #endif
+	 copyEvent(eventBlockPtr, &listPtr);
 
-		listPtr->pPrev=NULL;	/* first element in the list, no previous item */
-		listPtr->pNext=NULL;
-		
-		return 0;
+	 listPtr->pPrev=NULL;	/* first element in the list, no previous item */
+	 listPtr->pNext=NULL;
 	}
+ return 0;
 }
 
-U32 destroyList(sEventList *listPtr)
-{
-	sEventList *pTemp=NULL,*pCurrentPtr=NULL;
+void copyEvent(const sEventBlock_t *src, sEventList **dest){
+  #ifdef DEBUG_MEM
+    amTrace((const U8 *)"copyEvent() src: 0x%p dst:0x%p\n",src,dest);
+  #endif
+    
+    (*dest)=(sEventList *)amMallocEx(sizeof(sEventList),PREFER_TT);
+    (*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
+    (*dest)->eventBlock.type = src->type;
+    (*dest)->eventBlock.infoBlock.size = src->infoBlock.size;
+    (*dest)->eventBlock.infoBlock.func=src->infoBlock.func;
+    (*dest)->eventBlock.dataPtr=NULL;
+		
+    /* allocate memory for event data and copy them to the new destination */
+    (*dest)->eventBlock.dataPtr = amMallocEx( src->infoBlock.size * sizeof(U8),PREFER_TT);
+    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,src->infoBlock.size * sizeof(U8));
+}
+
+
+
+U32 destroyList(sEventList *listPtr){
+#ifdef DEBUG_MEM
+amTrace((const U8 *)"destroyList()\n");
+#endif
+
+  sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 	
 	if(listPtr!=NULL){
 	
@@ -134,18 +132,18 @@ U32 destroyList(sEventList *listPtr)
 			while(pCurrentPtr!=NULL){
 				
 			  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
-			    free(pCurrentPtr->eventBlock.dataPtr);
+			    amFree(pCurrentPtr->eventBlock.dataPtr);
 			    pCurrentPtr->eventBlock.dataPtr=NULL;
 			  }
 
-				free(pCurrentPtr->pNext);
+				amFree(pCurrentPtr->pNext);
 				pCurrentPtr->pNext=NULL;
 				pCurrentPtr=pCurrentPtr->pPrev;
 			}
 			
 			/* we are at first element */
 			/* remove it */
-			free(listPtr);
+			amFree(listPtr);
 			listPtr=NULL;
 			
 			return 0;
@@ -191,6 +189,7 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
    
    amTrace((const U8*)"data: \t");
    U8 *pbuf=(U8 *)pPtr->dataPtr;
+   
    for(int x=0;x<pPtr->infoBlock.size;x++){
     amTrace((const U8*)"0x%x \t",pbuf[x]);
    }
@@ -254,6 +253,8 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
 	
 }
 
+
+// sends midi events
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 {
 	sEventList *pTemp=NULL;	

@@ -7,11 +7,20 @@ INCLUDES = -I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./i
 CC = m68k-atari-mint-gcc
 GAS = m68k-atari-mint-as
 STRIP = m68k-atari-mint-strip -s
-MACHINE = -m68000
+MACHINE = -m68060	
 
-# extra CFLAGS: -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG   
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -m68000 -Wall -fsigned-char -DPORTABLE -ffast-math -fomit-frame-pointer -pedantic -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT
-LDFLAGS += -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,-stack=256k $(MACHINE)
+# extra EXTRADEFINES: 
+# DEBUG_BUILD - enables debug build
+# DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
+# DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
+# DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# PORTABLE build portable,platform independent version 
+# MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+
+EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
+
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -pedantic -fsigned-char -ffast-math -fomit-frame-pointer $(EXTRADEFINES)
+LDFLAGS +=  $(MACHINE) -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,--stack=256k
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.ttp
@@ -26,20 +35,20 @@ MIDI_TEST_EXE = midiTest.tos
 TIMING_TEST_EXE = timTest.tos
 
 #copies output binary to emulator folder ready to launch
-ST_HD_PATH=$(HOME)/STEEM/HD
+ST_HD_PATH=$(HOME)/STEEM/HD/TUNES
 SHARED_DIR_PATH=$(HOME)/Pulpit/shared
 
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o
 
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 
 YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o
 
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o

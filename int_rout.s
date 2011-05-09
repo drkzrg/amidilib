@@ -11,6 +11,10 @@ S_STOPPED 	equ	$00
 S_PLAYING 	equ	$02
 S_PAUSED 	equ	$04
 
+SAVEPTR		equ	$4A2	;to safely call BIOS/XBIOS from interrupt
+SAVAMT		equ	$46	;but only the functions which doesn't access disc
+				;TODO: make workaround form MiNT/MultiTOS
+
 AMIDI_MAX_TRACKS	equ	16
 
 
@@ -70,16 +74,16 @@ _installReplayRout:
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	move.w	sr,-(sp)	;save status register
-    or.w	#$0700,sr	;turn off all interupts
+	or.w	#$0700,sr	;turn off all interupts
 
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 
 	move.l	_currentSeqPtr,a0
 	
-    move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
+	move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
 	move.l	currentState(a1),a1 
-    move.l	currentTempo(a1),d0
+	move.l	currentTempo(a1),d0
 	
 	;check if change of current tempo has occurred
 	;if yes then calculate new tick frequency and get new data/divider
@@ -92,24 +96,25 @@ update:
 	movem.l	d0-d7/a0-a6,-(sp)
 	
 	move.l arTracks(a0),a1 ;get current tempo, current slot in the sequence,
-    move.l currentTempo(a1),d0 ;get tempo from current/active track
+	move.l currentTempo(a1),d0 ;get tempo from current/active track
 	move.l timeDivision(a0),d1 ;get time division
 	
 	move.l d1,-(sp)		
 	move.l d0,-(sp)
-	jsr ___udivsi3
+	
+	jsr ___udivsi3		 ;remove this, and replace with FPU/non-FPU versions
 	addq.l #8,sp		 ;calculate new frequency
 	
 	;get result from d0, desired tick frequency 
 	;put frequency, addr to mode/data
-    move.l	#timerData,-(sp)
+	move.l	#timerData,-(sp)
 	move.l	#timerMode,-(sp)
 	move.l d0,-(sp)	
 	
-    jsr _getMFPTimerSettings
+	jsr _getMFPTimerSettings
 	lea (12,sp),sp
 	
-	move.l timerMode,d0
+    move.l timerMode,d0
     move.l	timerData,d1
 	or.l	d0,d1
     cmp.l	#0,d1	;if data or mode 0 skip change

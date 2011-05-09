@@ -4,10 +4,9 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-
-#include "include/midi_cmd.h"
 #include "include/amidilib.h"
-
+#include "include/midi_cmd.h"
+#include "include/midi_send.h"
 
 /* small static buffer for sending MIDI commands */
 static U8 g_midi_cmd_buffer[4];

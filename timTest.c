@@ -37,7 +37,7 @@ typedef struct{
   volatile U32 currentTempo;	//quaternote duration in ms, 500ms default
   volatile U32 currentPPQN;	//pulses per quater note
   volatile U32 currentIdx;	//current position in table
-  volatile sSequence *seqPtr;	//sequence ptr
+  volatile const sSequence *seqPtr;	//sequence ptr
   volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
 } sCurrentSequenceState;
 
@@ -88,10 +88,10 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 }
 
 // plays sample sequence 
-int playSampleSequence(sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
+int playSampleSequence(const sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;			//initial position
   pInitialState->state=STOP;			//track state
-  pInitialState->seqPtr=testSequenceChannel1;	//ptr to sequence
+  pInitialState->seqPtr=(const sSequence *)testSequenceChannel1;	//ptr to sequence
   
   //install replay routine 96 ticks per 500ms interval 
   installReplayRout(mode, data, pInitialState);
@@ -261,7 +261,7 @@ int main(void){
   
   printHelpScreen();
 
-  memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
+  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
   U32 mode,data;
   
@@ -319,7 +319,7 @@ int main(void){
 	     currentState.currentTempo=tempo+iCurrentStep;
 	     U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
 	     
-	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",currentState.currentTempo,freq,tbMode,tbData);}
+	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
 	  
 	  }break;
 	  case SC_ARROW_DOWN:{
@@ -337,7 +337,7 @@ int main(void){
 	      currentState.currentTempo=tempo-iCurrentStep;
 	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
 	      
-	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",currentState.currentTempo,freq,tbMode,tbData);
+	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
 	    
 	    }
 	    

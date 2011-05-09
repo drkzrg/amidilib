@@ -5,12 +5,12 @@
     See license.txt for licensing information.
 */
 
-#include "include/fmio.h"
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+#include "include/fmio.h"
+#include "include/memory.h"
 
 static U32 g_save_ssp;
-static long   ssp = 0;
 static S16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 
@@ -241,15 +241,15 @@ U32 lRet=0L;
 	 
     *fileLenght=pDTA->dta_size;
     /* allocate buffer */
-    pData=(void *)Mxalloc( (long)(*fileLenght)+1, memFlag);
-
+     pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
+    
     if(pData!=NULL){
-      lRet=Fread( (int)fileHandle, (long)(*fileLenght), pData );
+      lRet=Fread( (int)fileHandle, (tMEMSIZE)(*fileLenght), pData );
 
       /* not all data being read */
       if(lRet!=(*fileLenght)){
 	/* so we have error, free up memory */
-	Mfree(pData);
+	amFree(pData);
 	pData=NULL;
       }
 	
@@ -260,15 +260,12 @@ U32 lRet=0L;
       /*no memory available */
       return NULL;
      }
-    }
-		else
-		{
-		 Fclose((int)fileHandle);
-
-		 /* file not found */
-		 getGemdosError(iRet);
-         return NULL;
-        }
+    }else{
+      Fclose((int)fileHandle);
+      /* file not found */
+      getGemdosError(iRet);
+      return NULL;
+     }
     }
     else{
         /* print GEMDOS error code */
@@ -277,16 +274,5 @@ U32 lRet=0L;
     }
 }
 
-U32 getFreeMem(eMemoryFlag memFlag){
-    void *pMem=(void *)Mxalloc( -1L, memFlag);
-    return((U32)pMem);
-}
-
-
-void am_setSuperOn(void) {
-   ssp = Super(0);         /* enter supervisor mode */
-}
-
-void am_setSuperOff(void) {
-	SuperToUser(ssp); /* return processor to user mode */
-}
+extern inline void am_setSuperOn(void);
+extern inline void am_setSuperOff(void);

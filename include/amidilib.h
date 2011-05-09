@@ -21,8 +21,8 @@
 #include <time.h>
 #endif
 
-#define LIB_NAME "Atari (X)MIDI library"
-#define AMIDI_INFO "(c)2008-2009 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
+#define LIB_NAME "AMIDILIB\nAtari (X)MIDI replay library"
+#define AMIDI_INFO "(c)2008-2011 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 2
@@ -48,12 +48,6 @@
 #define AMIDI_VERSION_ATLEAST(X, Y, Z) \
 	(AMIDI_COMPILEDVERSION >= AMIDI_VERSIONNUM(X, Y, Z))
 
-#define MIDI_FLOWCTRL 0		/* flow control enable/disable, default by: disabled*/
-#define MIDI_LWM 32		/* low watermark if flow control enabled */
-#define MIDI_HWM 32000		/* hight watermark if flow control enabled */
-#define MIDI_BUFFER_SIZE 32767  /*default MIDI buffer size 32k */
-
-
 /* some messages are ignored by specified sound source so why bother to process them? */
 /* second thing: sometimes we need different treatment for GS and LA sound sources */
 
@@ -75,17 +69,6 @@
 #define T_XMF     6
 #define T_SNG     7
 #define T_MUS     8	/* e.g Doom MIDI music format */
-
-/* MIDI macros */
-/* returns != 0 if data are in system MIDI buffer */
-#define MIDI_DATA_READY Bconstat(DEV_MIDI)
-/* sends 1 byte to MIDI output */
-#define MIDI_SEND_BYTE(data) Bconout(DEV_MIDI,(U8)data)
-/* sends multiple bytes to MIDI output, count is number of bytes to send */
-#define MIDI_SEND_DATA(count,data) Midiws(count-1,data)
-/* reads 1 unsigned byte from MIDI input */
-#define GET_MIDI_DATA        (U8)Bconin(DEV_MIDI)
-
 
 /* function prototypes  */
 /**
@@ -325,14 +308,6 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 */
 void am_allNotesOff(U16 numChannels);
 
-#ifdef TIME_CHECK_PORTABLE
-/** utility for measuring function execution time (end-begin timestamp in ms) 
-*   @param end - end timestamp
-*   @param begin - begin timestamp
-*/
-double am_diffclock(clock_t end, clock_t begin);
-#endif
-
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range
 */
@@ -352,6 +327,15 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
  
+/******************** time measuring functions */
+#ifdef TIME_CHECK_PORTABLE
+/** utility for measuring function execution time (end-begin timestamp in ms) 
+*   @param end - end timestamp
+*   @param begin - begin timestamp
+*/
+double am_diffclock(clock_t end, clock_t begin);
+#endif
+
 float getTimeStamp();
 float getTimeDelta();
 

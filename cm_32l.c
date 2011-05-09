@@ -6,9 +6,8 @@
 */
 
 /* Roland CM-32L, CM-64 static tables */
-#include	"include/c_vars.h"
 #include	"include/amidilib.h"
-
+#include 	"include/midi_send.h"
 /*instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)*/
 extern const U8 *g_arCM32Linstruments[];
 
@@ -48,8 +47,7 @@ const U8 *getCM32LRhythmName(U8 ubNoteNb)
  return(g_arCM32Lrhythm[ubNoteNb]);
 }
 
-void MT32Reset(void)
-{
+void MT32Reset(void){
 	MIDI_SEND_DATA(8,g_arReset);
 }
 

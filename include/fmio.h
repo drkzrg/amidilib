@@ -8,19 +8,10 @@
 #ifndef __FMIO_H__
 #define __FMIO_H__
 
-#include "c_vars.h"
 #include <mintbind.h>
-
-
-/* memory allocation preference */
-typedef enum
-{
-  ST_RAM=0L,
-  TT_RAM=1L,
-  PREFER_ST=2L,
-  PREFER_TT=3L
-} eMemoryFlag;
-
+#include <mint/osbind.h>
+#include "memory.h"
+#include "c_vars.h"
 
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */
@@ -67,15 +58,6 @@ typedef enum
  #define GDOS_TOO_MANY_SYMLINKS -80  /*Too many symbolic links*/
  #define GDOS_MOUNT_POINT_CROSSED -200  /*Mount point crossed*/
 
-/* function prototypes  */
-
-/**
- * gets amount of free preferred memory type (ST/TT RAM).
- * @param memFlag memory allocation preference flag
- * @return 0L - if no memory available, 0L< otherwise
- */
-U32 getFreeMem(eMemoryFlag memFlag);
-
 /**
  * loads file to specific type of memory(ST/TT RAM).
  *
@@ -94,6 +76,7 @@ void *loadFile(U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
  * @param iErr GEMDOS error code
  * @return pointer to const char * array with error description
  */
+
 const U8 *getGemdosError(S16 iErr);
 
 /**
@@ -107,13 +90,26 @@ const U8 *getLastGemdosError(void);
  * turns supervisor mode ON.
  *
 */
-void am_setSuperOn(void);
+static long  ssp = 0;
+
+static inline void am_setSuperOn(void) {
+  #ifdef DEBUG_BUILD
+    amTrace((const U8*)"Entering supervisor\n");
+  #endif
+  ssp = Super(0);         /* enter supervisor mode */
+}
 
 /**
  * turns supervisor mode Off.
  *
 */
-void am_setSuperOff(void);
+static inline void am_setSuperOff(void) {
+    SuperToUser(ssp); /* return processor to user mode */
+    
+    #ifdef DEBUG_BUILD
+      amTrace((const U8*)"Leaving supervisor\n");
+    #endif
+ }
 
 
 #endif

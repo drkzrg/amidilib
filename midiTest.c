@@ -6,15 +6,15 @@
 */
 
 #include <stdio.h>
-#include <ctype.h> 
-#include <osbind.h>
 
 #include <string.h>
+#include <unistd.h>
+
 #include "amidilib.h"
 
-#include "c_vars.h"
-#include "ikbd.h"
-#include "scancode.h"	// scancode definitions
+#include "include/c_vars.h"
+#include "include/ikbd.h"
+#include "include/scancode.h"	// scancode definitions
 
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
@@ -91,7 +91,7 @@ int main(void) {
 				  
   printHelpScreen();
   
-  memset(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
+  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
 	/* Install our asm handler */

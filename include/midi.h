@@ -26,8 +26,7 @@ typedef struct ChunkHeader
   U32 headLenght;
 } __attribute__((__packed__)) sChunkHeader,*pChunkHeader;
 
-typedef struct MThd
-{
+typedef struct MThd{
 	U32 id;
 	U32 headLenght;
 	U16 format;
@@ -150,6 +149,7 @@ typedef struct
  U8 A;  /* msec in three bytes */
  U8 B;
  U8 C;
+ 
 }__attribute__((packed)) sTempo_t;
 
 

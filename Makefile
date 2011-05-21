@@ -3,24 +3,29 @@
 #CXXFLAGS+=-Wundef -Wreorder -Wwrite-strings -Wnon-virtual-dtor -Wno-multichar -fomit-frame-pointer -fno-exceptions -fno-rtti
 #CXXFLAGS+=$(DEFINES)
 
-INCLUDES = -I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./include/ym2149
-CC = m68k-atari-mint-gcc
-GAS = m68k-atari-mint-as
-STRIP = m68k-atari-mint-strip -s
-MACHINE = -m68060	
+INCLUDES=-I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./include/ym2149
+CC=m68k-atari-mint-gcc
+GAS=m68k-atari-mint-as
+STRIP=m68k-atari-mint-strip -s
 
-# extra EXTRADEFINES: 
+# stack settings for all apps
+STACK_SIZE=128K
+SET_STACK=m68k-atari-mint-stack -S$(STACK_SIZE)
+MACHINE=-m68000	
+
+# additional defines for EXTRADEFINES: 
 # DEBUG_BUILD - enables debug build
 # DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
 # DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
 # DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# TIME_CHECK_PORTABLE if set time measuring is based on stdlib functions
 # PORTABLE build portable,platform independent version 
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 
 EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -pedantic -fsigned-char -ffast-math -fomit-frame-pointer $(EXTRADEFINES)
-LDFLAGS +=  $(MACHINE) -L/usr/m68k-atari-mint/lib -Wl,--traditional-format -Wl,--stack=256k
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -pedantic -fsigned-char -fomit-frame-pointer $(EXTRADEFINES)
+LDFLAGS +=  $(MACHINE) -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
 EXE = amidi.ttp
@@ -53,6 +58,8 @@ TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midi_send.o 
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
+	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
+	$(SET_STACK) $(EXE)
 #	echo "Stripping symbols."
 #	$(STRIP) $(EXE)
 	echo "Copying AMIDI.TTP binary to emulator/shared directory."

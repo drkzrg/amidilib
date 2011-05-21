@@ -32,9 +32,9 @@ typedef enum{
 } ePlayState;
 
 typedef struct EventList{
- sEventBlock_t eventBlock;
  struct EventList *pPrev,*pNext;
-}__attribute__((packed))  sEventList;
+ sEventBlock_t eventBlock;
+}__attribute__((packed)) sEventList;
 
 typedef struct SequenceState_t{
  volatile U32 currentTempo;			// quaternote duration in ms, 500ms default
@@ -42,24 +42,24 @@ typedef struct SequenceState_t{
  volatile U32 playMode;	      			// current play mode (loop, play_once, random) 
 						// sets the active track, by default 0 
  volatile struct EventItem *pStart,*pCurrent;	//start of track and current event pointer
-}__attribute__((packed))  sSequenceState_t;
+}__attribute__((packed)) sSequenceState_t;
 
  typedef struct Track_t{
   U8 *pInstrumentName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
   sSequenceState_t currentState;        /* current sequence state */
   sEventList trkEventList;  		/* track event list */
-}__attribute__((packed))  sTrack_t;
+}__attribute__((packed)) sTrack_t;
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;				/* NULL terminated string */
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
    U32 timeDivision;				// pulses per quater note(time division)
    U8 ubNumTracks;            	        	/* number of tracks */
-   U8 ubDummy;
+   U8 ubDummy[3];
    U8 ubActiveTrack;
-   U8 ubDummy1;
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
-} __attribute__((packed)) sSequence_t;
+   U8 ubDummy1[3];
+ } __attribute__((packed)) sSequence_t;
 
 
 #endif

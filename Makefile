@@ -9,7 +9,7 @@ GAS=m68k-atari-mint-as
 STRIP=m68k-atari-mint-strip -s
 
 # stack settings for all apps
-STACK_SIZE=128K
+STACK_SIZE=256K
 SET_STACK=m68k-atari-mint-stack -S$(STACK_SIZE)
 MACHINE=-m68000	
 
@@ -24,7 +24,7 @@ MACHINE=-m68000
 
 EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -pedantic -fsigned-char -fomit-frame-pointer $(EXTRADEFINES)
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer $(EXTRADEFINES)
 LDFLAGS +=  $(MACHINE) -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
@@ -54,7 +54,6 @@ YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o
 
 TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
 TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
-
 
 $(EXE): $(OBJECTS) amidi.o int_rout.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 

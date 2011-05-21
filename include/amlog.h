@@ -51,21 +51,23 @@ inline void am_deinitLog(){
   #endif
 }
 
-char buffer[256];
 
 inline void am_log(const U8 *mes,...){
+static char buffer[256];
 
 va_list va;
 va_start(va, mes);
-vsprintf(buffer,(const char *)mes,va);
+vsnprintf(buffer,sizeof(U8)*256,(const char *)mes,va);
 va_end(va);   
-
-if(CON_LOG==TRUE) fprintf(stdout,buffer);
 
 #ifdef DEBUG_FILE_OUTPUT
     fprintf(ofp,buffer);
     fflush(ofp);
 #endif
+
+    
+if(CON_LOG==TRUE) fprintf(stdout,buffer);
+
 
 return;
 }

@@ -24,15 +24,15 @@ typedef struct ChunkHeader
 {
   U32 id;
   U32 headLenght;
-} __attribute__((__packed__)) sChunkHeader,*pChunkHeader;
+} __attribute__((packed)) sChunkHeader,*pChunkHeader;
 
-typedef struct MThd{
-	U32 id;
+typedef struct __attribute__((packed)) MThd{
+	U32 id ;
 	U32 headLenght;
 	U16 format;
 	U16 nTracks;
 	U16 division;
-}__attribute__((packed)) sMThd;
+} sMThd;
 
 
 /**
@@ -50,98 +50,106 @@ typedef enum
  * MIDI file track info struct
  */
 
-typedef struct MTrk
+typedef struct __attribute__((packed)) MTrk
 {	U32 id;
 	U32 headLenght;
 	/* offset track event data 0x08 offset */
-}__attribute__((packed)) sMTrk;
+} sMTrk;
 
 
 /**
  * MIDI device info struct
 */
 
-typedef struct DeviceInfo
+typedef struct __attribute__((packed)) DeviceInfo
 {
   U8 nChannel;                  /* channel number on which device receives data */
+  U8 pad[1];
   U16 mID;                      /* vendor id, complete list in VENDORS.H */
   U16 deviceFamilyID;           /* ff ff	Device family code (14 bits, LSB first) */
   U16 deviceFamilyMC;           /* dd dd	Device family member code (14 bits, LSB first) */
   U16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
-}__attribute__((packed)) sDeviceInfo,*pDeviceInfo;
+} sDeviceInfo,*pDeviceInfo;
 
 
 /*
  * MIDI track info struct
 */
-typedef struct MIDItrackInfo
-{
+typedef struct __attribute__((packed)) MIDItrackInfo {
     U16 usiTrackNb;
+    U16  pad;
     U32   ulTrackLenght;
     U32   trackOffset;      /* offset relative to start address of loaded midi file */
-}__attribute__((packed)) sMIDItrackInfo,*pMidiTrackInfo;
+} sMIDItrackInfo,*pMidiTrackInfo;
 
 
 /* SMPTE OFFSET struct */
-typedef struct SMPTEoffset
+typedef struct __attribute__((packed)) SMPTEoffset
  {
     U8 hr;
     U8 mn;
     U8 se;
     U8 fr;
     U8 ff;
-}__attribute__((packed)) sSMPTEoffset;
+    U8 pad[3];
+} sSMPTEoffset;
 
 /* Time signature struct */
 
-typedef struct TimeSignature
+typedef struct __attribute__((packed)) TimeSignature
 {
  U8 nn;
  U8 dd;
  U8 cc;
  U8 bb;
-}__attribute__((packed)) sTimeSignature;
+} sTimeSignature;
 
 /*************** event structs */
+typedef struct __attribute__((packed))
+{
+ S8 noteNb;
+ S8 velocity;
+ U8 pad[2];
+} sNoteOn_t;
 
 typedef struct 
 {
  S8 noteNb;
  S8 velocity;
-}__attribute__((packed)) sNoteOn_t;
-
-typedef struct 
-{
- S8 noteNb;
- S8 velocity;
+ U8 pad[2];
 }__attribute__((packed)) sNoteOff_t;
 
 typedef struct 
 {
  S8 noteNb;
  S8 pressure;
+ U8 pad[2];
 }__attribute__((packed)) sNoteAft_t;
 
 typedef struct 
 {
  S8 controllerNb;
  S8 value;
+ U8 pad[2];
 }__attribute__((packed)) sController_t;
 
 typedef struct ProgramChange_t 
 {
  S8 programNb;
+ U8 pad[3];
 }__attribute__((packed)) sProgramChange_t;
 
 typedef struct 
 {
  S8 pressure;
+ U8 pad[3];
 }__attribute__((packed)) sChannelAft_t;
 
 typedef struct 
 {
  S8  LSB;
  S8  MSB;
+ U8 pad[2];
 }__attribute__((packed)) sPitchBend_t;
 
 typedef struct 
@@ -149,9 +157,7 @@ typedef struct
  U8 A;  /* msec in three bytes */
  U8 B;
  U8 C;
- 
+ U8 pad[1];
 }__attribute__((packed)) sTempo_t;
-
-
 
 #endif

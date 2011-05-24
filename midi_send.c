@@ -6,10 +6,44 @@
 
 #include "include/midi_send.h"
 
-#ifndef _MSC_VER
 //midi data sending, platform specific
-extern inline U16 amMidiDataReady(U8 deviceNo);
-extern inline U32 amMidiSendByte(U8 deviceNo,U16 data);
-extern inline void amMidiSendData(U16 count,U8 *data);
-extern inline U8 amMidiGetData(U8 deviceId);
+ U16 amMidiDataReady(U8 deviceNo){
+#ifdef PORTABLE
+//TODO:
+  amTrace((const U8*)"WARNING: amMidiDataReady() not implemented\n");
+  return 0;
+#else
+  return Bconstat(deviceNo);
 #endif
+}
+
+ U32 amMidiSendByte(U8 deviceNo,U16 data){
+#ifdef PORTABLE
+//TODO:
+  amTrace((const U8*)"WARNING: amMidiSendByte() not implemented\n");
+  return 0L;
+#else
+  return Bconout(deviceNo,data);
+#endif
+}
+
+ void amMidiSendData(U16 count,U8 *data){
+#ifdef PORTABLE
+//TODO:
+ amTrace((const U8*)"WARNING: amMidiSendData() not implemented\n");
+ return;
+#else
+  Midiws(count,data);
+  return; 
+#endif
+}
+
+ U8 amMidiGetData(U8 deviceId){
+#ifdef PORTABLE
+//TODO:
+amTrace((const U8*)"WARNING: amMidiGetData() not implemented\n");
+  return 0;
+#else
+  return (U8)Bconin(deviceId); 
+#endif
+}

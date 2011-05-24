@@ -14,46 +14,10 @@
 #endif
 
 //midi data sending, platform specific
-static INLINE U16 amMidiDataReady(U8 deviceNo){
-#ifdef PORTABLE
-//TODO:
-  amTrace((const U8*)"WARNING: amMidiDataReady() not implemented\n");
-  return 0;
-#else
-  return Bconstat(deviceNo);
-#endif
-}
-
-static INLINE U32 amMidiSendByte(U8 deviceNo,U16 data){
-#ifdef PORTABLE
-//TODO:
-  amTrace((const U8*)"WARNING: amMidiSendByte() not implemented\n");
-  return 0L;
-#else
-  return Bconout(deviceNo,data);
-#endif
-}
-
-static INLINE void amMidiSendData(U16 count,U8 *data){
-#ifdef PORTABLE
-//TODO:
- amTrace((const U8)"WARNING: amMidiSendData() not implemented\n");
- return;
-#else
-  Midiws(count,data);
-  return; 
-#endif
-}
-
-static INLINE U8 amMidiGetData(U8 deviceId){
-#ifdef PORTABLE
-//TODO:
-amTrace((const U8)"WARNING: amMidiGetData() not implemented\n");
-  return 0;
-#else
-  return (U8)Bconin(deviceId); 
-#endif
-}
+U16 amMidiDataReady(U8 deviceNo);
+U32 amMidiSendByte(U8 deviceNo,U16 data);
+void amMidiSendData(U16 count,U8 *data);
+U8 amMidiGetData(U8 deviceId);
 
 #ifdef PORTABLE
 // DEV_MIDI is Atari specific

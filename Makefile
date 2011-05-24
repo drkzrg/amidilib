@@ -51,7 +51,7 @@ else
 DEFINES = $(EXTRADEFINES) -DSTRUCT_PACK
 endif
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+CFLAGS += -std=c99 -g $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
 LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
 
 ASM = vasmm68k_mot
@@ -189,7 +189,7 @@ ym: $(YM_TEST_SRCS) $(YM_TEST_EXE)
 midi: $(MIDITEST_SRCS) $(MIDI_TEST_EXE)	
 timing: $(TIMING_TEST_SRCS) $(TIMING_TEST_EXE)
 
-all: $(SRCS) $(EXE) ym midi timing
+all: $(SRCS) $(EXE)
 	
 clean:
 	rm -rf *o $(EXE)

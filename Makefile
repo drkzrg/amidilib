@@ -13,7 +13,7 @@
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 
-EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_CONSOLE_OUTPUT 
+EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_CONSOLE_OUTPUT -DDEBUG_FILE_OUTPUT 
 
 #target atari, other
 ifeq ($(TARGET),atari)

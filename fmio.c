@@ -9,9 +9,28 @@
 
 #ifdef PORTABLE
 void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
-	;//TODO
- printf("Loadfile!\n");
- return 0;
+U32 size = 0;
+void * ret=NULL;
+
+	FILE *f = fopen(szFileName, "rb");
+	
+	if (f == NULL) 	{
+	  am_log((const U8 *)"loadFile(), Error during file %s open.",szFileName);
+	  return NULL; 
+	}
+	
+	fseek(f, 0, SEEK_END);
+	size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	ret = (void *)amMallocEx(size*sizeof(U8),PREFER_TT);
+	
+	if (size != fread(ret, sizeof(U8), size*sizeof(U8), f)) { 
+		amFree(ret);
+		 am_log((const U8 *)"loadFile(), Error during file %s read.",szFileName);
+		return NULL;
+	} 
+    fclose(f);
+  return ret;
 }
 
 #else

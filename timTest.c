@@ -12,12 +12,16 @@
  
 #include <stdio.h>
 #include <ctype.h> 
-#include <osbind.h>
+
 #include "amidilib.h"
-#include "ikbd.h"
 #include "ym2149.h" 
+
+#ifndef PORTABLE
+#include <osbind.h>
+#include "ikbd.h"
 #include "scancode.h"
 #include "mfp.h"
+#endif
 
 #define TEMPO_STEP 50000	// tempo change step in ms
 
@@ -49,10 +53,24 @@ enum{
  PAUSED=4
 } eSeqState;
 
+#ifndef PORTABLE
 extern void turnOffKeyclick(void);
 extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
 extern void deinstallReplayRout();
 extern volatile U8 tbData,tbMode;
+#else
+void turnOffKeyclick(void){
+#warning TODO!
+}
+
+void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
+#warning TODO!
+}
+void deinstallReplayRout(){
+#warning TODO! 
+}
+#endif
+
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
 volatile sCurrentSequenceState currentState;
@@ -253,13 +271,13 @@ int main(void){
   //set current channel as 1, default is 0 in external module
   control_change(0x00, currentChannel, currentBankSelect,0x00);
   program_change(currentChannel, currentPN);
-  
+  printHelpScreen();
   turnOffKeyclick();
 
+#ifndef PORTABLE
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
   
-  printHelpScreen();
 
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
@@ -425,7 +443,9 @@ int main(void){
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);
-
+#else  
+#warning Mainloop not implemented!! TODO!  
+#endif
   /* clean up, free internal library buffers etc..*/
   am_deinit();
    

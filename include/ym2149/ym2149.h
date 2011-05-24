@@ -9,7 +9,10 @@
 #define _YM2149_H_
 
 #include "c_vars.h"
+
+#ifndef PORTABLE
 #include <osbind.h>
+#endif
 
 //ym2149 registers constants
 static const U8 LB_OSC1=0;

@@ -8,14 +8,14 @@
 #ifndef __FMIO_H__
 #define __FMIO_H__
 
-#include <mintbind.h>
-#include <mint/osbind.h>
-
 #include "c_vars.h"
 #include "amlog.h"
 #include "memory.h"
 
 #ifndef PORTABLE
+#include <mintbind.h>
+#include <mint/osbind.h>
+
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */
 #define XB_DEV_KBD 1    /* Keyboard port */
@@ -77,7 +77,7 @@ const U8 *getLastGemdosError(void);
 */
 static long  ssp = 0;
 
-static inline void am_setSuperOn(void) {
+inline void am_setSuperOn(void) {
   #ifdef DEBUG_BUILD
     amTrace((const U8*)"Entering supervisor\n");
   #endif
@@ -88,7 +88,7 @@ static inline void am_setSuperOn(void) {
  * turns supervisor mode Off.
  *
 */
-static inline void am_setSuperOff(void) {
+inline void am_setSuperOff(void) {
     SuperToUser(ssp); /* return processor to user mode */
     
     #ifdef DEBUG_BUILD

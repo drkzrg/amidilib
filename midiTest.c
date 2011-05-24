@@ -13,8 +13,12 @@
 #include "amidilib.h"
 
 #include "include/c_vars.h"
-#include "include/ikbd.h"
 #include "include/scancode.h"	// scancode definitions
+
+#ifndef PORTABLE
+#include "include/ikbd.h"
+extern void turnOffKeyclick(void);
+#endif
 
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
@@ -24,7 +28,6 @@ extern const char *g_arMIDI2key[];	//midi note to musical tone table
 extern const char *g_arCM32Linstruments[]; //MT32 instruments on 2-9 channel
 extern const char *g_arCM32Lrhythm[]; //MT32 rhytm part
 
-extern void turnOffKeyclick(void);
 
 void printHelpScreen(){
   printf("===============================================\n");
@@ -79,9 +82,11 @@ int main(void) {
   U8 currentVelocity=127;
   U8 currentPN=1;
   U8 currentBankSelect=0;
-  
+
+#ifndef PORTABLE  
   turnOffKeyclick();
-  
+#endif  
+
   /* init library */
   U32 iError=am_init();
  
@@ -91,19 +96,19 @@ int main(void) {
 				  
   printHelpScreen();
   
+
+#ifndef PORTABLE
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
 	/* Install our asm handler */
 	Supexec(IkbdInstall);
-
 	printf("Press ESC to quit\n");
 
 	/* Wait till ESC key pressed */
 	quit = 0;
 	while (!quit) {
 		for (i=0; i<128; i++) {
-		  
 			if (Ikbd_keyboard[i]==KEY_PRESSED) {
 				
 			     Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -381,12 +386,12 @@ int main(void) {
 		}
 	}
 
-	/* Uninstall our asm handler */
+      /* Uninstall our asm handler */
 	Supexec(IkbdUninstall);
-
-    /* clean up, free internal library buffers etc..*/
-    am_deinit();
-   
-	
-return 0;
+#else
+#warning Mainloop not implemented!!! TODO!!! or not..
+#endif
+/* clean up, free internal library buffers etc..*/
+am_deinit();
+ return 0;
 }

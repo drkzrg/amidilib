@@ -8,11 +8,14 @@
 #include <string.h>
 #include <limits.h>
 
+#ifndef PORTABLE
 #include <mint/ostruct.h>
+#include "include/mfp.h"
+#endif
 
 #include "include/amidilib.h"
 #include "include/amlog.h"
-#include "include/mfp.h"
+
 #include "include/list/list.h"
 #include "include/midi_send.h"
 
@@ -54,11 +57,10 @@ extern const char *g_arCM32Lrhythm[];
 sEventBlock_t tempEvent;
 
 S16 am_getHeaderInfo(void *pMidiPtr){
+	sMThd midiInfo;
     amTrace((const U8*)"Checking header info... ");
-    
-    sMThd midiInfo;
 
-    amMemCpy(&midiInfo, pMidiPtr, sizeof(sMThd));
+	amMemCpy(&midiInfo, pMidiPtr, sizeof(sMThd));
 
     /* check midi header */
     if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L))){
@@ -105,10 +107,12 @@ return(-1);
 S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
     S16 iNumTracks=0;
     U16 iTimeDivision=0;
-    U32 ulAddr;
-   
+    U32 ulAddr=0L;
+    U16 iLoop=0;
     void *startPtr=pMidiPtr;
     void *endPtr=0L;
+    int iRet=0;
+    int i=0;
 
     /* calculate end pointer */
     ulAddr=(U32)startPtr+lenght*sizeof(U8);
@@ -119,12 +123,12 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
     pSequence->ubActiveTrack=0; 		/* first one from the array */
     
     /* init sequence table */
-    for(U16 iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+    for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
       /* we will allocate needed track tables when appropriate */
       pSequence->arTracks[iLoop]=NULL;
     }
    
-   int iRet=am_getHeaderInfo(pMidiPtr);
+   iRet=am_getHeaderInfo(pMidiPtr);
     
    if(iRet==-1){
     /* not MIDI file, do nothing */
@@ -189,7 +193,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  pSequence->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
-	  for(int i=0;i<iNumTracks;i++){
+	  for(i=0;i<iNumTracks;i++){
 	  pSequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
@@ -197,8 +201,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  (pSequence->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
 	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
       
-	  /* init event list */
-	  initEventList(&((pSequence->arTracks[i])->trkEventList));
+	    /* init event list */
+	    initEventList(&((pSequence->arTracks[i])->trkEventList));
 	  }
 	  
           while (((startPtr!=endPtr)&&(startPtr!=NULL))){
@@ -221,7 +225,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  pSequence->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
-	  for(int i=0;i<iNumTracks;i++){
+	  for(i=0;i<iNumTracks;i++){
 	  pSequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
@@ -441,6 +445,9 @@ U32 ulChunkSize=0;
 U32 defaultTempo=60000000/DEFAULT_PPQ;
 
 sChunkHeader header;
+sTrack_t **ppTrack=0;
+void *pTemp=0;
+void **end=0;
 
 amTrace((const U8*)"Number of tracks to process: %d\n\n",numTracks);
 
@@ -463,9 +470,9 @@ switch(fileTypeFlag){
 	  pCurSequence->arTracks[0]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[0]->currentState.playState=S_STOPPED;
 	  
-	  sTrack_t **ppTrack=&pTempTrack;
-	  const void *pTemp=(const void *)endAddr;
-	  const void **end=&pTemp;
+	  ppTrack=&pTempTrack;
+	  pTemp=(void *)endAddr;
+	  end=&pTemp;
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
@@ -487,9 +494,9 @@ switch(fileTypeFlag){
 	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
 	  
-	  sTrack_t **ppTrack=&pTempTrack;
-	  const void *pTemp=(const void *)endAddr;
-	  const void **end=&pTemp;
+	  ppTrack=&pTempTrack;
+	  pTemp=(void *)endAddr;
+	  end=&pTemp;
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 	
@@ -531,9 +538,9 @@ switch(fileTypeFlag){
 	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
 	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
 	  
-	  sTrack_t **ppTrack=&pTempTrack;
-	  const void *pTemp=(const void *)endAddr;
-	  const void **end=&pTemp;
+	  ppTrack=&pTempTrack;
+	  pTemp=(void *)endAddr;
+	  end=&pTemp;
 	
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
@@ -1198,6 +1205,9 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
  
  sSMPTEoffset SMPTEinfo;
  sTimeSignature timeSign;
+ U32 val1,val2,val3;
+ U8 tempArray[128]={0};
+ float begin;
 
  /*get meta event type */
  (*pPtr)++;
@@ -1444,7 +1454,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         /*amTrace((const U8*)"0x%x%x%x ms per quarter-note\n", ulVal[0],ulVal[1],ulVal[2]);
 	*/
 	
-	U32 val1=ulVal[0],val2=ulVal[1],val3=ulVal[2]; 
+	val1=ulVal[0],val2=ulVal[1],val3=ulVal[2]; 
 	val1=(val1<<16)&0x00FF0000L;
 	val2=(val2<<8)&0x0000FF00L;
 	val3=(val3)&0x000000FFL;
@@ -1546,7 +1556,7 @@ return FALSE;
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */
         /* file also could be broken */
-	U8 tempArray[128]={0};
+	
 	#ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"id: %d, size: %d\n" /*parameters: %ld \n"*/,ubVal,*(*pPtr));
 	#endif
@@ -1623,7 +1633,7 @@ void getDeviceInfoResponse(U8 channel){
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
     
-	float begin=getTimeStamp(); // get current timestamp
+	begin=getTimeStamp(); // get current timestamp
 	
     /* get reply or there was timeout */
     while((MIDI_DATA_READY&&(getTimeDelta()<DEVICE_RESPONSE_TIMEOUT_IN_SECONDS))) {
@@ -1648,10 +1658,11 @@ void getDeviceInfoResponse(U8 channel){
 }
 /* gets info about connected devices via MIDI interface */
 const S8 *getConnectedDeviceInfo(void){
-  /*  request on all channels */
+  U8 channel;
+	/*  request on all channels */
   amTrace((const U8*)"Quering connected MIDI device...\n");
   
-  for(U8 channel=0;channel<0x7f;channel++){
+  for(channel=0;channel<0x7f;channel++){
     getDeviceInfoResponse(channel);
    }
  
@@ -1726,8 +1737,8 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision){
 }
 
 void am_allNotesOff(U16 numChannels){
-
-  for(U16 iCounter=0;iCounter<numChannels;iCounter++){
+U16 iCounter;
+  for(iCounter=0;iCounter<numChannels;iCounter++){
   all_notes_off(iCounter);
  }
 }        
@@ -1775,98 +1786,7 @@ sEventItem *pTemp
 
 */
 
-/* calculates settings for MFP timers for given frequency of tick */
-void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data){
-static const U32 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
-U32 cntrl,count;
-cntrl=0;
 
-if( freq<=614400 && freq>=2400 ) {
-  cntrl=MFP_DIV4;		/* divide by 4  	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  
-  *mode=cntrl;
-  *data=count;
-  
-  return;	 
-}
-	
-if( freq<2400 && freq>=960 ) {
-  cntrl=MFP_DIV10;		/* divide by 10 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  *mode=cntrl;
-  *data=count;
-  
-  return;
-}
-
-if( freq<960  && freq>=600 ) {
-  cntrl=MFP_DIV16;		/* divide by 16 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-   *mode=cntrl;
-  *data=count;
-  
-  return;
-}
-
-if( freq<600  && freq>=192 ) {
-  cntrl=MFP_DIV50;		/* divide by 50 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  *mode=cntrl;
-  *data=count;
- 
-  return;
-}
-
-if( freq<192  && freq>=150 ) {
-  cntrl=MFP_DIV64;		/* divide by 64 	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  *mode=cntrl;
-  *data=count;
-  
-  return;
-}
-
-if( freq<150  && freq>=96  ) {
-  cntrl=MFP_DIV100;		/* divide by 100	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  *mode=cntrl;
-  *data=count;
-  
-  return;
-}
-		
-if( freq<96&&freq>=48) {
-  cntrl=MFP_DIV200; 		/* divide by 200	*/
-  U32 presc=prescales[cntrl];
-  U32 temp=presc*freq;
-  count=(2457600/temp) ;
-  *mode=cntrl;
-  *data=count;
-  
-  return;
-}
-	
- if( cntrl==0 ) {
-  count=0;    
-  *mode=0;
-  *data=count;
- 
- }
-return;
-}
 
 
 float getTimeStamp(){
@@ -1877,21 +1797,24 @@ float getTimeStamp(){
 	 usp=Super(0);
 	 begin=*((long *)0x4ba);
 	 SuperToUser(usp);
-	 return (float)begin;
+	
 #endif	 
+	  return (float)begin;
 }
 
 float getTimeDelta(){
+float delta=0.0f;
+
 #ifdef TIME_CHECK_PORTABLE	 
      end=clock();
-     float delta=(float)(am_diffclock(end,begin)/1000.0f);
+     delta=(float)(am_diffclock(end,begin)/1000.0f);
      return(delta);
 #else
 //calculate delta in seconds
     usp=Super(0);
     end=*((long *)0x4ba);
     SuperToUser(usp);
-    float delta=(end-begin)/200.0f;
+    delta=(end-begin)/200.0f;
     return(delta);
 #endif
 }

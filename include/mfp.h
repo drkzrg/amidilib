@@ -8,6 +8,9 @@
 #ifndef __MFP_H__
 #define __MFP_H__
 
+#ifndef PORTABLE
+#include "c_vars.h"
+
 #define MFP_STOP	0b00000000  /* Timer stop */
 #define MFP_DIV4	0b00000001  /* div 4 */
 #define MFP_DIV10	0b00000010  /* div 10 */
@@ -25,17 +28,15 @@
 #define MFP_DEL100	0b00001110  /* delay 100 */
 #define MFP_DEL200	0b00001111  /* delay 200 */
 
-
+void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
 
  extern void installTA(void);
  extern void installMIDIreplay(U8 mode,U8 data);
  extern void deinstallMIDIreplay(void);
 
 
-  extern volatile U32 counter;
-  extern volatile U32 cA;
-
-  
-
+ extern volatile U32 counter;
+ extern volatile U32 cA;
+#endif
 
 #endif

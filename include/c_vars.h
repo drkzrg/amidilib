@@ -14,8 +14,9 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 #include <string.h> /* memset */
+#ifndef _MSC_VER
 #include <unistd.h> /* close */
-
+#endif
 /* ###################################################################################
 #  TYPEDEFS
 ################################################################################### */
@@ -24,7 +25,7 @@ typedef unsigned char 		U8;
 typedef signed char 		S8;
 typedef unsigned short int 	U16;
 typedef signed short int 	S16;
-typedef unsigned long 		U32;
+typedef unsigned long U32;
 typedef signed long 		S32;
 typedef	float 			F32;
 typedef float 			FP32;
@@ -52,10 +53,20 @@ void compilerSanityCheck(void);
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 BOOL checkEndianess();
 
+#ifdef _MSC_VER
+  #define INLINE __forceinline /* use __forceinline (VC++ specific) */
+#else
+  #define INLINE inline        /* use standard inline */
+#endif
 
 
-/* ################################################################################ */
-
+//TODO: make it more cross-compilator friendly
+// atm it's gcc specific
+#ifndef STRUCT_PACK
+#define PACK
+#else
+#define PACK __attribute__((packed))
+#endif
 
 
 #endif

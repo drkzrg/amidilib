@@ -7,7 +7,10 @@
     
 #include <assert.h>
 #include <string.h>
+
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #include "include/amidilib.h"
 #include "include/amlog.h"
@@ -24,61 +27,38 @@ void initEventList(sEventList *listPtr){
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
 U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
+ sEventList *pTempPtr=NULL;
+ sEventList *pNewItem=NULL;
+ U32 uiDeltaNew=0;
 
 #ifdef DEBUG_MEM
   amTrace((const U8 *)"addEvent()\t");
 #endif
- 
- sEventList *pTempPtr=NULL;
- sEventList *pNewItem=NULL;
- 
- U32 uiDeltaNew=0;
 
-	if(listPtr!=NULL){
+	if(listPtr==NULL){
 		/* list not empty, start at very first element */
 		/* find the element with higher delta and insert item */
 		pTempPtr=listPtr;
 		uiDeltaNew=eventBlockPtr->uiDeltaTime;
 			
-		while((pTempPtr->pNext != NULL)){
-		  pTempPtr=pTempPtr->pNext;
-		}
-
-		/* insert event */
-		  #ifdef DEBUG_MEM
-		    amTrace((const U8 *)"insert new event\n");
-		  #endif
-		
-			if(pTempPtr->pNext==NULL){
-				/* insert at the end of list */
-				copyEvent(eventBlockPtr, &pNewItem);
-				
-				pNewItem->pNext=NULL;					/* next node is NULL for new node */
-				pNewItem->pPrev=pTempPtr;				/* prev node is current element node */
-				
-				/* add newly created list node to our list */
-				pTempPtr->pNext=pNewItem;
-				
-			}else{
-				/* insert between current and next one */
-				#ifdef DEBUG_MEM
-				  amTrace((const U8 *)"insert event between\n");
-				#endif
-			        copyEvent(eventBlockPtr, &pNewItem);
-
-				/* set up pointers */
-				pNewItem->pNext=pTempPtr->pNext;					/* new element points to next node */
-				pNewItem->pPrev=pTempPtr;							/* prev node is current element node */
-
-				/* insert between the two nodes */
-				pTempPtr->pNext->pPrev=pNewItem;					/* next item points to new element */
-				pTempPtr->pNext=pNewItem;							/* current node points to new item */
-
-			}
-
+	  while((pTempPtr->pNext != NULL)){
+	    pTempPtr=pTempPtr->pNext;
+	  }
+	/* insert event */
+	#ifdef DEBUG_MEM
+	  amTrace((const U8 *)"insert new event\n");
+	#endif
+	/* insert at the end of list */
+	  copyEvent(eventBlockPtr, &pNewItem);
+	
+	  pNewItem->pNext=NULL;					/* next node is NULL for new node */
+	  pNewItem->pPrev=pTempPtr;				/* prev node is current element node */
+		  
+	  /* add newly created list node to our list */
+	  pTempPtr->pNext=pNewItem;
 		
 	}else{
-	/* add first element */
+	/* create first element */
 	 #ifdef DEBUG_MEM
 	  amTrace((const U8 *)"insert first event\n");
 	 #endif
@@ -92,10 +72,11 @@ U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
 
 void copyEvent(const sEventBlock_t *src, sEventList **dest){
   #ifdef DEBUG_MEM
-    amTrace((const U8 *)"copyEvent() src: 0x%p dst:0x%p\n",src,dest);
+    amTrace((const U8 *)"copyEvent() src: %p dst: %p\n",src,dest);
   #endif
     
     (*dest)=(sEventList *)amMallocEx(sizeof(sEventList),PREFER_TT);
+    
     (*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
     (*dest)->eventBlock.type = src->type;
     (*dest)->eventBlock.infoBlock.size = src->infoBlock.size;
@@ -105,16 +86,17 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     /* allocate memory for event data and copy them to the new destination */
     (*dest)->eventBlock.dataPtr = amMallocEx( src->infoBlock.size * sizeof(U8),PREFER_TT);
     amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,src->infoBlock.size * sizeof(U8));
+    
 }
 
 
 
 U32 destroyList(sEventList *listPtr){
+sEventList *pTemp=NULL,*pCurrentPtr=NULL;
+
 #ifdef DEBUG_MEM
 amTrace((const U8 *)"destroyList()\n");
 #endif
-
-  sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 	
 	if(listPtr!=NULL){
 	
@@ -180,6 +162,8 @@ void printEventList(const sEventList **listPtr){
 void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
  
    evntFuncPtr myFunc=NULL; 
+   U8 *pbuf=NULL;
+   int x=0;
 
    amTrace((const U8*)"delta: %d\n",(unsigned int)pPtr->uiDeltaTime);
    amTrace((const U8*)"event type: %d\n",pPtr->type);
@@ -188,9 +172,9 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
    amTrace((const U8*)"data pointer: %p\n",pPtr->dataPtr);
    
    amTrace((const U8*)"data: \t");
-   U8 *pbuf=(U8 *)pPtr->dataPtr;
+   pbuf=(U8 *)pPtr->dataPtr;
    
-   for(int x=0;x<pPtr->infoBlock.size;x++){
+   for(x=0;x<pPtr->infoBlock.size;x++){
     amTrace((const U8*)"0x%x \t",pbuf[x]);
    }
    amTrace((const U8*)"\n");

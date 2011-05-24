@@ -19,7 +19,7 @@ void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod)
     if(ch[CH_B].toneEnable) mixerSet&=0b11111101;
     if(ch[CH_C].noiseEnable)mixerSet&=0b11011111;
     if(ch[CH_C].toneEnable) mixerSet&=0b11111011;
-      
+#ifndef PORTABLE      
     Giaccess(mixerSet,MIXER+128);		//sound chip setup
 						//enable 3 oscillators on all channels
 					
@@ -38,19 +38,21 @@ void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod)
     //set noise generator period 0-31
     if(noiseGenPeriod>31) noiseGenPeriod=31;
     Giaccess(noiseGenPeriod,NOISE_GEN+128);
-    
+#endif    
     //set envelope period
     U8 lPeriod=(U8)(0x00FF&envPeriod);
     U8 hPeriod=(U8)(0x00FF&(envPeriod>>4));
-    
+#ifndef PORTABLE    
     Giaccess(lPeriod,LB_ENV_PERIOD+128);
     Giaccess(hPeriod,HB_ENV_PERIOD+128);
     
     //set envelopes
     Giaccess(envelope,ENV_SELECT+128);
+#endif   
 }
 
 void ymSoundOff(){
+#ifndef PORTABLE
   Giaccess(0b11111111,MIXER+128);
   
   //turn off envelope period
@@ -68,6 +70,7 @@ void ymSoundOff(){
   Giaccess(0,AMP_OSC3+128);		// set osc3
   Giaccess(0,LB_OSC3+128);	
   Giaccess(0,HB_OSC3+128);
+#endif
 }
 
 void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod){

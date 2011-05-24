@@ -31,10 +31,11 @@ typedef enum{
   S_PAUSED=0x04
 } ePlayState;
 
+
 typedef struct EventList{
  struct EventList *pPrev,*pNext;
  sEventBlock_t eventBlock;
-}__attribute__((packed)) sEventList;
+}PACK sEventList;
 
 typedef struct SequenceState_t{
  volatile U32 currentTempo;			// quaternote duration in ms, 500ms default
@@ -42,13 +43,13 @@ typedef struct SequenceState_t{
  volatile U32 playMode;	      			// current play mode (loop, play_once, random) 
 						// sets the active track, by default 0 
  volatile struct EventItem *pStart,*pCurrent;	//start of track and current event pointer
-}__attribute__((packed)) sSequenceState_t;
+}PACK sSequenceState_t;
 
  typedef struct Track_t{
   U8 *pInstrumentName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
   sSequenceState_t currentState;        /* current sequence state */
   sEventList trkEventList;  		/* track event list */
-}__attribute__((packed)) sTrack_t;
+}PACK sTrack_t;
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
@@ -59,7 +60,6 @@ typedef struct Sequence_t{
    U8 ubDummy[3];
    U8 ubActiveTrack;
    U8 ubDummy1[3];
- } __attribute__((packed)) sSequence_t;
-
+ } PACK sSequence_t;
 
 #endif

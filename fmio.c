@@ -4,15 +4,22 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-
-#include <mint/ostruct.h>
-#include <mint/osbind.h>
-
 #include "include/fmio.h"
 #include "include/memory.h"
 
-static U32 g_save_ssp;
-static S16 g_lastGDOSerror=0;
+#ifdef PORTABLE
+void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
+	;//TODO
+ printf("Loadfile!\n");
+ return 0;
+}
+
+#else
+#include <mint/ostruct.h>
+#include <mint/osbind.h>
+
+U32 g_save_ssp;
+S16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 
   "No error.",\
@@ -277,3 +284,5 @@ U32 lRet=0L;
 
 extern inline void am_setSuperOn(void);
 extern inline void am_setSuperOff(void);
+
+#endif

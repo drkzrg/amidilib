@@ -14,9 +14,11 @@
 
 extern U8 envelopeArray[8];
  
-
+#ifdef PORTABLE
+void turnOffKeyclick(void);
+#else
 extern void turnOffKeyclick(void);
-
+#endif
 void printHelpScreen(){
   printf("===============================================\n");
   printf("/|\\ ym2149 sound output test..\n");
@@ -324,3 +326,12 @@ int main(void) {
 
 return 0;
 }
+
+#ifdef PORTABLE
+
+void turnOffKeyclick(void){
+  
+  
+}
+
+#endif

@@ -40,9 +40,9 @@ void am_deinitLog(void){
   #endif
 }
 
+char buffer[256];
 
 void am_log(const U8 *mes,...){
-static char buffer[256];
 
 va_list va;
 va_start(va, mes);

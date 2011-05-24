@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include <ctype.h> 
-#include <osbind.h>
 #include "ym2149.h"
 #include "c_vars.h"
 
@@ -17,6 +16,7 @@ extern U8 envelopeArray[8];
 #ifdef PORTABLE
 void turnOffKeyclick(void);
 #else
+#include <osbind.h>
 extern void turnOffKeyclick(void);
 #endif
 void printHelpScreen(){
@@ -74,8 +74,11 @@ int main(void) {
   
   while(bQuitFlag!=TRUE){
     
-    input=(U16)Crawcin();
-    
+#ifdef PORTABLE
+    input=getchar();
+#else
+      input=(U16)Crawcin();
+#endif
     if(input!=0){
     
       switch(toupper((U8)input)){

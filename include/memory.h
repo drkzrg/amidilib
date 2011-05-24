@@ -8,9 +8,9 @@
 #ifndef __AMEMORY_H__
 #define __AMEMORY_H__
 
-#ifdef PORTABLE
 #include <stdlib.h>
 
+#ifdef PORTABLE
 /* memory allocation preference */
 // compatible with Mxalloc
 typedef enum
@@ -21,12 +21,9 @@ typedef enum
   PREFER_TT=0
 } eMemoryFlag;
 
-
 #else
-#include <stdlib.h>
 #include <mint/osbind.h>
 #include <mint/ostruct.h>
-
 /* memory allocation preference */
 // compatible with Mxalloc
 typedef enum

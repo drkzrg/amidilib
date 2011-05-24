@@ -3,16 +3,6 @@
 #CXXFLAGS+=-Wundef -Wreorder -Wwrite-strings -Wnon-virtual-dtor -Wno-multichar -fomit-frame-pointer -fno-exceptions -fno-rtti
 #CXXFLAGS+=$(DEFINES)
 
-INCLUDES=-I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./include/ym2149
-CC=m68k-atari-mint-gcc
-GAS=m68k-atari-mint-as
-STRIP=m68k-atari-mint-strip -s
-
-# stack settings for all apps
-STACK_SIZE=256K
-SET_STACK=m68k-atari-mint-stack -S$(STACK_SIZE)
-MACHINE=-m68000	
-
 # additional defines for EXTRADEFINES: 
 # DEBUG_BUILD - enables debug build
 # DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
@@ -25,26 +15,57 @@ MACHINE=-m68000
 
 EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_CONSOLE_OUTPUT 
 
+#target atari, other
+ifeq ($(TARGET),atari)
+INCLUDES=-I./ -I./include -I/usr/m68k-atari-mint/include -I./include/lzo -I./include/ym2149
+CC=m68k-atari-mint-gcc
+GAS=m68k-atari-mint-as
+STRIP=m68k-atari-mint-strip -s
+STACK=m68k-atari-mint-stack
+MACHINE=-m68000	
+LD_EXTRA=-L/usr/m68k-atari-mint/lib
+
+# stack settings for all apps
+STACK_SIZE=8192
+SET_STACK=$(STACK) -S$(STACK_SIZE)
+BIN_EXT=.tos
+BIN_EXT2=.ttp
+
+else
+INCLUDES=-I./ -I./include -I./include/lzo -I./include/ym2149
+CC=gcc
+GAS=as
+STRIP=strip -s
+STACK=stack
+PORTABLE=1
+MACHINE=	
+LD_EXTRA=
+SET_STACK=
+BIN_EXT=
+endif
+
+
 ifeq ($(PORTABLE),1)
 DEFINES = $(EXTRADEFINES) -DPORTABLE -DTIME_CHECK_PORTABLE
 else
 DEFINES = $(EXTRADEFINES) -DSTRUCT_PACK
 endif
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer $(DEFINES)
-LDFLAGS +=  $(MACHINE) -L/usr/m68k-atari-mint/lib -Wl,--traditional-format 
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
+
 ASM = vasmm68k_mot
 ASMFLAGS += -Faout -quiet -x -m68000 -spaces -showopt -no-opt
-EXE = amidi.ttp
+EXE = amidi$(BIN_EXT2)
 
 # ym2149 test output program 
-YM_TEST_EXE = ym2149.tos
+YM_TEST_EXE = ym2149$(BIN_EXT)
 
 # midi test output program
-MIDI_TEST_EXE = midiTest.tos
+MIDI_TEST_EXE = midiTest$(BIN_EXT)
 
 #timing test output program
-TIMING_TEST_EXE = timTest.tos
+TIMING_TEST_EXE = timTest$(BIN_EXT)
 
 #copies output binary to emulator folder ready to launch
 ST_HD_PATH=$(HOME)/STEEM/HD/TUNES
@@ -90,7 +111,7 @@ $(EXE): $(OBJECTS) amidi.o int_rout.o
 	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
-	$(SET_STACK) $(EXE)
+#$(SET_STACK) $(EXE)
 #	echo "Stripping symbols."
 #	$(STRIP) $(EXE)
 	echo "Copying AMIDI.TTP binary to emulator/shared directory."

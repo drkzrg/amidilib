@@ -7,26 +7,17 @@
 
 #ifndef __IFF_H__
 #define __IFF_H__
-
-#include	"c_vars.h"
 #include <string.h>
 #include <stdio.h>
 
+#include "c_vars.h"
+
 typedef S8 ID[4];             /* 4 chars in ' ' through '~' */
-#ifdef _MSC_VER
 typedef struct {
   U32 chunkID;
   U32 chSize;  /* sizeof(chData) */
-  }IFF_Chunk;
+  } PACK IFF_Chunk;
 
-#else
-typedef struct {
-  U32 chunkID;
-  U32 chSize;  /* sizeof(chData) */
-  }__attribute__((packed)) IFF_Chunk;
-
-
-#endif
 
 /* IFF ID's*/
 #define ID_FORM   	0x464F524D  /*('F','O','R','M')*/

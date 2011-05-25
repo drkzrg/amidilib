@@ -300,7 +300,7 @@ U32 lRet=0L;
         return NULL;
     }
 }
-
+U32 ssp;
 extern inline void am_setSuperOn(void);
 extern inline void am_setSuperOff(void);
 

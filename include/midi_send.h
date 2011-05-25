@@ -27,7 +27,7 @@ U8 amMidiGetData(U8 deviceId);
 /* returns != 0 if data are in system MIDI buffer */
 #define MIDI_DATA_READY amMidiDataReady(DEV_MIDI)
 /* sends 1 byte to MIDI output */
-#define MIDI_SEND_BYTE(data) amMidiSendByte(DEV_MIDI,(U8)data)
+#define MIDI_SEND_BYTE(data) amMidiSendByte(DEV_MIDI,(U8 *)data)
 /* sends multiple bytes to MIDI output, count is number of bytes to send */
 #define MIDI_SEND_DATA(count,data) amMidiSendData(count-1,data)
 /* reads 1 unsigned byte from MIDI input */

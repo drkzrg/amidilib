@@ -26,48 +26,47 @@ void initEventList(sEventList *listPtr){
 }
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
-U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
+//event list, temp event
+
+void addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
  sEventList *pTempPtr=NULL;
  sEventList *pNewItem=NULL;
  U32 uiDeltaNew=0;
 
-#ifdef DEBUG_MEM
-  amTrace((const U8 *)"addEvent()\t");
-#endif
-
-	if(listPtr==NULL){
-		/* list not empty, start at very first element */
-		/* find the element with higher delta and insert item */
-		pTempPtr=listPtr;
-		uiDeltaNew=eventBlockPtr->uiDeltaTime;
+if(listPtr!=NULL){
+  /* list not empty, start at very first element */
+  /* and iterate till the end */
+  
+  pTempPtr=listPtr;
+  uiDeltaNew=eventBlockPtr->uiDeltaTime;
 			
-	  while((pTempPtr->pNext != NULL)){
-	    pTempPtr=pTempPtr->pNext;
-	  }
-	/* insert event */
-	#ifdef DEBUG_MEM
-	  amTrace((const U8 *)"insert new event\n");
-	#endif
-	/* insert at the end of list */
-	  copyEvent(eventBlockPtr, &pNewItem);
-	
-	  pNewItem->pNext=NULL;					/* next node is NULL for new node */
-	  pNewItem->pPrev=pTempPtr;				/* prev node is current element node */
-		  
-	  /* add newly created list node to our list */
-	  pTempPtr->pNext=pNewItem;
-		
-	}else{
-	/* create first element */
-	 #ifdef DEBUG_MEM
-	  amTrace((const U8 *)"insert first event\n");
-	 #endif
-	 copyEvent(eventBlockPtr, &listPtr);
+  while((pTempPtr->pNext != NULL)){
+    pTempPtr=pTempPtr->pNext;
+  }
 
-	 listPtr->pPrev=NULL;	/* first element in the list, no previous item */
-	 listPtr->pNext=NULL;
-	}
- return 0;
+/* insert event */
+  #ifdef DEBUG_MEM
+    amTrace((const U8 *)"insert event\n");
+  #endif
+    
+  /* insert at the end of list */
+  copyEvent(eventBlockPtr, &pNewItem);
+	
+  pNewItem->pNext=NULL;		/* next node is NULL for new node */
+  pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
+		  
+  /* add newly created list node to our list */
+  pTempPtr->pNext=pNewItem;
+  
+}else{
+  #ifdef DEBUG_MEM
+    amTrace((const U8 *)"insert first event\n");
+  #endif
+    
+  copyEvent(eventBlockPtr, &listPtr);
+  listPtr->pPrev=NULL;		/* first element in the list, no previous item */
+  listPtr->pNext=NULL;
+ }
 }
 
 void copyEvent(const sEventBlock_t *src, sEventList **dest){
@@ -114,18 +113,18 @@ amTrace((const U8 *)"destroyList()\n");
 			while(pCurrentPtr!=NULL){
 				
 			  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
-			    amFree(pCurrentPtr->eventBlock.dataPtr);
+			    amFree(&(pCurrentPtr->eventBlock.dataPtr));
 			    pCurrentPtr->eventBlock.dataPtr=NULL;
 			  }
 
-				amFree(pCurrentPtr->pNext);
+				amFree(&(pCurrentPtr->pNext));
 				pCurrentPtr->pNext=NULL;
 				pCurrentPtr=pCurrentPtr->pPrev;
 			}
 			
 			/* we are at first element */
 			/* remove it */
-			amFree(listPtr);
+			amFree(&listPtr);
 			listPtr=NULL;
 			
 			return 0;
@@ -148,7 +147,7 @@ void printEventList(const sEventList **listPtr){
 		while(pTemp!=NULL){
 			/* print */
 			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
-			printEventBlock(counter,pBlock);		
+			printEventBlock(pBlock);		
 			counter++;
 			pTemp=pTemp->pNext;
 		}
@@ -158,8 +157,7 @@ void printEventList(const sEventList **listPtr){
 }
 
 /* handles event (TODO: send all events with given delta, get next delta, set timer)  */
-
-void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
+void printEventBlock(sEventBlockPtr_t pPtr){
  
    evntFuncPtr myFunc=NULL; 
    U8 *pbuf=NULL;
@@ -177,6 +175,7 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
    for(x=0;x<pPtr->infoBlock.size;x++){
     amTrace((const U8*)"0x%x \t",pbuf[x]);
    }
+
    amTrace((const U8*)"\n");
    
    
@@ -232,15 +231,13 @@ void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr){
 	      amTrace((const U8*)"printEventBlock() error unknown event type %d\n",(U16)(pPtr->type));
 	break;
  }  
-		
-		/* decode stored event */
+  /* decode stored event */
 	
 }
 
 
 // sends midi events
-U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
-{
+U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr){
 	sEventList *pTemp=NULL;	
 	U32 counter=0;
 		
@@ -261,7 +258,7 @@ U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr)
 			
 		  /* send all events with given delta  */
 			const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;
-			//printEventBlock(counter,&pBlock);
+			//printEventBlock(&pBlock);
 			counter++;
 			pTemp=pTemp->pNext;
 		}

@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
 	   amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	   
 	   /* free up buffer with loaded midi file, we don't need it anymore */
-	   amFree(pMidi);
+	   amFree(&pMidi);
 	   pMidi=NULL;
 		
 	   // MAIN LOOP 

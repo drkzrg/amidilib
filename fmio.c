@@ -25,7 +25,7 @@ void * ret=NULL;
 	ret = (void *)amMallocEx(size*sizeof(U8),PREFER_TT);
 	
 	if (size != fread(ret, sizeof(U8), size*sizeof(U8), f)) { 
-		amFree(ret);
+		amFree(&ret);
 		 am_log((const U8 *)"loadFile(), Error during file %s read.",szFileName);
 		return NULL;
 	} 

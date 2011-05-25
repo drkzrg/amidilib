@@ -11,18 +11,14 @@
 
 #include "../amidiseq.h"
 
-
 void initEventList(sEventList *listPtr);
-U32 addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr );
+void addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr );
 U32 destroyList(sEventList *listPtr);
 void copyEvent(const sEventBlock_t *src, sEventList **dest);
 
 /* for debugging purposes */
 void printEventList(const sEventList **listPtr);
-void printEventBlock(U32 counter,volatile sEventBlockPtr_t pPtr);
-
+void printEventBlock(sEventBlockPtr_t pPtr);
 U32 sendMidiEvents(U32 delta_start, const sEventList **listPtr);
-
-
 
 #endif

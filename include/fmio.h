@@ -71,30 +71,9 @@
  */
 const U8 *getLastGemdosError(void);
 
-/**
- * turns supervisor mode ON.
- *
-*/
-extern U32 ssp;
-INLINE void am_setSuperOn(void) {
-  #ifdef DEBUG_BUILD
-    amTrace((const U8*)"Entering supervisor\n");
-  #endif
-  ssp = Super(0L);         /* enter supervisor mode */
-}
+void am_setSuperOn(void);
+void am_setSuperOff(void);
 
-/**
- * turns supervisor mode Off.
- *
-*/
-INLINE void am_setSuperOff(void) {
-    SuperToUser((long)ssp); /* return processor to user mode */
-    
-    #ifdef DEBUG_BUILD
-      amTrace((const U8*)"Leaving supervisor\n");
-    #endif
- }
- 
 #endif
 
 

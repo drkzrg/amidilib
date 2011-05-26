@@ -48,7 +48,7 @@ endif
 ifeq ($(PORTABLE),1)
 DEFINES = $(EXTRADEFINES) -DPORTABLE -DTIME_CHECK_PORTABLE
 else
-DEFINES = $(EXTRADEFINES) 
+DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
 endif
 
 CFLAGS += -std=c99 -g $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)

@@ -301,7 +301,32 @@ U32 lRet=0L;
     }
 }
 U32 ssp;
-extern inline void am_setSuperOn(void);
-extern inline void am_setSuperOff(void);
+
+/**
+ * turns supervisor mode ON.
+ *
+*/
+
+U32 ssp;
+void am_setSuperOn(void) {
+  #ifdef DEBUG_BUILD
+    amTrace((const U8*)"Entering supervisor\n");
+  #endif
+  ssp = Super(0L);         /* enter supervisor mode */
+}
+
+/**
+ * turns supervisor mode Off.
+ *
+*/
+void am_setSuperOff(void) {
+    SuperToUser((long)ssp); /* return processor to user mode */
+    
+    #ifdef DEBUG_BUILD
+      amTrace((const U8*)"Leaving supervisor\n");
+    #endif
+ }
+
 
 #endif
+

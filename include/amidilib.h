@@ -336,7 +336,14 @@ void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
 double am_diffclock(clock_t end, clock_t begin);
 #endif
 
+/** get current time signature  
+* @return returns current time signature in ms
+*/
 float getTimeStamp();
+
+/** Utility for measuring time  
+ *   @return delta time since last getTimeStamp() function call in ms
+ */
 float getTimeDelta();
 
 #endif

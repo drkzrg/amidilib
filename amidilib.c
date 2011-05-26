@@ -1,3 +1,4 @@
+
 /**  Copyright 2007-2010 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
@@ -57,7 +58,7 @@ extern const char *g_arCM32Lrhythm[];
 sEventBlock_t tempEvent;
 
 S16 am_getHeaderInfo(void *pMidiPtr){
-	sMThd midiInfo;
+    sMThd midiInfo;
     amTrace((const U8*)"Checking header info... ");
     amMemCpy(&midiInfo, pMidiPtr, sizeof(sMThd));
 
@@ -217,7 +218,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 
 		iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
 		iTimeDivision = am_getTimeDivision(pMidiPtr);
-		startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+	  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		
 	  /* Store time division for sequence, TODO: SMPTE handling */
 	  pSequence->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
@@ -1645,7 +1646,8 @@ void getDeviceInfoResponse(U8 channel){
 /* gets info about connected devices via MIDI interface */
 const S8 *getConnectedDeviceInfo(void){
   U8 channel;
-	/*  request on all channels */
+  
+  /*  request on all channels */
   amTrace((const U8*)"Quering connected MIDI device...\n");
   
   for(channel=0;channel<0x7f;channel++){
@@ -1758,28 +1760,11 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
 }
 
 
-
-/* sends all midi events with given delta */
-/* returns next delta time or 0, if end of track */
-/* waits for space keypress after sending all of the data */
-
-/* MIDI replay draft */
-/*
-
-int iCurrentDelta=0;
-sEventItem *pTemp
-
-
-*/
-
-
-
-
 float getTimeStamp(){
 #ifdef TIME_CHECK_PORTABLE	 
 	begin=clock();
 #else
-// get Atari native system 200hz counter
+	 // get Atari native system 200hz counter
 	 usp=Super(0);
 	 begin=*((long *)0x4ba);
 	 SuperToUser(usp);
@@ -1804,3 +1789,4 @@ float delta=0.0f;
     return(delta);
 #endif
 }
+

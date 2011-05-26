@@ -341,10 +341,19 @@ double am_diffclock(clock_t end, clock_t begin);
 */
 float getTimeStamp();
 
-/** Utility for measuring time  
+/** Utility function for measuring delta time  
  *   @return delta time since last getTimeStamp() function call in ms
  */
 float getTimeDelta();
+
+/** function for variable quantity reading test   
+ */
+void VLQtest(void);
+
+/** function for displays amount of memory present in the system   
+ */
+void memoryCheck(void);
+
 
 #endif
 

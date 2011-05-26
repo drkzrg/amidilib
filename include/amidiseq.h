@@ -31,6 +31,14 @@ typedef enum{
   S_PAUSED=0x04
 } ePlayState;
 
+/** sequence state enums */
+enum{
+ STOP=0, 
+ PLAY_ONCE=1, 
+ PLAY_LOOP=2,
+ PLAY_RANDOM=3,
+ PAUSED=4
+} eSeqState;
 
 typedef struct EventList{
  struct EventList *pPrev,*pNext;
@@ -48,7 +56,7 @@ typedef struct SequenceState_t{
  typedef struct Track_t{
   U8 *pInstrumentName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
   sSequenceState_t currentState;        /* current sequence state */
-  sEventList trkEventList;  		/* track event list */
+  sEventList *pTrkEventList;  		/* track event list */
 }PACK sTrack_t;
 
 typedef struct Sequence_t{
@@ -58,7 +66,7 @@ typedef struct Sequence_t{
    U32 timeDivision;				// pulses per quater note(time division)
    U8 ubNumTracks;            	        	/* number of tracks */
    U8 ubDummy[3];
-   U8 ubActiveTrack;
+   U8 ubActiveTrack; /* range 0-(n-1) tracks */
    U8 ubDummy1[3];
  } PACK sSequence_t;
 

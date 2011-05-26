@@ -8,12 +8,15 @@
 # DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
 # DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
 # DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# FORCE_MALLOC forces use of libc malloc() for memory allocation, not native functions
 # TIME_CHECK_PORTABLE if set time measuring is based on stdlib functions
 # PORTABLE build portable,platform independent version 
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
+# MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
-EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_MEM -DMIDI_PARSER_DEBUG -DDEBUG_CONSOLE_OUTPUT -DDEBUG_FILE_OUTPUT 
+
+EXTRADEFINES = -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_TEST
 
 #target atari, other
 ifeq ($(TARGET),atari)

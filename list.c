@@ -28,17 +28,15 @@ void initEventList(sEventList *listPtr){
 /* adds event to linked list, list has to be inintialised with initEventList() function */
 //event list, temp event
 
-void addEvent(sEventList *listPtr, sEventBlock_t *eventBlockPtr ){
+void addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){
  sEventList *pTempPtr=NULL;
  sEventList *pNewItem=NULL;
- U32 uiDeltaNew=0;
 
-if(listPtr!=NULL){
+if(*listPtr!=NULL){
   /* list not empty, start at very first element */
   /* and iterate till the end */
   
-  pTempPtr=listPtr;
-  uiDeltaNew=eventBlockPtr->uiDeltaTime;
+  pTempPtr=*listPtr;
 			
   while((pTempPtr->pNext != NULL)){
     pTempPtr=pTempPtr->pNext;
@@ -62,10 +60,11 @@ if(listPtr!=NULL){
   #ifdef DEBUG_MEM
     amTrace((const U8 *)"insert first event\n");
   #endif
-    
-  copyEvent(eventBlockPtr, &listPtr);
-  listPtr->pPrev=NULL;		/* first element in the list, no previous item */
-  listPtr->pNext=NULL;
+  
+  copyEvent(eventBlockPtr, listPtr);
+  
+  (*listPtr)->pPrev=NULL;		/* first element in the list, no previous item */
+  (*listPtr)->pNext=NULL;
  }
 }
 
@@ -88,8 +87,6 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     
 }
 
-
-
 U32 destroyList(sEventList *listPtr){
 sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 
@@ -110,25 +107,23 @@ amTrace((const U8 *)"destroyList()\n");
 	  pCurrentPtr=pTemp->pPrev;
 			
 	  /* iterate to the begining */
-			while(pCurrentPtr!=NULL){
-				
-			  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
-			    amFree(&(pCurrentPtr->eventBlock.dataPtr));
-			    pCurrentPtr->eventBlock.dataPtr=NULL;
-			  }
+	  while(pCurrentPtr!=NULL){
 
-				amFree(&(pCurrentPtr->pNext));
-				pCurrentPtr->pNext=NULL;
-				pCurrentPtr=pCurrentPtr->pPrev;
-			}
-			
-			/* we are at first element */
-			/* remove it */
-			amFree(&listPtr);
-			listPtr=NULL;
-			
-			return 0;
-		}
+	  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
+	    amFree(&(pCurrentPtr->eventBlock.dataPtr));
+	    pCurrentPtr->eventBlock.dataPtr=NULL;
+	  }
+
+	  amFree((void **)&(pCurrentPtr->pNext));
+	  pCurrentPtr->pNext=NULL;
+	  pCurrentPtr=pCurrentPtr->pPrev;
+	}
+	/* we are at first element */
+	/* remove it */
+	amFree((void **)&listPtr);
+	listPtr=NULL;
+	return 0;
+  }
 return 0;
 }
 
@@ -163,17 +158,18 @@ void printEventBlock(sEventBlockPtr_t pPtr){
    U8 *pbuf=NULL;
    int x=0;
 
-   amTrace((const U8*)"delta: %d\n",(unsigned int)pPtr->uiDeltaTime);
-   amTrace((const U8*)"event type: %d\n",pPtr->type);
-   amTrace((const U8*)"function pointer: %p\n",pPtr->infoBlock.func);
-   amTrace((const U8*)"data size: %u\n",pPtr->infoBlock.size);
+   amTrace((const U8*)"delta: %d\t",(unsigned int)pPtr->uiDeltaTime);
+   amTrace((const U8*)"event type: %d\t",pPtr->type);
+   amTrace((const U8*)"function pointer: %p\t",pPtr->infoBlock.func);
+   amTrace((const U8*)"data size: %u\t",pPtr->infoBlock.size);
    amTrace((const U8*)"data pointer: %p\n",pPtr->dataPtr);
    
    amTrace((const U8*)"data: \t");
+   
    pbuf=(U8 *)pPtr->dataPtr;
    
    for(x=0;x<pPtr->infoBlock.size;x++){
-    amTrace((const U8*)"0x%x \t",pbuf[x]);
+    amTrace((const U8*)"0x%x ",pbuf[x]);
    }
 
    amTrace((const U8*)"\n");

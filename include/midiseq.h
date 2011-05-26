@@ -90,7 +90,7 @@ typedef struct Tempo_EventBlock_t{
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
 
-/** IMPORTANT! structure EventInfoBlock_t is associated with INLINE table g_arSeqCmdTable[T_EVT_COUNT] 
+/** IMPORTANT! structure EventInfoBlock_t is associated with table g_arSeqCmdTable[T_EVT_COUNT] 
     from MIDISEQ.C file changing the order of members here will affect structure of g_arSeqCmdTable[T_EVT_COUNT]. 
 */
 

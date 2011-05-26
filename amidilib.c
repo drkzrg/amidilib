@@ -202,7 +202,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
       
 	    /* init event list */
-	    initEventList(&((pSequence->arTracks[i])->trkEventList));
+	    initEventList(pSequence->arTracks[i]->pTrkEventList);
 	  }
 	  
           while (((startPtr!=endPtr)&&(startPtr!=NULL))){
@@ -234,7 +234,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
       
 	  /* init event list */
-	  initEventList(&((pSequence->arTracks[i])->trkEventList));
+	  initEventList(pSequence->arTracks[i]->pTrkEventList);
 	  }
            
            while (((startPtr!=endPtr)&&(startPtr!=NULL))){
@@ -476,10 +476,8 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
-	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
-	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
-	  
-	  
+     pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+     pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
     }
     break;
      case T_MIDI1:{
@@ -500,8 +498,8 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 	
-	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
-	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
@@ -544,8 +542,8 @@ switch(fileTypeFlag){
 	
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
-	  pTempTrack->currentState.pStart=(volatile struct EventItem *)&(pTempTrack->trkEventList);
-	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)&(pTempTrack->trkEventList);
+	  pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
@@ -752,7 +750,7 @@ if((*recallRS)==0){
   (*pPtr)++;
 
   /* add event to list */
-  addEvent( &((*pCurTrack)->trkEventList), &tempEvent );
+  addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
   amFree(&(tempEvent.dataPtr));
 
 }
@@ -782,7 +780,7 @@ else {
   (*pPtr)++;
 
   /* add event to list */
-  addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+  addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
   amFree(&(tempEvent.dataPtr));
 }
 
@@ -831,7 +829,7 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
   (*pPtr)++;
 
   /* add event to list */
-  addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+  addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
   amFree(&(tempEvent.dataPtr));
  }
  else{
@@ -857,8 +855,8 @@ void am_noteOn(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 	(*pPtr)++;
 
 	/* add event to list */
-		addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
-		amFree(&(tempEvent.dataPtr));
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+	amFree(&(tempEvent.dataPtr));
  }
  /* print and handle */
 #ifdef MIDI_PARSER_DEBUG
@@ -900,7 +898,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	pEvntBlock->eventData.pressure=*(*pPtr);
     (*pPtr)++;
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
  }
  else{
@@ -921,7 +919,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
         (*pPtr)++;
 		
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
 
     }
@@ -961,7 +959,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 	pEvntBlock->eventData.value=*((*pPtr));
         (*pPtr)++;
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
     else{
@@ -982,7 +980,7 @@ void am_Controller(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
 
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent);
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent);
 	amFree(&(tempEvent.dataPtr));
     }
 #ifdef MIDI_PARSER_DEBUG
@@ -1009,7 +1007,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	tempEvent.type=T_PRG_CH;
 	getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
 	tempEvent.dataPtr=amMallocEx(tempEvent.infoBlock.size,PREFER_TT);
-	/*assert(tempEvent.dataPtr>0);*/
+
 	pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
         (*pPtr)++;
@@ -1018,7 +1016,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	pEvntBlock->eventData.programNb=*(*pPtr);
 	(*pPtr)++;
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
     else{
@@ -1028,7 +1026,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	  tempEvent.type=T_PRG_CH;
 	  getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
 	  tempEvent.dataPtr=amMallocEx(tempEvent.infoBlock.size,PREFER_TT);
-	  /*assert(tempEvent.dataPtr>0);*/
+
 	  pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
 	  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -1039,7 +1037,7 @@ void am_PC(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 	  (*pPtr)++;
 	
 	 /* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
 #ifdef MIDI_PARSER_DEBUG
@@ -1078,7 +1076,7 @@ if((*recallRS)==0){
         (*pPtr)++;
 
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
 
     }
@@ -1096,7 +1094,7 @@ if((*recallRS)==0){
         (*pPtr)++;
 
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
 #ifdef MIDI_PARSER_DEBUG
@@ -1135,7 +1133,7 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
         (*pPtr)++;
 		
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
     else{
@@ -1157,7 +1155,7 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
         (*pPtr)++;
 		
 	/* add event to list */
-	addEvent(&((*pCurTrack)->trkEventList), &tempEvent );
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	amFree(&(tempEvent.dataPtr));
     }
  #ifdef MIDI_PARSER_DEBUG
@@ -1789,4 +1787,48 @@ float delta=0.0f;
     return(delta);
 #endif
 }
+
+
+/* variable quantity reading test */
+void VLQtest(void){
+/* VLQ test */
+    U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
+    U32 result=0,iCounter;
+    U8 *pValPtr=NULL;
+    U8 valsize;
+    
+    amTrace((const U8*)"VLQ decoding test\n");
+    
+    for (iCounter=0;iCounter<10;iCounter++)   {
+        pValPtr=(U8 *)(&val[iCounter]);
+        while((*pValPtr)==0x00)
+        {pValPtr++;}
+        valsize=0;result=0;
+        result= readVLQ(pValPtr,&valsize);
+     	amTrace((const U8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
+	
+    }
+    /* End of VLQ test */
+}
+
+
+void memoryCheck(void){
+    U32 mem=0;
+    amTrace((const U8*)"System memory check:\n");
+	
+    /* mem tst */
+    mem=getFreeMem(ST_RAM);
+    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(TT_RAM);
+    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(PREFER_ST);
+    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(PREFER_TT);
+    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
+	
+}
+
 

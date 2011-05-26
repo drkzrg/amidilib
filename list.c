@@ -17,12 +17,12 @@
 #include "include/list/list.h"
 #include "include/mfp.h"
 
-void initEventList(sEventList *listPtr){
+void initEventList(sEventList **listPtr){
   #ifdef DEBUG_MEM
     amTrace((const U8 *)"initEventList()\n");
   #endif
 	/*assert(listPtr!=NULL);*/
-	listPtr=NULL;
+	(*listPtr)=NULL;
 }
 
 /* adds event to linked list, list has to be inintialised with initEventList() function */
@@ -87,17 +87,17 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     
 }
 
-U32 destroyList(sEventList *listPtr){
+U32 destroyList(sEventList **listPtr){
 sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 
 #ifdef DEBUG_MEM
 amTrace((const U8 *)"destroyList()\n");
 #endif
 	
-	if(listPtr!=NULL){
+	if(*listPtr!=NULL){
 	
 	  /*go to the end of the list */
-	  pTemp=listPtr;
+	  pTemp=*listPtr;
 			
 	  while(pTemp->pNext!=NULL){
 	    pTemp=pTemp->pNext;
@@ -111,17 +111,14 @@ amTrace((const U8 *)"destroyList()\n");
 
 	  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
 	    amFree(&(pCurrentPtr->eventBlock.dataPtr));
-	    pCurrentPtr->eventBlock.dataPtr=NULL;
 	  }
 
 	  amFree((void **)&(pCurrentPtr->pNext));
-	  pCurrentPtr->pNext=NULL;
 	  pCurrentPtr=pCurrentPtr->pPrev;
 	}
 	/* we are at first element */
 	/* remove it */
-	amFree((void **)&listPtr);
-	listPtr=NULL;
+	amFree((void **)listPtr);
 	return 0;
   }
 return 0;
@@ -151,7 +148,7 @@ void printEventList(const sEventList **listPtr){
 	}
 }
 
-/* handles event (TODO: send all events with given delta, get next delta, set timer)  */
+/* prints event data and sends it to device (no timing)  */
 void printEventBlock(sEventBlockPtr_t pPtr){
  
    evntFuncPtr myFunc=NULL; 

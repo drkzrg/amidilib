@@ -3,7 +3,9 @@
 #CXXFLAGS+=-Wundef -Wreorder -Wwrite-strings -Wnon-virtual-dtor -Wno-multichar -fomit-frame-pointer -fno-exceptions -fno-rtti
 #CXXFLAGS+=$(DEFINES)
 
+#############################################################################################################################
 # additional defines for EXTRADEFINES: 
+#############################################################################################################################
 # DEBUG_BUILD - enables debug build
 # DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
 # DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
@@ -16,7 +18,7 @@
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
 
-EXTRADEFINES = -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_TEST
+EXTRADEFINES = -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT
 
 #target atari, other
 ifeq ($(TARGET),atari)

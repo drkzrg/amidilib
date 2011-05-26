@@ -104,7 +104,7 @@ S16 am_getHeaderInfo(void *pMidiPtr){
 return(-1);
 }
 
-S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
+S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     S16 iNumTracks=0;
     U16 iTimeDivision=0;
     U32 ulAddr=0L;
@@ -113,19 +113,26 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
     void *endPtr=0L;
     int iRet=0;
     int i=0;
-
+    (*pSequence)=0;
+    (*pSequence)=(sSequence_t *)amMallocEx(sizeof(sSequence_t),PREFER_TT);
+    
+    if((*pSequence)==0){ 
+      
+      return -1;
+    }
+    
     /* calculate end pointer */
     ulAddr=(U32)startPtr+lenght*sizeof(U8);
     endPtr=(void *)ulAddr;
 
-    pSequence->pSequenceName=NULL;	 	/* name of the sequence empty string */
-    pSequence->ubNumTracks=0;		 	/*  */
-    pSequence->ubActiveTrack=0; 		/* first one from the array */
+    (*pSequence)->pSequenceName=NULL;	 	/* name of the sequence empty string */
+    (*pSequence)->ubNumTracks=0;		/*  */
+    (*pSequence)->ubActiveTrack=0; 		/* first one from the array */
     
     /* init sequence table */
     for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
       /* we will allocate needed track tables when appropriate */
-      pSequence->arTracks[iLoop]=NULL;
+      (*pSequence)->arTracks[iLoop]=NULL;
     }
    
    iRet=am_getHeaderInfo(pMidiPtr);
@@ -153,7 +160,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 	    } /* invalid number of tracks, there can be only one! */
             else{
                  /* prepare our structure */
-		 pSequence->ubNumTracks=iNumTracks;	/* one by default */
+		 (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
 		 
 		 /* OK! valid number of tracks */
                  /* get time division for timing */
@@ -162,10 +169,10 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
                  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
        
 		 /* Store time division for sequence, TODO: SMPTE handling */
-		  pSequence->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+		  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
                   
 		  /* create one track list only */
-		  pSequence->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
 		  
 		   while (((startPtr!=endPtr)&&(startPtr!=NULL))){
 		  /* Pointer to midi data, 
@@ -189,20 +196,19 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
           startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
 	  /* Store time division for sequence, TODO: SMPTE handling */
-	  pSequence->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-	  pSequence->ubNumTracks=iNumTracks;
+	  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+	  (*pSequence)->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
 	  for(i=0;i<iNumTracks;i++){
-	  pSequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	  /*assert(pCurSequence->arTracks[0]>0);*/
-
-	  (pSequence->arTracks[i])->pInstrumentName=NULL;
-	  (pSequence->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
-	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
+	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+	  
+	  ((*pSequence)->arTracks[i])->pInstrumentName=NULL;
+	  ((*pSequence)->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
+	  ((*pSequence)->arTracks[i])->currentState.playState=S_STOPPED;
       
 	    /* init event list */
-	    initEventList(pSequence->arTracks[i]->pTrkEventList);
+	    initEventList(&( (*pSequence)->arTracks[i]->pTrkEventList));
 	  }
 	  
           while (((startPtr!=endPtr)&&(startPtr!=NULL))){
@@ -216,25 +222,25 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence){
 		/* handle MIDI type 2 */
 		/* several tracks not tied to each others tracks */
 
-		iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
-		iTimeDivision = am_getTimeDivision(pMidiPtr);
+	  iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
+	  iTimeDivision = am_getTimeDivision(pMidiPtr);
 	  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		
 	  /* Store time division for sequence, TODO: SMPTE handling */
-	  pSequence->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-	  pSequence->ubNumTracks=iNumTracks;
+	  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+	  (*pSequence)->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
 	  for(i=0;i<iNumTracks;i++){
-	  pSequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
-	  (pSequence->arTracks[i])->pInstrumentName=NULL;
-	  (pSequence->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
-	  (pSequence->arTracks[i])->currentState.playState=S_STOPPED;
+	  ((*pSequence)->arTracks[i])->pInstrumentName=NULL;
+	  ((*pSequence)->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
+	  ((*pSequence)->arTracks[i])->currentState.playState=S_STOPPED;
       
 	  /* init event list */
-	  initEventList(pSequence->arTracks[i]->pTrkEventList);
+	    initEventList(&((*pSequence)->arTracks[i]->pTrkEventList));
 	  }
            
            while (((startPtr!=endPtr)&&(startPtr!=NULL))){
@@ -437,7 +443,8 @@ because we have to know if we have to dump event data to one eventlist or severa
 
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
-void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence){   
+void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence)
+{   
 static U32 trackCounter=0;
       
 U32 endAddr=0L;
@@ -463,12 +470,12 @@ switch(fileTypeFlag){
     case T_MIDI0:{
 	  /* we have only one track data to process */
 	  /* add all of them to given track */ 
-	  sTrack_t *pTempTrack=pCurSequence->arTracks[0];
+	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
 
-	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[0]->currentState.currentTempo=defaultTempo;
-	  pCurSequence->arTracks[0]->currentState.playMode=S_PLAY_ONCE;
-	  pCurSequence->arTracks[0]->currentState.playState=S_STOPPED;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->arTracks[0]->currentState.currentTempo=defaultTempo;
+	  (*pCurSequence)->arTracks[0]->currentState.playMode=S_PLAY_ONCE;
+	  (*pCurSequence)->arTracks[0]->currentState.playState=S_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -485,12 +492,12 @@ switch(fileTypeFlag){
       while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
 	  /* we have got track data :)) */
 	  /* add all of them to given track */ 
-	  sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
+	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
-	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
-	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
-	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.playState=S_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -518,10 +525,10 @@ switch(fileTypeFlag){
 	/* handle MIDI 2, multitrack type */
 	/* create several track lists according to numTracks */
 	/*  TODO: not finished !*/
-	/*assert((pCurSequence->arTracks[trackCounter])->pEventListPtr>0);*/
+	/*assert(((*pCurSequence)->arTracks[trackCounter])->pEventListPtr>0);*/
 
 	/* init event list */
-	/*initEventList((pCurSequence->arTracks[trackCounter])->pEventListPtr);*/
+	/*initEventList(((*pCurSequence)->arTracks[trackCounter])->pEventListPtr);*/
 
 	/* tracks inited, now insert track data */
 	U32 trackCounter=0;   	/* reset track counter first */
@@ -529,12 +536,12 @@ switch(fileTypeFlag){
 	while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
 	  /* we have got track data :)) */
 	  /* add all of them to given track */ 
-	  sTrack_t *pTempTrack=pCurSequence->arTracks[trackCounter];
+	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
-	  pCurSequence->timeDivision=DEFAULT_PPQ;
-	  pCurSequence->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
-	  pCurSequence->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
-	  pCurSequence->arTracks[trackCounter]->currentState.playState=S_STOPPED;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
+	  (*pCurSequence)->arTracks[trackCounter]->currentState.playState=S_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -1137,8 +1144,6 @@ sPitchBend_EventBlock_t *pEvntBlock=NULL;
 	amFree(&(tempEvent.dataPtr));
     }
     else{
-        g_runningStatus;    /* get last PC status */
-
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PITCH_BEND;
 	getEventFuncInfo(T_PITCH_BEND,&tempEvent.infoBlock);
@@ -1831,4 +1836,29 @@ void memoryCheck(void){
 	
 }
 
+void am_destroySequence (sSequence_t **pPtr){
+  #ifdef DEBUG_BUILD
+    amTrace((const U8 *)"am_destroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
+  #endif
+    
+  //go to the end of sequence
+  if((*pPtr)->pSequenceName!=0){
+      amFree((void **)&((*pPtr)->pSequenceName));
+  }
+  
+  //destroy all tracks
+   for (int i=0;i<AMIDI_MAX_TRACKS;i++){
+     if((*pPtr)->arTracks[i]!=0){
+      if((*pPtr)->arTracks[i]->pInstrumentName!=0) amFree((void **)&((*pPtr)->arTracks[i]->pInstrumentName));
+      destroyList(&((*pPtr)->arTracks[i]->pTrkEventList));
+      amFree((void **)&((*pPtr)->arTracks[i]));
+     }
+   }   
+      
+  //destroy sequence and nullify it
+  amFree((void **)pPtr);      
+  #ifdef DEBUG_BUILD
+    amTrace((const U8 *)"am_destroySequence() done. \n");
+  #endif
+}
 

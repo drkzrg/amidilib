@@ -46,7 +46,7 @@ int _tmain(int argc, _TCHAR* argv[]){
 #else
 int main(int argc, char *argv[]){
 #endif
-    sSequence_t midiTune;	//here we store our sequence data
+    sSequence_t *pMidiTune=0;	//here we store our sequence data
     U8 currentChannel=1;
     U8 currentVelocity=127;
     U8 currentPN=127;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
       printf("Please wait...\n");
       time = getTimeStamp();
 
-	iError=am_handleMIDIfile(pMidi, ulFileLenght,&midiTune);
+	iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
   
 	delta=getTimeDelta();
 	 
@@ -101,14 +101,14 @@ int main(int argc, char *argv[]){
 	  #ifdef MIDI_PARSER_TEST
 	  //output loaded midi file 
 	  amTrace((const U8*)"Parsed MIDI read test\n");
-	  amTrace((const U8*)"Sequence name: %s\n",midiTune.pSequenceName);
-	  amTrace((const U8*)"Nb of tracks: %d\n",midiTune.ubNumTracks);
-	  amTrace((const U8*)"PPQN: %d\n",midiTune.timeDivision);
-	  amTrace((const U8*)"Active track: %d\n",midiTune.ubActiveTrack);
+	  amTrace((const U8*)"Sequence name: %s\n",pMidiTune->pSequenceName);
+	  amTrace((const U8*)"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
+	  amTrace((const U8*)"PPQN: %d\n",pMidiTune->timeDivision);
+	  amTrace((const U8*)"Active track: %d\n",pMidiTune->ubActiveTrack);
 	  
 	  //output data loaded in each track
-	  for (int i=0;i<midiTune.ubNumTracks;i++){
-	    sTrack_t *p=midiTune.arTracks[i];
+	  for (int i=0;i<pMidiTune->ubNumTracks;i++){
+	    sTrack_t *p=pMidiTune->arTracks[i];
 	    
 	    if(p!=0){
 		amTrace((const U8*)"Track #[%d] \t",i+1);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
            //wait until ESC pressed
 	   
 	   //unload sequence
-	   
+	   am_destroySequence(&pMidiTune);
 	   
 	   
 	  //END of MAINLOOP	

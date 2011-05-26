@@ -96,7 +96,7 @@ S16 am_getHeaderInfo(void *pMidiPtr);
  * @return returns 0 if everything is OK, -1 if error occured
  **/
 
-S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t *pSequence);
+S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence);
 
 /**
  * gets number of tracks in MIDI file
@@ -171,7 +171,7 @@ void am_deinit(void);
 *	@param pCurSequence pointer to AMIDI sequence structure  
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
-void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t *pCurSequence);
+void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence);
 
 void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack);
 
@@ -324,7 +324,6 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 *   @param mode - pointer to unsigned long int for MFP mode of operation value
 *   @param data - pointer to unsigned long int for MFP data value
 */
-
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
  
 /******************** time measuring functions */
@@ -336,9 +335,16 @@ void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
 double am_diffclock(clock_t end, clock_t begin);
 #endif
 
+/** destroys loaded Sequence. 
+*   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
+*   if operation was completed succesfully. */
+
+void am_destroySequence(sSequence_t **pPtr);
+
 /** get current time signature  
 * @return returns current time signature in ms
 */
+
 float getTimeStamp();
 
 /** Utility function for measuring delta time  

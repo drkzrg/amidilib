@@ -108,7 +108,7 @@ void *amMemChr ( void *pSrc, S32 iCharacter, tMEMSIZE iNum){
 void *amMallocEx(tMEMSIZE amount, U16 flag){
 void *pMem=0;
 
-#if defined (PORTABLE) || defined (FORCE_MALLOC)
+#if (defined (PORTABLE) || defined (FORCE_MALLOC))
   pMem = malloc(amount);
 #else
   //TODO: check gemdos version and use Malloc() if needed for plain ST/e compatibility
@@ -136,7 +136,7 @@ void *pMem=0;
 
 //TODO: add memory alignment build option on word, long boundary
 
-#if defined (PORTABLE) || defined (FORCE_MALLOC)
+#if (defined (PORTABLE) || defined (FORCE_MALLOC))
   pMem= malloc(amount); 
 #else
   pMem=(void *)Malloc(amount);
@@ -166,7 +166,7 @@ void amFree(void **pPtr){
     }
   #endif
   
-  #if defined (PORTABLE) || defined (FORCE_MALLOC)
+  #if (defined (PORTABLE) || defined (FORCE_MALLOC))
   free(*pPtr); *pPtr=0;
   #else
     Mfree(*pPtr); *pPtr=0;

@@ -45,13 +45,6 @@ typedef struct{
   volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
 } sCurrentSequenceState;
 
-enum{
- STOP=0, 
- PLAY_ONCE=1, 
- PLAY_LOOP=2,
- PLAY_RANDOM=3,
- PAUSED=4
-} eSeqState;
 
 #ifndef PORTABLE
 extern void turnOffKeyclick(void);

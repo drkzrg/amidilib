@@ -194,7 +194,7 @@ ym: $(YM_TEST_SRCS) $(YM_TEST_EXE)
 midi: $(MIDITEST_SRCS) $(MIDI_TEST_EXE)	
 timing: $(TIMING_TEST_SRCS) $(TIMING_TEST_EXE)
 
-all: $(SRCS) $(EXE)
+all: $(EXE) $(YM_TEST_EXE) $(MIDI_TEST_EXE) $(TIMING_TEST_EXE)
 	
 clean:
 	rm -rf *o $(EXE)

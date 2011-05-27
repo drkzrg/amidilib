@@ -1,7 +1,3 @@
-#DEFINES = -DTOS -DNDEBUG -DGNU
-#CXXFLAGS:=-g -O2 -m68020-60 -Wall -pedantic -ansi -fsigned-char -Wuninitialized -Wno-unknown-pragmas -Wshadow -Wimplicit
-#CXXFLAGS+=-Wundef -Wreorder -Wwrite-strings -Wnon-virtual-dtor -Wno-multichar -fomit-frame-pointer -fno-exceptions -fno-rtti
-#CXXFLAGS+=$(DEFINES)
 
 #############################################################################################################################
 # additional defines for EXTRADEFINES: 
@@ -16,7 +12,6 @@
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
-
 
 EXTRADEFINES = -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT
 
@@ -112,8 +107,8 @@ ifeq ($(PORTABLE),1)
 $(EXE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm 
 else
-$(EXE): $(OBJECTS) amidi.o int_rout.o
-	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o -o $@ -lgem -lm 
+$(EXE): $(OBJECTS) amidi.o int_rout.o ikbd_asm.o
+	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o ikbd.o -o $@ -lgem -lm 
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
 #$(SET_STACK) $(EXE)

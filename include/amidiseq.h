@@ -45,12 +45,12 @@ typedef struct EventList{
  sEventBlock_t eventBlock;
 }PACK sEventList;
 
-typedef struct SequenceState_t{
- volatile U32 currentTempo;			// quaternote duration in ms, 500ms default
- volatile U32 playState;			// STOP, PLAY, PAUSED	
- volatile U32 playMode;	      			// current play mode (loop, play_once, random) 
-						// sets the active track, by default 0 
- volatile struct EventItem *pStart,*pCurrent;	//start of track and current event pointer
+typedef volatile struct SequenceState_t{
+ U32 currentTempo;		      // quaternote duration in ms, 500ms default
+ U32 playState;			      // STOP, PLAY, PAUSED	
+ U32 playMode;	      		      // current play mode (loop, play_once, random) 
+				      // sets the active track, by default 0 
+ struct EventItem *pStart,*pCurrent; //start of track and current event pointer
 }PACK sSequenceState_t;
 
  typedef struct Track_t{
@@ -66,7 +66,7 @@ typedef struct Sequence_t{
    U32 timeDivision;				// pulses per quater note(time division)
    U8 ubNumTracks;            	        	/* number of tracks */
    U8 ubDummy[3];
-   U8 ubActiveTrack; /* range 0-(n-1) tracks */
+   U8 ubActiveTrack; /* range 0-(ubNumTracks-1) tracks */
    U8 ubDummy1[3];
  } PACK sSequence_t;
 

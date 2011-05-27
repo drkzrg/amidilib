@@ -14,9 +14,15 @@
 #include "include/amlog.h"
 #include "include/list/list.h"
 
-
 #ifndef PORTABLE
 #include "include/mfp.h"
+#include "include/ikbd.h"
+#include "include/scancode.h"
+
+static const U8 KEY_PRESSED = 0xff;
+static const U8 KEY_UNDEFINED=0x80;
+static const U8 KEY_RELEASED=0x00;
+
 #endif
 
 /**
@@ -128,14 +134,41 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	  #endif
-	   
+	   printf("Ready...\n");
+#ifndef PORTABLE
+	  /* Install our asm ikbd handler */
+	  Supexec(IkbdInstall);
+	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
+	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+	  BOOL bQuit=FALSE;
+	  
+	    while(bQuit!=TRUE){
 	   //TODO: play sequence
            //wait until ESC pressed
-	   
+	  for (int i=0; i<128; i++) {
+     
+	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
+	      Ikbd_keyboard[i]=KEY_UNDEFINED;
+	      switch(i){
+		case SC_ESC:{
+		  bQuit=TRUE;
+		  printf("Quiting\n");
+		}break;
+		case SC_SPACEBAR:{
+		  printf("Stop\n");
+		  am_allNotesOff(16);
+		}break;
+	      };
+	    }
+	  }	  
+	 }
+	  /* Uninstall our ikbd handler */
+	  Supexec(IkbdUninstall);
+#else
+#warning Portable main loop unimplemented
+#endif
 	   //unload sequence
 	   am_destroySequence(&pMidiTune);
-	   
-	   
 	  //END of MAINLOOP	
       }else{
 	amTrace((const U8*)"Error while parsing. Exiting... \n");

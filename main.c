@@ -141,24 +141,31 @@ int main(int argc, char *argv[]){
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 	  BOOL bQuit=FALSE;
+	  U32 tickCounter=0;
 	  
 	    while(bQuit!=TRUE){
 	   //TODO: play sequence
            //wait until ESC pressed
 	  for (int i=0; i<128; i++) {
-     
 	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
+	      
 	      switch(i){
 		case SC_ESC:{
 		  bQuit=TRUE;
 		  printf("Quiting\n");
 		}break;
+		case SC_A:{
+		  tickCounter++;
+		  printf("Counter: %d\n",tickCounter);
+		}break;
 		case SC_SPACEBAR:{
-		  printf("Stop\n");
+		  printf("Stop. Reset counter.\n");
+		  tickCounter=0;
 		  am_allNotesOff(16);
 		}break;
 	      };
+	      //end of switch
 	    }
 	  }	  
 	 }

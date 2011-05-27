@@ -121,6 +121,12 @@ int main(int argc, char *argv[]){
 		amTrace((const U8*)"Track name: %s\n",p->pInstrumentName);
 		amTrace((const U8*)"Track ptr %p\n",p->pTrkEventList);
 	  
+		//log state
+		amTrace((const U8*)"state: \n");
+		amTrace((const U8*)"internalCounter: %d \n",p->currentState.deltaCounter);
+		amTrace((const U8*)"Start event ptr: %p \n",p->currentState.pStart);
+		amTrace((const U8*)"Current event ptr: %p \n",p->currentState.pCurrent);
+		
 		//print out all events
 		if(p->pTrkEventList!=0){
 		  sEventList *pEventList=p->pTrkEventList;
@@ -134,30 +140,91 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	  #endif
-	   printf("Ready...\n");
+	   amTrace((const U8 *)"Ready...\n");
 #ifndef PORTABLE
-	  /* Install our asm ikbd handler */
-	  Supexec(IkbdInstall);
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+	  
+	   /* Install our asm ikbd handler */
+	  Supexec(IkbdInstall);
+	  
 	  BOOL bQuit=FALSE;
-	  BOOL tick=TRUE; //when we start we have to push all the events with delta 0
-			  
+	  BOOL tick=TRUE; 	//when we start we have to push all the events with delta 0
 	  U32 tickCounter=0;
 	  
+	      
 	    while(bQuit!=TRUE){
-	    //battle plan:
-	    //check internal counter
-	    //for each track maintain internal counter
-	    //if (internal counter == current event delta)
-	    //	 while (internal counter == current event delta)
-	    // 	 {send an event} reset internal track counter
-	    // else internal counter++; 
 	    
 	    if(tick==TRUE){
-	      printf("Tick! Counter: %d\n",tickCounter);
-	    }
-	    
+	      amTrace((const U8 *)"Tick! Counter: %u\n",(unsigned int)tickCounter);
+	      //battle plan:
+	      //for each track (0-> (numTracks-1) ) 
+	      amTrace((const U8 *)"Nb of tracks to process: %d\n",(unsigned int)pMidiTune->ubNumTracks);
+	      
+	      for (U32 i=0;i<pMidiTune->ubNumTracks;i++){
+		
+		sTrack_t *pTrk=pMidiTune->arTracks[i];
+		
+		if(pTrk!=0){
+		  evntFuncPtr myFunc; 
+   
+		amTrace((const U8 *)"Handling track: %d\n",i);
+	
+		
+		//TODO: check if all current pointers aren't null
+		//if yes stop replay or loop
+		//TODO: adjust handling for multiple, independent tracks
+		
+		//TODO: [optional] slap all the pointers to an array and send everything in one go
+		//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
+		sEventList *pCurrent=pTrk->currentState.pCurrent;
+		
+		//sometimes eventlist will be empty, because there will be nothing interesting
+		//to send in parsed file, usually in the first track 
+		if(pCurrent!=NULL){ 
+
+		 //if (internal counter == current event delta)
+		if(pCurrent->eventBlock.uiDeltaTime==pTrk->currentState.deltaCounter){
+		    //send data
+		    amTrace((const U8 *)"Send stuff\n");
+		    printEventBlock(&(pCurrent->eventBlock));
+		
+		    myFunc= pCurrent->eventBlock.infoBlock.func;
+		    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+		    
+		    pCurrent=pCurrent->pNext;
+		    
+		    //check if next event isn't NULL
+		    //if yes do nothing
+		    // else check if event delta==0 if yes keep sending events
+		    while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
+		      amTrace((const U8 *)"Send stuff with 0 delta\n");
+		   
+		      //send data
+			  myFunc= pCurrent->eventBlock.infoBlock.func;
+			  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+			  //next
+			  pCurrent=pCurrent->pNext;
+		    }
+		    
+		    // done reset internal track counter
+		    // pMidiTune->arTracks[i]->currentState.pCurrent should point to event with NULL or
+		    // event with delta higher than 0
+		    pTrk->currentState.deltaCounter=0;
+		    amTrace((const U8 *)"reset track: %d counter\n",i);
+		  }else{
+		    // else internal counter++; 
+		    pMidiTune->arTracks[i]->currentState.deltaCounter++;
+		    amTrace((const U8 *)"increase track %d counter\n",i);
+		  }
+		}else{
+		    amTrace((const U8 *)"Nothing to send in this track..\n");
+		}
+	      }else{
+		 amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
+	      }
+	     }//end of track loop
+	    }// end of if TICK==TRUE   
 	    tick=FALSE; //reset internal manual tick indicator ;>
 	      
 	    for (int i=0; i<128; i++) {
@@ -182,7 +249,8 @@ int main(int argc, char *argv[]){
 	      //end of switch
 	    }
 	  }	  
-	 }
+	 
+	}
 	  /* Uninstall our ikbd handler */
 	  Supexec(IkbdUninstall);
 #else

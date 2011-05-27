@@ -50,7 +50,9 @@ typedef volatile struct SequenceState_t{
  U32 playState;			      // STOP, PLAY, PAUSED	
  U32 playMode;	      		      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 
- struct EventItem *pStart,*pCurrent; //start of track and current event pointer
+ U32 deltaCounter;		      // internal counter for sending events in proper time, relative to last event 				      
+ struct EventList *pStart,*pCurrent;  //start of track and current event pointer
+				      //they point to track events tied to sSequenceState_t
 }PACK sSequenceState_t;
 
  typedef struct Track_t{

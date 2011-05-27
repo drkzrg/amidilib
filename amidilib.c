@@ -181,6 +181,9 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 		     pointer to the structure in which track data will be dumped (or not).  
 		  */
 		  startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence);
+		  
+		  
+		  
                  }
             }
          return(0);
@@ -483,8 +486,9 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
-     pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
-     pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.deltaCounter=0; 		//So coooooool......
     }
     break;
      case T_MIDI1:{
@@ -505,8 +509,9 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
 	
-	  pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.deltaCounter=0; //So coooooool......
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
@@ -549,8 +554,9 @@ switch(fileTypeFlag){
 	
 	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
 	  
-	  pTempTrack->currentState.pStart=(volatile struct EventItem *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.pCurrent=(volatile struct EventItem *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
+	  pTempTrack->currentState.deltaCounter=0; 			//So coooooool......
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));

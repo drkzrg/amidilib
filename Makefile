@@ -13,7 +13,7 @@
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
-EXTRADEFINES = -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DDEBUG_FILE_OUTPUT
+EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG
 
 #target atari, other
 ifeq ($(TARGET),atari)

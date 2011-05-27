@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	  #endif
-	   amTrace((const U8 *)"Ready...\n");
+	   printf("Ready...\n");
 #ifndef PORTABLE
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
@@ -151,26 +151,21 @@ int main(int argc, char *argv[]){
 	  BOOL bQuit=FALSE;
 	  BOOL tick=TRUE; 	//when we start we have to push all the events with delta 0
 	  U32 tickCounter=0;
-	  
-	      
+	  evntFuncPtr myFunc; 
+		    
 	    while(bQuit!=TRUE){
 	    
 	    if(tick==TRUE){
-	      amTrace((const U8 *)"Tick! Counter: %u\n",(unsigned int)tickCounter);
-	      //battle plan:
 	      //for each track (0-> (numTracks-1) ) 
-	      amTrace((const U8 *)"Nb of tracks to process: %d\n",(unsigned int)pMidiTune->ubNumTracks);
-	      
 	      for (U32 i=0;i<pMidiTune->ubNumTracks;i++){
 		
 		sTrack_t *pTrk=pMidiTune->arTracks[i];
 		
 		if(pTrk!=0){
-		  evntFuncPtr myFunc; 
-   
-		amTrace((const U8 *)"Handling track: %d\n",i);
-	
-		
+		 #ifdef DEBUG_BUILD 
+		     amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i,(unsigned int)tickCounter);
+		#endif		
+
 		//TODO: check if all current pointers aren't null
 		//if yes stop replay or loop
 		//TODO: adjust handling for multiple, independent tracks
@@ -184,44 +179,53 @@ int main(int argc, char *argv[]){
 		if(pCurrent!=NULL){ 
 
 		 //if (internal counter == current event delta)
-		if(pCurrent->eventBlock.uiDeltaTime==pTrk->currentState.deltaCounter){
-		    //send data
-		    amTrace((const U8 *)"Send stuff\n");
+		if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
+#ifdef DEBUG_BUILD 
 		    printEventBlock(&(pCurrent->eventBlock));
-		
+#endif		
 		    myFunc= pCurrent->eventBlock.infoBlock.func;
 		    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 		    
 		    pCurrent=pCurrent->pNext;
-		    
+		    pTrk->currentState.pCurrent=pCurrent;
 		    //check if next event isn't NULL
 		    //if yes do nothing
 		    // else check if event delta==0 if yes keep sending events
 		    while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
-		      amTrace((const U8 *)"Send stuff with 0 delta\n");
-		   
-		      //send data
-			  myFunc= pCurrent->eventBlock.infoBlock.func;
-			  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
-			  //next
-			  pCurrent=pCurrent->pNext;
+		      //send data with delta==0
+		      #ifdef DEBUG_BUILD 
+			printEventBlock(&(pCurrent->eventBlock));
+		      #endif		
+		      myFunc= pCurrent->eventBlock.infoBlock.func;
+		      (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+		      //next
+		      pCurrent=pCurrent->pNext;
+		      pTrk->currentState.pCurrent=pCurrent;
 		    }
 		    
 		    // done reset internal track counter
 		    // pMidiTune->arTracks[i]->currentState.pCurrent should point to event with NULL or
 		    // event with delta higher than 0
 		    pTrk->currentState.deltaCounter=0;
+		    #ifdef DEBUG_BUILD 
 		    amTrace((const U8 *)"reset track: %d counter\n",i);
+		    #endif
 		  }else{
 		    // else internal counter++; 
 		    pMidiTune->arTracks[i]->currentState.deltaCounter++;
+#ifdef DEBUG_BUILD 
 		    amTrace((const U8 *)"increase track %d counter\n",i);
+#endif
 		  }
 		}else{
+		  #ifdef DEBUG_BUILD 
 		    amTrace((const U8 *)"Nothing to send in this track..\n");
+		  #endif
 		}
 	      }else{
+		#ifdef DEBUG_BUILD 
 		 amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
+		#endif 
 	      }
 	     }//end of track loop
 	    }// end of if TICK==TRUE   
@@ -238,7 +242,6 @@ int main(int argc, char *argv[]){
 		}break;
 		case SC_A:{
 		 tick=TRUE;
-		  //printf("Counter: %d\n",tickCounter);
 		 tickCounter++;
 		}break;
 		case SC_SPACEBAR:{

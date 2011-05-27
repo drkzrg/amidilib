@@ -141,12 +141,26 @@ int main(int argc, char *argv[]){
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 	  BOOL bQuit=FALSE;
+	  BOOL tick=TRUE; //when we start we have to push all the events with delta 0
+			  
 	  U32 tickCounter=0;
 	  
 	    while(bQuit!=TRUE){
-	   //TODO: play sequence
-           //wait until ESC pressed
-	  for (int i=0; i<128; i++) {
+	    //battle plan:
+	    //check internal counter
+	    //for each track maintain internal counter
+	    //if (internal counter == current event delta)
+	    //	 while (internal counter == current event delta)
+	    // 	 {send an event} reset internal track counter
+	    // else internal counter++; 
+	    
+	    if(tick==TRUE){
+	      printf("Tick! Counter: %d\n",tickCounter);
+	    }
+	    
+	    tick=FALSE; //reset internal manual tick indicator ;>
+	      
+	    for (int i=0; i<128; i++) {
 	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
 	      
@@ -156,12 +170,12 @@ int main(int argc, char *argv[]){
 		  printf("Quiting\n");
 		}break;
 		case SC_A:{
-		  tickCounter++;
-		  printf("Counter: %d\n",tickCounter);
+		 tick=TRUE;
+		  //printf("Counter: %d\n",tickCounter);
+		 tickCounter++;
 		}break;
 		case SC_SPACEBAR:{
 		  printf("Stop. Reset counter.\n");
-		  tickCounter=0;
 		  am_allNotesOff(16);
 		}break;
 	      };

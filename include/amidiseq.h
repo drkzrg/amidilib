@@ -53,6 +53,8 @@ typedef volatile struct SequenceState_t{
  U32 deltaCounter;		      // internal counter for sending events in proper time, relative to last event 				      
  struct EventList *pStart,*pCurrent;  //start of track and current event pointer
 				      //they point to track events tied to sSequenceState_t
+
+  BOOL bMute;			      //if TRUE events aren't sent to external module
 }PACK sSequenceState_t;
 
  typedef struct Track_t{

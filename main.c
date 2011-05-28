@@ -31,7 +31,6 @@ static const U8 KEY_RELEASED=0x00;
  
 volatile sSequence_t *currentState;	
 
-void playSeq (sSequence_t *seq);
 
 #ifdef PORTABLE
 void deinstallReplayRout(void);
@@ -49,11 +48,20 @@ extern void deinstallReplayRout();
 
 void sequenceUpdate(void);
 
+//sequence control interface
+BOOL isSeqPlaying(void);
+void stopSeq(void);
+void pauseSeq(void);
+void playSeq(void);
+void initSeq(sSequence_t *seq);
+
+
 extern void turnOffKeyclick(void);
 #endif
 
 #ifdef _MSC_VER
 #include "stdafx.h";
+#include <lzoconf.h>
 int _tmain(int argc, _TCHAR* argv[]){
 #else
 int main(int argc, char *argv[]){
@@ -151,7 +159,7 @@ int main(int argc, char *argv[]){
 	  BOOL bQuit=FALSE;
 
 	  //install replay rout and play tune
-	  playSeq(pMidiTune);
+	  initSeq(pMidiTune);
 	  
 	  while(bQuit!=TRUE){
 	    //check keyboard input  
@@ -164,10 +172,17 @@ int main(int argc, char *argv[]){
 		  bQuit=TRUE;
 		  printf("Quiting\n");
 		}break;
-		case SC_SPACEBAR:{
-		  printf("Stop. Reset counter.\n");
-		  am_allNotesOff(16);
+		case SC_P:{
+		  if(isSeqPlaying()==TRUE){
+		    pauseSeq();
+		  }else{
+		    playSeq();
+		  }
 		}break;
+		
+		case SC_SPACEBAR:{
+		  stopSeq();
+		 }break;
 	      };
 	      //end of switch
 	    }
@@ -203,12 +218,13 @@ int main(int argc, char *argv[]){
  return (0);
 }
 
-void playSeq(sSequence_t *seq){
+void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
 	//TODO! 
 #else
   U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
   U32 mode=0,data=0;
+  
   pCurrentSequence=seq;
   
   getMFPTimerSettings(freq/8,&mode,&data);
@@ -302,6 +318,29 @@ else{
   }else{
     pulsesCounter++;
   }
+}
+
+
+//replay control
+BOOL isSeqPlaying(void){
+ 
+  return TRUE;
+}
+
+
+void stopSeq(void){
+  printf("Stop.\n");
+  am_allNotesOff(16);
+}
+
+void pauseSeq(){
+  printf("Pause/Resume.\n");
+  
+}
+
+void playSeq(void){
+  
+  
 }
 
 #ifdef PORTABLE

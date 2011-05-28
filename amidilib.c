@@ -489,6 +489,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.deltaCounter=0; 		//So coooooool......
+	  pTempTrack->currentState.bMute=FALSE;
     }
     break;
      case T_MIDI1:{
@@ -512,6 +513,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.deltaCounter=0; //So coooooool......
+	  pTempTrack->currentState.bMute=FALSE;
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
@@ -557,6 +559,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.deltaCounter=0; 			//So coooooool......
+	  pTempTrack->currentState.bMute=FALSE;
 	  
 	  /* get next data chunk info */
 	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));

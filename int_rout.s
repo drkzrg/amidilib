@@ -19,33 +19,33 @@ AMIDI_MAX_TRACKS	equ	16
 
 
 ;=========================================
-	   xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
+       xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
        xdef _deinstallReplayRout	;removes replay routine from system 
        xdef _defaultPlayMode
 	   
-	   xdef _oldTB		;saved old Timer B vector
-	   xdef _counter	;ticks counted in quaternote span
+       xdef _oldTB		;saved old Timer B vector
+       xdef _counter	;ticks counted in quaternote span
 	   
-	   xref super_on		; self explanatory 
-	   xref super_off		;
-	   xref _turnOffKeyclick  
+       xref super_on		; self explanatory 
+      xref super_off		;
+      xref _turnOffKeyclick  
 	 	  
 ;external references
+	  xref _sequenceUpdate
 	  xref _am_allNotesOff
 	  xref _getMFPTimerSettings
 	  xref ___udivsi3
     
 
 _installReplayRout:
-	move.l	a0,_currentSeqPtr
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	  super_on
 	move.w	sr,-(sp)	;save status register
-    or.w	#$0700,sr	;turn off all interupts
+	or.w	#$0700,sr	;turn off all interupts
 
 	move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
 	move.l	currentTempo(a1),d0
-    move.l	d0,_currentTempo	;save current tempo
+	move.l	d0,_currentTempo	;save current tempo
 
 	move.l	$42(sp),d1  ;mode
         move.l  $46(sp),d0  ;data
@@ -59,7 +59,7 @@ _installReplayRout:
 	move.l	  #S_PLAY_ONCE,_defaultPlayMode
 	
 	move.l	  $120,_oldTB	
-	move.l    #update,$120		;slap interrupt
+	move.l    #update2,$120		;slap interrupt
 	
 	move.b    d0,$fffffa21		;put data 
 	move.b    d1,$fffffa1b		;put mode 
@@ -70,6 +70,28 @@ _installReplayRout:
 	bsr.w	  super_off
 	movem.l (sp)+,d0-d7/a0-a6		;restore registers
 	rts
+
+update2:
+      movem.l   d0-7/a0-6,-(a7)	;save registers
+      clr.b     $fffffa1b
+      ;eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
+      
+      ;TODO: manage sequence state: STOP, PAUSE, PLAY
+      jsr	_sequenceUpdate		;sneaky bastard ;>
+
+      ;TODO: update tempo if needed
+      
+      ;prepare next tick
+      move.l    #update2,$120		;slap interrupt 
+      move.b    _tbData,$fffffa21	;set data
+      move.b    _tbMode,$fffffa1b	;div mode
+      bset.b    #0,$fffffa07		;go!
+      bset.b    #0,$fffffa13
+
+      ;move.w 	  (sp)+,sr 		;restore Status Register
+      movem.l   (a7)+,d0-7/a0-6	;restore registers
+      bclr.b	  #0,$fffffa0f  	; finished!
+      rte
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
@@ -183,7 +205,7 @@ update:
 	move.l	eventBlock(a2),a3
 	move.l	delta(a3),d3	;get delta
 	
-    cmp.l	d6,d3
+	cmp.l	d6,d3
 	beq.s	.sendNote
 	
 	;increase elapsed delta
@@ -284,6 +306,7 @@ _deinstallReplayRout:
 
 	bss
 	even
+
 _currentSeqPtr:		ds.l	1
 _elapsedDelta:		ds.l	1
 _defaultPlayMode:	ds.l	1

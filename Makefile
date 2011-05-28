@@ -13,7 +13,8 @@
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
-EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
+EXTRADEFINES = 
+#-DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
 #target atari, other
 ifeq ($(TARGET),atari)
@@ -51,7 +52,7 @@ else
 DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
 endif
 
-CFLAGS += -std=c99 -g $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -pedantic -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+CFLAGS += -std=c99 -g $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
 LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
 
 ASM = vasmm68k_mot
@@ -108,7 +109,7 @@ $(EXE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm 
 else
 $(EXE): $(OBJECTS) amidi.o int_rout.o ikbd_asm.o
-	$(CC) $(LDFLAGS) $(OBJECTS) int_rout.o amidi.o ikbd.o -o $@ -lgem -lm 
+	$(CC) $(LDFLAGS) $(OBJECTS) amidi.o int_rout.o ikbd.o -o $@ -lgem -lm 
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
 #$(SET_STACK) $(EXE)

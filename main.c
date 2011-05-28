@@ -38,12 +38,18 @@ void deinstallReplayRout(void);
 void turnOffKeyclick(void);
 U32 defaultPlayMode;
 #else
-extern volatile U8 tbData,tbMode;
-volatile extern U32 counter;
-extern void installReplayRout(U8 mode,U8 data,volatile sSequence_t *pPtr);
+
+static volatile U8 tbData,tbMode;
+static volatile U32 defaultPlayMode;
+static volatile U32 deltaCounter;
+static volatile sSequence_t *pCurrentSequence=0;		//here is stored current sequence
+
+extern void installReplayRout(U8 mode,U8 data);
 extern void deinstallReplayRout();
+
+void sequenceUpdate(void);
+
 extern void turnOffKeyclick(void);
-extern U32 defaultPlayMode;
 #endif
 
 #ifdef _MSC_VER
@@ -92,15 +98,12 @@ int main(int argc, char *argv[]){
      /* check midi header */
       printf("Please wait...\n");
       time = getTimeStamp();
+      iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
+      delta=getTimeDelta();
+      /* free up buffer with loaded midi file, we don't need it anymore */
+      amFree(&pMidi);
 
-	iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
-  
-	delta=getTimeDelta();
-	 
-	/* free up buffer with loaded midi file, we don't need it anymore */
-	 amFree(&pMidi);
-	 
-	 if(iError==0){
+      if(iError==0){
 	  printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	  amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	
@@ -136,7 +139,6 @@ int main(int argc, char *argv[]){
 		    pEventList=pEventList->pNext;
 		  }
 		}
-		////
 	    }
 	  }
 	  #endif
@@ -144,93 +146,15 @@ int main(int argc, char *argv[]){
 #ifndef PORTABLE
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-	  
 	   /* Install our asm ikbd handler */
 	  Supexec(IkbdInstall);
-	  
 	  BOOL bQuit=FALSE;
-	  BOOL tick=TRUE; 	//when we start we have to push all the events with delta 0
-	  U32 tickCounter=0;
-	  evntFuncPtr myFunc; 
-		    
-	    while(bQuit!=TRUE){
-	    
-	    if(tick==TRUE){
-	      //for each track (0-> (numTracks-1) ) 
-	      for (U32 i=0;i<pMidiTune->ubNumTracks;i++){
-		
-		sTrack_t *pTrk=pMidiTune->arTracks[i];
-		
-		if(pTrk!=0){
-		 #ifdef DEBUG_BUILD 
-		     amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i,(unsigned int)tickCounter);
-		#endif		
 
-		//TODO: check if all current pointers aren't null
-		//if yes stop replay or loop
-		//TODO: adjust handling for multiple, independent tracks
-		
-		//TODO: [optional] slap all the pointers to an array and send everything in one go
-		//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
-		sEventList *pCurrent=pTrk->currentState.pCurrent;
-		
-		//sometimes eventlist will be empty, because there will be nothing interesting
-		//to send in parsed file, usually in the first track 
-		if(pCurrent!=NULL){ 
-
-		 //if (internal counter == current event delta)
-		if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
-#ifdef DEBUG_BUILD 
-		    printEventBlock(&(pCurrent->eventBlock));
-#endif		
-		    myFunc= pCurrent->eventBlock.infoBlock.func;
-		    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
-		    
-		    pCurrent=pCurrent->pNext;
-		    pTrk->currentState.pCurrent=pCurrent;
-		    //check if next event isn't NULL
-		    //if yes do nothing
-		    // else check if event delta==0 if yes keep sending events
-		    while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
-		      //send data with delta==0
-		      #ifdef DEBUG_BUILD 
-			printEventBlock(&(pCurrent->eventBlock));
-		      #endif		
-		      myFunc= pCurrent->eventBlock.infoBlock.func;
-		      (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
-		      //next
-		      pCurrent=pCurrent->pNext;
-		      pTrk->currentState.pCurrent=pCurrent;
-		    }
-		    
-		    // done reset internal track counter
-		    // pMidiTune->arTracks[i]->currentState.pCurrent should point to event with NULL or
-		    // event with delta higher than 0
-		    pTrk->currentState.deltaCounter=0;
-		    #ifdef DEBUG_BUILD 
-		    amTrace((const U8 *)"reset track: %d counter\n",i);
-		    #endif
-		  }else{
-		    // else internal counter++; 
-		    pMidiTune->arTracks[i]->currentState.deltaCounter++;
-#ifdef DEBUG_BUILD 
-		    amTrace((const U8 *)"increase track %d counter\n",i);
-#endif
-		  }
-		}else{
-		  #ifdef DEBUG_BUILD 
-		    amTrace((const U8 *)"Nothing to send in this track..\n");
-		  #endif
-		}
-	      }else{
-		#ifdef DEBUG_BUILD 
-		 amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
-		#endif 
-	      }
-	     }//end of track loop
-	    }// end of if TICK==TRUE   
-	    tick=FALSE; //reset internal manual tick indicator ;>
-	      
+	  //install replay rout and play tune
+	  playSeq(pMidiTune);
+	  
+	  while(bQuit!=TRUE){
+	    //check keyboard input  
 	    for (int i=0; i<128; i++) {
 	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -239,10 +163,6 @@ int main(int argc, char *argv[]){
 		case SC_ESC:{
 		  bQuit=TRUE;
 		  printf("Quiting\n");
-		}break;
-		case SC_A:{
-		 tick=TRUE;
-		 tickCounter++;
 		}break;
 		case SC_SPACEBAR:{
 		  printf("Stop. Reset counter.\n");
@@ -288,13 +208,100 @@ void playSeq(sSequence_t *seq){
 	//TODO! 
 #else
   U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
-  U32 mode,data;
-
-  getMFPTimerSettings(freq,&mode,&data);
-  installReplayRout(mode, data, seq);
-
+  U32 mode=0,data=0;
+  pCurrentSequence=seq;
+  
+  getMFPTimerSettings(freq/8,&mode,&data);
+  installReplayRout(mode, data);
 #endif
  return;
+}
+
+
+//this will be called from an interrupt in each delta incrementation
+void sequenceUpdate(void){
+ static sTrack_t *pTrk=0;
+ static sEventList *pCurrent=0;
+ static evntFuncPtr myFunc=0; 
+ static U32 pulsesCounter=0;
+ 
+ if( ((pCurrentSequence!=0)/*&&(pulsesCounter==(pCurrentSequence->timeDivision-1))*/)){
+   
+//for each track (0-> (numTracks-1) ) 
+  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+    pTrk=pCurrentSequence->arTracks[i];
+    if(pTrk!=0){
+    #ifdef DEBUG_BUILD 
+	amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i+1,(unsigned int)tickCounter);
+    #endif		
+    //TODO: check if all current pointers aren't null
+    //if yes stop replay or loop
+    //TODO: adjust handling for multiple, independent tracks
+    //TODO: [optional] slap all the pointers to an array and send everything in one go
+    //TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
+    pCurrent=pTrk->currentState.pCurrent;
+		
+    //sometimes eventlist will be empty, because there will be nothing interesting
+    //to send in parsed file, usually in the first track 
+    if(pCurrent!=NULL){ 
+
+    //if (internal counter == current event delta)
+    if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
+#ifdef DEBUG_BUILD 
+	printEventBlock(&(pCurrent->eventBlock));
+#endif		
+	myFunc= pCurrent->eventBlock.infoBlock.func;
+	(*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+		    
+	pCurrent=pCurrent->pNext;
+	pTrk->currentState.pCurrent=pCurrent;
+	//check if next event isn't NULL
+	//if yes do nothing
+	// else check if event delta==0 if yes keep sending events
+	while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
+	//send data with delta==0
+#ifdef DEBUG_BUILD 
+	printEventBlock(&(pCurrent->eventBlock));
+#endif		
+	myFunc= pCurrent->eventBlock.infoBlock.func;
+	(*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	//next
+	pCurrent=pCurrent->pNext;
+	pTrk->currentState.pCurrent=pCurrent;
+	}
+	// done reset internal track counter
+	// pMidiTune->arTracks[i]->currentState.pCurrent should point to event with NULL or
+	// event with delta higher than 0
+	pTrk->currentState.deltaCounter=0;
+#ifdef DEBUG_BUILD 
+	amTrace((const U8 *)"reset track: %d counter\n",i);
+#endif
+	}else{
+	// else internal counter++; 
+	pCurrentSequence->arTracks[i]->currentState.deltaCounter++;
+#ifdef DEBUG_BUILD 
+	amTrace((const U8 *)"increase track %d counter\n",i);
+#endif
+	}
+	}
+#ifdef DEBUG_BUILD 
+else{
+	amTrace((const U8 *)"Nothing to send in this track..\n");}
+#endif
+}
+#ifdef DEBUG_BUILD 
+else{ 
+  amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
+  
+}
+#endif 
+
+   pulsesCounter=0;
+   deltaCounter++;
+  }//end of track loop
+  }else{
+    pulsesCounter++;
+  }
 }
 
 #ifdef PORTABLE

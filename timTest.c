@@ -101,7 +101,7 @@ void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 // plays sample sequence 
 int playSampleSequence(const sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;			//initial position
-  pInitialState->state=STOP;			//track state
+  pInitialState->state=PS_STOPPED;			//track state
   pInitialState->seqPtr=(const sSequence *)testSequenceChannel1;	//ptr to sequence
   
   //install replay routine 96 ticks per 500ms interval 
@@ -360,21 +360,21 @@ int main(void){
 	  case SC_M:{
 	    // toggle play mode PLAY ONCE / LOOP
 	    
-	    if(currentState.state==PLAY_LOOP){
+	    if(currentState.state==S_PLAY_LOOP){
 	      printf("Play sequence once.\n");
-	      currentState.state=PLAY_ONCE;
+	      currentState.state=S_PLAY_ONCE;
 	    }
-	    else if(currentState.state==PLAY_ONCE){
+	    else if(currentState.state==S_PLAY_ONCE){
 	      printf("Play sequence in loop.\n");
-	      currentState.state=PLAY_LOOP;
+	      currentState.state=S_PLAY_LOOP;
 	    }else{
-	      if(defaultPlayMode==PLAY_LOOP){
+	      if(defaultPlayMode==S_PLAY_LOOP){
 		printf("Play sequence once.\n");
-		defaultPlayMode=PLAY_ONCE;
+		defaultPlayMode=S_PLAY_ONCE;
 	      }
-	      else if(defaultPlayMode==PLAY_ONCE){
+	      else if(defaultPlayMode==S_PLAY_ONCE){
 		printf("Play sequence in loop.\n");
-		defaultPlayMode=PLAY_LOOP;
+		defaultPlayMode=S_PLAY_LOOP;
 	      }
 	    
 	    }
@@ -384,34 +384,34 @@ int main(void){
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
 	    static U32 iFormerState;
-	    if(currentState.state==STOP){
+	    if(currentState.state==PS_STOPPED){
 	      currentState.state=defaultPlayMode;
-	    }else if(currentState.state==PLAY_ONCE){
+	    }else if(currentState.state==S_PLAY_ONCE){
 	      iFormerState=currentState.state; 
-	      currentState.state=PAUSED;
+	      currentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==PLAY_LOOP){
+	    else if(currentState.state==S_PLAY_LOOP){
 	      iFormerState=currentState.state;
-	      currentState.state=PAUSED;
+	      currentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==PLAY_RANDOM){
+	    else if(currentState.state==S_PLAY_RANDOM){
 	      iFormerState=currentState.state;
-	      currentState.state=PAUSED;
+	      currentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==PAUSED){
+	    else if(currentState.state==PS_PAUSED){
 	      currentState.state=iFormerState;
 	      
 	    }
 	  }break;
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
-	    currentState.state=STOP;
+	    currentState.state=PS_STOPPED;
 	    am_allNotesOff(16);
 	    ymSoundOff();
 	  }break;

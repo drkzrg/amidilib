@@ -1842,7 +1842,7 @@ void am_destroySequence (sSequence_t **pPtr){
   //destroy all tracks
    for (int i=0;i<AMIDI_MAX_TRACKS;i++){
      if((*pPtr)->arTracks[i]!=0){
-      if((*pPtr)->arTracks[i]->pInstrumentName!=0) amFree((void **)&((*pPtr)->arTracks[i]->pInstrumentName));
+      if((*pPtr)->arTracks[i]->pTrackName!=0) amFree((void **)&((*pPtr)->arTracks[i]->pTrackName));
       destroyList(&((*pPtr)->arTracks[i]->pTrkEventList));
       amFree((void **)&((*pPtr)->arTracks[i]));
      }

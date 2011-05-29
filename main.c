@@ -229,15 +229,20 @@ void initSeq(sSequence_t *seq){
 }
 
 
-//this will be called from an interrupt in each delta incrementation
+//this will be called from an interrupt in each delta increment
 void sequenceUpdate(void){
  static sTrack_t *pTrk=0;
  static sEventList *pCurrent=0;
  static evntFuncPtr myFunc=0; 
-
- if(pCurrentSequence){ //TODO: change it to assert and include only in DEBUG build
+ BOOL bNoteOffSent=FALSE;
+ static U32 silenceThrCounter=0;
+ 
+ if(pCurrentSequence){ 
+   //TODO: change it to assert and include only in DEBUG build
 
    if(pCurrentSequence->arTracks[0]->currentState.playState==PS_PLAYING){
+     bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
+    
     //for each track (0-> (numTracks-1) ) 
     for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
       pTrk=pCurrentSequence->arTracks[i];
@@ -255,9 +260,9 @@ void sequenceUpdate(void){
 	pCurrent=pTrk->currentState.pCurrent;
 		
 	//sometimes eventlist will be empty, because there will be nothing interesting
-	//to send in parsed file, usually in the first track 
+	//to send in parsed file, usually in the first track of MIDI 1 file (for example) 
 	if(pCurrent!=NULL){ 
-
+	
 	//if (internal counter == current event delta)
 	if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
 #ifdef DEBUG_BUILD 
@@ -279,16 +284,14 @@ void sequenceUpdate(void){
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	
 	if(pTrk->currentState.bMute!=TRUE){
 	  //the same as above
 	  myFunc= pCurrent->eventBlock.infoBlock.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	}
-	
 	//next
-	pCurrent=pCurrent->pNext;
-	pTrk->currentState.pCurrent=pCurrent;
+	  pCurrent=pCurrent->pNext;
+	  pTrk->currentState.pCurrent=pCurrent;
 	}
 	// done reset internal track counter
 	// pMidiTune->arTracks[i]->currentState.pCurrent should point to event with NULL or
@@ -307,29 +310,44 @@ void sequenceUpdate(void){
 	}
 #ifdef DEBUG_BUILD 
 else{
+	//quite normal
 	amTrace((const U8 *)"Nothing to send in this track..\n");}
 #endif
 }
 #ifdef DEBUG_BUILD 
 else{ 
+  //this should not happen at all
   amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
   
 }
 #endif 
-
+    
+    //check for end of the track 
+    // if we play in loop mode: set state to PS_PLAYING,reset track to the beginning
+    // else stop replay: set state to PS_STOPPED, reset track to the beginning
+    
    deltaCounter++;
+     
   }//end of track loop
   }//track is playing
-  else 
-    if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED){
-      //reset all counters
-      for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-	pTrk=pCurrentSequence->arTracks[i];
-	pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+  else if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED){
+      //reset all counters, but only once
+      if(bNoteOffSent==FALSE){
+	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+	    pTrk=pCurrentSequence->arTracks[i];
+	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+	  }
+	  //turn all notes off on external module
+	  bNoteOffSent=TRUE;
+	  am_allNotesOff(16);
+	//done! 
       }
-      //turn all notes off on external module
-      am_allNotesOff(16);
-      //done! 
+  }else if(pCurrentSequence->arTracks[0]->currentState.playState==PS_PAUSED){
+      if(bNoteOffSent==FALSE){
+	  //turn all notes off on external module but only once
+	  bNoteOffSent=TRUE;
+	  am_allNotesOff(16);
+	}
   }
 }//pCurrentSequence null check
 }//sequenceUpdate() end
@@ -369,7 +387,6 @@ void pauseSeq(){
       case PS_STOPPED:{
 	pTrack->currentState.playState=PS_PLAYING;
       }break;
-      
       
     };
   }

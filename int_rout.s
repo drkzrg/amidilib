@@ -74,7 +74,7 @@ _installReplayRout:
 update2:
       movem.l   d0-7/a0-6,-(a7)	;save registers
       ;move.w	sr,-(sp)	;save status register
-      ;or.w	#$0700,sr	;turn off all interupts
+      ;or.w	#$0700,sr	;turn off all interupts 
 
       clr.b     $fffffa1b
       eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)

@@ -48,18 +48,18 @@ typedef struct{
 
 #ifndef PORTABLE
 extern void turnOffKeyclick(void);
-extern void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
-extern void deinstallReplayRout();
+extern void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
+extern void deinstallYMReplayRout();
 extern volatile U8 tbData,tbMode;
 #else
 void turnOffKeyclick(void){
 #warning TODO!
 }
 
-void installReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
+void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
 #warning TODO!
 }
-void deinstallReplayRout(){
+void deinstallYMReplayRout(){
 #warning TODO! 
 }
 #endif
@@ -105,7 +105,7 @@ int playSampleSequence(const sSequence *testSequenceChannel1, U32 mode,U32 data,
   pInitialState->seqPtr=(const sSequence *)testSequenceChannel1;	//ptr to sequence
   
   //install replay routine 96 ticks per 500ms interval 
-  installReplayRout(mode, data, pInitialState);
+  installYMReplayRout(mode, data, pInitialState);
   return 0;
 }
 
@@ -432,7 +432,7 @@ int main(void){
 
   am_allNotesOff(16);
   ymSoundOff();
-  deinstallReplayRout();   
+  deinstallYMReplayRout();   
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);

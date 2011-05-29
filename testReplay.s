@@ -3,8 +3,8 @@
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
 
-    xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
-    xdef _deinstallReplayRout	;removes replay routine from system 
+    xdef _installYMReplayRout	;initialises replay interrupt TB routine and prepares data
+    xdef _deinstallYMReplayRout	;removes replay routine from system 
     xdef _defaultPlayMode
     xref _playNote	;output note to external midi module and/or ym2149
     xref super_on	; self explanatory 
@@ -21,6 +21,7 @@
     xref _am_allNotesOff
     xref _getMFPTimerSettings
     xref ___udivsi3
+
 ;MFP MK68901 Multi Function Periferal
 MFP_STOP	equ 	%0000  ;Timer stop
 MFP_DIV4	equ 	%0001  ;div 4
@@ -40,18 +41,18 @@ MFP_DEL100	equ	%1110  ;delay 100
 MFP_DEL200	equ	%1111  ;delay 200;
 
 ;=========================================
-STOP		equ	0 
-PLAY_ONCE 	equ	1 
-PLAY_LOOP	equ 	2
-PLAY_RANDOM 	equ	3
-PAUSED 		equ 	4
+STOP		equ	$00 
+PLAY_ONCE 	equ	$06 
+PLAY_LOOP	equ 	$08
+PLAY_RANDOM 	equ	$10
+PAUSED 		equ 	$04
 ;=========================================
 
 ;hokus-pokus from Atari Compedium
 savptr		equ	$4a2
 savamt		equ	$23*2
 
-_installReplayRout:
+_installYMReplayRout:
 	move.l	a0,_currentSeqPtr
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	  super_on
@@ -272,7 +273,7 @@ update:
 
 
 ; deinstalls MIDI replay on timer B 
-_deinstallReplayRout:
+_deinstallYMReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	super_on
 

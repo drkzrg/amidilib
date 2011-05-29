@@ -16,6 +16,7 @@
 #include "roland.h"
 #include "amidiseq.h"
 #include "midi_cmd.h"
+#include "midi_rep.h"
 
 #ifdef TIME_CHECK_PORTABLE
 #include <time.h>

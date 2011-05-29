@@ -21,9 +21,9 @@
 	
 /** sequence replay mode */
 typedef enum{
-  S_PLAY_ONCE=0x00,
-  S_PLAY_LOOP=0x02,
-  S_PLAY_RANDOM=0x04
+  S_PLAY_ONCE=0x06,
+  S_PLAY_LOOP=0x08,
+  S_PLAY_RANDOM=0x10
 } ePlayMode;
 
 /** current track state */

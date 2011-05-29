@@ -73,11 +73,11 @@ ST_HD_PATH=$(HOME)/STEEM/HD/TUNES
 SHARED_DIR_PATH=$(HOME)/Pulpit/shared
 
 ifeq ($(PORTABLE),1)
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c midi_rep.c
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o
 else
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c midi_rep.c
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o mfp.o
 endif
 
 ifeq ($(PORTABLE),1)

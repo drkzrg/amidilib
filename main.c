@@ -56,6 +56,9 @@ void pauseSeq(void);
 void playSeq(void);
 void initSeq(sSequence_t *seq);
 void muteTrack(U16 trackNb,BOOL bMute);
+
+//toggles between play once and play in loop modes.
+void toggleReplayMode(void);
 //////////////////////////////////////////////////////////////////
 
 extern void turnOffKeyclick(void);
@@ -175,7 +178,16 @@ int main(int argc, char *argv[]){
 		  printf("Quiting\n");
 		}break;
 		case SC_P:{
-		    pauseSeq();
+		  //starts playing sequence if is stopped
+		  playSeq();
+		 }break;
+		case SC_R:{
+		  //pauses sequence when is playing
+		   pauseSeq();
+		 }break;
+		 case SC_M:{
+		   //toggles between play once and play in loop
+		  toggleReplayMode();
 		 }break;
 		case SC_SPACEBAR:{
 		  stopSeq();
@@ -420,10 +432,6 @@ void pauseSeq(){
       case PS_PAUSED:{
 	pTrack->currentState.playState=PS_PLAYING;
       }break;
-      case PS_STOPPED:{
-	pTrack->currentState.playState=PS_PLAYING;
-      }break;
-      
     };
   }
 }
@@ -431,7 +439,8 @@ void pauseSeq(){
 void playSeq(void){
   if(pCurrentSequence!=0){
     //set state
-    pCurrentSequence->arTracks[0]->currentState.playState=PS_PLAYING;
+    if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED)
+      pCurrentSequence->arTracks[0]->currentState.playState=PS_PLAYING;
   }
   
 }
@@ -439,6 +448,17 @@ void playSeq(void){
 void muteTrack(U16 trackNb,BOOL bMute){
   if(((pCurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
     pCurrentSequence->arTracks[trackNb]->currentState.bMute=bMute;
+  }
+}
+
+void toggleReplayMode(void){
+  
+  if(pCurrentSequence!=0){
+    if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_ONCE){
+	  pCurrentSequence->arTracks[0]->currentState.playMode=S_PLAY_LOOP;
+    }else if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_LOOP){
+      pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_ONCE;
+    }
   }
 }
 

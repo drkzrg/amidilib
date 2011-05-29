@@ -26,9 +26,9 @@ typedef enum{
 
 /** current play mode */
 typedef enum{
-  S_STOPPED=0x00,
-  S_PLAYING=0x02,
-  S_PAUSED=0x04
+  PS_STOPPED=0x00,
+  PS_PLAYING=0x02,
+  PS_PAUSED=0x04
 } ePlayState;
 
 /** sequence state enums */

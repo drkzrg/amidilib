@@ -73,15 +73,14 @@ _installReplayRout:
 
 update2:
       movem.l   d0-7/a0-6,-(a7)	;save registers
+      ;move.w	sr,-(sp)	;save status register
+      ;or.w	#$0700,sr	;turn off all interupts
+
       clr.b     $fffffa1b
       eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
-      
 
-      ;TODO: manage sequence state: STOP, PAUSE, PLAY
       jsr	_sequenceUpdate		;sneaky bastard ;>
 
-      ;TODO: update tempo if needed
-      
       ;prepare next tick
       move.l    #update2,$120		;slap interrupt 
       move.b    _tbData,$fffffa21	;set data
@@ -90,21 +89,21 @@ update2:
       bset.b    #0,$fffffa13
 
       ;move.w 	  (sp)+,sr 		;restore Status Register
-      movem.l   (a7)+,d0-7/a0-6	;restore registers
+      movem.l   (a7)+,d0-7/a0-6		;restore registers
       bclr.b	  #0,$fffffa0f  	; finished!
       rte
 
 update:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
-	move.w	sr,-(sp)	;save status register
-	or.w	#$0700,sr	;turn off all interupts
+	move.w	sr,-(sp)		;save status register
+	or.w	#$0700,sr		;turn off all interupts
 
 	clr.b     $fffffa1b
 	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 
 	move.l	_currentSeqPtr,a0
 	
-	move.l	arTracks(a0),a1 ;get current tempo, current slot in the sequence,
+	move.l	arTracks(a0),a1 	;get current tempo, current slot in the sequence,
 	move.l	currentState(a1),a1 
 	move.l	currentTempo(a1),d0
 	

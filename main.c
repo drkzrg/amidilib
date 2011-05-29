@@ -29,23 +29,24 @@ static const U8 KEY_RELEASED=0x00;
  * main program entry
  */
  
-volatile sSequence_t *currentState;	
-
-
 #ifdef PORTABLE
 void deinstallReplayRout(void);
 void turnOffKeyclick(void);
 U32 defaultPlayMode;
 #else
 
+
+////// TODO: move it to separate file
 static volatile U8 tbData,tbMode;
 static volatile U32 defaultPlayMode;
 static volatile U32 deltaCounter;
 static volatile sSequence_t *pCurrentSequence=0;		//here is stored current sequence
 
+// install and deinstall routines
 extern void installReplayRout(U8 mode,U8 data);
 extern void deinstallReplayRout();
 
+// update sequence function called from exception routine
 void sequenceUpdate(void);
 
 //sequence control interface
@@ -54,7 +55,7 @@ void stopSeq(void);
 void pauseSeq(void);
 void playSeq(void);
 void initSeq(sSequence_t *seq);
-
+//////////////////////////////////////////////////////////////////
 
 extern void turnOffKeyclick(void);
 #endif
@@ -173,13 +174,8 @@ int main(int argc, char *argv[]){
 		  printf("Quiting\n");
 		}break;
 		case SC_P:{
-		  if(isSeqPlaying()==TRUE){
 		    pauseSeq();
-		  }else{
-		    playSeq();
-		  }
-		}break;
-		
+		 }break;
 		case SC_SPACEBAR:{
 		  stopSeq();
 		 }break;
@@ -187,10 +183,9 @@ int main(int argc, char *argv[]){
 	      //end of switch
 	    }
 	  }	  
-	 
 	}
-	  /* Uninstall our ikbd handler */
-	  Supexec(IkbdUninstall);
+	/* Uninstall our ikbd handler */
+	Supexec(IkbdUninstall);
 #else
 #warning Portable main loop unimplemented
 #endif
@@ -220,7 +215,7 @@ int main(int argc, char *argv[]){
 
 void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
-	//TODO! 
+  //TODO! 
 #else
   U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
   U32 mode=0,data=0;
@@ -239,48 +234,58 @@ void sequenceUpdate(void){
  static sTrack_t *pTrk=0;
  static sEventList *pCurrent=0;
  static evntFuncPtr myFunc=0; 
- static U32 pulsesCounter=0;
- 
- if( ((pCurrentSequence!=0)/*&&(pulsesCounter==(pCurrentSequence->timeDivision-1))*/)){
-   
-//for each track (0-> (numTracks-1) ) 
-  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-    pTrk=pCurrentSequence->arTracks[i];
-    if(pTrk!=0){
-    #ifdef DEBUG_BUILD 
-	amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i+1,(unsigned int)tickCounter);
-    #endif		
-    //TODO: check if all current pointers aren't null
-    //if yes stop replay or loop
-    //TODO: adjust handling for multiple, independent tracks
-    //TODO: [optional] slap all the pointers to an array and send everything in one go
-    //TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
-    pCurrent=pTrk->currentState.pCurrent;
-		
-    //sometimes eventlist will be empty, because there will be nothing interesting
-    //to send in parsed file, usually in the first track 
-    if(pCurrent!=NULL){ 
 
-    //if (internal counter == current event delta)
-    if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
+ if(pCurrentSequence){ //TODO: change it to assert and include only in DEBUG build
+
+   if(pCurrentSequence->arTracks[0]->currentState.playState==PS_PLAYING){
+    //for each track (0-> (numTracks-1) ) 
+    for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+      pTrk=pCurrentSequence->arTracks[i];
+
+      if(pTrk!=0){
+	#ifdef DEBUG_BUILD 
+	  amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i+1,(unsigned int)tickCounter);
+	#endif	
+	  
+	//TODO: check if all current pointers aren't null
+	//if yes stop replay or loop
+	//TODO: adjust handling for multiple, independent tracks
+	//TODO: [optional] slap all the pointers to an array and send everything in one go
+	//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
+	pCurrent=pTrk->currentState.pCurrent;
+		
+	//sometimes eventlist will be empty, because there will be nothing interesting
+	//to send in parsed file, usually in the first track 
+	if(pCurrent!=NULL){ 
+
+	//if (internal counter == current event delta)
+	if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	myFunc= pCurrent->eventBlock.infoBlock.func;
-	(*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	if(pTrk->currentState.bMute!=TRUE){
+	  //output data only when track is not mute
+	  myFunc= pCurrent->eventBlock.infoBlock.func;
+	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	}
 		    
 	pCurrent=pCurrent->pNext;
 	pTrk->currentState.pCurrent=pCurrent;
 	//check if next event isn't NULL
 	//if yes do nothing
-	// else check if event delta==0 if yes keep sending events
+	// else check if event delta==0 if yes keep sending events, otherwise there is nothing to do
 	while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
 	//send data with delta==0
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	myFunc= pCurrent->eventBlock.infoBlock.func;
-	(*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	
+	if(pTrk->currentState.bMute!=TRUE){
+	  //the same as above
+	  myFunc= pCurrent->eventBlock.infoBlock.func;
+	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	}
+	
 	//next
 	pCurrent=pCurrent->pNext;
 	pTrk->currentState.pCurrent=pCurrent;
@@ -312,34 +317,69 @@ else{
 }
 #endif 
 
-   pulsesCounter=0;
    deltaCounter++;
   }//end of track loop
-  }else{
-    pulsesCounter++;
+  }//track is playing
+  else 
+    if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED){
+      //reset all counters
+      for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+	pTrk=pCurrentSequence->arTracks[i];
+	pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+      }
+      //turn all notes off on external module
+      am_allNotesOff(16);
+      //done! 
   }
-}
-
+}//pCurrentSequence null check
+}//sequenceUpdate() end
 
 //replay control
 BOOL isSeqPlaying(void){
- 
+if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[0]->currentState.playState==PS_PLAYING))) 
   return TRUE;
+else 
+  return FALSE;
 }
 
 
 void stopSeq(void){
-  printf("Stop.\n");
-  am_allNotesOff(16);
+//printf("Stop.\n");
+if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[0]->currentState.playState!=PS_STOPPED))){
+  pCurrentSequence->arTracks[0]->currentState.playState=PS_STOPPED;
+}
+
 }
 
 void pauseSeq(){
-  printf("Pause/Resume.\n");
-  
+  sTrack_t *pTrack=0;
+  //printf("Pause/Resume.\n");
+  if(pCurrentSequence!=0){
+    //TODO: handling individual tracks for MIDI 2 type
+    // for one sequence(single/multichannel) we will check state of the first track only
+    pTrack=pCurrentSequence->arTracks[0];
+    switch(pTrack->currentState.playState){
+      
+      case PS_PLAYING:{
+	pTrack->currentState.playState=PS_PAUSED;
+      }break;
+      case PS_PAUSED:{
+	pTrack->currentState.playState=PS_PLAYING;
+      }break;
+      case PS_STOPPED:{
+	pTrack->currentState.playState=PS_PLAYING;
+      }break;
+      
+      
+    };
+  }
 }
 
 void playSeq(void){
-  
+  if(pCurrentSequence!=0){
+    //set state
+    pCurrentSequence->arTracks[0]->currentState.playState=PS_PLAYING;
+  }
   
 }
 

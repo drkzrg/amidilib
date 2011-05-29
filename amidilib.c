@@ -181,9 +181,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 		     pointer to the structure in which track data will be dumped (or not).  
 		  */
 		  startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence);
-		  
-		  
-		  
                  }
             }
          return(0);
@@ -205,12 +202,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	  /* create one track list only */
 	  for(i=0;i<iNumTracks;i++){
 	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	  
-	  ((*pSequence)->arTracks[i])->pInstrumentName=NULL;
-	  ((*pSequence)->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
-	  ((*pSequence)->arTracks[i])->currentState.playState=S_STOPPED;
-      
-	    /* init event list */
+
+	  /* init event list */
 	    initEventList(&( (*pSequence)->arTracks[i]->pTrkEventList));
 	  }
 	  
@@ -238,10 +231,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
 	  /*assert(pCurSequence->arTracks[0]>0);*/
 
-	  ((*pSequence)->arTracks[i])->pInstrumentName=NULL;
-	  ((*pSequence)->arTracks[i])->currentState.playMode=S_PLAY_ONCE;
-	  ((*pSequence)->arTracks[i])->currentState.playState=S_STOPPED;
-      
 	  /* init event list */
 	    initEventList(&((*pSequence)->arTracks[i]->pTrkEventList));
 	  }
@@ -476,9 +465,9 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
 
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  (*pCurSequence)->arTracks[0]->currentState.currentTempo=defaultTempo;
-	  (*pCurSequence)->arTracks[0]->currentState.playMode=S_PLAY_ONCE;
-	  (*pCurSequence)->arTracks[0]->currentState.playState=S_STOPPED;
+	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
+	  pTempTrack->currentState.playState=PS_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -500,9 +489,9 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.playState=S_STOPPED;
+	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
+	  pTempTrack->currentState.playState=PS_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -531,11 +520,6 @@ switch(fileTypeFlag){
     case T_MIDI2:{
 	/* handle MIDI 2, multitrack type */
 	/* create several track lists according to numTracks */
-	/*  TODO: not finished !*/
-	/*assert(((*pCurSequence)->arTracks[trackCounter])->pEventListPtr>0);*/
-
-	/* init event list */
-	/*initEventList(((*pCurSequence)->arTracks[trackCounter])->pEventListPtr);*/
 
 	/* tracks inited, now insert track data */
 	U32 trackCounter=0;   	/* reset track counter first */
@@ -546,9 +530,9 @@ switch(fileTypeFlag){
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.currentTempo=defaultTempo;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.playMode=S_PLAY_ONCE;
-	  (*pCurSequence)->arTracks[trackCounter]->currentState.playState=S_STOPPED;
+	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
+	  pTempTrack->currentState.playState=PS_STOPPED;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;

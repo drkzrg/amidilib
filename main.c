@@ -59,6 +59,7 @@ void muteTrack(U16 trackNb,BOOL bMute);
 
 //toggles between play once and play in loop modes.
 void toggleReplayMode(void);
+
 //////////////////////////////////////////////////////////////////
 
 extern void turnOffKeyclick(void);
@@ -169,6 +170,7 @@ int main(int argc, char *argv[]){
 	  while(bQuit!=TRUE){
 	    //check keyboard input  
 	    for (int i=0; i<128; i++) {
+	      
 	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
 	      
@@ -195,7 +197,11 @@ int main(int argc, char *argv[]){
 	      };
 	      //end of switch
 	    }
-	  }	  
+	    if (Ikbd_keyboard[i]==KEY_RELEASED) {
+	      Ikbd_keyboard[i]=KEY_UNDEFINED;
+	    }
+	      
+	   } //end of for 	  
 	}
 	/* Uninstall our ikbd handler */
 	Supexec(IkbdUninstall);
@@ -252,9 +258,11 @@ void sequenceUpdate(void){
  
  if(pCurrentSequence){ 
    //TODO: change it to assert and include only in DEBUG build
-
-   if(pCurrentSequence->arTracks[0]->currentState.playState==PS_PLAYING){
-     bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
+  U32 activeTrack=pCurrentSequence->ubActiveTrack;
+  switch(pCurrentSequence->arTracks[activeTrack]->currentState.playState){
+    
+    case PS_PLAYING:{
+	bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
     
     //for each track (0-> (numTracks-1) ) 
     for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -265,11 +273,10 @@ void sequenceUpdate(void){
 	  amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i+1,(unsigned int)tickCounter);
 	#endif	
 
-	  //TODO: check if all current pointers aren't null
-	//if yes stop replay or loop
 	//TODO: adjust handling for multiple, independent tracks
 	//TODO: [optional] slap all the pointers to an array and send everything in one go
 	//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
+	
 	pCurrent=pTrk->currentState.pCurrent;
 		
 	//sometimes eventlist will be empty, because there will be nothing interesting
@@ -285,23 +292,27 @@ void sequenceUpdate(void){
 	  //output data only when track is not mute
 	  myFunc= pCurrent->eventBlock.infoBlock.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	}else{
+	  //TODO: silence whole channel
 	}
 		    
 	pCurrent=pCurrent->pNext;
 	pTrk->currentState.pCurrent=pCurrent;
-	//check if next event isn't NULL
-	//if yes do nothing
+	
+	//check if next event isn't NULL, if yes do nothing
 	// else check if event delta==0 if yes keep sending events, otherwise there is nothing to do
 	while(((pCurrent!=0)&&(pCurrent->eventBlock.uiDeltaTime==0))){
-	//send data with delta==0
+	  //send data with delta==0
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	if(pTrk->currentState.bMute!=TRUE){
-	  //the same as above
-	  myFunc= pCurrent->eventBlock.infoBlock.func;
-	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
-	}
+	  if(pTrk->currentState.bMute!=TRUE){
+	    //the same as above
+	    myFunc= pCurrent->eventBlock.infoBlock.func;
+	    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
+	  }else{
+	    //TODO: silence whole channel
+	  }
 	//next
 	  pCurrent=pCurrent->pNext;
 	  pTrk->currentState.pCurrent=pCurrent;
@@ -327,58 +338,64 @@ else{
 	amTrace((const U8 *)"Nothing to send in this track..\n");}
 #endif
 }
-#ifdef DEBUG_BUILD 
-else{ 
-  //this should not happen at all
-  amTrace((const U8 *)"Error: Track is NULL wtf?..\n");
-  
-}
-#endif 
-      }//track iteration
-      /////////////////////// check for end of the track 
+}//track iteration
+/////////////////////// check for end of the track 
     if(silenceThrCounter==pCurrentSequence->eotThreshold){
       //we have meet the threshold, time to decide what to do next
       // if we play in loop mode: do not change actual state,reset track to the beginning
-      if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_LOOP){
-
+      
+      switch(pCurrentSequence->arTracks[activeTrack]->currentState.playMode){
+	
+	case S_PLAY_LOOP:{
+	 
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;
 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
 	  }
 	  // notes off we could maybe do other things too
-	  am_allNotesOff(16);
-	
-      }// else stop replay: set state to PS_STOPPED, reset track to the beginning
-      else if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_ONCE){
-	//set state only, the rest will be done in next interrupt
-	pCurrentSequence->arTracks[0]->currentState.playState=PS_STOPPED;
-      }
-   }else{
-      //check if all the tracks events are null if yes increase silenceThrCounter
+	am_allNotesOff(16);
+	silenceThrCounter=0;
+	}break;
+	case S_PLAY_ONCE:{
+	    //set state only, the rest will be done in next interrupt
+	  pCurrentSequence->arTracks[0]->currentState.playState=PS_STOPPED;
+	  silenceThrCounter=0;
+	}break;
+      };
+    }else{ 
+      //silence threshold not met, check if all the tracks events are null if yes increase silenceThrCounter
       //else reset it
       BOOL bNothing=FALSE;
       for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	pTrk=pCurrentSequence->arTracks[i];
 	//TODO: incorporate it in the playing state loop, so we can get rid of track iteration (?)
 	if(pTrk!=0){
-	  if(pTrk->currentState.pCurrent==0){
-	    bNothing=TRUE;
-	  }else 
+	  if(pTrk->currentState.pCurrent!=0){
 	    bNothing=FALSE;
-	
-	  if(bNothing==TRUE){
+	  }else 
+	    bNothing=TRUE;
+      }
+      /////////////////////////// end of eot check
+      deltaCounter++;
+     
+    }//end of track loop
+     if(bNothing==TRUE){
 	    silenceThrCounter++;
 	  }else 
 	    silenceThrCounter=0;
+    }//end of silence threshold not met
+	
+    }break;
+    case PS_PAUSED:{
+         if(bNoteOffSent==FALSE){
+	  //turn all notes off on external module but only once
+	  bNoteOffSent=TRUE;
+	  am_allNotesOff(16);
 	}
-    }
-    /////////////////////////// end of eot check
-    deltaCounter++;
-     
-  }//end of track loop
-  }//track is playing
-  else if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED){
+    }break;
+    case PS_STOPPED:{
+      silenceThrCounter=0;
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -391,19 +408,16 @@ else{
 	  am_allNotesOff(16);
 	//done! 
       }
-  }else if(pCurrentSequence->arTracks[0]->currentState.playState==PS_PAUSED){
-      if(bNoteOffSent==FALSE){
-	  //turn all notes off on external module but only once
-	  bNoteOffSent=TRUE;
-	  am_allNotesOff(16);
-	}
-  }
+    }break;
+  };
+
 }//pCurrentSequence null check
 }//sequenceUpdate() end
 
 //replay control
 BOOL isSeqPlaying(void){
-if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[0]->currentState.playState==PS_PLAYING))) 
+  U32 activeTrack=pCurrentSequence->ubActiveTrack;
+if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_PLAYING))) 
   return TRUE;
 else 
   return FALSE;
@@ -411,10 +425,10 @@ else
 
 
 void stopSeq(void){
-if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[0]->currentState.playState!=PS_STOPPED))){
-  pCurrentSequence->arTracks[0]->currentState.playState=PS_STOPPED;
-}
-
+  U32 activeTrack=pCurrentSequence->ubActiveTrack;
+  if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[activeTrack]->currentState.playState!=PS_STOPPED))){
+    pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
+  }
 }
 
 void pauseSeq(){
@@ -423,9 +437,9 @@ void pauseSeq(){
   if(pCurrentSequence!=0){
     //TODO: handling individual tracks for MIDI 2 type
     // for one sequence(single/multichannel) we will check state of the first track only
-    pTrack=pCurrentSequence->arTracks[0];
+    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    pTrack=pCurrentSequence->arTracks[activeTrack];
     switch(pTrack->currentState.playState){
-      
       case PS_PLAYING:{
 	pTrack->currentState.playState=PS_PAUSED;
       }break;
@@ -439,8 +453,9 @@ void pauseSeq(){
 void playSeq(void){
   if(pCurrentSequence!=0){
     //set state
-    if(pCurrentSequence->arTracks[0]->currentState.playState==PS_STOPPED)
-      pCurrentSequence->arTracks[0]->currentState.playState=PS_PLAYING;
+    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    if(pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_STOPPED)
+      pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_PLAYING;
   }
   
 }
@@ -454,10 +469,15 @@ void muteTrack(U16 trackNb,BOOL bMute){
 void toggleReplayMode(void){
   
   if(pCurrentSequence!=0){
-    if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_ONCE){
-	  pCurrentSequence->arTracks[0]->currentState.playMode=S_PLAY_LOOP;
-    }else if(pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_LOOP){
-      pCurrentSequence->arTracks[0]->currentState.playMode==S_PLAY_ONCE;
+    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+ 
+    switch(pCurrentSequence->arTracks[activeTrack]->currentState.playMode){
+      case S_PLAY_ONCE: {
+	pCurrentSequence->arTracks[activeTrack]->currentState.playMode=S_PLAY_LOOP;
+      }break;
+      case S_PLAY_LOOP: {
+	pCurrentSequence->arTracks[activeTrack]->currentState.playMode=S_PLAY_ONCE;
+      }break;
     }
   }
 }

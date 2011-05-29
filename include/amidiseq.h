@@ -14,6 +14,7 @@
 #define AMIDI_MAX_TRACKS 16
 #define EOT_SILENCE_THRESHOLD 10	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
 					/* sequence is considered finished and ready to STOP or LOOP */
+
 #define DEFAULT_TEMPO 0x007A120		/* 500000ms */
 #define DEFAULT_PPQ	120		/* pulses per quarternote */
 #define DEFAULT_TIME_SIG 0x0404	
@@ -31,6 +32,11 @@ typedef enum{
   PS_PLAYING=0x02,
   PS_PAUSED=0x04
 } ePlayState;
+
+
+#define DEFAULT_PLAY_MODE S_PLAY_ONCE
+#define DEFAULT_PLAY_STATE PS_PLAYING
+
 
 typedef struct EventList{
  struct EventList *pPrev,*pNext;

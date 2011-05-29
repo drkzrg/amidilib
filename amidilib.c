@@ -128,6 +128,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     (*pSequence)->pSequenceName=NULL;	 	/* name of the sequence empty string */
     (*pSequence)->ubNumTracks=0;		/*  */
     (*pSequence)->ubActiveTrack=0; 		/* first one from the array */
+    (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
     
     /* init sequence table */
     for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
@@ -466,8 +467,8 @@ switch(fileTypeFlag){
 
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
-	  pTempTrack->currentState.playState=PS_STOPPED;
+	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
+	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -490,8 +491,8 @@ switch(fileTypeFlag){
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
-	  pTempTrack->currentState.playState=PS_STOPPED;
+	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
+	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -531,8 +532,8 @@ switch(fileTypeFlag){
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.playMode=S_PLAY_ONCE;
-	  pTempTrack->currentState.playState=PS_STOPPED;
+	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
+	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
 	  pTemp=(void *)endAddr;
@@ -1785,7 +1786,6 @@ float delta=0.0f;
     return(delta);
 #endif
 }
-
 
 /* variable quantity reading test */
 void VLQtest(void){

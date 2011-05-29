@@ -55,6 +55,7 @@ void stopSeq(void);
 void pauseSeq(void);
 void playSeq(void);
 void initSeq(sSequence_t *seq);
+void muteTrack(U16 trackNb,BOOL bMute);
 //////////////////////////////////////////////////////////////////
 
 extern void turnOffKeyclick(void);
@@ -398,6 +399,12 @@ void playSeq(void){
     pCurrentSequence->arTracks[0]->currentState.playState=PS_PLAYING;
   }
   
+}
+
+void muteTrack(U16 trackNb,BOOL bMute){
+  if(((pCurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
+    pCurrentSequence->arTracks[trackNb]->currentState.bMute=bMute;
+  }
 }
 
 #ifdef PORTABLE

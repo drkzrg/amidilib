@@ -7,9 +7,7 @@
 static volatile U32 deltaCounter;
 static volatile sSequence_t *pCurrentSequence=0;		//here is stored current sequence
 
-
 #ifndef PORTABLE
-
 extern volatile U8 _tbData;
 extern volatile U8 _tbMode;
 #endif
@@ -18,7 +16,9 @@ void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
   //TODO! 
 #else
-  U32 freq=seq->arTracks[0]->currentState.currentTempo/seq->timeDivision;
+if(seq!=0){
+  U8 activeTrack=seq->ubActiveTrack;
+  U32 freq=seq->arTracks[activeTrack]->currentState.currentTempo/seq->timeDivision;
   U32 mode=0,data=0;
   
   pCurrentSequence=seq;
@@ -26,6 +26,9 @@ void initSeq(sSequence_t *seq){
   getMFPTimerSettings(freq/8,&mode,&data);
   installReplayRout(mode, data);
 #endif
+ 
+}
+
  return;
 }
 
@@ -40,7 +43,7 @@ void sequenceUpdate(void){
  
  if(pCurrentSequence){ 
    //TODO: change it to assert and include only in DEBUG build
-  U32 activeTrack=pCurrentSequence->ubActiveTrack;
+  U8 activeTrack=pCurrentSequence->ubActiveTrack;
   switch(pCurrentSequence->arTracks[activeTrack]->currentState.playState){
     
     case PS_PLAYING:{
@@ -75,7 +78,8 @@ void sequenceUpdate(void){
 	  myFunc= pCurrent->eventBlock.infoBlock.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	}else{
-	  //TODO: silence whole channel
+	 ;  //TODO: silence whole channel
+	 //all_notes_off(U8 channel)
 	}
 		    
 	pCurrent=pCurrent->pNext;
@@ -93,7 +97,8 @@ void sequenceUpdate(void){
 	    myFunc= pCurrent->eventBlock.infoBlock.func;
 	    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	  }else{
-	    //TODO: silence whole channel
+	   ; //TODO: silence whole channel
+	   //all_notes_off(U8 channel)
 	  }
 	//next
 	  pCurrent=pCurrent->pNext;
@@ -169,7 +174,6 @@ else{
 	deltaCounter++;
     }break;
     case PS_PAUSED:{
-      
          if(bNoteOffSent==FALSE){
 	  //turn all notes off on external module but only once
 	  bNoteOffSent=TRUE;
@@ -180,7 +184,6 @@ else{
     case PS_STOPPED:{
       silenceThrCounter=0;
       deltaCounter=0;
-      if(pCurrentSequence){
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -193,7 +196,6 @@ else{
 	  am_allNotesOff(16);
 	//done! 
 	}
-      }
     }break;
   };
  }//pCurrentSequence null check
@@ -202,7 +204,7 @@ else{
 //replay control
 BOOL isSeqPlaying(void){
   if(pCurrentSequence!=0){
-    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
     if((pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_PLAYING)) 
       return TRUE;
     else 
@@ -213,7 +215,7 @@ BOOL isSeqPlaying(void){
 
 void stopSeq(void){
   if(pCurrentSequence!=0){
-    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
     if(pCurrentSequence->arTracks[activeTrack]->currentState.playState!=PS_STOPPED){
       pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
     }
@@ -226,7 +228,7 @@ void pauseSeq(){
   if(pCurrentSequence!=0){
     //TODO: handling individual tracks for MIDI 2 type
     // for one sequence(single/multichannel) we will check state of the first track only
-    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
     pTrack=pCurrentSequence->arTracks[activeTrack];
     switch(pTrack->currentState.playState){
       case PS_PLAYING:{
@@ -242,7 +244,7 @@ void pauseSeq(){
 void playSeq(void){
   if(pCurrentSequence!=0){
     //set state
-    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
     if(pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_STOPPED)
       pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_PLAYING;
   }
@@ -257,7 +259,7 @@ void muteTrack(U16 trackNb,BOOL bMute){
 void toggleReplayMode(void){
   
   if(pCurrentSequence!=0){
-    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
  
     switch(pCurrentSequence->arTracks[activeTrack]->currentState.playMode){
       case S_PLAY_ONCE: {

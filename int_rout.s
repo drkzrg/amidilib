@@ -1,3 +1,4 @@
+;================================================
 ;    Copyright 2007-2011 Pawel Goralski
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
@@ -84,6 +85,8 @@ _deinstallReplayRout:
 	bss
 	even
 _oldTB:			ds.l	1
+	even
 _tbData:		ds.b	1
+	even
 _tbMode:		ds.b	1
 

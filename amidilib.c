@@ -1261,7 +1261,6 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
-	
         amTrace((const U8*)"%s \n",textBuffer);
 #endif
 	return FALSE;
@@ -1282,7 +1281,6 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"%s \n",textBuffer);
 #endif
-	
 	return FALSE;
     break;
     case MT_LYRICS:
@@ -1420,6 +1418,9 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
         (*pPtr)++;
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
+	
+	//TODO: add event block of EOT type
+	
 	return TRUE;
     break;
     case MT_SET_TEMPO:{
@@ -1442,6 +1443,7 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	val2=(val2<<8)&0x0000FF00L;
 	val3=(val3)&0x000000FFL;
 
+	//TODO: add set tempo event block and set handler 
 	/* range: 0-8355711 ms, 24 bit value */
 	val1=val1|val2|val3;
 	(*pCurTrack)->currentState.currentTempo=val1;

@@ -63,6 +63,11 @@ sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
 	
 }
 
+void  fHandleEOT(void *pEvent){
+  sEot_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
+  amTrace((const U8*)"End of track...\n");
+}
+ 
 
 /* event id is mapped to the position in the array, functionPtr, parameters struct */
 
@@ -77,7 +82,8 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sPrgChng_EventBlock_t),fProgramChange},
    {sizeof(sChannelAft_EventBlock_t),fChannelAft},
    {sizeof(sPitchBend_EventBlock_t),fPitchBend},
-   {sizeof(sTempo_EventBlock_t),fSetTempo}
+   {sizeof(sTempo_EventBlock_t),fSetTempo},
+   {sizeof(sEot_EventBlock_t),fHandleEOT}
 };
 
 /*returns pointer to NULL terminated string with event name */

@@ -24,6 +24,7 @@ enum eEventType{
 	T_CHAN_AFT,
 	T_PITCH_BEND,
 	T_META_SET_TEMPO,
+	T_META_EOT,
 	T_EVT_COUNT		/* total number of events */
 };
 
@@ -87,6 +88,11 @@ typedef struct Tempo_EventBlock_t{
  sTempo_t eventData;	/* tempo event data  */
 } PACK  sTempo_EventBlock_t;
 
+typedef struct Eot_EventBlock_t{
+ U8 ubChannelNb; 		/* channel number */
+ U8 pad[3];
+} PACK  sEot_EventBlock_t;
+
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
 
@@ -126,7 +132,8 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 	"Program Change", 
 	"Channel Aftertouch", 
 	"Pitch bend",
-	"Set tempo(Meta)"
+	"Set tempo(Meta)",
+	"End of track(Meta)"
 };
 
 //inline functions for sending data to external module
@@ -140,7 +147,8 @@ static const char *g_arEventNames[T_EVT_COUNT]={
  void  fChannelAft (void *pEvent);
  void  fPitchBend (void *pEvent);
  void  fSetTempo (void *pEvent);
-
+ void  fHandleEOT(void *pEvent);
+ 
 /* returns the info struct about event: size and pointer to the handler  */
  void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);
 

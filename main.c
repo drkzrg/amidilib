@@ -60,10 +60,10 @@ int main(int argc, char *argv[]){
     program_change(currentChannel, currentPN);
     
     if(argc>=1&&argv[1]!='\0'){
-      printf("Trying to load %s\n",argv[1]);
+      fprintf(stderr,"Trying to load %s\n",argv[1]);
     }
     else{
-      printf("No specified midi filename! exiting\n");
+      fprintf(stderr,"No specified midi filename! exiting\n");
       am_deinit();
       return 0;
     }
@@ -72,11 +72,12 @@ int main(int argc, char *argv[]){
 
     if(pMidi!=NULL){
 
-     printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */
-      printf("Please wait...\n");
+      fprintf(stderr,"Please wait...\n");
+      
       time = getTimeStamp();
       iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();
@@ -145,7 +146,8 @@ int main(int argc, char *argv[]){
 	      switch(i){
 		case SC_ESC:{
 		  bQuit=TRUE;
-		  printf("Quiting\n");
+		  //stop sequence
+		  stopSeq();
 		}break;
 		case SC_P:{
 		  //starts playing sequence if is stopped
@@ -176,9 +178,6 @@ int main(int argc, char *argv[]){
 #else
 #warning Portable main loop unimplemented
 #endif
-	   //stop sequence
-	   stopSeq();
-	   
 	   //unload sequence
 	   am_destroySequence(&pMidiTune);
 	  //END of MAINLOOP	
@@ -196,10 +195,8 @@ int main(int argc, char *argv[]){
       return(-1);
     }
 
-      am_allNotesOff(16);
       deinstallReplayRout();   
       am_deinit();
-
  return (0);
 }
 

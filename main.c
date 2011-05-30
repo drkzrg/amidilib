@@ -176,6 +176,9 @@ int main(int argc, char *argv[]){
 #else
 #warning Portable main loop unimplemented
 #endif
+	   //stop sequence
+	   stopSeq();
+	   
 	   //unload sequence
 	   am_destroySequence(&pMidiTune);
 	  //END of MAINLOOP	
@@ -206,7 +209,9 @@ void printInfoScreen(){
   printf("  MIDI type 0,1 replay\n\n");  
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
-  printf("    [spacebar] - stop sequence replay \n");
+  printf("    [m] - toggle play once/loop mode\n");
+  
+  printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");
   printf("\n(c) nokturnal 05'2011\n");
   printf("\nwww: http://nokturnal.pl\n");

@@ -141,7 +141,7 @@ else{
 	}break;
 	case S_PLAY_ONCE:{
 	    //set state only, the rest will be done in next interrupt
-	  pCurrentSequence->arTracks[0]->currentState.playState=PS_STOPPED;
+	  pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
 	  silenceThrCounter=0;
 	}break;
       };
@@ -169,15 +169,18 @@ else{
 	deltaCounter++;
     }break;
     case PS_PAUSED:{
+      
          if(bNoteOffSent==FALSE){
 	  //turn all notes off on external module but only once
 	  bNoteOffSent=TRUE;
 	  am_allNotesOff(16);
 	}
+      
     }break;
     case PS_STOPPED:{
       silenceThrCounter=0;
       deltaCounter=0;
+      if(pCurrentSequence){
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -189,6 +192,7 @@ else{
 	  bNoteOffSent=TRUE;
 	  am_allNotesOff(16);
 	//done! 
+	}
       }
     }break;
   };
@@ -197,18 +201,22 @@ else{
 
 //replay control
 BOOL isSeqPlaying(void){
-  U32 activeTrack=pCurrentSequence->ubActiveTrack;
-if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_PLAYING))) 
-  return TRUE;
-else 
-  return FALSE;
+  if(pCurrentSequence!=0){
+    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    if((pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_PLAYING)) 
+      return TRUE;
+    else 
+      return FALSE;
+  }
 }
 
 
 void stopSeq(void){
-  U32 activeTrack=pCurrentSequence->ubActiveTrack;
-  if(((pCurrentSequence!=0)&&(pCurrentSequence->arTracks[activeTrack]->currentState.playState!=PS_STOPPED))){
-    pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
+  if(pCurrentSequence!=0){
+    U32 activeTrack=pCurrentSequence->ubActiveTrack;
+    if(pCurrentSequence->arTracks[activeTrack]->currentState.playState!=PS_STOPPED){
+      pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
+    }
   }
 }
 
@@ -238,7 +246,6 @@ void playSeq(void){
     if(pCurrentSequence->arTracks[activeTrack]->currentState.playState==PS_STOPPED)
       pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_PLAYING;
   }
-  
 }
 
 void muteTrack(U16 trackNb,BOOL bMute){

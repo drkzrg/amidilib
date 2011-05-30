@@ -15,6 +15,7 @@
 #ifndef PORTABLE
 #include "include/ikbd.h"
 #include "include/scancode.h"
+#include <lzoconf.h>
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;
@@ -23,10 +24,12 @@ extern void turnOffKeyclick(void);
 void turnOffKeyclick(void);
 #endif
 
+// display info screen
+void printInfoScreen(); 
+
 /**
  * main program entry
  */
- 
 
 #ifdef _MSC_VER
 #include "stdafx.h";
@@ -48,7 +51,7 @@ int main(int argc, char *argv[]){
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-
+    
     /* init library */
     iError=am_init();
     
@@ -57,10 +60,10 @@ int main(int argc, char *argv[]){
     program_change(currentChannel, currentPN);
     
     if(argc>=1&&argv[1]!='\0'){
-      amTrace(( U8 *)"Trying to load %s\n",argv[1]);
+      printf("Trying to load %s\n",argv[1]);
     }
     else{
-      amTrace(( U8 *)"No specified midi filename! exiting\n");
+      printf("No specified midi filename! exiting\n");
       am_deinit();
       return 0;
     }
@@ -69,7 +72,7 @@ int main(int argc, char *argv[]){
 
     if(pMidi!=NULL){
 
-     amTrace((const U8*)"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */
@@ -119,7 +122,9 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	  #endif
-	   printf("Ready...\n");
+	  printInfoScreen();
+    
+	  printf("Ready...\n");
 #ifndef PORTABLE
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
@@ -194,6 +199,19 @@ int main(int argc, char *argv[]){
 
  return (0);
 }
+
+void printInfoScreen(){
+  printf("\n=========================================\n");
+  printf("  /|\\ amidi demo..\n");
+  printf("  MIDI type 0,1 replay\n\n");  
+  printf("    [p] - play loaded tune\n");
+  printf("    [r] - pause/unpause played sequence \n");
+  printf("    [spacebar] - stop sequence replay \n");
+  printf("    [Esc] - quit\n");
+  printf("\n(c) nokturnal 05'2011\n");
+  printf("\nwww: http://nokturnal.pl\n");
+  printf("==========================================\n");
+} 
 
 
 #ifdef PORTABLE

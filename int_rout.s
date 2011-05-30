@@ -8,6 +8,9 @@
        xdef _deinstallReplayRout	;removes replay routine from system 
 	   
        xdef _oldTB			;saved old Timer B vector
+       xdef _tbData
+       xdef _tbMode
+
        xref _sequenceUpdate
        xref super_off
        xref super_on

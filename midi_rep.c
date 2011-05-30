@@ -4,10 +4,15 @@
 #include "amidiseq.h"
 
 ////// TODO: move it to separate file
-static volatile U8 tbData,tbMode;
-static volatile U32 defaultPlayMode;
 static volatile U32 deltaCounter;
 static volatile sSequence_t *pCurrentSequence=0;		//here is stored current sequence
+
+
+#ifndef PORTABLE
+
+extern volatile U8 _tbData;
+extern volatile U8 _tbMode;
+#endif
 
 void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
@@ -154,7 +159,6 @@ else{
 	    bNothing=TRUE;
       }
       /////////////////////////// end of eot check
-      deltaCounter++;
      
     }//end of track loop
      if(bNothing==TRUE){
@@ -162,7 +166,7 @@ else{
 	  }else 
 	    silenceThrCounter=0;
     }//end of silence threshold not met
-	
+	deltaCounter++;
     }break;
     case PS_PAUSED:{
          if(bNoteOffSent==FALSE){
@@ -173,6 +177,7 @@ else{
     }break;
     case PS_STOPPED:{
       silenceThrCounter=0;
+      deltaCounter=0;
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -187,8 +192,7 @@ else{
       }
     }break;
   };
-
-}//pCurrentSequence null check
+ }//pCurrentSequence null check
 }//sequenceUpdate() end
 
 //replay control

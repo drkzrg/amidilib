@@ -1,6 +1,12 @@
 #ifndef _MIDI_REP_H_
 #define _MIDI_REP_H_
 
+/**  Copyright 2007-2011 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include "c_vars.h"
 #include "amidiseq.h"
 

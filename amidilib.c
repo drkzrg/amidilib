@@ -34,7 +34,7 @@ static AMIDI_version version =
 static U8 g_runningStatus;
 static U8 outputFilename[] = "amidi.log";
 static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
-static U16 DEFAULT_PLAY_STATE=PS_PLAYING;
+static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
 
 
 #ifdef TIME_CHECK_PORTABLE	

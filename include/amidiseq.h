@@ -12,7 +12,7 @@
 #include "midiseq.h"
 
 #define AMIDI_MAX_TRACKS 16
-#define EOT_SILENCE_THRESHOLD 10	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
+#define EOT_SILENCE_THRESHOLD 20	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
 					/* sequence is considered finished and ready to STOP or LOOP */
 
 #define DEFAULT_TEMPO 0x007A120		/* 500000ms */

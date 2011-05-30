@@ -113,8 +113,8 @@ $(EXE): $(OBJECTS) amidi.o int_rout.o ikbd_asm.o
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
 #$(SET_STACK) $(EXE)
-#	echo "Stripping symbols."
-#	$(STRIP) $(EXE)
+	echo "Stripping symbols."
+	$(STRIP) $(EXE)
 	echo "Copying AMIDI.TTP binary to emulator/shared directory."
 	cp $(EXE) $(ST_HD_PATH)
 	cp $(EXE) $(SHARED_DIR_PATH)

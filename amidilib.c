@@ -32,9 +32,10 @@ static AMIDI_version version =
 
 /* for saving last running status */
 static U8 g_runningStatus;
-
 static U8 outputFilename[] = "amidi.log";
-static sSequence_t *gpCurrentSequence;
+static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
+static U16 DEFAULT_PLAY_STATE=PS_PLAYING;
+
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -371,8 +372,6 @@ S16 am_init(){
  
  /* init sequence */
  /* nothing loaded, nothing played */
- 
- gpCurrentSequence=NULL;
 
 #ifndef PORTABLE 
  am_setSuperOn();
@@ -474,7 +473,7 @@ switch(fileTypeFlag){
 	  pTemp=(void *)endAddr;
 	  end=&pTemp;
 	  
-	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
+	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack);
 	  
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
@@ -498,7 +497,7 @@ switch(fileTypeFlag){
 	  pTemp=(void *)endAddr;
 	  end=&pTemp;
 	  
-	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack );
+	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack );
 	
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
@@ -539,7 +538,7 @@ switch(fileTypeFlag){
 	  pTemp=(void *)endAddr;
 	  end=&pTemp;
 	
-	  startPtr=processMIDItrackEvents(&startPtr,end,ppTrack);
+	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack);
 	  
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;

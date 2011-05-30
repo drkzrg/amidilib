@@ -33,11 +33,6 @@ typedef enum{
   PS_PAUSED=0x04
 } ePlayState;
 
-
-#define DEFAULT_PLAY_MODE S_PLAY_ONCE
-#define DEFAULT_PLAY_STATE PS_PLAYING
-
-
 typedef struct EventList{
  struct EventList *pPrev,*pNext;
  sEventBlock_t eventBlock;

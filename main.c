@@ -133,7 +133,7 @@ int main(int argc, char *argv[]){
 	  Supexec(IkbdInstall);
 	  BOOL bQuit=FALSE;
 
-	  //install replay rout and play tune
+	  //install replay rout 
 	  initSeq(pMidiTune);
 	  
 	  while(bQuit!=TRUE){
@@ -204,6 +204,7 @@ void printInfoScreen(){
   printf("\n=========================================\n");
   printf("  /|\\ amidi demo..\n");
   printf("  MIDI type 0,1 replay\n\n");  
+  
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once/loop mode\n");

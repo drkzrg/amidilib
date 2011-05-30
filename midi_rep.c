@@ -3,9 +3,8 @@
 #include "mfp.h"
 #include "amidiseq.h"
 
-////// TODO: move it to separate file
 static volatile U32 deltaCounter;
-static volatile sSequence_t *pCurrentSequence=0;		//here is stored current sequence
+extern volatile sSequence_t *pCurrentSequence;
 
 #ifndef PORTABLE
 extern volatile U8 _tbData;
@@ -25,10 +24,8 @@ if(seq!=0){
   
   getMFPTimerSettings(freq/8,&mode,&data);
   installReplayRout(mode, data);
-#endif
- 
 }
-
+#endif
  return;
 }
 
@@ -54,10 +51,6 @@ void sequenceUpdate(void){
       pTrk=pCurrentSequence->arTracks[i];
 
       if(pTrk!=0){
-	#ifdef DEBUG_BUILD 
-	  amTrace((const U8 *)"************** Handling track: #%d, step: [%u]\n",i+1,(unsigned int)tickCounter);
-	#endif	
-
 	//TODO: adjust handling for multiple, independent tracks
 	//TODO: [optional] slap all the pointers to an array and send everything in one go
 	//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
@@ -126,7 +119,20 @@ else{
 #endif
 }
 }//track iteration
-/////////////////////// check for end of the track 
+    //handle tempo update
+    sSequenceState_t *pState=&(pCurrentSequence->arTracks[activeTrack]->currentState);
+    
+    if(pState->currentTempo!=pState->newTempo){
+      //update track current tempo
+      pState->currentTempo=pState->newTempo;
+      
+      //update timer data feed
+      //TODO:
+      
+      
+    }
+    
+    /////////////////////// check for end of the track 
     if(silenceThrCounter==pCurrentSequence->eotThreshold){
       //we have meet the threshold, time to decide what to do next
       // if we play in loop mode: do not change actual state,reset track to the beginning
@@ -210,6 +216,7 @@ BOOL isSeqPlaying(void){
     else 
       return FALSE;
   }
+  return FALSE;
 }
 
 

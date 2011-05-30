@@ -16,7 +16,7 @@
 //midi data sending, platform specific
 U16 amMidiDataReady(U8 deviceNo);
 U32 amMidiSendByte(U8 deviceNo,U16 data);
-void amMidiSendData(U16 count,U8 *data);
+void amMidiSendData(const U16 count,const U8 *data);
 U8 amMidiGetData(U8 deviceId);
 
 #ifdef PORTABLE

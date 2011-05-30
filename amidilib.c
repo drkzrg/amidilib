@@ -35,7 +35,7 @@ static U8 g_runningStatus;
 static U8 outputFilename[] = "amidi.log";
 static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
 static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
-
+volatile sSequence_t *pCurrentSequence=0;	//here is stored current sequence
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -231,8 +231,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	  /* create one track list only */
 	  for(i=0;i<iNumTracks;i++){
 	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	  /*assert(pCurSequence->arTracks[0]>0);*/
-
+	
 	  /* init event list */
 	    initEventList(&((*pSequence)->arTracks[i]->pTrkEventList));
 	  }
@@ -435,6 +434,7 @@ because we have to know if we have to dump event data to one eventlist or severa
 
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
+
 void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence)
 {   
 static U32 trackCounter=0;
@@ -466,6 +466,7 @@ switch(fileTypeFlag){
 
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.newTempo=defaultTempo;
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
@@ -490,6 +491,8 @@ switch(fileTypeFlag){
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.newTempo=defaultTempo;
+
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
@@ -531,6 +534,8 @@ switch(fileTypeFlag){
 	  
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
+	  pTempTrack->currentState.newTempo=defaultTempo;
+
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
@@ -1426,9 +1431,11 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
     case MT_SET_TEMPO:{
         /* sets tempo in track, should be in the first track, if not 120 BPM is assumed */
 	U8 ulVal[3]={0};   /* for retrieving set tempo info */
+	sTempo_EventBlock_t *pEvntBlock=NULL;
 	#ifdef MIDI_PARSER_DEBUG
 	amTrace((const U8*)"delta: %u\tMeta event: Set tempo: ",(unsigned int)delta);
 	#endif
+	
 	(*pPtr)++;
         ubLenght=(*(*pPtr));
          (*pPtr)++;
@@ -1443,10 +1450,21 @@ BOOL am_Meta(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 	val2=(val2<<8)&0x0000FF00L;
 	val3=(val3)&0x000000FFL;
 
-	//TODO: add set tempo event block and set handler 
 	/* range: 0-8355711 ms, 24 bit value */
 	val1=val1|val2|val3;
-	(*pCurTrack)->currentState.currentTempo=val1;
+	
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type=T_META_SET_TEMPO;
+	getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.infoBlock);
+	tempEvent.dataPtr=amMallocEx(tempEvent.infoBlock.size,PREFER_TT);
+	
+	pEvntBlock=(sTempo_EventBlock_t *)tempEvent.dataPtr;
+	
+        pEvntBlock->eventData.tempoVal=	val1;
+	/* add event to list */
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+	amFree(&(tempEvent.dataPtr));
+	
 #ifdef MIDI_PARSER_DEBUG
 	amTrace((const U8*)"%u ms per quarter-note\n", (unsigned int)val1);
 #endif

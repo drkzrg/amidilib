@@ -65,33 +65,31 @@ typedef struct PrgChng_EventBlock_t{
  U8 ubChannelNb;				/* channel number */
  U8 pad[3];
  sProgramChange_t eventData;	/* program change data */
-} PACK  sPrgChng_EventBlock_t;
+} PACK sPrgChng_EventBlock_t;
 
 /* Channel aftertouch eventblock */
 typedef struct ChannelAft_EventBlock_t{  
   U8 ubChannelNb;				/* channel number */
   U8 pad[3];
   sChannelAft_t eventData;		/* channel after touch data */
-}PACK  sChannelAft_EventBlock_t;
+}PACK sChannelAft_EventBlock_t;
 
 /* Pitch bend eventblock */
 typedef struct PitchBend_EventBlock_t{
  U8 ubChannelNb;			/* channel number  */
  U8 pad[3];
  sPitchBend_t eventData;    /* pitch bend data */
-} PACK  sPitchBend_EventBlock_t;
+} PACK sPitchBend_EventBlock_t;
 
 /* Set tempo eventblock */
 typedef struct Tempo_EventBlock_t{
- U8 ubChannelNb; 		/* channel number */
- U8 pad[3];
  sTempo_t eventData;	/* tempo event data  */
-} PACK  sTempo_EventBlock_t;
+} PACK sTempo_EventBlock_t;
 
 typedef struct Eot_EventBlock_t{
  U8 ubChannelNb; 		/* channel number */
  U8 pad[3];
-} PACK  sEot_EventBlock_t;
+} PACK sEot_EventBlock_t;
 
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
@@ -103,7 +101,7 @@ typedef void (*evntFuncPtr)(void *pEvent);
 typedef struct EventInfoBlock_t{
 	U32	size;		/* size of command string in bytes */
 	evntFuncPtr func;  	/* pointer to event handler */ 
-} PACK  sEventInfoBlock_t;
+} PACK sEventInfoBlock_t;
 
 typedef struct EventBlock_t{
  U32 uiDeltaTime;					/* event delta time */	
@@ -111,13 +109,13 @@ typedef struct EventBlock_t{
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
  U8	type;							/* event type */
  U8 pad[3] ; 							/* padding for word alignment */
-}PACK  sEventBlock_t, *sEventBlockPtr_t;
+}PACK sEventBlock_t, *sEventBlockPtr_t;
 
 /** SysEX */
 typedef struct SysEx_t{
  U32 bufferSize ; 					/* size of SysEX buffer */
  U8 *pBuffer;						/* pointer to data */
-} PACK  sSysEx_t;
+} PACK sSysEx_t;
 
 
 

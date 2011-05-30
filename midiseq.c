@@ -1,11 +1,12 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2011 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
 #include "include/midiseq.h"
+#include "include/amidiseq.h"
 
 void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
@@ -57,14 +58,20 @@ void  fNoteOn(void *pEvent){
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
-  void  fSetTempo(void *pEvent){
-sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
+extern volatile sSequence_t *pCurrentSequence;
+
+void  fSetTempo(void *pEvent){
+	sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
 	amTrace((const U8*)"Setting new replay tempo...\n");
-	
+
+	if(pCurrentSequence!=0){
+	  U8 activeTrack=pCurrentSequence->ubActiveTrack;
+	  pCurrentSequence->arTracks[activeTrack]->currentState.newTempo=pPtr->eventData.tempoVal;
+	}
 }
 
 void  fHandleEOT(void *pEvent){
-  sEot_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
+  sEot_EventBlock_t *pPtr=(sEot_EventBlock_t *)pEvent;	
   amTrace((const U8*)"End of track...\n");
 }
  

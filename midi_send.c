@@ -27,7 +27,7 @@
 #endif
 }
 
- void amMidiSendData(U16 count,U8 *data){
+ void amMidiSendData(const U16 count,const U8 *data){
 #ifdef PORTABLE
 //TODO:
  amTrace((const U8*)"WARNING: amMidiSendData() not implemented\n");

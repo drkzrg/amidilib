@@ -154,10 +154,7 @@ typedef struct
 
 typedef struct 
 {
- U8 A;  /* msec in three bytes */
- U8 B;
- U8 C;
- U8 pad[1];
+ U32 tempoVal;
 }PACK sTempo_t;
 
 #endif

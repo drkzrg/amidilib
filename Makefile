@@ -52,7 +52,7 @@ else
 DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
 endif
 
-CFLAGS += -std=c99 -g $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
 LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
 
 ASM = vasmm68k_mot

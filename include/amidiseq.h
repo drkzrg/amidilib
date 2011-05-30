@@ -45,15 +45,13 @@ typedef struct EventList{
 
 typedef volatile struct SequenceState_t{
  U32 currentTempo;		      // quaternote duration in ms, 500ms default
- U32 playState;			      // STOP, PLAY, PAUSED	
- U32 playMode;	      		      // current play mode (loop, play_once, random) 
+ U16 playState;			      // STOP, PLAY, PAUSED	
+ U16 playMode;	      		      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 
  U32 deltaCounter;		      // internal counter for sending events in proper time, relative to last event 				      
  struct EventList *pStart,*pCurrent;  //start of track and current event pointer
 				      //they point to track events tied to sSequenceState_t
-
   BOOL bMute;			      //if TRUE track events aren't sent to external module
-  
 }PACK sSequenceState_t;
 
  typedef struct Track_t{

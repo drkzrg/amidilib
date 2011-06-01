@@ -1,4 +1,6 @@
 
+#include <math.h>
+
 #include "include/midi_rep.h"
 #include "mfp.h"
 #include "amidiseq.h"
@@ -17,12 +19,19 @@ void initSeq(sSequence_t *seq){
 #else
 if(seq!=0){
   U8 activeTrack=seq->ubActiveTrack;
-  U32 freq=seq->arTracks[activeTrack]->currentState.currentTempo/seq->timeDivision;
+  
+  U32 freq=seq->arTracks[activeTrack]->currentState.currentTempo;
+  U32 td=seq->timeDivision;
   U32 mode=0,data=0;
+
+  float calcFreqMS=(float)freq*0.000001f/(float)td;  
+  
+  calcFreqMS=1.0f/calcFreqMS;
+  td=ceil(calcFreqMS);
   
   pCurrentSequence=seq;
   
-  getMFPTimerSettings(freq/8,&mode,&data);
+  getMFPTimerSettings(260,&mode,&data);
   installReplayRout(mode, data);
 }
 #endif
@@ -192,6 +201,8 @@ else{
       deltaCounter=0;
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
+	  pCurrentSequence->pulseCounter=0;
+      
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;

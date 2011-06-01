@@ -63,8 +63,10 @@ typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;				/* NULL terminated string */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
-   U32 timeDivision;				// pulses per quater note(time division)
+   U32 timeDivision;				/* pulses per quater note(time division) */
    U32 eotThreshold;				/*see define EOT_SILENCE_THRESHOLD */
+   U32 pulseCounter;				/* pulses per quaternote counter */
+   
    U8 ubNumTracks;            	        	/* number of tracks */
    U8 ubDummy[3];
    U8 ubActiveTrack; /* range 0-(ubNumTracks-1) tracks */

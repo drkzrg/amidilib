@@ -10,27 +10,47 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
+// main AMIDILIB sequence replay interface
 #ifdef PORTABLE
+/** installs sequence replay routine (portable version) */
 void installReplayRout(U8 mode,U8 data);
+
+/** deinstalls sequence replay routine (portable version) */
 void deinstallReplayRout(void);
 #else
-// install and deinstall routines
+/** installs sequence replay routine (hooked to timer B atm) */
 extern void installReplayRout(U8 mode,U8 data);
+
+/** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRout(void);
 #endif
 
-// update sequence function called from exception routine
+/** update sequence function called from interrupt routine */
 void sequenceUpdate(void);
 
-//sequence control interface
+/** Checks if there is sequence currently playing. 
+* @return TRUE is sequence is playing, FALSE otherwise.
+*/
 BOOL isSeqPlaying(void);
+
+/** stops sequence replay */
 void stopSeq(void);
+
+/** pause/unpause currently replayed sequence */
 void pauseSeq(void);
+
+/** play currently replayed sequence */
 void playSeq(void);
+
+/** setups sequence for replay. Sequence is stopped by default */
 void initSeq(sSequence_t *seq);
+
+/** mutes selected track or first one if there is only one */
 void muteTrack(U16 trackNb,BOOL bMute);
 
-//toggles between play once and play in loop modes.
+/** toggles between replay modes. 
+ * "play once"(replay stops after end of tracks) and "play in loop" 
+ * (replay restarts from beginning) */
 void toggleReplayMode(void);
 
 #endif

@@ -130,6 +130,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     (*pSequence)->ubNumTracks=0;		/*  */
     (*pSequence)->ubActiveTrack=0; 		/* first one from the array */
     (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
+    (*pSequence)->pulseCounter=0;
+    (*pSequence)->timeDivision=0;
     
     /* init sequence table */
     for(iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){

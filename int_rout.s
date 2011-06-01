@@ -5,6 +5,8 @@
 ;    See license.txt for licensing information.
 ;================================================
 
+AMIDI_MAX_TRACKS equ	16
+
        xdef _installReplayRout		;initialises replay interrupt TB routine and prepares data
        xdef _deinstallReplayRout	;removes replay routine from system 
 	   
@@ -13,6 +15,7 @@
        xdef _tbMode
 
        xref _sequenceUpdate
+       xref _pCurrentSequence
        xref super_off
        xref super_on
 
@@ -49,10 +52,24 @@ update:
       ;or.w	#$0700,sr	;turn off all interupts 
 
       clr.b     $fffffa1b
-      ;eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
+      eor.w	#$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 
+      ;check pulses per quaternote
+      move.l	_pCurrentSequence,a0
+      move.l	timeDivision(a0),d0
+      subq.l	#1,d0
+      move.l	pulseCounter(a0),d1
+      cmp.l	d0,d1
+      bne.s	.nextTick		;if pulseCounter==timedivision-1
+      moveq.l	#0,d1			;reset pulse counter
+      move.l	d1,pulseCounter(a0)
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
 
+      bra.s	.setInt			;set up timers and finish
+.nextTick:				;we didn't reach the proper pulse amount
+	addq.l	#1,d1			;increase counter
+	move.l	d1,pulseCounter(a0)
+.setInt:
       ;prepare next tick
       move.l    #update,$120		;slap interrupt 
       move.b    _tbData,$fffffa21	;set data
@@ -90,3 +107,16 @@ _tbData:		ds.b	1
 	even
 _tbMode:		ds.b	1
 
+;sSequence_t structure
+   RSRESET
+pSequenceName	rs.l	1	; NULL terminated string ptr
+arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (16) tracks available
+timeDivision	rs.l	1	; pulses per quater note(time division) 
+eotThreshold	rs.l	1	; see define EOT_SILENCE_THRESHOLD 
+pulseCounter	rs.l	1	; pulses per quaternote counter 
+ubNumTracks	rs.b	1	; number of tracks 
+ubDummy		rs.b	3	;
+ubActiveTrack	rs.b	1	; range 0-(ubNumTracks-1) tracks 
+ubDummy1	rs.b	3	;
+
+  RSRESET

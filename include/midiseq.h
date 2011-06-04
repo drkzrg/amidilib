@@ -25,6 +25,8 @@ enum eEventType{
 	T_PITCH_BEND,
 	T_META_SET_TEMPO,
 	T_META_EOT,
+	T_META_CUEPOINT,
+	T_META_MARKER,
 	T_EVT_COUNT		/* total number of events */
 };
 
@@ -38,7 +40,6 @@ sNoteOn_t eventData;	/*note on data */
 } PACK sNoteOn_EventBlock_t;
 
 /* Note Off event block */
-
 typedef struct NoteOff_EventBlock_t{
 U8 ubChannelNb;				/* channel number */
 U8 pad[3];
@@ -87,9 +88,17 @@ typedef struct Tempo_EventBlock_t{
 } PACK sTempo_EventBlock_t;
 
 typedef struct Eot_EventBlock_t{
- U8 ubChannelNb; 		/* channel number */
- U8 pad[3];
+ U32 dummy;
 } PACK sEot_EventBlock_t;
+
+typedef struct CuePoint_EventBlock_t{
+ U8 *pCuePointName;	/* cuepoint name, maybe something else */
+} PACK sCuePoint_EventBlock_t;
+
+typedef struct Marker_EventBlock_t{
+ U8 *pMarkerName;	/* marker name, maybe something else */
+} PACK sMarker_EventBlock_t;
+
 
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
@@ -131,7 +140,9 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 	"Channel Aftertouch", 
 	"Pitch bend",
 	"Set tempo(Meta)",
-	"End of track(Meta)"
+	"End of track(Meta)",
+	"Cuepoint(Meta)",
+	"Marker(Meta)"
 };
 
 //inline functions for sending data to external module
@@ -146,6 +157,8 @@ static const char *g_arEventNames[T_EVT_COUNT]={
  void  fPitchBend (void *pEvent);
  void  fSetTempo (void *pEvent);
  void  fHandleEOT(void *pEvent);
+ void fHandleCuePoint(void *pEvent);
+ void fHandleMarker(void *pEvent);
  
 /* returns the info struct about event: size and pointer to the handler  */
  void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);

@@ -65,11 +65,12 @@ typedef struct Sequence_t{
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
    U32 timeDivision;				/* pulses per quater note(time division) */
    U32 eotThreshold;				/*see define EOT_SILENCE_THRESHOLD */
+   U32 accumulatedDeltaCounter;			/* accumulated delta counter */
    U32 pulseCounter;				/* pulses per quaternote counter */
-   
+   U32 divider;					/* */
    U8 ubNumTracks;            	        	/* number of tracks */
    U8 ubDummy[3];
-   U8 ubActiveTrack; /* range 0-(ubNumTracks-1) tracks */
+   U8 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
    U8 ubDummy1[3];
    } PACK sSequence_t;
 

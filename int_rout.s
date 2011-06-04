@@ -28,7 +28,7 @@ _installReplayRout:
 	move.l	$42(sp),d1  ;mode
         move.l  $46(sp),d0  ;data
         
-	move.b	d1,_tbMode  ;save parameters for later
+	move.b	d1,_tbMode  		;save parameters for later
 	move.b	d0,_tbData
 
 	clr.b     $fffffa1b		;turn off tb
@@ -56,19 +56,18 @@ update:
 
       ;check pulses per quaternote
       move.l	_pCurrentSequence,a0
-      move.l	timeDivision(a0),d0
-      subq.l	#1,d0
       move.l	pulseCounter(a0),d1
-      cmp.l	d0,d1
+      cmpi.l	#0,d1
       bne.s	.nextTick		;if pulseCounter==timedivision-1
-      moveq.l	#0,d1			;reset pulse counter
-      move.l	d1,pulseCounter(a0)
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
-
+      
+      move.l	_pCurrentSequence,a0
+      move.l	divider(a0),pulseCounter(a0)
+   
       bra.s	.setInt			;set up timers and finish
 .nextTick:				;we didn't reach the proper pulse amount
-	addq.l	#1,d1			;increase counter
-	move.l	d1,pulseCounter(a0)
+	subq.l	#1,d1			;decrease counter
+	move.l	d1,pulseCounter(a0)	;save it
 .setInt:
       ;prepare next tick
       move.l    #update,$120		;slap interrupt 
@@ -113,7 +112,11 @@ pSequenceName	rs.l	1	; NULL terminated string ptr
 arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (16) tracks available
 timeDivision	rs.l	1	; pulses per quater note(time division) 
 eotThreshold	rs.l	1	; see define EOT_SILENCE_THRESHOLD 
+
+accumDelta	rs.l	1	; accumulated delta counter 
 pulseCounter	rs.l	1	; pulses per quaternote counter 
+divider		rs.l	1	;
+
 ubNumTracks	rs.b	1	; number of tracks 
 ubDummy		rs.b	3	;
 ubActiveTrack	rs.b	1	; range 0-(ubNumTracks-1) tracks 

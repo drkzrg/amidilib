@@ -13,7 +13,7 @@
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
-EXTRADEFINES =
+EXTRADEFINES = 
 #-DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
 #target atari, other
@@ -49,7 +49,7 @@ endif
 ifeq ($(PORTABLE),1)
 DEFINES = $(EXTRADEFINES) -DPORTABLE -DTIME_CHECK_PORTABLE
 else
-DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
+DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC -DSTRUCT_PACK
 endif
 
 CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
@@ -76,8 +76,8 @@ ifeq ($(PORTABLE),1)
 SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c midi_rep.c
 OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o
 else
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c midi_rep.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o midi_rep.o
+SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midi_rep.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c 
+OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midi_rep.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
@@ -109,7 +109,7 @@ $(EXE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm 
 else
 $(EXE): $(OBJECTS) amidi.o int_rout.o ikbd_asm.o
-	$(CC) $(LDFLAGS) $(OBJECTS) amidi.o int_rout.o ikbd.o -o $@ -lgem -lm 
+	$(CC) $(LDFLAGS) $(OBJECTS) amidi.o int_rout.o ikbd.o -o $@ -lgem -lm
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
 #$(SET_STACK) $(EXE)

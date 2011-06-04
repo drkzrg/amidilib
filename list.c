@@ -209,6 +209,19 @@ void printEventBlock(sEventBlockPtr_t pPtr){
 	      amTrace((const U8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
 	}
 	  break;	
+
+	case T_META_EOT:{
+	 amTrace((const U8*)"T_META_EOT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	}break;  
+	
+	case T_META_CUEPOINT:{
+	 amTrace((const U8*)"T_META_CUEPOINT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	}break;
+	
+	case T_META_MARKER:{
+	 amTrace((const U8*)"T_META_MARKER: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	}break;
+	
 	default:
 	      amTrace((const U8*)"printEventBlock() error unknown event type %d\n",(U16)(pPtr->type));
 	break;

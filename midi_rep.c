@@ -1,17 +1,18 @@
 
-#include <math.h>
-
 #include "include/midi_rep.h"
 #include "mfp.h"
 #include "amidiseq.h"
+#include <math.h>
 
-static volatile U32 deltaCounter;
+
 extern volatile sSequence_t *pCurrentSequence;
 
 #ifndef PORTABLE
-extern volatile U8 _tbData;
-extern volatile U8 _tbMode;
+extern volatile U8 tbData;
+extern volatile U8 tbMode;
 #endif
+
+#define DIVIDER 4
 
 void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
@@ -19,19 +20,35 @@ void initSeq(sSequence_t *seq){
 #else
 if(seq!=0){
   U8 activeTrack=seq->ubActiveTrack;
-  
-  U32 freq=seq->arTracks[activeTrack]->currentState.currentTempo;
-  U32 td=seq->timeDivision;
   U32 mode=0,data=0;
-
-  float calcFreqMS=(float)freq*0.000001f/(float)td;  
   
-  calcFreqMS=1.0f/calcFreqMS;
-  td=ceil(calcFreqMS);
+  float freq=60000000.0f/seq->arTracks[activeTrack]->currentState.currentTempo/60.0f;
+  
+  //freq=freq/seq->timeDivision;
   
   pCurrentSequence=seq;
   
-  getMFPTimerSettings(260,&mode,&data);
+  if(freq<48.0f){
+    freq=freq*1000;	//if value is very small like 2,2hz then scale it to greater
+			//frequency and increment delta once per nth cycle
+    pCurrentSequence->pulseCounter=0;  
+    pCurrentSequence->divider=DIVIDER;  
+  }
+  else { 
+    //no need to prescale
+    pCurrentSequence->pulseCounter=0;
+    pCurrentSequence->divider=0;  
+  }
+  
+#ifdef DEBUG
+  amTrace("freq: %f\n",freq);
+#endif  
+  getMFPTimerSettings((U32)freq,&mode,&data);
+#ifdef DEBUG
+
+  amTrace("mode: %d, data: %d\n",mode,data);
+#endif 
+
   installReplayRout(mode, data);
 }
 #endif
@@ -44,16 +61,22 @@ void sequenceUpdate(void){
  static sTrack_t *pTrk=0;
  static sEventList *pCurrent=0;
  static evntFuncPtr myFunc=0; 
+ static sSequenceState_t *seqState=0;
+ 
  BOOL bNoteOffSent=FALSE;		//flag for sending note off events only once when pausing or stopping the sequence
  static U32 silenceThrCounter=0;	//for tracking silence lenght on all tracks
  
  if(pCurrentSequence){ 
-   //TODO: change it to assert and include only in DEBUG build
+  
   U8 activeTrack=pCurrentSequence->ubActiveTrack;
-  switch(pCurrentSequence->arTracks[activeTrack]->currentState.playState){
+  seqState=&(pCurrentSequence->arTracks[activeTrack]->currentState);
+  
+  switch(seqState->playState){
     
     case PS_PLAYING:{
-	bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
+    //TODO: send MIDI status 
+    //send PLAY once and then CLOCK every 24th call
+    bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
     
     //for each track (0-> (numTracks-1) ) 
     for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -71,11 +94,11 @@ void sequenceUpdate(void){
 	if(pCurrent!=NULL){ 
 	
 	//if (internal counter == current event delta)
-	if((pCurrent->eventBlock.uiDeltaTime)==pTrk->currentState.deltaCounter){
+	if((pCurrent->eventBlock.uiDeltaTime)==(pTrk->currentState.deltaCounter)){
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	if(pTrk->currentState.bMute!=TRUE){
+	if(!(pTrk->currentState.bMute)){
 	  //output data only when track is not mute
 	  myFunc= pCurrent->eventBlock.infoBlock.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
@@ -94,7 +117,7 @@ void sequenceUpdate(void){
 #ifdef DEBUG_BUILD 
 	printEventBlock(&(pCurrent->eventBlock));
 #endif		
-	  if(pTrk->currentState.bMute!=TRUE){
+	  if(!(pTrk->currentState.bMute)){
 	    //the same as above
 	    myFunc= pCurrent->eventBlock.infoBlock.func;
 	    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
@@ -115,7 +138,7 @@ void sequenceUpdate(void){
 #endif
 	}else{
 	// else internal counter++; 
-	pCurrentSequence->arTracks[i]->currentState.deltaCounter++;
+	++pCurrentSequence->arTracks[i]->currentState.deltaCounter;
 #ifdef DEBUG_BUILD 
 	amTrace((const U8 *)"increase track %d counter\n",i);
 #endif
@@ -129,15 +152,28 @@ else{
 }
 }//track iteration
     //handle tempo update
-    sSequenceState_t *pState=&(pCurrentSequence->arTracks[activeTrack]->currentState);
+    //sSequenceState_t *pState=&(pCurrentSequence->arTracks[activeTrack]->currentState);
     
-    if(pState->currentTempo!=pState->newTempo){
+    if(seqState->currentTempo!=seqState->newTempo){
       //update track current tempo
-      pState->currentTempo=pState->newTempo;
+      seqState->currentTempo=seqState->newTempo;
       
-      //update timer data feed
-      //TODO:
-      
+      float freq=60000000.0f/pCurrentSequence->arTracks[activeTrack]->currentState.currentTempo/60.0f;
+      U32 mode=0,data=0;
+     
+      if(freq<48.0f){
+	freq=freq*1000;	//if value is very small like 2,2hz then scale it to greater
+	//frequency and increment delta once per nth cycle
+	pCurrentSequence->divider=DIVIDER;  
+      }
+      else { 
+	//no need to prescale
+	pCurrentSequence->divider=0;  
+      }
+  
+      getMFPTimerSettings((U32)freq,&mode,&data);
+      tbMode=(U8)mode;
+      tbData=(U8)data;
       
     }
     
@@ -146,22 +182,23 @@ else{
       //we have meet the threshold, time to decide what to do next
       // if we play in loop mode: do not change actual state,reset track to the beginning
       
-      switch(pCurrentSequence->arTracks[activeTrack]->currentState.playMode){
+      switch(seqState->playMode){
 	
 	case S_PLAY_LOOP:{
-	 
+	   pCurrentSequence->accumulatedDeltaCounter=0;	//reset cumulated delta
+	  
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;
 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
 	  }
 	  // notes off we could maybe do other things too
-	am_allNotesOff(16);
-	silenceThrCounter=0;
+	  am_allNotesOff(16);
+	  silenceThrCounter=0;
 	}break;
 	case S_PLAY_ONCE:{
-	    //set state only, the rest will be done in next interrupt
-	  pCurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
+	  //set state only, the rest will be done in next interrupt
+	  seqState->playState=PS_STOPPED;
 	  silenceThrCounter=0;
 	}break;
       };
@@ -172,6 +209,7 @@ else{
       for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	pTrk=pCurrentSequence->arTracks[i];
 	//TODO: incorporate it in the playing state loop, so we can get rid of track iteration (?)
+	
 	if(pTrk!=0){
 	  if(pTrk->currentState.pCurrent!=0){
 	    bNothing=FALSE;
@@ -182,13 +220,18 @@ else{
      
     }//end of track loop
      if(bNothing==TRUE){
-	    silenceThrCounter++;
+	    ++silenceThrCounter;
 	  }else 
 	    silenceThrCounter=0;
     }//end of silence threshold not met
-	deltaCounter++;
+    
+    //increase our cumulated delta
+    ++pCurrentSequence->accumulatedDeltaCounter;
+    
     }break;
     case PS_PAUSED:{
+      //TODO: send MIDI status STOP or continue
+      
          if(bNoteOffSent==FALSE){
 	  //turn all notes off on external module but only once
 	  bNoteOffSent=TRUE;
@@ -198,11 +241,13 @@ else{
     }break;
     case PS_STOPPED:{
       silenceThrCounter=0;
-      deltaCounter=0;
+      //TODO: reset delta counter
+      //TODO: send MIDI status STOP
+      
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
-	  pCurrentSequence->pulseCounter=0;
-      
+	  pCurrentSequence->accumulatedDeltaCounter=0;
+	  
 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;
@@ -244,10 +289,11 @@ void pauseSeq(){
   sTrack_t *pTrack=0;
   //printf("Pause/Resume.\n");
   if(pCurrentSequence!=0){
-    //TODO: handling individual tracks for MIDI 2 type
+    // TODO: handling individual tracks for MIDI 2 type
     // for one sequence(single/multichannel) we will check state of the first track only
     U8 activeTrack=pCurrentSequence->ubActiveTrack;
     pTrack=pCurrentSequence->arTracks[activeTrack];
+    
     switch(pTrack->currentState.playState){
       case PS_PLAYING:{
 	pTrack->currentState.playState=PS_PAUSED;
@@ -289,6 +335,12 @@ void toggleReplayMode(void){
     }
   }
 }
+
+sSequence_t *getCurrentSeq(){
+  return pCurrentSequence;
+}
+
+
 
 #ifdef PORTABLE
 void installReplayRout(U8 mode,U8 data){

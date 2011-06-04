@@ -26,6 +26,7 @@ void turnOffKeyclick(void);
 
 // display info screen
 void printInfoScreen(); 
+void displayTuneInfo();
 
 /**
  * main program entry
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]){
       time = getTimeStamp();
       iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();
+      
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(&pMidi);
 
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]){
 	    
 	    if(p!=0){
 		amTrace((const U8*)"Track #[%d] \t",i+1);
-		amTrace((const U8*)"Track name: %s\n",p->pInstrumentName);
+		amTrace((const U8*)"Track name: %s\n",p->pTrackName);
 		amTrace((const U8*)"Track ptr %p\n",p->pTrkEventList);
 	  
 		//log state
@@ -123,13 +125,13 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	  #endif
-	  printInfoScreen();
-    
-	  printf("Ready...\n");
+	  printInfoScreen();    
+	  
 #ifndef PORTABLE
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-	   /* Install our asm ikbd handler */
+	   
+	  /* Install our asm ikbd handler */
 	  Supexec(IkbdInstall);
 	  BOOL bQuit=FALSE;
 
@@ -137,6 +139,7 @@ int main(int argc, char *argv[]){
 	  initSeq(pMidiTune);
 	  
 	  while(bQuit!=TRUE){
+	    
 	    //check keyboard input  
 	    for (int i=0; i<128; i++) {
 	      
@@ -161,12 +164,22 @@ int main(int argc, char *argv[]){
 		   //toggles between play once and play in loop
 		  toggleReplayMode();
 		 }break;
-		case SC_SPACEBAR:{
+		case SC_I:{
+		   //displays current track info
+		  displayTuneInfo();
+		 }break;
+		case SC_H:{
+		   //displays help/startup screen
+		  printInfoScreen();
+		 }break;
+
+		 case SC_SPACEBAR:{
 		  stopSeq();
 		 }break;
 	      };
 	      //end of switch
 	    }
+	    
 	    if (Ikbd_keyboard[i]==KEY_RELEASED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
 	    }
@@ -204,17 +217,33 @@ void printInfoScreen(){
   printf("\n=========================================\n");
   printf("  /|\\ amidi demo..\n");
   printf("  MIDI type 0,1 replay\n\n");  
-  
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once/loop mode\n");
-  
+  printf("    [i] - display tune info\n");  
+  printf("    [h] - show this help screen\n");  
   printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");
   printf("\n(c) nokturnal 05'2011\n");
   printf("\nwww: http://nokturnal.pl\n");
   printf("==========================================\n");
+  printf("Ready...\n");
 } 
+
+void displayTuneInfo(){
+  printf("Sequence name %s\n",getCurrentSeq()->pSequenceName);
+  printf("PPQN: %d\t",(unsigned int)getCurrentSeq()->timeDivision);
+  printf("Tempo: %d [ms]\n",(unsigned int)getCurrentSeq()->arTracks[0]->currentState.currentTempo);
+  
+  printf("Number of tracks: %d",(unsigned int)getCurrentSeq()->ubNumTracks);
+  
+  for(int i=0;i<getCurrentSeq()->ubNumTracks;i++){
+    printf("[Track no. %d] %s\n",i+1,getCurrentSeq()->arTracks[i]->pTrackName);
+  }
+  
+  printf("\nReady...\n");
+  
+}
 
 
 #ifdef PORTABLE

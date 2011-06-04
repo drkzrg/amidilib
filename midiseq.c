@@ -8,6 +8,8 @@
 #include "include/midiseq.h"
 #include "include/amidiseq.h"
 
+extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
+
 void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
@@ -58,7 +60,6 @@ void  fNoteOn(void *pEvent){
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
-extern volatile sSequence_t *pCurrentSequence;
 
 void  fSetTempo(void *pEvent){
 	sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
@@ -75,6 +76,16 @@ void  fHandleEOT(void *pEvent){
   amTrace((const U8*)"End of track...\n");
 }
  
+void fHandleCuePoint(void *pEvent){
+  sCuePoint_EventBlock_t *pPtr=(sCuePoint_EventBlock_t *)pEvent;	
+  amTrace((const U8*)"Cuepoint %s.\n",pPtr->pCuePointName);
+} 
+
+void fHandleMarker(void *pEvent){
+  sMarker_EventBlock_t *pPtr=(sMarker_EventBlock_t *)pEvent;	
+  amTrace((const U8*)"Marker %s.\n",pPtr->pMarkerName);
+} 
+
 
 /* event id is mapped to the position in the array, functionPtr, parameters struct */
 
@@ -90,7 +101,9 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sChannelAft_EventBlock_t),fChannelAft},
    {sizeof(sPitchBend_EventBlock_t),fPitchBend},
    {sizeof(sTempo_EventBlock_t),fSetTempo},
-   {sizeof(sEot_EventBlock_t),fHandleEOT}
+   {sizeof(sEot_EventBlock_t),fHandleEOT},
+   {sizeof(sCuePoint_EventBlock_t),fHandleCuePoint},
+   {sizeof(sMarker_EventBlock_t),fHandleMarker}
 };
 
 /*returns pointer to NULL terminated string with event name */

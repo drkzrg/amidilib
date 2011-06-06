@@ -13,7 +13,7 @@
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 
-EXTRADEFINES = 
+EXTRADEFINES = -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
 #-DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
 #target atari, other
@@ -52,7 +52,7 @@ else
 DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
 endif
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
 LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
 
 ASM = vasmm68k_mot

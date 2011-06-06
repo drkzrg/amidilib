@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL){
-      fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+      fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned long)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */

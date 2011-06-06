@@ -5,7 +5,7 @@
     See license.txt for licensing information.
 */
 
-/////////////////////////////// timing test program
+//////////////////////////////////////////////////// timing test program
 // program reads delta times from table and outputs sound through ym2149
 // with given, adjustable tempo
 /////////////////////////////////////////////////////////////////////////
@@ -269,7 +269,6 @@ int main(void){
 #ifndef PORTABLE
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
-  
 
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
@@ -346,9 +345,7 @@ int main(void){
 	      else iCurrentStep=TEMPO_STEP;
 	      currentState.currentTempo=tempo-iCurrentStep;
 	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
-	      
 	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
-	    
 	    }
 	    
 	  }break;

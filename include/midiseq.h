@@ -36,14 +36,12 @@ enum eEventType{
 /*  Note On event block */
 typedef struct NoteOn_EventBlock_t{
 U8 ubChannelNb;			/* channel number */
-U8 pad[3];
 sNoteOn_t eventData;	/*note on data */
 } PACK sNoteOn_EventBlock_t;
 
 /* Note Off event block */
 typedef struct NoteOff_EventBlock_t{
 U8 ubChannelNb;				/* channel number */
-U8 pad[3];
 sNoteOff_t eventData;		/* note off data */
 } PACK sNoteOff_EventBlock_t;
 
@@ -51,35 +49,30 @@ sNoteOff_t eventData;		/* note off data */
 typedef struct NoteAft_EventBlock_t{
  
  U8 ubChannelNb;
- U8 pad[3];
  sNoteAft_t eventData;
 }PACK sNoteAft_EventBlock_t;
 
 /* Controller change event block */
 typedef struct Controller_EventBlock_t{
  U8 ubChannelNb;		/* channel number */
- U8 pad[3];
  sController_t eventData;	 /* controller event data */
 } PACK sController_EventBlock_t;
 
 /* Program change event block */
 typedef struct PrgChng_EventBlock_t{
  U8 ubChannelNb;				/* channel number */
- U8 pad[3];
  sProgramChange_t eventData;	/* program change data */
 } PACK sPrgChng_EventBlock_t;
 
 /* Channel aftertouch eventblock */
 typedef struct ChannelAft_EventBlock_t{  
   U8 ubChannelNb;				/* channel number */
-  U8 pad[3];
   sChannelAft_t eventData;		/* channel after touch data */
 }PACK sChannelAft_EventBlock_t;
 
 /* Pitch bend eventblock */
 typedef struct PitchBend_EventBlock_t{
  U8 ubChannelNb;			/* channel number  */
- U8 pad[3];
  sPitchBend_t eventData;    /* pitch bend data */
 } PACK sPitchBend_EventBlock_t;
 
@@ -123,8 +116,7 @@ typedef struct EventBlock_t{
  sEventInfoBlock_t infoBlock;				/* function info block */ 
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
  U8	type;							/* event type */
- U8 pad[3] ; 							/* padding for word alignment */
-}PACK sEventBlock_t, *sEventBlockPtr_t;
+ }PACK sEventBlock_t, *sEventBlockPtr_t;
 
 /** SysEX */
 typedef struct SysEx_t{

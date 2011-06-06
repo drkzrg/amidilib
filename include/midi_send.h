@@ -14,6 +14,7 @@
 #endif
 
 //midi data sending, platform specific
+//TODO: make it inline
 U16 amMidiDataReady(U8 deviceNo);
 U32 amMidiSendByte(U8 deviceNo,U16 data);
 void amMidiSendData(const U16 count,const U8 *data);

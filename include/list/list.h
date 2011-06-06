@@ -17,7 +17,7 @@ U32 destroyList(sEventList **listPtr);
 void copyEvent(const sEventBlock_t *src, sEventList **dest);
 
 /* for debugging purposes */
-void printEventList(const sEventList **listPtr);
-void printEventBlock(sEventBlockPtr_t pPtr);
+void printEventList(const sEventList *listPtr);
+void printEventBlock(const sEventBlockPtr_t pPtr);
 
 #endif

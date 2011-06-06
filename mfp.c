@@ -1,16 +1,18 @@
-
-#include "mfp.h"
 #include <math.h>
+
+#include "include/mfp.h"
 
 #ifndef PORTABLE
 /* calculates settings for MFP timers for given frequency of tick */
+
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data){
 static const U32 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
+
 U32 cntrl,count;
 cntrl=0;
 
 if( freq<=614400 && freq>=2400 ) {
-  cntrl=MFP_DIV4;		/* divide by 4  	*/
+  cntrl=MFP_DIV4;		/* divide by 4  */
   U32 presc=prescales[cntrl];
   U32 temp=presc*freq;
   count=(2457600/temp);

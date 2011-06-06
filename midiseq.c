@@ -7,6 +7,7 @@
 
 #include "include/midiseq.h"
 #include "include/amidiseq.h"
+#include "include/midi_cmd.h"
 
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
 
@@ -34,41 +35,36 @@ void  fNoteOn(void *pEvent){
   void  fProgramChange (void *pEvent){
 	sPrgChng_EventBlock_t *pPtr=(sPrgChng_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
-	
 	program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
   void  fController(void *pEvent){
 	sController_EventBlock_t *pPtr=(sController_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
-	
 	control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
 
   void  fChannelAft(void *pEvent){
 	sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
-	
 	channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
-
 }
 
   void  fPitchBend(void *pEvent){
 	sPitchBend_EventBlock_t *pPtr=(sPitchBend_EventBlock_t *)pEvent;
 	amTrace((const U8*)"Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
-	
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
 
 void  fSetTempo(void *pEvent){
-	sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
-	amTrace((const U8*)"Setting new replay tempo...\n");
+  sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
+  amTrace((const U8*)"Setting new replay tempo...\n");
 
-	if(pCurrentSequence!=0){
-	  U8 activeTrack=pCurrentSequence->ubActiveTrack;
-	  pCurrentSequence->arTracks[activeTrack]->currentState.newTempo=pPtr->eventData.tempoVal;
-	}
+  if(pCurrentSequence!=0){
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
+    pCurrentSequence->arTracks[activeTrack]->currentState.newTempo=pPtr->eventData.tempoVal;
+  }
 }
 
 void  fHandleEOT(void *pEvent){
@@ -88,7 +84,7 @@ void fHandleMarker(void *pEvent){
 
 void fHandleSysEX(void *pEvent){
   sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;	
-  
+   amTrace((const U8*)"SysEX Message.\n");
 }
 
 

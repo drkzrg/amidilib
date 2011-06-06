@@ -59,7 +59,6 @@
 #define MT32_GM_EMULATION 5     /* before loading midi data MT32 sound banks has to be patched */
 #define XG_GM_YAMAHA 6		/* before loading midi data MT32 sound banks has to be patched */
 
-
 /** for internal use, midi file types  */
 #define T_MIDI0   0
 #define T_MIDI1   1

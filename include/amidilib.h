@@ -119,23 +119,6 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type);
 U16 am_getTimeDivision (void *pMidiPtr);
 
 /**
- * Prints out MIDI file track info
- *
- * @param pMidiPtr memory pointer where midi file is stored.
- * @param usiTrackNb which Track info to fetch out (1 - 65,535)
- * @return
- */
- S16 am_getTrackInfo(void *pMidiPtr, U16 usiTrackNb, sMIDItrackInfo *pTrackInfo);
-
-/**
- * Returns pointer to specified MIDI track
- * @param iTrackNum	MIDI track number
- * @param pMidiPtr	memory pointer where midi file is stored.
- */
-
-void *am_getTrackPtr(void *pMidiPtr,S16 iTrackNum);
-
-/**
 * Reads Variable lenght value used in MIDI files. Returns value in Variable lenght format
 * @param none
 **/

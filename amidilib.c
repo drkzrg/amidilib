@@ -339,15 +339,6 @@ if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L))){
  return (0);
 }
 
-
-S16 am_getTrackInfo(void *pMidiPtr, U16 usiTrackNb, sMIDItrackInfo *pTrackInfo){
- return(0);
-}
-
-void *am_getTrackPtr(void *pMidiPtr,S16 iTrackNum){
- return NULL;
-}
-
 U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end){
 U8 total = 0 ;
 U8 mask  = 0x7F ;

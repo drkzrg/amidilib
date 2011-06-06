@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2011 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -28,17 +28,18 @@ typedef enum
 
 /**
  * MIDI file header struct
- */
+* these structures need to be packed 
+*/
 
-typedef struct ChunkHeader
+typedef struct __attribute__((packed)) ChunkHeader
 {
   U32 id;
   U32 headLenght;
-} __attribute__((packed)) sChunkHeader,*pChunkHeader;
+} sChunkHeader,*pChunkHeader;
 
 
 typedef struct __attribute__((packed)) MThd{
-	U32 id ;
+	U32 id;
 	U32 headLenght;
 	U16 format;
 	U16 nTracks;
@@ -59,28 +60,18 @@ typedef struct __attribute__((packed)) MTrk
 
 /**
  * MIDI device info struct
+*  custom structure for storing connected device info
 */
 
 typedef struct __attribute__((packed)) DeviceInfo
 {
   U8 nChannel;                  /* channel number on which device receives data */
-  U8 pad[1];
+  U8 pad[4];
   U16 mID;                      /* vendor id, complete list in VENDORS.H */
   U16 deviceFamilyID;           /* ff ff	Device family code (14 bits, LSB first) */
   U16 deviceFamilyMC;           /* dd dd	Device family member code (14 bits, LSB first) */
   U16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
 } sDeviceInfo,*pDeviceInfo;
-
-
-/*
- * MIDI track info struct
-*/
-typedef struct __attribute__((packed)) MIDItrackInfo {
-    U16 usiTrackNb;
-    U16  pad;
-    U32   ulTrackLenght;
-    U32   trackOffset;      /* offset relative to start address of loaded midi file */
-} sMIDItrackInfo,*pMidiTrackInfo;
 
 
 /* SMPTE OFFSET struct */
@@ -91,8 +82,7 @@ typedef struct __attribute__((packed)) SMPTEoffset
     U8 se;
     U8 fr;
     U8 ff;
-    U8 pad[3];
-} sSMPTEoffset;
+  } sSMPTEoffset;
 
 /* Time signature struct */
 
@@ -105,49 +95,49 @@ typedef struct __attribute__((packed)) TimeSignature
 } sTimeSignature;
 
 /*************** event structs */
-typedef struct 
+typedef struct __attribute__((packed)) NoteOn_t
 {
  S8 noteNb;
  S8 velocity;
-} __attribute__((packed)) sNoteOn_t;
+}  sNoteOn_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) NoteOff_t
 {
  S8 noteNb;
  S8 velocity;
-}__attribute__((packed)) sNoteOff_t;
+} sNoteOff_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) NoteAft_t
 {
  S8 noteNb;
  S8 pressure;
-}__attribute__((packed)) sNoteAft_t;
+} sNoteAft_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) Controller_t
 {
  S8 controllerNb;
  S8 value;
-}__attribute__((packed)) sController_t;
+} sController_t;
 
-typedef struct ProgramChange_t 
+typedef struct __attribute__((packed)) ProgramChange_t 
 {
  S8 programNb;
-}__attribute__((packed)) sProgramChange_t;
+} sProgramChange_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) ChannelAft_t
 {
  S8 pressure;
-}__attribute__((packed)) sChannelAft_t;
+} sChannelAft_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) PitchBend_t
 {
  S8  LSB;
  S8  MSB;
-} __attribute__((packed)) sPitchBend_t;
+} sPitchBend_t;
 
-typedef struct 
+typedef struct __attribute__((packed)) Tempo_t
 {
  U32 tempoVal;
-} __attribute__((packed)) sTempo_t;
+} sTempo_t;
 
 #endif

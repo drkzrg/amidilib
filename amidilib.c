@@ -445,8 +445,7 @@ because we have to know if we have to dump event data to one eventlist or severa
 
 void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence)
 {   
-static U32 trackCounter=0;
-      
+U32 trackCounter=0;
 U32 endAddr=0L;
 U32 ulChunkSize=0;
 U32 defaultTempo=60000000/DEFAULT_PPQ;

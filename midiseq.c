@@ -111,7 +111,9 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
 /*returns pointer to NULL terminated string with event name */
 /* id is enumerated value from eEventType */
 const U8 *getEventName(U32 id){
+  if(id<T_EVT_COUNT)
 	return ((const U8 *)g_arEventNames[id]);
+  else return 0;
 }
 
 void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk){

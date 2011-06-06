@@ -258,7 +258,7 @@ int main(void){
   /* init library */
   U32 iError=am_init();
  
-  if(iError!=1) return;
+  if(iError!=1) return -1;
   
   //set current channel as 1, default is 0 in external module
   control_change(0x00, currentChannel, currentBankSelect,0x00);

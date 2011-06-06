@@ -20,6 +20,7 @@
 
 #include "include/list/list.h"
 #include "include/midi_send.h"
+#include "include/c_vars.h"
 
 /* current version */
 typedef struct AMIDI_version {
@@ -60,14 +61,14 @@ extern const char *g_arMIDI2key[];
 extern const char *g_arCM32Lrhythm[];
 
 S16 am_getHeaderInfo(void *pMidiPtr){
-    sMThd midiInfo;
-    amTrace((const U8*)"Checking header info... ");
-    amMemCpy(&midiInfo, pMidiPtr, sizeof(sMThd));
-
+    sMThd *pMidiInfo=0;
+    amTrace((const U8 *)"Checking header info... ");
+    pMidiInfo=(sMThd *)pMidiPtr;
+  
     /* check midi header */
-    if(((midiInfo.id)==(ID_MTHD)&&(midiInfo.headLenght==6L))){
+    if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
 
-        switch(midiInfo.format){
+        switch(pMidiInfo->format){
 	 case T_MIDI0:
 	  /* Midi Format 0 detected */
 	  amTrace((const U8*)"MIDI type 0 found\n");
@@ -96,7 +97,7 @@ S16 am_getHeaderInfo(void *pMidiPtr){
     }
 
    }
-   else if ((midiInfo.id==ID_FORM)||(midiInfo.id==ID_CAT)){
+   else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
       /* possible XMIDI*/
       amTrace((const U8*)"XMIDI file possibly..\n");
     
@@ -178,6 +179,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
                   
 		  /* create one track list only */
 		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+		  
 		  
 		  /* init event list */
 		  (*pSequence)->arTracks[i]->pTrkEventList=0;
@@ -1705,7 +1707,7 @@ void getDeviceInfoResponse(U8 channel){
     
 }
 
-	if(bTimeout==TRUE)amTrace((const U8*)"Timeout on ch: %d\t",channel);
+	if(bTimeout==TRUE) amTrace((const U8*)"Timeout on ch: %d\t",channel);
 
 }
 /* gets info about connected devices via MIDI interface */

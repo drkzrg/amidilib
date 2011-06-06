@@ -11,6 +11,7 @@
 #include <limits.h>
 
 #include "include/amidilib.h"
+#include "include/list/list.h"
 
 #ifndef PORTABLE
 #include "include/ikbd.h"
@@ -71,7 +72,7 @@ int main(int argc, char *argv[]){
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL){
-      fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned long)ulFileLenght);
+      fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */
@@ -86,7 +87,6 @@ int main(int argc, char *argv[]){
       amFree(&pMidi);
 
       if(iError==0){
-	  printf("MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	  amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	
 	  #ifdef MIDI_PARSER_TEST

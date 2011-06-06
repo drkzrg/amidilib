@@ -1,8 +1,10 @@
 
-#include "include/midi_rep.h"
-#include "mfp.h"
-#include "amidiseq.h"
 #include <math.h>
+
+#include "include/midi_rep.h"
+#include "include/mfp.h"
+#include "include/amidiseq.h"
+#include "include/list/list.h"
 
 
 extern volatile sSequence_t *pCurrentSequence;
@@ -337,8 +339,8 @@ void toggleReplayMode(void){
   }
 }
 
-sSequence_t *getCurrentSeq(){
-  return pCurrentSequence;
+sSequence_t *getCurrentSeq (void){
+  return (sSequence_t *)pCurrentSequence;
 }
 
 

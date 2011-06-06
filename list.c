@@ -74,8 +74,8 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     (*dest)->eventBlock.dataPtr=NULL;
 		
     /* allocate memory for event data and copy them to the new destination */
-    (*dest)->eventBlock.dataPtr = amMallocEx( src->infoBlock.size * sizeof(U8),PREFER_TT);
-    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,src->infoBlock.size * sizeof(U8));
+    (*dest)->eventBlock.dataPtr = amMallocEx((src->infoBlock.size * sizeof(U8)),PREFER_TT);
+    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->infoBlock.size * sizeof(U8)));
     
 }
 

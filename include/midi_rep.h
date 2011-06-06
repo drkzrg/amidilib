@@ -57,7 +57,7 @@ void toggleReplayMode(void);
  * @return pointer to currently active sequence 
  */
  
-sSequence_t *getCurrentSeq();
+sSequence_t *getCurrentSeq(void);
 
 
 #endif

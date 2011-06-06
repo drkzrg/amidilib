@@ -12,8 +12,8 @@
 #include "midi.h"
 #include "include/midi_cmd.h"	/* for sending midi commands */
 #include "include/amlog.h" 
-/* max tracks per sequence */
 
+/* max tracks per sequence */
 /* event type enums */
 enum eEventType{
 	T_NOTEON=0,
@@ -27,6 +27,7 @@ enum eEventType{
 	T_META_EOT,
 	T_META_CUEPOINT,
 	T_META_MARKER,
+	T_SYSEX,
 	T_EVT_COUNT		/* total number of events */
 };
 
@@ -99,6 +100,11 @@ typedef struct Marker_EventBlock_t{
  U8 *pMarkerName;	/* marker name, maybe something else */
 } PACK sMarker_EventBlock_t;
 
+typedef struct SysEX_EventBlock_t{
+ U32 bufferSize ; 					/* size of SysEX buffer */
+ U8 *pBuffer;						/* pointer to data */
+} PACK sSysEX_EventBlock_t;
+
 
 /** custom type evntFuncPtr for events in given sequence  */
 typedef void (*evntFuncPtr)(void *pEvent);
@@ -142,7 +148,8 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 	"Set tempo(Meta)",
 	"End of track(Meta)",
 	"Cuepoint(Meta)",
-	"Marker(Meta)"
+	"Marker(Meta)",
+	"SysEX Msg"
 };
 
 //inline functions for sending data to external module
@@ -159,6 +166,7 @@ static const char *g_arEventNames[T_EVT_COUNT]={
  void  fHandleEOT(void *pEvent);
  void fHandleCuePoint(void *pEvent);
  void fHandleMarker(void *pEvent);
+ void fHandleSysEX(void *pEvent);
  
 /* returns the info struct about event: size and pointer to the handler  */
  void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);

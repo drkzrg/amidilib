@@ -86,6 +86,11 @@ void fHandleMarker(void *pEvent){
   amTrace((const U8*)"Marker %s.\n",pPtr->pMarkerName);
 } 
 
+void fHandleSysEX(void *pEvent){
+  sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;	
+  
+}
+
 
 /* event id is mapped to the position in the array, functionPtr, parameters struct */
 
@@ -103,7 +108,8 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sTempo_EventBlock_t),fSetTempo},
    {sizeof(sEot_EventBlock_t),fHandleEOT},
    {sizeof(sCuePoint_EventBlock_t),fHandleCuePoint},
-   {sizeof(sMarker_EventBlock_t),fHandleMarker}
+   {sizeof(sMarker_EventBlock_t),fHandleMarker},
+   {sizeof(sSysEX_EventBlock_t),fHandleSysEX}
 };
 
 /*returns pointer to NULL terminated string with event name */

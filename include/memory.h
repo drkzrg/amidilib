@@ -9,6 +9,7 @@
 #define __AMEMORY_H__
 
 #include <stdlib.h>
+#include <alloca.h>
 
 #ifdef PORTABLE
 /* memory allocation preference */
@@ -41,6 +42,8 @@ typedef enum
 
 void *amMallocEx (tMEMSIZE amount, U16 flag);
 void *amMalloc (tMEMSIZE amount);
+void *amAlloca(tMEMSIZE amount);
+
 void amFree (void **pPtr);
 void *amMemCpy ( void *pDest, void *pSrc,tMEMSIZE iSize);
 void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum);

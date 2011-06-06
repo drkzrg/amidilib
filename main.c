@@ -32,6 +32,9 @@ void displayTuneInfo();
  * main program entry
  */
 
+sSequence_t *pMidiTune;	//here we store our sequence data
+
+
 #ifdef _MSC_VER
 #include "stdafx.h";
 #include <lzoconf.h>
@@ -39,23 +42,18 @@ int _tmain(int argc, _TCHAR* argv[]){
 #else
 int main(int argc, char *argv[]){
 #endif
-    sSequence_t *pMidiTune=0;	//here we store our sequence data
-    U8 currentChannel=1;
-    U8 currentVelocity=127;
-    U8 currentPN=127;
-    U8 currentBankSelect=0;
-    U32 ulFileLenght=0L;
-    float time=0;
-    float delta=0;
-    BOOL bQuit=0;
-
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-    
+    pMidiTune=0;
+      
     /* init library */
     iError=am_init();
-    
+     
+    U8 currentChannel=1;
+    U8 currentPN=127;
+    U8 currentBankSelect=0;
+
     //set current channel as 1, default is 0 in external module
     control_change(0x00, currentChannel, currentBankSelect,0x00);
     program_change(currentChannel, currentPN);
@@ -68,17 +66,18 @@ int main(int argc, char *argv[]){
       am_deinit();
       return 0;
     }
-    
+
+    U32 ulFileLenght=0L;
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL){
-
-     fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+      fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */
       fprintf(stderr,"Please wait...\n");
-      
+      float time=0,delta=0;
+    
       time = getTimeStamp();
       iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();

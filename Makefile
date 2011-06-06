@@ -27,7 +27,7 @@ MACHINE=-m68000
 LD_EXTRA=-L/usr/m68k-atari-mint/lib
 
 # stack settings for all apps
-STACK_SIZE=8192
+STACK_SIZE=32768
 SET_STACK=$(STACK) -S$(STACK_SIZE)
 BIN_EXT=.tos
 BIN_EXT2=.ttp
@@ -49,7 +49,7 @@ endif
 ifeq ($(PORTABLE),1)
 DEFINES = $(EXTRADEFINES) -DPORTABLE -DTIME_CHECK_PORTABLE
 else
-DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC -DSTRUCT_PACK
+DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
 endif
 
 CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -Wpadded -Wpacked -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)

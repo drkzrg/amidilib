@@ -119,22 +119,17 @@ amTrace((const U8 *)"destroyList()\n");
 	/* we are at first element */
 	/* remove it */
 	amFree((void **)listPtr);
-	return 0;
   }
 return 0;
 }
 
 void printEventList(const sEventList **listPtr){
 	sEventList *pTemp=NULL;	
-
 	U32 counter=0;
 		
-	/*assert(listPtr!=NULL);*/
-
 	if((*listPtr)!=NULL){
 		/* iterate through list */
 		pTemp=(sEventList *)(*listPtr);
-
 		
 		while(pTemp!=NULL){
 			/* print */
@@ -143,19 +138,17 @@ void printEventList(const sEventList **listPtr){
 			counter++;
 			pTemp=pTemp->pNext;
 		}
-
-		
 	}
 }
 
-/* prints event data and sends it to device (no timing)  */
+/* prints out events data  */
 void printEventBlock(sEventBlockPtr_t pPtr){
  
    evntFuncPtr myFunc=NULL; 
    U8 *pbuf=NULL;
    int x=0;
 
-   amTrace((const U8*)"+++++++++++++ event info: \n");
+   amTrace((const U8*)"*********** event info: \n");
    amTrace((const U8*)"delta: %d\t",(unsigned int)pPtr->uiDeltaTime);
    amTrace((const U8*)"event type: %d\t",pPtr->type);
    amTrace((const U8*)"function pointer: %p\t",pPtr->infoBlock.func);
@@ -220,6 +213,10 @@ void printEventBlock(sEventBlockPtr_t pPtr){
 	
 	case T_META_MARKER:{
 	 amTrace((const U8*)"T_META_MARKER: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	}break;
+	
+	case T_SYSEX:{
+	 amTrace((const U8*)"T_SYSEX: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
 	}break;
 	
 	default:

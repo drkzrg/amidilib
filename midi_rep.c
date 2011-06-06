@@ -170,10 +170,11 @@ else{
 	//no need to prescale
 	pCurrentSequence->divider=0;  
       }
-  
+#ifndef PORTABLE
       getMFPTimerSettings((U32)freq,&mode,&data);
       tbMode=(U8)mode;
       tbData=(U8)data;
+#endif
       
     }
     

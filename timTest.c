@@ -226,15 +226,12 @@ int main(void){
   
   // midi initial settings
   U8 currentChannel=1;
-  U8 currentVelocity=127;
   U8 currentPN=127;
   U8 currentBankSelect=0;
-  BOOL bFirstPlay=FALSE;
   
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
   
-  BOOL bPause=FALSE;
   BOOL bQuit=FALSE;
 
   //set up ym2149 sound
@@ -261,6 +258,8 @@ int main(void){
   /* init library */
   U32 iError=am_init();
  
+  if(iError!=1) return;
+  
   //set current channel as 1, default is 0 in external module
   control_change(0x00, currentChannel, currentBankSelect,0x00);
   program_change(currentChannel, currentPN);

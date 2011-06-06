@@ -457,19 +457,18 @@ U32 endAddr=0L;
 U32 ulChunkSize=0;
 U32 defaultTempo=60000000/DEFAULT_PPQ;
 
-sChunkHeader header;
+sChunkHeader *pHeader=0;
+
 sTrack_t **ppTrack=0;
 void *pTemp=0;
 void **end=0;
 
 amTrace((const U8*)"Number of tracks to process: %d\n\n",numTracks);
 
-amMemCpy(&header, startPtr, sizeof(sChunkHeader));
+pHeader=(sChunkHeader *)startPtr;
 startPtr=(U8*)startPtr + sizeof(sChunkHeader);
-    
-ulChunkSize=header.headLenght;
-endAddr=(U32)startPtr+header.headLenght;
-
+ulChunkSize=pHeader->headLenght;
+endAddr=(U32)startPtr+ulChunkSize;
 
 switch(fileTypeFlag){
   
@@ -498,7 +497,7 @@ switch(fileTypeFlag){
     break;
      case T_MIDI1:{
       
-      while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
+      while(( (pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
 	  /* we have got track data :)) */
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
@@ -521,27 +520,33 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.deltaCounter=0; //So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  
-	  /* get next data chunk info */
-	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
-	  ulChunkSize=header.headLenght;
-	
-	  /* omit Track header */
-	  startPtr=(U8*)startPtr+sizeof(sChunkHeader);
-	  endAddr=(U32)startPtr+header.headLenght;
-
 	  /* increase track counter */
-	  trackCounter++;
-	}
+	  ++trackCounter;
+	  
+	  //prevent reading chunk after processing the last track
+	  if(trackCounter<numTracks){
+	    /* get next data chunk info */
+	    pHeader=(sChunkHeader *)startPtr;
+	    ulChunkSize=pHeader->headLenght;
 	
+	    /* omit Track header */
+	    startPtr=(U8*)startPtr+sizeof(sChunkHeader);
+	    endAddr=(U32)startPtr+ulChunkSize;
+	  }else{
+	    //just to play safe
+	    pHeader=0;
+	    ulChunkSize=0;
+	    startPtr=0;
+	    endAddr=0;
+	  }
+	}
     }break;
     case T_MIDI2:{
 	/* handle MIDI 2, multitrack type */
 	/* create several track lists according to numTracks */
 
 	/* tracks inited, now insert track data */
-	U32 trackCounter=0;   	/* reset track counter first */
-
-	while(( (header.id==ID_MTRK)&&(trackCounter<numTracks))){
+	while(( (pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
 	  /* we have got track data :)) */
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
@@ -564,16 +569,24 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.deltaCounter=0; 			//So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  
-	  /* get next data chunk info */
-	  amMemCpy(&header, startPtr,sizeof(sChunkHeader));
-	  ulChunkSize=header.headLenght;
-	
-	  /* omit Track header */
-	  startPtr=(U8*)startPtr+sizeof(sChunkHeader);
-	  endAddr=(U32)startPtr+header.headLenght;
-
 	  /* increase track counter */
-	  trackCounter++;
+	  ++trackCounter;
+	  
+	  if(trackCounter<numTracks){
+	    /* get next data chunk info */
+	    pHeader=(sChunkHeader *)startPtr;
+	    ulChunkSize=pHeader->headLenght;
+	
+	    /* omit Track header */
+	    startPtr=(U8*)startPtr+sizeof(sChunkHeader);
+	    endAddr=(U32)startPtr+ulChunkSize;
+	  }else{
+	    //just to play safe
+	    pHeader=0;
+	    ulChunkSize=0;
+	    startPtr=0;
+	    endAddr=0;
+	  }
 	}
     }break;
      case T_XMIDI:{
@@ -624,7 +637,6 @@ U8 am_isMidiRTorSysex(U8 byteEvent){
 }
 
 /* handles the events in tracks and returns pointer to the next midi track */
-
 void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack ){
 U8 usSwitch=0;
 U16 recallStatus=0;

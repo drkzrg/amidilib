@@ -42,14 +42,12 @@ void am_deinitLog(void){
 
 
 void am_log(const U8 *mes,...){
-static char buffer[256]={0};
+char buffer[256]={0};
 
 va_list va;
 va_start(va, mes);
-
-S32 iWritten=vsnprintf(buffer,sizeof(U8)*256-1,(const char *)mes,va);
+S32 iWritten=vsnprintf(buffer,sizeof(U8)*256,(const char *)mes,va);
 if(iWritten==-1) fprintf(stdout,"vsnprintf() error\n");
-
 va_end(va);   
 
 #ifdef DEBUG_FILE_OUTPUT

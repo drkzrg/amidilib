@@ -3,6 +3,7 @@
 
 #include "include/midi_rep.h"
 #include "include/mfp.h"
+#include "include/amidilib.h"
 #include "include/amidiseq.h"
 #include "include/list/list.h"
 

@@ -33,11 +33,6 @@ if(*listPtr!=NULL){
   while((pTempPtr->pNext != NULL)){
     pTempPtr=pTempPtr->pNext;
   }
-
-/* insert event */
-  #ifdef DEBUG_MEM
-    amTrace((const U8 *)"insert event\n");
-  #endif
     
   /* insert at the end of list */
   copyEvent(eventBlockPtr, &pNewItem);
@@ -49,9 +44,6 @@ if(*listPtr!=NULL){
   pTempPtr->pNext=pNewItem;
   
 }else{
-  #ifdef DEBUG_MEM
-    amTrace((const U8 *)"insert first event\n");
-  #endif
   
   copyEvent(eventBlockPtr, listPtr);
   

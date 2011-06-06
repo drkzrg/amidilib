@@ -17,6 +17,7 @@
 #include "include/ikbd.h"
 #include "include/scancode.h"
 #include <lzoconf.h>
+
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;

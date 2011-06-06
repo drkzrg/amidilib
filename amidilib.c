@@ -1188,16 +1188,25 @@ tempEvent.dataPtr=0;
 }
 
 void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
-sEventBlock_t tempEvent;
-
-  //TODO: slap it to eventlist
+  sEventBlock_t tempEvent;
+  sSysEX_EventBlock_t *pEvntBlock=0;
+  U8 *pTmpPtr=0;
+  
   U32 ulCount=0L;
   tempEvent.dataPtr=0;
 
+  tempEvent.uiDeltaTime=delta;
+  tempEvent.type=T_SYSEX;
+  getEventFuncInfo(T_SYSEX,&tempEvent.infoBlock);
+  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+  
+  pEvntBlock=(sSysEX_EventBlock_t *)tempEvent.dataPtr;
+  
 #ifdef MIDI_PARSER_DEBUG
   amTrace((const U8*)"SOX: ");
 #endif  
-
+   pTmpPtr=*(*pPtr); //save start
+   
    while( (*(*pPtr))!=EV_EOX){
 #ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"%x ",*(*pPtr));
@@ -1206,6 +1215,15 @@ sEventBlock_t tempEvent;
       /*count Sysex msg data bytes */
       ulCount++;
     }
+    pEvntBlock->bufferSize=ulCount; //size of data
+    pEvntBlock->pBuffer=amMallocEx(ulCount*sizeof(U8),PREFER_TT);
+    
+    //copy ulCount of data
+    amMemCpy(pEvntBlock->pBuffer,pTmpPtr,ulCount*sizeof(U8));
+    
+    /* add event to list */
+    addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent);
+    
 #ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)" EOX, size: %ld\n",ulCount);
 #endif

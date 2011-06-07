@@ -10,7 +10,6 @@ AMIDI_MAX_TRACKS equ	65536
        xdef _installReplayRout		;initialises replay interrupt TB routine and prepares data
        xdef _deinstallReplayRout	;removes replay routine from system 
 	   
-       xdef _oldTB			;saved old Timer B vector
        xdef _tbData
        xdef _tbMode
 
@@ -117,6 +116,5 @@ divider		rs.l	1	;
 ubNumTracks	rs.w	1	; number of tracks 
 ubActiveTrack	rs.w	1	; range 0-(ubNumTracks-1) tracks 
 arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (65536) tracks available
-
 
   RSRESET

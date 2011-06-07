@@ -22,18 +22,27 @@
 #include <time.h>
 #endif
 
-#define LIB_NAME "AMIDILIB\nAtari (X)MIDI replay library"
-#define AMIDI_INFO "(c)2008-2011 Pawel Goralski e-mail: nokturnal@nokturnal.pl"
+#define LIB_NAME "AMIDILIB : Atari (X)MIDI replay library\n"
+#define AMIDI_INFO "(c)2007-2011 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
 
-#define AMIDI_MAJOR_VERSION 1
-#define AMIDI_MINOR_VERSION 2
+#define AMIDI_MAJOR_VERSION 0
+#define AMIDI_MINOR_VERSION 9
 #define AMIDI_PATCHLEVEL 0
 
-#define AMIDI_VERSION(X)/{\
-(X)->major = AMIDI_MAJOR_VERSION;\
-(X)->minor = AMIDI_MINOR_VERSION;\
-(X)->patch = AMIDI_PATCHLEVEL;\
-}
+/* current version info struct */
+typedef struct AMIDI_version {
+	U16 major;
+	U16 minor;
+	U16 pad;
+	U16 patch;
+} sAMIDI_version;
+
+
+#define AMIDI_VERSION(X) \
+{\
+(X)->major = AMIDI_MAJOR_VERSION; \
+(X)->minor = AMIDI_MINOR_VERSION; \
+(X)->patch = AMIDI_PATCHLEVEL; }
 
 /* This macro turns the version numbers into a numeric value: (1,2,3) -> (1203)
    This assumes that there will never be more than 100 patchlevels
@@ -70,7 +79,15 @@
 #define T_SNG     7
 #define T_MUS     8	/* e.g Doom MIDI music format */
 
+
 /* function prototypes  */
+/**
+ * Returns AMIDI version info.
+ * @return version info structure
+ */
+
+const sAMIDI_version *am_getVersionInfo(void);
+
 /**
  * Gets MIDI file info type(0,1,2), number of tracks, track lenghts..
  *

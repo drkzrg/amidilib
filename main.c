@@ -216,9 +216,14 @@ int main(int argc, char *argv[]){
 }
 
 void printInfoScreen(){
+  
+  const sAMIDI_version *pInfo=am_getVersionInfo();
+  
   printf("\n=========================================\n");
-  printf("  /|\\ amidi demo..\n");
-  printf("  MIDI type 0,1 replay\n\n");  
+  printf(LIB_NAME);
+  printf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
+  printf("date: %s\n",__DATE__);
+  
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once/loop mode\n");
@@ -226,8 +231,7 @@ void printInfoScreen(){
   printf("    [h] - show this help screen\n");  
   printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");
-  printf("\n(c) nokturnal 05'2011\n");
-  printf("\nwww: http://nokturnal.pl\n");
+  printf(AMIDI_INFO);
   printf("==========================================\n");
   printf("Ready...\n");
 } 

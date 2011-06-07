@@ -26,15 +26,7 @@
 #include "include/midi_send.h"
 #include "include/c_vars.h"
 
-/* current version */
-typedef struct AMIDI_version {
-	U16 major;
-	U16 minor;
-	U16 patch;
-} AMIDI_version;
-
-static AMIDI_version version =
-	{ AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
+static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
 /* for saving last running status */
 static U8 g_runningStatus;
@@ -43,7 +35,6 @@ static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
 static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
 
 volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
-
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -63,6 +54,12 @@ extern const char *g_arMIDI2key[];
 
 /* static table with CM32 rhytm part */
 extern const char *g_arCM32Lrhythm[];
+
+
+const sAMIDI_version *am_getVersionInfo(void){
+  return (const sAMIDI_version *)(&version); 
+}
+
 
 S16 am_getHeaderInfo(void *pMidiPtr){
     sMThd *pMidiInfo=0;
@@ -386,6 +383,7 @@ S16 am_init(){
  /* init sequence */
  /* nothing loaded, nothing played */
 
+ 
 #ifndef PORTABLE 
  am_setSuperOn();
  
@@ -1200,7 +1198,7 @@ void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 #ifdef MIDI_PARSER_DEBUG
   amTrace((const U8*)"SOX: ");
 #endif  
-   pTmpPtr=*(*pPtr); //save start
+   pTmpPtr=(*pPtr); //save start
    
    while( (*(*pPtr))!=EV_EOX){
 #ifdef MIDI_PARSER_DEBUG

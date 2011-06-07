@@ -12,7 +12,8 @@
 
 
 extern U8 envelopeArray[8];
- 
+
+
 #ifdef PORTABLE
 void turnOffKeyclick(void);
 #else
@@ -329,6 +330,9 @@ int main(void) {
 
 return 0;
 }
+
+void sequenceUpdate(){};
+
 
 #ifdef PORTABLE
 

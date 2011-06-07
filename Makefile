@@ -28,7 +28,7 @@ MACHINE=-m68000
 LD_EXTRA=-L/usr/m68k-atari-mint/lib
 
 # stack settings for all apps
-STACK_SIZE=32768
+STACK_SIZE=16384
 SET_STACK=$(STACK) -S$(STACK_SIZE)
 BIN_EXT=.tos
 BIN_EXT2=.ttp
@@ -109,8 +109,8 @@ ifeq ($(PORTABLE),1)
 $(EXE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm 
 else
-$(EXE): $(OBJECTS) amidi.o int_rout.o ikbd_asm.o
-	$(CC) $(LDFLAGS) $(OBJECTS) amidi.o int_rout.o ikbd.o -o $@ -lgem -lm
+$(EXE): amidi.o $(OBJECTS) ikbd_asm.o
+	$(CC) $(LDFLAGS) amidi.o $(OBJECTS) ikbd.o -o $@ -lgem -lm
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
 #$(SET_STACK) $(EXE)
@@ -123,8 +123,8 @@ ifeq ($(PORTABLE),1)
 $(YM_TEST_EXE): $(YM_TEST_OBJECTS) 
 	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS) -o $@ -lm 
 else
-$(YM_TEST_EXE): $(YM_TEST_OBJECTS)  amidi.o 
-	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS)  amidi.o -o $@ -lm 
+$(YM_TEST_EXE): $(YM_TEST_OBJECTS) amidi.o 
+	$(CC) $(LDFLAGS) $(YM_TEST_OBJECTS) amidi.o -o $@ -lm 
 endif
 	echo "Stripping symbols"
 	$(STRIP) $(YM_TEST_EXE)
@@ -163,12 +163,8 @@ ifneq ($(PORTABLE),1)
 amidi.o:	amidi.s
 		$(ASM) amidi.s $(ASMFLAGS) -o amidi.o
 
-int_rout.o:	int_rout.s
-		$(ASM) int_rout.s $(ASMFLAGS) -o int_rout.o
-
 testReplay.o:	testReplay.s
 		$(ASM) testReplay.s $(ASMFLAGS) -o testReplay.o
-
 
 ikbd_asm.o:	ikbd.S
 		$(GAS) $(MACHINE) ikbd.S -o ikbd.o

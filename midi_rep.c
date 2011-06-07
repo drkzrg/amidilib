@@ -340,8 +340,8 @@ void toggleReplayMode(void){
   }
 }
 
-sSequence_t *getCurrentSeq (void){
-  return (sSequence_t *)pCurrentSequence;
+const sSequence_t *getCurrentSeq (void){
+  return (const sSequence_t *)pCurrentSequence;
 }
 
 

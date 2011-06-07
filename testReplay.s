@@ -301,8 +301,6 @@ timerMode:		ds.l	1
 _counter:		ds.l	1
 _oldTB:			ds.l	1
 
-_tbData:	ds.b	1
-_tbMode:	ds.b	1
 
 
 	RSRESET 	;current sequence structure

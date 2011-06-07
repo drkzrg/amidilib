@@ -34,8 +34,12 @@ static U8 outputFilename[] = "amidi.log";
 static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
 static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
 
-volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
 
+#ifdef PORTABLE
+volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
+#else
+extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
+#endif
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
  clock_t end;

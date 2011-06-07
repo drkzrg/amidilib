@@ -397,3 +397,6 @@ int main(void) {
 am_deinit();
  return 0;
 }
+
+void sequenceUpdate(){};
+

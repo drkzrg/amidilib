@@ -300,14 +300,13 @@ U32 lRet=0L;
         return NULL;
     }
 }
-U32 ssp;
 
 /**
  * turns supervisor mode ON.
  *
 */
 
-U32 ssp;
+static U32 ssp;
 void am_setSuperOn(void) {
   #ifdef DEBUG_BUILD
     amTrace((const U8*)"Entering supervisor\n");

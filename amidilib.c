@@ -455,10 +455,8 @@ U32 ulChunkSize=0;
 U32 defaultTempo=60000000/DEFAULT_PPQ;
 
 sChunkHeader *pHeader=0;
-
 sTrack_t **ppTrack=0;
-void *pTemp=0;
-void **end=0;
+void *end=0;
 
 amTrace((const U8*)"Number of tracks to process: %d\n\n",numTracks);
 
@@ -481,10 +479,9 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
-	  pTemp=(void *)endAddr;
-	  end=&pTemp;
+	  end=(void *)endAddr;
 	  
-	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack);
+	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack);
 	  
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
@@ -507,10 +504,9 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
-	  pTemp=(void *)endAddr;
-	  end=&pTemp;
+	  end=(void *)endAddr;
 	  
-	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack );
+	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack );
 	
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
@@ -556,10 +552,9 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
 	  ppTrack=&pTempTrack;
-	  pTemp=(void *)endAddr;
-	  end=&pTemp;
-	
-	  startPtr=processMIDItrackEvents(&startPtr,(const void **)end,ppTrack);
+	  end=(void *)endAddr;
+	  
+	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack);
 	  
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
@@ -633,7 +628,7 @@ U8 am_isMidiRTorSysex(U8 byteEvent){
 }
 
 /* handles the events in tracks and returns pointer to the next midi track */
-void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack ){
+void *processMIDItrackEvents(void**startPtr, const void *endAddr, sTrack_t **pCurTrack ){
 U8 usSwitch=0;
 U16 recallStatus=0;
 U32 delta=0L;
@@ -645,7 +640,7 @@ BOOL bEOF=FALSE;
     U8 *pCmd=((U8 *)(*startPtr));
     U8 ubSize=0;
 
-    while ( ((pCmd!=(*endAddr))&&(bEOF!=TRUE)) ){
+    while ( ((pCmd!=endAddr)&&(bEOF!=TRUE)) ){
     
       /*read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
@@ -1237,7 +1232,6 @@ sEventBlock_t tempEvent;
  U8 ubLenght,ubVal,ubSize=0;
  U8 textBuffer[64]={0};
  
- 
  tempEvent.dataPtr=0;
  
  /*get meta event type */
@@ -1310,7 +1304,6 @@ sEventBlock_t tempEvent;
 	if((*pCurTrack)->pTrackName!=NULL)
         amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(U8) );
 	(*pCurTrack)->pTrackName[ubLenght]='\0';
-	
 	
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
@@ -1413,7 +1406,6 @@ sEventBlock_t tempEvent;
 	
 	/* add event to list */
 	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-	//amFree(&(tempEvent.dataPtr));
 	
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
@@ -1517,7 +1509,6 @@ sEventBlock_t tempEvent;
 	
 	/* add event to list */
 	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-	//amFree(&(tempEvent.dataPtr));
 	
 	return TRUE;
     }break;
@@ -1556,7 +1547,6 @@ sEventBlock_t tempEvent;
         pEvntBlock->eventData.tempoVal=	val1;
 	/* add event to list */
 	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-	//amFree(&(tempEvent.dataPtr));
 	
 #ifdef MIDI_PARSER_DEBUG
 	amTrace((const U8*)"%u ms per quarter-note\n", (unsigned int)val1);

@@ -17,7 +17,7 @@
 #include "include/list/list.h"
 #include "include/mfp.h"
 
-/* adds event to linked list, list has to be inintialised with initEventList() function */
+/* adds event to linked list, list has to be inintialised with null */
 //event list, temp event
 
 void addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){

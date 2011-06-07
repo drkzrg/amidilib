@@ -156,7 +156,7 @@ void am_deinit(void);
 */
 void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence);
 
-void *processMIDItrackEvents(void**startPtr, const void **endAddr, sTrack_t **pCurTrack);
+void *processMIDItrackEvents(void**startPtr, const void *endAddr, sTrack_t **pCurTrack);
 
 /** read MIDI Variable lenght quantity
 *  @param pChar pointer to VLQ data

@@ -385,7 +385,7 @@ S16 am_init(){
 
  
 #ifndef PORTABLE 
- am_setSuperOn();
+ super_on();
  
  /* clear our new buffer */
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
@@ -406,7 +406,7 @@ S16 am_init(){
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
  (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
- am_setSuperOff();
+ super_off();
 #endif
 
  return(1);
@@ -414,7 +414,7 @@ S16 am_init(){
 
 void am_deinit(){
 #ifndef PORTABLE
-  am_setSuperOn();
+  super_on();
   /* restore standard MIDI buffer */
   (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
   (*g_psMidiBufferInfo).ibufsiz=g_sOldMidiBufferInfo.ibufsiz;
@@ -422,7 +422,7 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibuftl=g_sOldMidiBufferInfo.ibuftl;
   (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
-  am_setSuperOff();
+  super_off();
 #endif  
   am_deinitLog();
   

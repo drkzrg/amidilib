@@ -34,8 +34,17 @@
  amTrace((const U8*)"WARNING: amMidiSendData() not implemented\n");
  return;
 #else
-  Midiws(count,data);
-  return; 
+  
+#ifdef IKBD_MIDI_SEND_DIRECT  
+  //bypass os, write directly to IKBD to send data
+  amMidiSendIKBD(count,data);  
+#else
+  //use xbios function
+ Midiws(count,data);
+#endif  
+
+
+ return; 
 #endif
 }
 

@@ -7,8 +7,8 @@
     xdef _deinstallYMReplayRout	;removes replay routine from system 
     xdef _defaultPlayMode
     xref _playNote	;output note to external midi module and/or ym2149
-    xref super_on	; self explanatory 
-    xref super_off	;
+    xref _super_on	; self explanatory 
+    xref _super_off	;
     xref _oldTB		;saved old Timer B vector
     
     xref _counter	;ticks counted in quaternote span
@@ -55,7 +55,7 @@ savamt		equ	$23*2
 _installYMReplayRout:
 	move.l	a0,_currentSeqPtr
 	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	  super_on
+	bsr.w	  _super_on
 	move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
@@ -81,7 +81,7 @@ _installYMReplayRout:
 	bset.b    #0,$fffffa13
 	
 	move.w 	  (sp)+,sr 		;restore Status Register
-	bsr.w	  super_off
+	bsr.w	  _super_off();
 	movem.l (sp)+,d0-d7/a0-a6		;restore registers
 	rts
 
@@ -275,7 +275,7 @@ update:
 ; deinstalls MIDI replay on timer B 
 _deinstallYMReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	super_on
+	bsr.w	_super_on
 
 	move.w	sr,-(a7)		;save status register
 	or.w	#$0700,sr
@@ -285,7 +285,7 @@ _deinstallYMReplayRout:
 	
         move.w	(sp)+,sr	;restore Status Register
 
-	bsr.w	super_off
+	bsr.w	_super_off();
 	movem.l (sp)+,d0-d7/a0-a6
 	rts
 

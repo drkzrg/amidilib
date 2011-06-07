@@ -75,12 +75,12 @@ const U8 *getLastGemdosError(void);
  * enables supervisor mode (atari specific)
  */
 
-void am_setSuperOn(void);
+extern void super_on(void);
+
 /**
  * disables supervisor mode (atari specific)
  */
-
-void am_setSuperOff(void);
+extern void super_off(void);
 
 #endif
 

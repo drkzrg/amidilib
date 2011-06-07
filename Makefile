@@ -12,6 +12,7 @@
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
+# IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 
 EXTRADEFINES = 
 #-DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
@@ -50,7 +51,7 @@ endif
 ifeq ($(PORTABLE),1)
 DEFINES = $(EXTRADEFINES) -DPORTABLE -DTIME_CHECK_PORTABLE
 else
-DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC
+DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC 
 endif
 
 CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
@@ -93,8 +94,8 @@ ifeq ($(PORTABLE),1)
 YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c
 YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o
 else
-YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c mfp.c
-YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o mfp.o
+YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c mfp.c fmio.c
+YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o mfp.o fmio.o
 endif
 
 ifeq ($(PORTABLE),1)
@@ -109,7 +110,7 @@ ifeq ($(PORTABLE),1)
 $(EXE): $(OBJECTS) 
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lm 
 else
-$(EXE): amidi.o $(OBJECTS) ikbd_asm.o
+$(EXE): $(OBJECTS) amidi.o ikbd_asm.o
 	$(CC) $(LDFLAGS) amidi.o $(OBJECTS) ikbd.o -o $@ -lgem -lm
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
@@ -150,8 +151,8 @@ ifeq ($(PORTABLE),1)
 $(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS)   
 	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) -o $@ -lm 
 else
-$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) amidi.o ikbd_asm.o testReplay.o  
-	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) amidi.o ikbd.o testReplay.o -o $@ -lgem -lm 
+$(TIMING_TEST_EXE): $(TIMING_TEST_OBJECTS) amidi.o testReplay.o ikbd_asm.o   
+	$(CC) $(LDFLAGS) $(TIMING_TEST_OBJECTS) amidi.o testReplay.o ikbd.o  -o $@ -lgem -lm 
 endif
 	echo "Stripping symbols"
 	$(STRIP) $(TIMING_TEST_EXE)

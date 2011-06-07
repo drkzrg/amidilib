@@ -9,21 +9,23 @@
 AMIDI_MAX_TRACKS	equ	65536
 
 ;export symbols
-    xdef super_on		; self explanatory 
-    xdef super_off		;
+    xdef _super_on		; self explanatory 
+    xdef _super_off		;
     xdef _turnOffKeyclick	;
     xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
     xdef _deinstallReplayRout	;removes replay routine from system 
     xdef _pCurrentSequence	;current sequence pointer
     xdef _tbData
     xdef _tbMode
+    xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
 
 ;import symbols
     xref _sequenceUpdate
 
+
 _installReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	  super_on
+	bsr.w	  _super_on
 	move.w	sr,-(sp)	;save status register
 	or.w	#$0700,sr	;turn off all interupts
 
@@ -44,7 +46,7 @@ _installReplayRout:
 	bset.b    #0,$fffffa13
 	
 	move.w 	  (sp)+,sr 		;restore Status Register
-	bsr.w	  super_off
+	bsr.w	  _super_off
 	movem.l (sp)+,d0-d7/a0-a6		;restore registers
 	rts
 
@@ -86,7 +88,7 @@ update:
 ; deinstalls MIDI replay on timer B 
 _deinstallReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	super_on
+	bsr.w	_super_on
 
 	move.w	sr,-(a7)		;save status register
 	or.w	#$0700,sr
@@ -96,20 +98,45 @@ _deinstallReplayRout:
 	
         move.w	(sp)+,sr	;restore Status Register
 
-	bsr.w	super_off
+	bsr.w	_super_off
 	movem.l (sp)+,d0-d7/a0-a6
 	rts
 
 _turnOffKeyclick:
-      bsr.w	super_on
+      bsr.w	_super_on
       bclr	#0,$484.w
 
-      bsr.w	super_off
+      bsr.w	_super_off
+      rts
+
+_amMidiSendIKBD:
+      movem.l	d0-d7/a0-a6,-(sp)
+      bsr.w	_super_on
+
+      move.l	$42(sp),d1  ;count
+      move.l  	$46(sp),a0  ;buffer
+.loop:      
+      cmpi.l	#0,d1	
+      beq.s	.done
+      
+      ;slap data to d0
+      move.b	(a0)+,d0
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+
+      subq.l	#1,d1
+      bra.s	.loop
+.done:
+      bsr.w	_super_off
+      movem.l (sp)+,d0-d7/a0-a6
       rts
 
 
+
 ;enter supervisor mode
-super_on:
+_super_on:
 	movem.l	d0/a0,-(sp)
 	clr.l	-(sp)
 	move.w	#$20,-(sp)
@@ -120,7 +147,7 @@ super_on:
 	RTS
 
 ;leave supervisor mode
-super_off:
+_super_off:
 	movem.l	d0/a0,-(sp)
 	move.l	old_ssp,-(sp)
 	move.w	#$20,-(sp)
@@ -128,7 +155,6 @@ super_off:
 	addq.l	#6,sp
 	movem.l	(sp)+,d0/a0 
 	RTS
-
 
 	bss
 	align 2

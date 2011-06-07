@@ -306,25 +306,6 @@ U32 lRet=0L;
     }
 }
 
-/**
- * turns supervisor mode ON.
- *
-*/
-
-static U32 ssp=0L;
-void am_setSuperOn(void) {
-  ssp = Super(0L);         /* enter supervisor mode */
-}
-
-/**
- * turns supervisor mode Off.
- *
-*/
-void am_setSuperOff(void) {
-    SuperToUser((long)ssp); /* return processor to user mode */
-    
- }
-
 
 #endif
 

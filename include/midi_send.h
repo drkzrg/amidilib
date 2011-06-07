@@ -11,6 +11,12 @@
 #define MIDI_LWM 32		/* low watermark if flow control enabled */
 #define MIDI_HWM 32000		/* hight watermark if flow control enabled */
 #define MIDI_BUFFER_SIZE 32767  /*default MIDI buffer size 32k */
+
+#ifdef IKBD_MIDI_SEND_DIRECT  
+  //bypass of Atari XBIOS, writes directly to IKBD to send data 
+  extern void amMidiSendIKBD(U32 count,void *data);  
+#endif
+
 #endif
 
 //midi data sending, platform specific

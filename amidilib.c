@@ -197,10 +197,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	 /* several tracks, one sequence */
 	 /* prepare our structure */
 	  iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI1);
-	  if(iNumTracks>AMIDI_MAX_TRACKS){
-	   fprintf(stderr,"MIDI type 1 has too many tracks(above 16), which cannot be handled by one device.\n");
-	   return -1;
-	  }
 	  
 	  /* init sequence table */
 	  for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
@@ -1300,7 +1296,7 @@ sEventBlock_t tempEvent;
 	amMemSet((*pCurTrack)->pTrackName,0,((ubLenght*sizeof(U8))+1));
 	
 	if((*pCurTrack)->pTrackName!=NULL)
-        amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(U8) );
+        amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(U8));
 	(*pCurTrack)->pTrackName[ubLenght]='\0';
 	
         (*pPtr)=((*pPtr)+ubLenght);
@@ -1368,7 +1364,7 @@ sEventBlock_t tempEvent;
 	pEvntBlock->pMarkerName=amMallocEx(ubLenght+1,PREFER_TT);
 	amMemSet(pEvntBlock->pMarkerName,0,((ubLenght+1)*sizeof(U8)));
 	amMemCpy(pEvntBlock->pMarkerName,(*pPtr),ubLenght*sizeof(U8));
-	pEvntBlock->pMarkerName[ubLenght]='\n';
+	pEvntBlock->pMarkerName[ubLenght]='\0';
 	(*pPtr)=((*pPtr)+ubLenght);
 	
 	/* add event to list */
@@ -1391,23 +1387,28 @@ sEventBlock_t tempEvent;
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
         (*pPtr)++;
-        amMemCpy(textBuffer, (*pPtr),ubLenght*sizeof(U8) );
-        (*pPtr)=((*pPtr)+ubLenght);
-
+        
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_META_CUEPOINT;
 	getEventFuncInfo(T_META_CUEPOINT,&tempEvent.infoBlock);
 	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
 	
 	pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
-	pEvntBlock->pCuePointName=0;		//dummy value
+	pEvntBlock->pCuePointName=0;
+	
+	pEvntBlock->pCuePointName=amMallocEx(ubLenght+1,PREFER_TT);
+	amMemSet(pEvntBlock->pCuePointName,0,((ubLenght+1)*sizeof(U8)));
+	amMemCpy(pEvntBlock->pCuePointName,(*pPtr),ubLenght*sizeof(U8));
+	pEvntBlock->pCuePointName[ubLenght]='\0';
+	
+	(*pPtr)=((*pPtr)+ubLenght);
 	
 	/* add event to list */
 	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
-        amTrace((const U8*)"%s \n",textBuffer);
+        amTrace((const U8*)"%s \n",pEvntBlock->pCuePointName);
 #endif
 	return FALSE;
     }break;

@@ -11,7 +11,7 @@
 
 #include "midiseq.h"
 
-#define AMIDI_MAX_TRACKS 16
+#define AMIDI_MAX_TRACKS 65536
 #define EOT_SILENCE_THRESHOLD 40	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
 					/* sequence is considered finished and ready to STOP or LOOP */
 
@@ -54,24 +54,22 @@ typedef volatile struct SequenceState_t{
 }PACK sSequenceState_t;
 
  typedef struct Track_t{
-  U8 *pTrackName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
   sSequenceState_t currentState;        /* current sequence state */
   sEventList *pTrkEventList;  		/* track event list */
+  U8 *pTrackName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
 }PACK sTrack_t;
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;				/* NULL terminated string */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
    U32 timeDivision;				/* pulses per quater note(time division) */
    U32 eotThreshold;				/*see define EOT_SILENCE_THRESHOLD */
    U32 accumulatedDeltaCounter;			/* accumulated delta counter */
    U32 pulseCounter;				/* pulses per quaternote counter */
    U32 divider;					/* */
-   U8 ubNumTracks;            	        	/* number of tracks */
-   U8 ubDummy[3];
-   U8 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
-   U8 ubDummy1[3];
-   } PACK sSequence_t;
+   U16 ubNumTracks;            	        	/* number of tracks 1-65536 */
+   U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
+} PACK sSequence_t;
 
 #endif

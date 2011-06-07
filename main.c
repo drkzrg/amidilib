@@ -237,11 +237,12 @@ void printInfoScreen(){
 } 
 
 void displayTuneInfo(){
+  
   printf("Sequence name %s\n",getCurrentSeq()->pSequenceName);
   printf("PPQN: %d\t",(unsigned int)getCurrentSeq()->timeDivision);
   printf("Tempo: %d [ms]\n",(unsigned int)getCurrentSeq()->arTracks[0]->currentState.currentTempo);
   
-  printf("Number of tracks: %d",(unsigned int)getCurrentSeq()->ubNumTracks);
+  printf("Number of tracks: %d\n",(unsigned int)getCurrentSeq()->ubNumTracks);
   
   for(int i=0;i<getCurrentSeq()->ubNumTracks;i++){
     printf("[Track no. %d] %s\n",i+1,getCurrentSeq()->arTracks[i]->pTrackName);

@@ -5,7 +5,7 @@
 ;    See license.txt for licensing information.
 ;================================================
 
-AMIDI_MAX_TRACKS equ	16
+AMIDI_MAX_TRACKS equ	65536
 
        xdef _installReplayRout		;initialises replay interrupt TB routine and prepares data
        xdef _deinstallReplayRout	;removes replay routine from system 
@@ -109,17 +109,14 @@ _tbMode:		ds.b	1
 ;sSequence_t structure
    RSRESET
 pSequenceName	rs.l	1	; NULL terminated string ptr
-arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (16) tracks available
 timeDivision	rs.l	1	; pulses per quater note(time division) 
 eotThreshold	rs.l	1	; see define EOT_SILENCE_THRESHOLD 
-
 accumDelta	rs.l	1	; accumulated delta counter 
 pulseCounter	rs.l	1	; pulses per quaternote counter 
 divider		rs.l	1	;
+ubNumTracks	rs.w	1	; number of tracks 
+ubActiveTrack	rs.w	1	; range 0-(ubNumTracks-1) tracks 
+arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (65536) tracks available
 
-ubNumTracks	rs.b	1	; number of tracks 
-ubDummy		rs.b	3	;
-ubActiveTrack	rs.b	1	; range 0-(ubNumTracks-1) tracks 
-ubDummy1	rs.b	3	;
 
   RSRESET

@@ -94,6 +94,26 @@ amTrace((const U8 *)"destroyList()\n");
 	  while(pCurrentPtr!=NULL){
 
 	  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
+	    
+	    //free up additionally memory for specific blocks
+	    switch(pCurrentPtr->eventBlock.type){
+
+	      case T_META_MARKER:{
+		sMarker_EventBlock_t *pTemp=(sMarker_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+		amFree(&(pTemp->pMarkerName));
+	      }break;
+	      
+	      case T_META_CUEPOINT:{
+		sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+		amFree(&(pTemp->pCuePointName));
+	      }break;
+	      
+	      case T_SYSEX:{
+		sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+		amFree(&(pTemp->pBuffer));
+	      }break;
+	    };
+	    //release event block itself
 	    amFree(&(pCurrentPtr->eventBlock.dataPtr));
 	  }
 

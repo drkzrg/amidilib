@@ -66,7 +66,6 @@ int main(int argc, char *argv[]){
     else{
       fprintf(stderr,"No specified midi filename! exiting\n");
       am_deinit();
-      getchar();
       return 0;
     }
 
@@ -200,8 +199,7 @@ int main(int argc, char *argv[]){
 	//unload sequence
 	am_destroySequence(&pMidiTune);
 	am_deinit(); //deinit our stuff
-	getchar();
-       return(-1);
+	return(-1);
       }
      
     } /* MIDI loading failed */
@@ -209,13 +207,13 @@ int main(int argc, char *argv[]){
       amTrace((const U8*)"Error: Couldn't read %s file...\n",argv[1]);
       fprintf(stderr, "Error: Couldn't read %s file...\n",argv[1]);
       am_deinit();	//deinit our stuff
-      getchar();
+      
       return(-1);
     }
 
       deinstallReplayRout();   
       am_deinit();
-      getchar();
+      
  return (0);
 }
 

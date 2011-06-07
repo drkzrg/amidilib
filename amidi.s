@@ -17,6 +17,8 @@ AMIDI_MAX_TRACKS	equ	65536
     xdef _pCurrentSequence	;current sequence pointer
     xdef _tbData
     xdef _tbMode
+
+;import symbols
     xref _sequenceUpdate
 
 _installReplayRout:

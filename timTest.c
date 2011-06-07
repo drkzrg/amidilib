@@ -25,7 +25,6 @@
 
 #define TEMPO_STEP 50000	// tempo change step in ms
 
-
 typedef struct{
   U32 delta;
   U32 tempo;	// 0 == stop

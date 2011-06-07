@@ -100,17 +100,17 @@ amTrace((const U8 *)"destroyList()\n");
 
 	      case T_META_MARKER:{
 		sMarker_EventBlock_t *pTemp=(sMarker_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree(&(pTemp->pMarkerName));
+		amFree((void **)&(pTemp->pMarkerName));
 	      }break;
 	      
 	      case T_META_CUEPOINT:{
 		sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree(&(pTemp->pCuePointName));
+		amFree((void **)&(pTemp->pCuePointName));
 	      }break;
 	      
 	      case T_SYSEX:{
 		sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree(&(pTemp->pBuffer));
+		amFree((void **)&(pTemp->pBuffer));
 	      }break;
 	    };
 	    //release event block itself

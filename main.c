@@ -240,13 +240,13 @@ void displayTuneInfo(){
   const sSequence_t *pPtr=getCurrentSeq();
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN: %d\t",(unsigned long)pPtr->timeDivision);
-  printf("Tempo: %d [ms]\n",(unsigned long)pPtr->arTracks[0]->currentState.currentTempo);
+  printf("PPQN: %d\t",(int)pPtr->timeDivision);
+  printf("Tempo: %d [ms]\n",(int)pPtr->arTracks[0]->currentState.currentTempo);
   
-  printf("Number of tracks: %d\n",(unsigned short)pPtr->ubNumTracks);
+  printf("Number of tracks: %d\n",(int)pPtr->ubNumTracks);
   
   for(int i=0;i<pPtr->ubNumTracks;i++){
-    printf("[Track no. %d] %s\n",i+1,pPtr->arTracks[i]->pTrackName);
+    printf("[Track no. %d] %s\n",(int)i+1,pPtr->arTracks[i]->pTrackName);
   }
   
   printf("\nReady...\n");

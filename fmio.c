@@ -269,34 +269,39 @@ U32 lRet=0L;
     *fileLenght=pDTA->dta_size;
     /* allocate buffer */
      pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
-    
-    if(pData!=NULL){
+     
+     if(pData!=NULL){
+       
+      amMemSet(pData,0,(*fileLenght)+1);
+
       lRet=Fread( (int)fileHandle, (tMEMSIZE)(*fileLenght), pData );
 
       /* not all data being read */
       if(lRet!=(*fileLenght)){
+	fprintf(stderr,(const char *)"Fatal error, Couldn't read the whole file.\n");
+	
 	/* so we have error, free up memory */
 	amFree(pData);
-	pData=NULL;
       }
-	
+        
         Fclose((int)fileHandle);
-        return (pData);
+	return (pData);
      }
      else{
       /*no memory available */
+      fprintf(stderr,(const char *)"Not enough memory to load file.\n");
       return NULL;
      }
     }else{
       Fclose((int)fileHandle);
       /* file not found */
-      getGemdosError(iRet);
+      fprintf(stderr,(const char *)getGemdosError(iRet));
       return NULL;
      }
     }
     else{
         /* print GEMDOS error code */
-        getGemdosError((S16)fileHandle);
+        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
         return NULL;
     }
 }
@@ -306,11 +311,8 @@ U32 lRet=0L;
  *
 */
 
-static U32 ssp;
+static U32 ssp=0L;
 void am_setSuperOn(void) {
-  #ifdef DEBUG_BUILD
-    amTrace((const U8*)"Entering supervisor\n");
-  #endif
   ssp = Super(0L);         /* enter supervisor mode */
 }
 
@@ -321,9 +323,6 @@ void am_setSuperOn(void) {
 void am_setSuperOff(void) {
     SuperToUser((long)ssp); /* return processor to user mode */
     
-    #ifdef DEBUG_BUILD
-      amTrace((const U8*)"Leaving supervisor\n");
-    #endif
  }
 
 

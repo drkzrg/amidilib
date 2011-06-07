@@ -48,7 +48,8 @@ int main(int argc, char *argv[]){
     U16 iRet=0;
     S16 iError=0;
     pMidiTune=0;
-      
+    
+    
     /* init library */
     iError=am_init();
      
@@ -224,7 +225,7 @@ void printInfoScreen(){
   printf("\n=========================================\n");
   printf(LIB_NAME);
   printf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
-  printf("date: %s\n",__DATE__);
+  printf("date: %s %s\n",__DATE__,__TIME__);
   
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");

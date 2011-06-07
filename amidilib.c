@@ -376,7 +376,8 @@ extern BOOL CON_LOG;
 extern FILE *ofp;
 
 S16 am_init(){
-
+  //TODO: load cfg or create default 
+    
   // init logger
  am_initLog(outputFilename);
  

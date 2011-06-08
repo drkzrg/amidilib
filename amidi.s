@@ -7,6 +7,8 @@
 
 ;constants
 AMIDI_MAX_TRACKS	equ	65536
+MIDI_CLOCK_ENABLE	equ	1
+MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message
 
 ;export symbols
     xdef _super_on		; self explanatory 
@@ -61,11 +63,31 @@ update:
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1
 
+      if (MIDI_CLOCK_ENABLE==1)
+      echo	"[VASM]***************** MIDI clock generation enabled (PPQN/24)"
+      ;divide pulse counter mod 24 if there is no remainder send byte directly to MIDI port 
+      ;if result == 0 send midi status byte
+      move.l	d1,d2
+      moveq.l	#24,d3
+      divu.w	d3,d2
+      lsr.l	#4,d3
+      and.l	#$0000FFFF,d3
+      cmpi.b	#0,d3
+      bne.s	.skipClock
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	#MIDI_CLOCK_BYTE,$fffffc06.w	;write to MIDI data registers
+      else
+      echo	"[VASM]***************** MIDI clock generation disabled"
+      endif
+.skipClock:
       cmpi.l	#0,d1
       bne.s	.nextTick		;if pulseCounter==timedivision-1
 
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
-      jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
+   
+   jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
       move.l	_pCurrentSequence,a0
 
       move.l	divider(a0), pulseCounter(a0) ;set counter

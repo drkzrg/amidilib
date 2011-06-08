@@ -32,7 +32,7 @@ if(seq!=0){
   freq=freq*DIVIDER;	//if value is very small like 2,2hz then scale it to greater
 			//frequency and increment delta once per nth cycle
   pCurrentSequence->pulseCounter=0;  
-  pCurrentSequence->divider=0;  
+  pCurrentSequence->divider=seq->timeDivision;  
   
 #ifdef DEBUG_BUILD
   amTrace("freq: %f\n",freq);

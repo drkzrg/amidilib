@@ -56,18 +56,20 @@ update:
       ;or.w	#$0700,sr	;turn off all interupts 
 
       clr.b     $fffffa1b
-      eor.w	#$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
-
+      
       ;check pulses per quaternote
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1
+
       cmpi.l	#0,d1
       bne.s	.nextTick		;if pulseCounter==timedivision-1
+
+      eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
-      
       move.l	_pCurrentSequence,a0
-      move.l	divider(a0),pulseCounter(a0)
-   
+
+      move.l	divider(a0), pulseCounter(a0) ;set counter
+
       bra.s	.setInt			;set up timers and finish
 .nextTick:				;we didn't reach the proper pulse amount
 	subq.l	#1,d1			;decrease counter

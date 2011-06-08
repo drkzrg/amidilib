@@ -29,7 +29,7 @@ MACHINE=-m68000
 LD_EXTRA=-L/usr/m68k-atari-mint/lib
 
 # stack settings for all apps
-STACK_SIZE=16384
+STACK_SIZE=32768
 SET_STACK=$(STACK) -S$(STACK_SIZE)
 BIN_EXT=.tos
 BIN_EXT2=.ttp

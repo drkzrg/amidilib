@@ -18,6 +18,9 @@ void installReplayRout(U8 mode,U8 data);
 /** deinstalls sequence replay routine (portable version) */
 void deinstallReplayRout(void);
 #else
+
+#define DIVIDER 100000
+
 /** installs sequence replay routine (hooked to timer B atm) */
 extern void installReplayRout(U8 mode,U8 data);
 

@@ -15,7 +15,6 @@ extern volatile U8 tbData;
 extern volatile U8 tbMode;
 #endif
 
-#define DIVIDER 4
 
 void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
@@ -24,32 +23,24 @@ void initSeq(sSequence_t *seq){
 if(seq!=0){
   U8 activeTrack=seq->ubActiveTrack;
   U32 mode=0,data=0;
-  
-  float freq=60000000.0f/seq->arTracks[activeTrack]->currentState.currentTempo/60.0f;
-  
-  //freq=freq/seq->timeDivision;
-  
   pCurrentSequence=seq;
   
-  if(freq<48.0f){
-    freq=freq*1000;	//if value is very small like 2,2hz then scale it to greater
-			//frequency and increment delta once per nth cycle
-    pCurrentSequence->pulseCounter=0;  
-    pCurrentSequence->divider=DIVIDER;  
-  }
-  else { 
-    //no need to prescale
-    pCurrentSequence->pulseCounter=0;
-    pCurrentSequence->divider=0;  
-  }
+  float freq=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
+  freq=freq/seq->timeDivision;
   
-#ifdef DEBUG
+  
+  freq=freq*DIVIDER;	//if value is very small like 2,2hz then scale it to greater
+			//frequency and increment delta once per nth cycle
+  pCurrentSequence->pulseCounter=0;  
+  pCurrentSequence->divider=0;  
+  
+#ifdef DEBUG_BUILD
   amTrace("freq: %f\n",freq);
 #endif  
   getMFPTimerSettings((U32)freq,&mode,&data);
-#ifdef DEBUG
+#ifdef DEBUG_BUILD
 
-  amTrace("mode: %d, data: %d\n",mode,data);
+  amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif 
 
   installReplayRout(mode, data);
@@ -155,24 +146,17 @@ else{
 }
 }//track iteration
     //handle tempo update
-    //sSequenceState_t *pState=&(pCurrentSequence->arTracks[activeTrack]->currentState);
-    
     if(seqState->currentTempo!=seqState->newTempo){
       //update track current tempo
       seqState->currentTempo=seqState->newTempo;
-      
-      float freq=60000000.0f/pCurrentSequence->arTracks[activeTrack]->currentState.currentTempo/60.0f;
       U32 mode=0,data=0;
      
-      if(freq<48.0f){
-	freq=freq*1000;	//if value is very small like 2,2hz then scale it to greater
-	//frequency and increment delta once per nth cycle
-	pCurrentSequence->divider=DIVIDER;  
-      }
-      else { 
-	//no need to prescale
-	pCurrentSequence->divider=0;  
-      }
+      float freq=(float)seqState->currentTempo/1000000.0f;
+      freq=freq/(float)pCurrentSequence->timeDivision;
+      freq=freq*DIVIDER;	
+      //if value is very small like 2,2hz then scale it to greater
+      //frequency and increment delta once per nth cycle
+      
 #ifndef PORTABLE
       getMFPTimerSettings((U32)freq,&mode,&data);
       tbMode=(U8)mode;
@@ -231,7 +215,8 @@ else{
     
     //increase our cumulated delta
     ++pCurrentSequence->accumulatedDeltaCounter;
-    
+    //pCurrentSequence->pulseCounter=DIVIDER/pCurrentSequence->timeDivision;  
+      
     }break;
     case PS_PAUSED:{
       //TODO: send MIDI status STOP or continue

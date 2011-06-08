@@ -9,6 +9,12 @@
 AMIDI_MAX_TRACKS	equ	65536
 MIDI_CLOCK_ENABLE	equ	1
 MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message
+MIDI_START		equ 	$FA	;one byte MIDI realtime message
+MIDI_STOP		equ 	$FC	;one byte MIDI realtime message
+
+
+
+
 
 ;export symbols
     xdef _super_on		; self explanatory 
@@ -20,7 +26,8 @@ MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message
     xdef _tbData
     xdef _tbMode
     xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
-
+    xdef _startPlaying		;to let us now if there is an end of sequence
+				;so MIDI beat 0 is send only once
 ;import symbols
     xref _sequenceUpdate
 
@@ -56,7 +63,6 @@ update:
       movem.l   d0-7/a0-6,-(a7)	;save registers
       ;move.w	sr,-(sp)	;save status register
       ;or.w	#$0700,sr	;turn off all interupts 
-
       clr.b     $fffffa1b
       
       ;check pulses per quaternote
@@ -75,21 +81,21 @@ update:
       cmpi.b	#0,d3
       bne.s	.skipClock
 .wait:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait		;no, wait!
+      btst	#1,$fffffc04.w			;is data register empty?
+      beq.s	.wait				;no, wait!
       move.b	#MIDI_CLOCK_BYTE,$fffffc06.w	;write to MIDI data registers
       else
       echo	"[VASM]***************** MIDI clock generation disabled"
       endif
+
 .skipClock:
       cmpi.l	#0,d1
       bne.s	.nextTick		;if pulseCounter==timedivision-1
 
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
    
-   jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
+      jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
       move.l	_pCurrentSequence,a0
-
       move.l	divider(a0), pulseCounter(a0) ;set counter
 
       bra.s	.setInt			;set up timers and finish
@@ -191,7 +197,9 @@ _oldTB:			ds.l	1
 _tbData:		ds.b	1
 	align 2
 _tbMode:		ds.b	1
-
+	align 2		
+_startPlaying:		ds.w	1
+      
 ;sSequence_t structure
    RSRESET
 pSequenceName	rs.l	1	; NULL terminated string ptr

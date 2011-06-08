@@ -5,20 +5,26 @@
 #include "include/mfp.h"
 #include "include/amidilib.h"
 #include "include/amidiseq.h"
+#include "include/midi_send.h"
 #include "include/list/list.h"
 
 
-extern volatile sSequence_t *pCurrentSequence;
 
 #ifndef PORTABLE
+extern volatile sSequence_t *pCurrentSequence;
+extern volatile U16 startPlaying;
 extern volatile U8 tbData;
 extern volatile U8 tbMode;
+#else
+volatile sSequence_t *pCurrentSequence;
+volatile U16 startPlaying;
 #endif
 
 
 void initSeq(sSequence_t *seq){
 #ifdef PORTABLE
   //TODO! 
+
 #else
 if(seq!=0){
   U8 activeTrack=seq->ubActiveTrack;
@@ -42,8 +48,9 @@ if(seq!=0){
 
   amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif 
-
+  startPlaying=1;	//if zero we only send normal MIDI clock
   installReplayRout(mode, data);
+  
 }
 #endif
  return;
@@ -56,6 +63,8 @@ void sequenceUpdate(void){
  static sEventList *pCurrent=0;
  static evntFuncPtr myFunc=0; 
  static sSequenceState_t *seqState=0;
+ static const U8 MIDI_START=0xFA;
+ static const U8 MIDI_STOP=0xFC;
  
  BOOL bNoteOffSent=FALSE;		//flag for sending note off events only once when pausing or stopping the sequence
  static U32 silenceThrCounter=0;	//for tracking silence lenght on all tracks
@@ -68,9 +77,13 @@ void sequenceUpdate(void){
   switch(seqState->playState){
     
     case PS_PLAYING:{
-    //TODO: send MIDI status 
-    //send PLAY once and then CLOCK every 24th call
+    
     bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
+    
+    if(startPlaying==1){
+      startPlaying=0;
+      MIDI_SEND_BYTE(&MIDI_START);	//send midi START once
+    }
     
     //for each track (0-> (numTracks-1) ) 
     for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
@@ -149,6 +162,7 @@ else{
     if(seqState->currentTempo!=seqState->newTempo){
       //update track current tempo
       seqState->currentTempo=seqState->newTempo;
+#ifndef PORTABLE
       U32 mode=0,data=0;
      
       float freq=(float)seqState->currentTempo/1000000.0f;
@@ -157,7 +171,6 @@ else{
       //if value is very small like 2,2hz then scale it to greater
       //frequency and increment delta once per nth cycle
       
-#ifndef PORTABLE
       getMFPTimerSettings((U32)freq,&mode,&data);
       tbMode=(U8)mode;
       tbData=(U8)data;
@@ -215,7 +228,6 @@ else{
     
     //increase our cumulated delta
     ++pCurrentSequence->accumulatedDeltaCounter;
-    //pCurrentSequence->pulseCounter=DIVIDER/pCurrentSequence->timeDivision;  
       
     }break;
     case PS_PAUSED:{
@@ -230,8 +242,6 @@ else{
     }break;
     case PS_STOPPED:{
       silenceThrCounter=0;
-      //TODO: reset delta counter
-      //TODO: send MIDI status STOP
       
       //reset all counters, but only once
       if(bNoteOffSent==FALSE){
@@ -244,7 +254,9 @@ else{
 	  }
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
+	  startPlaying=1;	//to indicate that we have to send MIDI start on next play
 	  am_allNotesOff(16);
+	  MIDI_SEND_BYTE(&MIDI_STOP);	//send midi STOP
 	//done! 
 	}
     }break;

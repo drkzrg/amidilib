@@ -11,80 +11,104 @@
 
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
 
-void  fNoteOn(void *pEvent){
+ void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
-	
+#endif	
 	note_on(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);	
 }
 
-  void  fNoteOff(void *pEvent){
+ void  fNoteOff(void *pEvent){
 	sNoteOff_EventBlock_t *pPtr=(sNoteOff_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
  	amTrace((const U8*)"Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
-	
+#endif	
 	note_off(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
 
-  void  fNoteAft(void *pEvent){
+ void  fNoteAft(void *pEvent){
 	sNoteAft_EventBlock_t *pPtr=(sNoteAft_EventBlock_t *)pEvent;	
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
-	
+#endif	
 	polyphonic_key_press(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 }
 
-  void  fProgramChange (void *pEvent){
+ void  fProgramChange (void *pEvent){
 	sPrgChng_EventBlock_t *pPtr=(sPrgChng_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
+#endif
 	program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
-  void  fController(void *pEvent){
+ void  fController(void *pEvent){
 	sController_EventBlock_t *pPtr=(sController_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
+#endif
 	control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
 
-  void  fChannelAft(void *pEvent){
+ void  fChannelAft(void *pEvent){
 	sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+#endif
 	channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
 }
 
-  void  fPitchBend(void *pEvent){
+ void  fPitchBend(void *pEvent){
 	sPitchBend_EventBlock_t *pPtr=(sPitchBend_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
+#endif
 	pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
 
-void  fSetTempo(void *pEvent){
+ void fSetTempo(void *pEvent){
   sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
+ #ifdef DEBUG_BUILD
   amTrace((const U8*)"Setting new replay tempo...\n");
-
+#endif
+  
   if(pCurrentSequence!=0){
     U8 activeTrack=pCurrentSequence->ubActiveTrack;
     pCurrentSequence->arTracks[activeTrack]->currentState.newTempo=pPtr->eventData.tempoVal;
   }
 }
 
-void  fHandleEOT(void *pEvent){
+ void fHandleEOT(void *pEvent){
   sEot_EventBlock_t *pPtr=(sEot_EventBlock_t *)pEvent;	
+#ifdef DEBUG_BUILD
   amTrace((const U8*)"End of track...\n");
+#endif
 }
  
-void fHandleCuePoint(void *pEvent){
+ void fHandleCuePoint(void *pEvent){
   sCuePoint_EventBlock_t *pPtr=(sCuePoint_EventBlock_t *)pEvent;	
+#ifdef DEBUG_BUILD
   amTrace((const U8*)"Cuepoint %s.\n",pPtr->pCuePointName);
+#endif
+  
+  
 } 
 
-void fHandleMarker(void *pEvent){
+ void fHandleMarker(void *pEvent){
   sMarker_EventBlock_t *pPtr=(sMarker_EventBlock_t *)pEvent;	
+#ifdef DEBUG_BUILD
   amTrace((const U8*)"Marker %s.\n",pPtr->pMarkerName);
+#endif
 } 
 
-void fHandleSysEX(void *pEvent){
-  sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;	
-   amTrace((const U8*)"SysEX Message.\n");
+ void fHandleSysEX(void *pEvent){
+  sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;
+#ifdef DEBUG_BUILD
+  amTrace((const U8*)"SysEX Message.\n");
+#endif
+   
 }
 
 

@@ -5,6 +5,7 @@
 #include "include/amidiseq.h"
 #include "include/midi_send.h"
 #include "include/list/list.h"
+#include <math.h>
 
 #ifndef PORTABLE
 extern volatile sSequence_t *pCurrentSequence;
@@ -27,23 +28,27 @@ if(seq!=0){
   U32 mode=0,data=0;
   pCurrentSequence=seq;
   
+  //convert tempo from microseconds to seconds
   float freq=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
+  
+  //calculate 1 tick duration
   freq=freq/seq->timeDivision;
   
-  freq=1.0f/freq;	//if value is very small like 2,2hz then scale it to greater
-			//frequency and increment delta once per nth cycle
+  //calculate hz
+  freq=1.0f/freq;	
+  
   pCurrentSequence->pulseCounter=0;  
-  pCurrentSequence->divider=0;  
+  pCurrentSequence->divider=0;  //not used atm
   
 #ifdef DEBUG_BUILD
-  amTrace("freq: %f\n",freq);
+  amTrace("freq: %f %u\n",ceil(freq),(U32)freq);
 #endif  
-  getMFPTimerSettings((U32)freq,&mode,&data);
+  getMFPTimerSettings((U32)ceil(freq)*2,&mode,&data);
 
 #ifdef DEBUG_BUILD
   amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif 
-  startPlaying=1;	//if zero we only send normal MIDI clock
+  startPlaying=1;	
   installReplayRout(mode, data);
   
 }
@@ -162,13 +167,24 @@ else{
      
       //convert quaternote duration in microseconds to seconds
       float freq=(float)seqState->currentTempo/1000000.0f;
+
       //calculate one tick duration in seconds
       freq=freq/(float)pCurrentSequence->timeDivision;
-      freq=1.0f/freq;	
-      //if value is very small like 2,2hz then scale it to greater
-      //frequency and increment delta once per nth cycle
       
-      getMFPTimerSettings((U32)freq,&mode,&data);
+      //calculate hz
+      freq=1.0f/freq;	
+
+      #ifdef DEBUG_BUILD
+	amTrace("freq: %f %u\n",freq,(U32)freq);
+      #endif  
+
+      
+      getMFPTimerSettings((U32)ceil(freq)*2,&mode,&data);
+      
+      #ifdef DEBUG_BUILD
+	amTrace("calculated mode: %d, data: %d\n",mode,data);
+      #endif 
+      
       tbMode=(U8)mode;
       tbData=(U8)data;
 #endif
@@ -228,7 +244,6 @@ else{
       
     }break;
     case PS_PAUSED:{
-      //TODO: send MIDI status STOP or continue
       
          if(bNoteOffSent==FALSE){
 	  //turn all notes off on external module but only once

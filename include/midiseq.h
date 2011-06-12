@@ -147,18 +147,18 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 //inline functions for sending data to external module
  const U8 *getEventName(U32 id);
 
- void  fNoteOn (void *pEvent);
- void  fNoteOff (void *pEvent);
- void  fNoteAft (void *pEvent);
- void  fProgramChange (void *pEvent);
- void  fController (void *pEvent);
- void  fChannelAft (void *pEvent);
- void  fPitchBend (void *pEvent);
- void  fSetTempo (void *pEvent);
- void  fHandleEOT(void *pEvent);
- void fHandleCuePoint(void *pEvent);
- void fHandleMarker(void *pEvent);
- void fHandleSysEX(void *pEvent);
+  void  fNoteOn (void *pEvent);
+  void  fNoteOff (void *pEvent);
+  void  fNoteAft (void *pEvent);
+  void  fProgramChange (void *pEvent);
+  void  fController (void *pEvent);
+  void  fChannelAft (void *pEvent);
+  void  fPitchBend (void *pEvent);
+  void  fSetTempo (void *pEvent);
+  void  fHandleEOT(void *pEvent);
+  void fHandleCuePoint(void *pEvent);
+  void fHandleMarker(void *pEvent);
+  void fHandleSysEX(void *pEvent);
  
 /* returns the info struct about event: size and pointer to the handler  */
  void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);

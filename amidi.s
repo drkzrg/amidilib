@@ -12,10 +12,6 @@ MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message
 MIDI_START		equ 	$FA	;one byte MIDI realtime message
 MIDI_STOP		equ 	$FC	;one byte MIDI realtime message
 
-
-
-
-
 ;export symbols
     xdef _super_on		; self explanatory 
     xdef _super_off		;
@@ -61,18 +57,17 @@ _installReplayRout:
 
 update:
       movem.l   d0-7/a0-6,-(a7)	;save registers
-      ;move.w	sr,-(sp)	;save status register
-      ;or.w	#$0700,sr	;turn off all interupts 
       clr.b     $fffffa1b
       
       ;check pulses per quaternote
       move.l	_pCurrentSequence,a0
-      move.l	pulseCounter(a0),d1
 
       if (MIDI_CLOCK_ENABLE==1)
       echo	"[VASM]***************** MIDI clock generation enabled (PPQN/24)"
       ;divide pulse counter mod 24 if there is no remainder send byte directly to MIDI port 
       ;if result == 0 send midi status byte
+      move.l	pulseCounter(a0),d1
+
       move.l	d1,d2
       moveq.l	#24,d3
       divu.w	d3,d2
@@ -80,6 +75,8 @@ update:
       and.l	#$0000FFFF,d3
       cmpi.b	#0,d3
       bne.s	.skipClock
+      eor.w	#$00f,$ffff8240		;change 2nd color in palette (TODO: remove it in the final version)
+  
 .wait:
       btst	#1,$fffffc04.w			;is data register empty?
       beq.s	.wait				;no, wait!
@@ -89,19 +86,13 @@ update:
       endif
 
 .skipClock:
-      cmpi.l	#0,d1
-      bne.s	.nextTick		;if pulseCounter==timedivision-1
-
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
-   
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
       move.l	_pCurrentSequence,a0
-      move.l	divider(a0), pulseCounter(a0) ;set counter
+      move.l	pulseCounter(a0),d1 	;set counter
 
-      bra.s	.setInt			;set up timers and finish
-.nextTick:				;we didn't reach the proper pulse amount
-	subq.l	#1,d1			;decrease counter
-	move.l	d1,pulseCounter(a0)	;save it
+      addq.l	#1,d1			;increase counter
+      move.l	d1,pulseCounter(a0)	;save it
 .setInt:
       ;prepare next tick
       move.l    #update,$120		;slap interrupt 
@@ -110,9 +101,8 @@ update:
       bset.b    #0,$fffffa07		;go!
       bset.b    #0,$fffffa13
 
-      ;move.w 	  (sp)+,sr 		;restore Status Register
       movem.l   (a7)+,d0-7/a0-6		;restore registers
-      bclr.b	  #0,$fffffa0f  	; finished!
+      bclr.b	#0,$fffffa0f  		; finished!
       rte
 
 ; deinstalls MIDI replay on timer B 
@@ -144,7 +134,7 @@ _amMidiSendIKBD:
       bsr.w	_super_on
 
       move.l	$42(sp),d1  ;count
-      move.l  	$46(sp),a0  ;buffer
+      ;move.l  	$46(sp),a0  ;buffer
 .loop:      
       cmpi.l	#0,d1	
       beq.s	.done
@@ -162,8 +152,6 @@ _amMidiSendIKBD:
       bsr.w	_super_off
       movem.l (sp)+,d0-d7/a0-a6
       rts
-
-
 
 ;enter supervisor mode
 _super_on:

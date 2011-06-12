@@ -11,12 +11,10 @@
 #include <limits.h>
 
 #include "include/amidilib.h"
-#include "include/list/list.h"
 
 #ifndef PORTABLE
 #include "include/ikbd.h"
 #include "include/scancode.h"
-#include <lzoconf.h>
 
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
@@ -36,14 +34,8 @@ void displayTuneInfo();
 
 sSequence_t *pMidiTune;	//here we store our sequence data
 
-
-#ifdef _MSC_VER
-#include "stdafx.h";
-#include <lzoconf.h>
-int _tmain(int argc, _TCHAR* argv[]){
-#else
 int main(int argc, char *argv[]){
-#endif
+
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
@@ -140,10 +132,9 @@ int main(int argc, char *argv[]){
 	  initSeq(pMidiTune);
 	  
 	  while(bQuit!=TRUE){
-	    
+
 	    //check keyboard input  
 	    for (int i=0; i<128; i++) {
-	      
 	    if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
 	      
@@ -240,20 +231,24 @@ void printInfoScreen(){
 } 
 
 void displayTuneInfo(){
-  const sSequence_t *pPtr=getCurrentSeq();
+  sSequence_t *pPtr=0;
+  getCurrentSeq(&pPtr);
+  U32 td=pPtr->timeDivision;
+  U32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
+  U16 numTrk=pPtr->ubNumTracks;
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN: %d\t",(int)pPtr->timeDivision);
-  printf("Tempo: %d [ms]\n",(int)pPtr->arTracks[0]->currentState.currentTempo);
+  printf("PPQN: %d\t",td);
+  printf("Tempo: %d [ms]\n",tempo);
   
-  printf("Number of tracks: %d\n",(int)pPtr->ubNumTracks);
-  
-  for(int i=0;i<pPtr->ubNumTracks;i++){
-    printf("[Track no. %d] %s\n",(int)i+1,pPtr->arTracks[i]->pTrackName);
+  printf("Number of tracks: %d\n",numTrk);
+  U8 *pTrkName=0;
+  for(int i=0;i<numTrk;i++){
+    pTrkName=pPtr->arTracks[i]->pTrackName;
+    printf("[Track no. %d] %s\n",(i+1),pTrkName);
   }
   
   printf("\nReady...\n");
-  
 }
 
 

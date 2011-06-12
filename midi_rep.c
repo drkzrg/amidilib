@@ -1,14 +1,10 @@
 
-#include <math.h>
-
 #include "include/midi_rep.h"
 #include "include/mfp.h"
 #include "include/amidilib.h"
 #include "include/amidiseq.h"
 #include "include/midi_send.h"
 #include "include/list/list.h"
-
-
 
 #ifndef PORTABLE
 extern volatile sSequence_t *pCurrentSequence;
@@ -34,18 +30,17 @@ if(seq!=0){
   float freq=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
   freq=freq/seq->timeDivision;
   
-  
-  freq=freq*DIVIDER;	//if value is very small like 2,2hz then scale it to greater
+  freq=1.0f/freq;	//if value is very small like 2,2hz then scale it to greater
 			//frequency and increment delta once per nth cycle
   pCurrentSequence->pulseCounter=0;  
-  pCurrentSequence->divider=seq->timeDivision;  
+  pCurrentSequence->divider=0;  
   
 #ifdef DEBUG_BUILD
   amTrace("freq: %f\n",freq);
 #endif  
   getMFPTimerSettings((U32)freq,&mode,&data);
-#ifdef DEBUG_BUILD
 
+#ifdef DEBUG_BUILD
   amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif 
   startPlaying=1;	//if zero we only send normal MIDI clock
@@ -165,9 +160,11 @@ else{
 #ifndef PORTABLE
       U32 mode=0,data=0;
      
+      //convert quaternote duration in microseconds to seconds
       float freq=(float)seqState->currentTempo/1000000.0f;
+      //calculate one tick duration in seconds
       freq=freq/(float)pCurrentSequence->timeDivision;
-      freq=freq*DIVIDER;	
+      freq=1.0f/freq;	
       //if value is very small like 2,2hz then scale it to greater
       //frequency and increment delta once per nth cycle
       
@@ -337,8 +334,8 @@ void toggleReplayMode(void){
   }
 }
 
-const sSequence_t *getCurrentSeq (void){
-  return (const sSequence_t *)pCurrentSequence;
+void getCurrentSeq (sSequence_t **pPtr){
+  (*pPtr)=pCurrentSequence;
 }
 
 

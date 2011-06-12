@@ -31,15 +31,11 @@ static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION
 /* for saving last running status */
 static U8 g_runningStatus;
 static U8 outputFilename[] = "amidi.log";
+
 static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
 static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
+static U16 DEFAULT_DEVICE_TYPE=DT_LA_SOUND_SOURCE_EXT; //default is CM32L output device with extra patches
 
-
-#ifdef PORTABLE
-volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
-#else
-extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
-#endif
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
  clock_t end;
@@ -1297,12 +1293,14 @@ sEventBlock_t tempEvent;
         /* set to the start of the string */
         (*pPtr)++;
         
-	(*pCurTrack)->pTrackName=amMallocEx((ubLenght*sizeof(U8))+1,PREFER_TT);
-	amMemSet((*pCurTrack)->pTrackName,0,((ubLenght*sizeof(U8))+1));
+	(*pCurTrack)->pTrackName=amMallocEx(128*sizeof(U8),PREFER_TT);
 	
-	if((*pCurTrack)->pTrackName!=NULL)
-        amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(U8));
-	(*pCurTrack)->pTrackName[ubLenght]='\0';
+	if((*pCurTrack)->pTrackName!=NULL){
+	  amMemSet((*pCurTrack)->pTrackName,0,128*sizeof(U8));
+	  strncpy((char *)(*pCurTrack)->pTrackName,(char *)(*pPtr),ubLenght);
+	  (*pCurTrack)->pTrackName[ubLenght]='\0';
+	  //amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(U8));
+	}
 	
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
@@ -1897,6 +1895,8 @@ float delta=0.0f;
 #endif
 }
 
+#ifdef DEBUG_BUILD
+
 /* variable quantity reading test */
 void VLQtest(void){
 /* VLQ test */
@@ -1938,6 +1938,7 @@ void memoryCheck(void){
     amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
 	
 }
+#endif
 
 void am_destroySequence (sSequence_t **pPtr){
   #ifdef DEBUG_BUILD

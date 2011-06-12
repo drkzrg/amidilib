@@ -10,13 +10,14 @@
 
 #include "c_vars.h"
 #include "memory.h"
-#include "midi.h"
-#include "xmidi.h"
 #include "fmio.h"
 #include "roland.h"
-#include "amidiseq.h"
+#include "midi.h"
+#include "xmidi.h"
 #include "midi_cmd.h"
 #include "midi_rep.h"
+#include "amidiseq.h"
+#include "list/list.h"
 
 #ifdef TIME_CHECK_PORTABLE
 #include <time.h>
@@ -60,13 +61,15 @@ typedef struct AMIDI_version {
 
 /* some messages are ignored by specified sound source so why bother to process them? */
 /* second thing: sometimes we need different treatment for GS and LA sound sources */
-
-#define LA_SOUND_SOURCE 0       /* native MT32 */
-#define LA_SOUND_SOURCE_EXT 1   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
-#define GS_SOUND_SOURCE 2       /* for pure GS/GM sound source */
-#define LA_GS_MIXED 4           /* if both LA/GS sound sources are available, like in CM-500 */
-#define MT32_GM_EMULATION 5     /* before loading midi data MT32 sound banks has to be patched */
-#define XG_GM_YAMAHA 6		/* before loading midi data MT32 sound banks has to be patched */
+enum{
+  DT_LA_SOUND_SOURCE=0,       /* native MT32 */
+  DT_LA_SOUND_SOURCE_EXT=1,   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
+  DT_GS_SOUND_SOURCE=2,       /* for pure GS/GM sound source */
+  DT_LA_GS_MIXED=4,           /* if both LA/GS sound sources are available, like in CM-500 */
+  DT_MT32_GM_EMULATION=5,     /* before loading midi data MT32 sound banks has to be patched */
+  DT_XG_GM_YAMAHA=6,
+  DT_NUM_DEVICES		/* before loading midi data MT32 sound banks has to be patched */
+}eMidiDeviceTypes;
 
 /** for internal use, midi file types  */
 #define T_MIDI0   0
@@ -313,9 +316,7 @@ void am_allNotesOff(U16 numChannels);
 */
 const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
-void hMidiEvent(void);	/* handles stuff inside the replay routine */ 
 void getDeviceInfoResponse(U8 channel);
-void playSequence(const sEventList **listPtr);
 
 const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
@@ -352,6 +353,7 @@ float getTimeStamp();
  */
 float getTimeDelta();
 
+#ifdef DEBUG_BUILD
 /** function for variable quantity reading test   
  */
 void VLQtest(void);
@@ -359,6 +361,7 @@ void VLQtest(void);
 /** function for displays amount of memory present in the system   
  */
 void memoryCheck(void);
+#endif
 
 
 #endif

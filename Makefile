@@ -1,4 +1,9 @@
 
+#    Copyright 2007-2010 Pawel Goralski
+#    e-mail: pawel.goralski@nokturnal.pl
+#    This file is part of AMIDILIB.
+#    See license.txt for licensing information.
+
 #############################################################################################################################
 # additional defines for EXTRADEFINES: 
 #############################################################################################################################
@@ -33,7 +38,6 @@ STACK_SIZE=32768
 SET_STACK=$(STACK) -S$(STACK_SIZE)
 BIN_EXT=.tos
 BIN_EXT2=.ttp
-
 else
 INCLUDES=-I./ -I./include -I./include/lzo -I./include/ym2149
 CC=gcc
@@ -54,7 +58,7 @@ else
 DEFINES = $(EXTRADEFINES) -DFORCE_MALLOC 
 endif
 
-CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -Wall -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
+CFLAGS += -std=c99 $(MACHINE) $(INCLUDES) -g -Wall -fsigned-char -fomit-frame-pointer -Wl,--stack,$(STACK_SIZE) $(DEFINES)
 LDFLAGS +=  $(MACHINE) $(LD_EXTRA) -Wl,--traditional-format 
 
 ASM = vasmm68k_mot
@@ -114,7 +118,9 @@ $(EXE): $(OBJECTS) amidi.o ikbd_asm.o
 	$(CC) $(LDFLAGS) amidi.o $(OBJECTS) ikbd.o -o $@ -lgem -lm
 endif
 	echo "Setting AMIDI.TTP stack to: " $(STACK_SIZE)
-#$(SET_STACK) $(EXE)
+ifeq ($(PORTABLE),0)
+	$(SET_STACK) $(EXE)
+endif
 	echo "Stripping symbols."
 	$(STRIP) $(EXE)
 	echo "Copying AMIDI.TTP binary to emulator/shared directory."

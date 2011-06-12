@@ -43,7 +43,7 @@ if(seq!=0){
 #ifdef DEBUG_BUILD
   amTrace("freq: %f %u\n",ceil(freq),(U32)freq);
 #endif  
-  getMFPTimerSettings((U32)ceil(freq)*2,&mode,&data);
+  getMFPTimerSettings((U32)ceil(freq),&mode,&data);
 
 #ifdef DEBUG_BUILD
   amTrace("calculated mode: %d, data: %d\n",mode,data);
@@ -179,7 +179,7 @@ else{
       #endif  
 
       
-      getMFPTimerSettings((U32)ceil(freq)*2,&mode,&data);
+      getMFPTimerSettings((U32)(ceil(freq)),&mode,&data);
       
       #ifdef DEBUG_BUILD
 	amTrace("calculated mode: %d, data: %d\n",mode,data);

@@ -19,12 +19,68 @@
 
 #endif
 
+  
+#include "include/midi_send.h"
+
 //midi data sending, platform specific
-//TODO: make it inline
-U16 amMidiDataReady(U8 deviceNo);
-U32 amMidiSendByte(U8 deviceNo,U16 data);
-void amMidiSendData(const U16 count,const U8 *data);
-U8 amMidiGetData(U8 deviceId);
+static INLINE U16 amMidiDataReady(U8 deviceNo){
+#ifdef PORTABLE
+//TODO:
+  amTrace((const U8*)"WARNING: amMidiDataReady() not implemented\n");
+  return 0;
+#else
+  return Bconstat(deviceNo);
+#endif
+}
+
+static INLINE U32 amMidiSendByte(U8 deviceNo,U16 data){
+#ifdef PORTABLE
+//TODO:
+  amTrace((const U8*)"WARNING: amMidiSendByte() not implemented\n");
+  return 0L;
+#else
+  return Bconout(deviceNo,data);
+#endif
+}
+
+static INLINE void amMidiSendData(const U16 count,const U8 *data){
+#ifdef PORTABLE
+//TODO:
+ amTrace((const U8*)"WARNING: amMidiSendData() not implemented\n");
+ return;
+#else
+  
+#ifdef IKBD_MIDI_SEND_DIRECT  
+  //bypass os, write directly to IKBD to send data
+  amMidiSendIKBD(count,data);  
+#else
+  //use xbios function
+ Midiws(count,data);
+#endif  
+
+
+ return; 
+#endif
+}
+
+static INLINE U8 amMidiGetData(U8 deviceId){
+#ifdef PORTABLE
+//TODO:
+amTrace((const U8*)"WARNING: amMidiGetData() not implemented\n");
+  return 0;
+#else
+  return (U8)Bconin(deviceId); 
+#endif
+} 
+  
+  
+  
+  
+//midi data sending, platform specific
+// U16 amMidiDataReady(U8 deviceNo);
+// U32 amMidiSendByte(U8 deviceNo,U16 data);
+// void amMidiSendData(const U16 count,const U8 *data);
+// U8 amMidiGetData(U8 deviceId);
 
 #ifdef PORTABLE
 // DEV_MIDI is Atari specific

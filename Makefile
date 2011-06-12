@@ -79,19 +79,19 @@ ST_HD_PATH=$(HOME)/STEEM/HD/TUNES
 SHARED_DIR_PATH=$(HOME)/Pulpit/shared
 
 ifeq ($(PORTABLE),1)
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c midi_rep.c
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o
+SRCS = main.c twisterm.c mt32.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c midi_rep.c
+OBJECTS = main.o twisterm.o mt32.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o
 else
-SRCS = main.c twisterm.c mt32.c midi_cmd.c midi_send.c midi_rep.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c 
-OBJECTS = main.o twisterm.o mt32.o midi_cmd.o midi_send.o midi_rep.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o
+SRCS = main.c twisterm.c mt32.c midi_rep.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c 
+OBJECTS = main.o twisterm.o mt32.o midi_rep.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+MIDITEST_OBJECTS = midiTest.o c_vars.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 else
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c  mfp.c 
-MIDITEST_OBJECTS = midiTest.o c_vars.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o  mfp.o
+MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c  mfp.c 
+MIDITEST_OBJECTS = midiTest.o c_vars.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o  mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
@@ -103,11 +103,11 @@ YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o mfp.o fmio.o
 endif
 
 ifeq ($(PORTABLE),1)
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
+TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
 else
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midi_cmd.c midi_send.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c mfp.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midi_cmd.o midi_send.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o mfp.o
+TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c mfp.c
+TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o mfp.o
 endif
 
 ifeq ($(PORTABLE),1)

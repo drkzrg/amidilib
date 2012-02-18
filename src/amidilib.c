@@ -473,6 +473,11 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
 	  
+	  pTempTrack->currentState.timeSignature.nn=4;
+	  pTempTrack->currentState.timeSignature.dd=4;
+	  pTempTrack->currentState.timeSignature.cc=24;
+	  pTempTrack->currentState.timeSignature.bb=8;
+	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
 	  
@@ -497,6 +502,11 @@ switch(fileTypeFlag){
 
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
+	  
+	  pTempTrack->currentState.timeSignature.nn=4;
+	  pTempTrack->currentState.timeSignature.dd=4;
+	  pTempTrack->currentState.timeSignature.cc=24;
+	  pTempTrack->currentState.timeSignature.bb=8;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -545,6 +555,11 @@ switch(fileTypeFlag){
 
 	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
 	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
+	  
+	  pTempTrack->currentState.timeSignature.nn=4;
+	  pTempTrack->currentState.timeSignature.dd=4;
+	  pTempTrack->currentState.timeSignature.cc=24;
+	  pTempTrack->currentState.timeSignature.bb=8;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -1590,6 +1605,12 @@ sEventBlock_t tempEvent;
         amMemCpy(&timeSign,(*pPtr),sizeof(sTimeSignature));
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
+	
+	(*pCurTrack)->currentState.timeSignature.nn=timeSign.nn;
+	(*pCurTrack)->currentState.timeSignature.dd=timeSign.dd;
+	(*pCurTrack)->currentState.timeSignature.cc=timeSign.cc;
+	(*pCurTrack)->currentState.timeSignature.bb=timeSign.bb;
+	
         /* print out info */
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"nn: %d\tdd: %d\tcc: %d\tbb: %d\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);

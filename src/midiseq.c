@@ -10,6 +10,8 @@
 #include "include/midi_cmd.h"
 
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
+extern volatile U8 MIDIsendBuffer[32000]; //buffer from which we will send all data from the events
+					  //once per frame
 
  void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;

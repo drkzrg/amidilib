@@ -81,8 +81,12 @@ int main(int argc, char *argv[]){
       amFree(&pMidi);
 
       if(iError==0){
-	  amTrace((const U8*)"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+	  fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 	
+	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
+	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
+	  fprintf(stderr,"PPQN: %d\n",pMidiTune->timeDivision);
+	  
 	  #ifdef MIDI_PARSER_TEST
 	  //output loaded midi file 
 	  amTrace((const U8*)"Parsed MIDI read test\n");

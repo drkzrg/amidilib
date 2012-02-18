@@ -28,22 +28,29 @@ if(seq!=0){
   U32 mode=0,data=0;
   pCurrentSequence=seq;
   
+  U32 dd,nn,cc;
+  dd=seq->arTracks[activeTrack]->currentState.timeSignature.dd;
+  nn=seq->arTracks[activeTrack]->currentState.timeSignature.nn;
+  cc=seq->arTracks[activeTrack]->currentState.timeSignature.cc;
+  dd=(U16)pow(2.0f,(float)dd);
+  
   //convert tempo from microseconds to seconds
-  float freq=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
-  
+  //float freq=((float)(seq->arTracks[activeTrack]->currentState.currentTempo/(dd/4)*(cc/24))/1000000.0f);
+  float fTempoSecs=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
+      
   //calculate 1 tick duration
-  freq=freq/seq->timeDivision;
-  
+  fTempoSecs=fTempoSecs/(pCurrentSequence->timeDivision);
+      
   //calculate hz
-  freq=1.0f/freq;	
+  fTempoSecs=(1.0f/(float)fTempoSecs);	
   
   pCurrentSequence->pulseCounter=0;  
   pCurrentSequence->divider=0;  //not used atm
   
 #ifdef DEBUG_BUILD
-  amTrace("freq: %f %u\n",ceil(freq),(U32)freq);
+  amTrace("freq: %f %u\n",fTempoSecs,(U32)freq);
 #endif  
-  getMFPTimerSettings((U32)ceil(freq),&mode,&data);
+  getMFPTimerSettings((U32)fTempoSecs,&mode,&data);
 
 #ifdef DEBUG_BUILD
   amTrace("calculated mode: %d, data: %d\n",mode,data);
@@ -80,20 +87,11 @@ void sequenceUpdate(void){
     
     bNoteOffSent=FALSE; //for handling PS_STOPPED and PS_PAUSED states
     
-    if(startPlaying==1){
-      startPlaying=0;
-      MIDI_SEND_BYTE(&MIDI_START);	//send midi START once
-    }
-    
     //for each track (0-> (numTracks-1) ) 
     for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
       pTrk=pCurrentSequence->arTracks[i];
 
       if(pTrk!=0){
-	//TODO: adjust handling for multiple, independent tracks
-	//TODO: [optional] slap all the pointers to an array and send everything in one go
-	//TODO: rewrite this in m68k :P for speeeeed =) so cooooool....
-	
 	pCurrent=pTrk->currentState.pCurrent;
 		
 	//sometimes eventlist will be empty, because there will be nothing interesting
@@ -165,26 +163,23 @@ else{
 #ifndef PORTABLE
       U32 mode=0,data=0;
      
+      U32 dd,nn,cc;
+      dd=seqState->timeSignature.dd;
+      nn=seqState->timeSignature.nn;
+      cc=seqState->timeSignature.cc;
+      
+      dd=(U32)pow(2.0f,(float)dd);
+      
       //convert quaternote duration in microseconds to seconds
       float freq=(float)seqState->currentTempo/1000000.0f;
 
-      //calculate one tick duration in seconds
-      freq=freq/(float)pCurrentSequence->timeDivision;
+      //calculate one tick duration in seconds(quaternote duration)
+      freq=(freq/(dd/4))/(pCurrentSequence->timeDivision/(dd/4))*nn;
       
       //calculate hz
       freq=1.0f/freq;	
-
-      #ifdef DEBUG_BUILD
-	amTrace("freq: %f %u\n",freq,(U32)freq);
-      #endif  
-
-      
-      getMFPTimerSettings((U32)(ceil(freq)),&mode,&data);
-      
-      #ifdef DEBUG_BUILD
-	amTrace("calculated mode: %d, data: %d\n",mode,data);
-      #endif 
-      
+     
+      getMFPTimerSettings(freq,&mode,&data);
       tbMode=(U8)mode;
       tbData=(U8)data;
 #endif
@@ -192,55 +187,53 @@ else{
     }
     
     /////////////////////// check for end of the track 
-    if(silenceThrCounter==pCurrentSequence->eotThreshold){
-      //we have meet the threshold, time to decide what to do next
-      // if we play in loop mode: do not change actual state,reset track to the beginning
-      
-      switch(seqState->playMode){
-	
-	case S_PLAY_LOOP:{
-	   pCurrentSequence->accumulatedDeltaCounter=0;	//reset cumulated delta
-	  
-	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-	    pTrk=pCurrentSequence->arTracks[i];
-	    pTrk->currentState.deltaCounter=0;
-	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
-	  }
-	  // notes off we could maybe do other things too
-	  am_allNotesOff(16);
-	  silenceThrCounter=0;
-	}break;
-	case S_PLAY_ONCE:{
-	  //set state only, the rest will be done in next interrupt
-	  seqState->playState=PS_STOPPED;
-	  silenceThrCounter=0;
-	}break;
-      };
-    }else{ 
-      //silence threshold not met, check if all the tracks events are null if yes increase silenceThrCounter
-      //else reset it
-      BOOL bNothing=FALSE;
-      for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-	pTrk=pCurrentSequence->arTracks[i];
-	//TODO: incorporate it in the playing state loop, so we can get rid of track iteration (?)
-	
-	if(pTrk!=0){
-	  if(pTrk->currentState.pCurrent!=0){
-	    bNothing=FALSE;
-	  }else 
-	    bNothing=TRUE;
-      }
-      /////////////////////////// end of eot check
-     
-    }//end of track loop
-     if(bNothing==TRUE){
-	    ++silenceThrCounter;
-	  }else 
-	    silenceThrCounter=0;
-    }//end of silence threshold not met
-    
-    //increase our cumulated delta
-    ++pCurrentSequence->accumulatedDeltaCounter;
+//     if(silenceThrCounter==pCurrentSequence->eotThreshold){
+//       //we have meet the threshold, time to decide what to do next
+//       // if we play in loop mode: do not change actual state,reset track to the beginning
+//       
+//       switch(seqState->playMode){
+// 	
+// 	case S_PLAY_LOOP:{
+// 	   pCurrentSequence->accumulatedDeltaCounter=0;	//reset cumulated delta
+// 	  
+// 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+// 	    pTrk=pCurrentSequence->arTracks[i];
+// 	    pTrk->currentState.deltaCounter=0;
+// 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+// 	  }
+// 	  // notes off we could maybe do other things too
+// 	  am_allNotesOff(16);
+// 	  silenceThrCounter=0;
+// 	}break;
+// 	case S_PLAY_ONCE:{
+// 	  //set state only, the rest will be done in next interrupt
+// 	  seqState->playState=PS_STOPPED;
+// 	  silenceThrCounter=0;
+// 	}break;
+//       };
+//     }else{ 
+//       //silence threshold not met, check if all the tracks events are null if yes increase silenceThrCounter
+//       //else reset it
+//       BOOL bNothing=FALSE;
+//       for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
+// 	pTrk=pCurrentSequence->arTracks[i];
+// 	//TODO: incorporate it in the playing state loop, so we can get rid of track iteration (?)
+// 	
+// 	if(pTrk!=0){
+// 	  if(pTrk->currentState.pCurrent!=0){
+// 	    bNothing=FALSE;
+// 	  }else 
+// 	    bNothing=TRUE;
+//       } /////////////////////////// end of eot check
+//     }//end of track loop
+//       if(bNothing==TRUE){
+// 	    ++silenceThrCounter;
+// 	  }else 
+// 	    silenceThrCounter=0;
+//       }//end of silence threshold not met
+//     
+      //increase our cumulated delta
+      ++pCurrentSequence->accumulatedDeltaCounter;
       
     }break;
     case PS_PAUSED:{
@@ -267,8 +260,8 @@ else{
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
 	  startPlaying=1;	//to indicate that we have to send MIDI start on next play
+	  MIDI_SEND_BYTE((U8 *)&MIDI_STOP);	//send midi STOP
 	  am_allNotesOff(16);
-	  MIDI_SEND_BYTE(&MIDI_STOP);	//send midi STOP
 	//done! 
 	}
     }break;

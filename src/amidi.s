@@ -8,9 +8,13 @@
 ;constants
 AMIDI_MAX_TRACKS	equ	65536
 MIDI_CLOCK_ENABLE	equ	1
-MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message
-MIDI_START		equ 	$FA	;one byte MIDI realtime message
-MIDI_STOP		equ 	$FC	;one byte MIDI realtime message
+MIDI_SEND_BUFFER_ENABLE	equ	0	;enables code part which sends MIDI data
+					;from internal buffer
+					;once per frame
+
+MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message (MIDI CLOCK)
+MIDI_START		equ 	$FA	;one byte MIDI realtime message (starts MIDI clock sync)
+MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
 
 ;export symbols
     xdef _super_on		; self explanatory 
@@ -19,6 +23,7 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message
     xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
     xdef _deinstallReplayRout	;removes replay routine from system 
     xdef _pCurrentSequence	;current sequence pointer
+    xdef _MIDIsendBuffer	;buffer with data to send
     xdef _tbData
     xdef _tbMode
     xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
@@ -58,7 +63,21 @@ _installReplayRout:
 update:
       movem.l   d0-7/a0-6,-(a7)	;save registers
       clr.b     $fffffa1b
-      
+
+      if (MIDI_CLOCK_ENABLE==1)
+      ;check if we are starting replay 
+      move.w	_startPlaying,d0
+      cmpi.w	#1,d0
+      bne.s	.skipMidiStart
+      move.w	#0,_startPlaying	
+
+      move.b	#MIDI_START,d0
+.wait1:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait1		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+.skipMidiStart:
+      endif
       ;check pulses per quaternote
       move.l	_pCurrentSequence,a0
 
@@ -88,6 +107,32 @@ update:
 .skipClock:
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
+
+      if (MIDI_SEND_BUFFER_ENABLE==1)
+      ;send the whole buffer if not empty
+      move.l	_MIDIdataEndPtr,d1  ;count
+      movea.l  	#_MIDIsendBuffer,a0  ;buffer
+  
+.loop:
+      move.l	a0,d2
+      cmp.l	d1,d2
+      beq.s	.done
+      cmpi.l	#0,(a0)	
+      beq.s	.done
+      
+      ;slap data to d0
+      move.b	(a0)+,d0
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+
+      subq.l	#1,d1
+      bra.s	.loop
+.done:
+      movea.l	#_MIDIsendBuffer,_MIDIdataEndPtr ; set endptr to the beginning
+						 ; of the buffer
+      endif
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1 	;set counter
 
@@ -187,6 +232,10 @@ _tbData:		ds.b	1
 _tbMode:		ds.b	1
 	align 2		
 _startPlaying:		ds.w	1
+	align 2
+_MIDIdataEndPtr:	ds.l	1
+	align 2
+_MIDIsendBuffer:	ds.b	32000
       
 ;sSequence_t structure
    RSRESET

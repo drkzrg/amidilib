@@ -12,7 +12,7 @@
 #include "midiseq.h"
 
 #define AMIDI_MAX_TRACKS 65536
-#define EOT_SILENCE_THRESHOLD 40	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
+#define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
 					/* sequence is considered finished and ready to STOP or LOOP */
 
 #define DEFAULT_TEMPO 0x007A120UL	/* 500000ms */
@@ -43,7 +43,7 @@ typedef volatile struct SequenceState_t{
  U32 newTempo;			      // track new tempo in ms, if newTempo!=currentTempo
 				      // then we have tempo change, which id handled in player
 				      // and then currentTempo=newTempo;
-				      
+ sTimeSignature timeSignature;	      //time signature				      
  U16 playState;			      // STOP, PLAY, PAUSED	
  U16 playMode;	      		      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 

@@ -79,35 +79,35 @@ ST_HD_PATH=$(HOME)/STEEM/HD/TUNES
 SHARED_DIR_PATH=$(HOME)/Pulpit/shared
 
 ifeq ($(PORTABLE),1)
-SRCS = main.c twisterm.c mt32.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c midi_rep.c
-OBJECTS = main.o twisterm.o mt32.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o midi_rep.o
+SRCS = ./src/main.c ./src/twisterm.c ./src/mt32.c ./src/midiseq.c ./src/list.c ./src/iff.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/c_vars.c ./src/amidilib.c ./src/tbl_stat.c ./src/minilzo.c ./src/memory.c ./src/amlog.c ./src/midi_rep.c
+OBJECTS = ./src/main.o ./src/twisterm.o ./src/mt32.o ./src/midiseq.o ./src/list.o ./src/iff.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/c_vars.o ./src/amidilib.o ./src/tbl_stat.o ./src/minilzo.o ./src/memory.o ./src/amlog.o ./src/midi_rep.o
 else
-SRCS = main.c twisterm.c mt32.c midi_rep.c midiseq.c list.c iff.c fmio.c cm_500.c cm_32l.c c_vars.c amidilib.c tbl_stat.c minilzo.c memory.c amlog.c mfp.c 
-OBJECTS = main.o twisterm.o mt32.o midi_rep.o midiseq.o list.o iff.o fmio.o cm_500.o cm_32l.o c_vars.o amidilib.o tbl_stat.o minilzo.o memory.o amlog.o mfp.o
+SRCS = ./src/main.c ./src/twisterm.c ./src/mt32.c ./src/midi_rep.c ./src/midiseq.c ./src/list.c ./src/iff.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/c_vars.c ./src/amidilib.c ./src/tbl_stat.c ./src/minilzo.c ./src/memory.c ./src/amlog.c ./src/mfp.c 
+OBJECTS = ./src/main.o ./src/twisterm.o ./src/mt32.o ./src/midi_rep.o ./src/midiseq.o ./src/list.o ./src/iff.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/c_vars.o ./src/amidilib.o ./src/tbl_stat.o ./src/minilzo.o ./src/memory.o ./src/amlog.o ./src/mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-MIDITEST_OBJECTS = midiTest.o c_vars.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+MIDITEST_SRCS = ./src/midiTest.c ./src/c_vars.c ./src/mt32.c ./src/midiseq.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/amidilib.c ./src/tbl_stat.c ./src/list.c ./src/memory.c ./src/amlog.c
+MIDITEST_OBJECTS = ./src/midiTest.o ./src/c_vars.o ./src/midiseq.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/amidilib.o ./src/tbl_stat.o ./src/list.o ./src/memory.o ./src/amlog.o
 else
-MIDITEST_SRCS = midiTest.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c  mfp.c 
-MIDITEST_OBJECTS = midiTest.o c_vars.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o  mfp.o
+MIDITEST_SRCS = ./src/midiTest.c ./src/c_vars.c ./src/mt32.c ./src/midiseq.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/amidilib.c ./src/tbl_stat.c ./src/list.c ./src/memory.c ./src/amlog.c  ./src/mfp.c 
+MIDITEST_OBJECTS = ./src/midiTest.o ./src/c_vars.o ./src/midiseq.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/amidilib.o ./src/tbl_stat.o ./src/list.o ./src/memory.o ./src/amlog.o  ./src/mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
-YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c
-YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o
+YM_TEST_SRCS = ./src/ymTest.c ./src/c_vars.c ./src/ym2149.c ./src/memory.c ./src/amlog.c
+YM_TEST_OBJECTS = ./src/ymTest.o ./src/c_vars.o ./src/ym2149.o ./src/memory.o ./src/amlog.o
 else
-YM_TEST_SRCS = ymTest.c c_vars.c ym2149.c memory.c amlog.c mfp.c fmio.c
-YM_TEST_OBJECTS = ymTest.o c_vars.o ym2149.o memory.o amlog.o mfp.o fmio.o
+YM_TEST_SRCS = ./src/ymTest.c ./src/c_vars.c ./src/ym2149.c ./src/memory.c ./src/amlog.c ./src/mfp.c ./src/fmio.c
+YM_TEST_OBJECTS = ./src/ymTest.o ./src/c_vars.o ./src/ym2149.o ./src/memory.o ./src/amlog.o ./src/mfp.o ./src/fmio.o
 endif
 
 ifeq ($(PORTABLE),1)
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o
+TIMING_TEST_SRCS = ./src/timTest.c ./src/ym2149.c ./src/c_vars.c ./src/mt32.c ./src/midiseq.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/amidilib.c ./src/tbl_stat.c ./src/list.c ./src/memory.c ./src/amlog.c
+TIMING_TEST_OBJECTS = ./src/timTest.o ./src/c_vars.o ./src/ym2149.o ./src/mt32.o ./src/midiseq.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/amidilib.o ./src/tbl_stat.o ./src/list.o ./src/memory.o ./src/amlog.o
 else
-TIMING_TEST_SRCS = timTest.c ym2149.c c_vars.c mt32.c midiseq.c fmio.c cm_500.c cm_32l.c amidilib.c tbl_stat.c list.c memory.c amlog.c mfp.c
-TIMING_TEST_OBJECTS = timTest.o c_vars.o ym2149.o mt32.o midiseq.o fmio.o cm_500.o cm_32l.o amidilib.o tbl_stat.o list.o memory.o amlog.o mfp.o
+TIMING_TEST_SRCS = ./src/timTest.c ./src/ym2149.c ./src/c_vars.c ./src/mt32.c ./src/midiseq.c ./src/fmio.c ./src/cm_500.c ./src/cm_32l.c ./src/amidilib.c ./src/tbl_stat.c ./src/list.c ./src/memory.c ./src/amlog.c ./src/mfp.c
+TIMING_TEST_OBJECTS = ./src/timTest.o ./src/c_vars.o ./src/ym2149.o ./src/mt32.o ./src/midiseq.o ./src/fmio.o ./src/cm_500.o ./src/cm_32l.o ./src/amidilib.o ./src/tbl_stat.o ./src/list.o ./src/memory.o ./src/amlog.o ./src/mfp.o
 endif
 
 ifeq ($(PORTABLE),1)
@@ -167,14 +167,14 @@ endif
 	cp $(TIMING_TEST_EXE) $(SHARED_DIR_PATH)
 
 ifneq ($(PORTABLE),1)
-amidi.o:	amidi.s
-		$(ASM) amidi.s $(ASMFLAGS) -o amidi.o
+amidi.o:	./src/amidi.s
+		$(ASM) ./src/amidi.s $(ASMFLAGS) -o amidi.o
 
-testReplay.o:	testReplay.s
-		$(ASM) testReplay.s $(ASMFLAGS) -o testReplay.o
+testReplay.o:	./src/testReplay.s
+		$(ASM) ./src/testReplay.s $(ASMFLAGS) -o testReplay.o
 
-ikbd_asm.o:	ikbd.S
-		$(GAS) $(MACHINE) ikbd.S -o ikbd.o
+ikbd_asm.o:	./src/ikbd.S
+		$(GAS) $(MACHINE) ./src/ikbd.S -o ikbd.o
 endif
 
 $(OBJECTS): %.o: %.c

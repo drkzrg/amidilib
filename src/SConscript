@@ -19,7 +19,7 @@ env['OBJCOPY'] = 'm68k-atari-mint-objcopy'
 env['STRIP'] = 'm68k-atari-mint-strip -s'
 env['STACK'] = 'm68k-atari-mint-stack'
 
-env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "./include"]
+env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "./include","./include/lzo","./include/ym2149"]
 env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
 
 # VASM settings

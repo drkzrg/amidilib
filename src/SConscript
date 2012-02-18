@@ -10,6 +10,10 @@ env = Environment(tools=['default'])
 
 #output executable name
 OUTPUT_DIR='../bin/'
+AMIDI_TEST_EXE='amidi.ttp'
+YM2149_TEST_EXE='ym2149.tos'
+MIDI_SEQ_TEST_EXE='midiseq.tos'
+
 
 env["CC"] = 'm68k-atari-mint-gcc'
 env["CXX"] = 'm68k-atari-mint-g++'
@@ -19,7 +23,7 @@ env['OBJCOPY'] = 'm68k-atari-mint-objcopy'
 env['STRIP'] = 'm68k-atari-mint-strip -s'
 env['STACK'] = 'm68k-atari-mint-stack'
 
-env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "./include","./include/lzo","./include/ym2149"]
+env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../include","../include/lzo","../include/ym2149"]
 env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
 
 # VASM settings
@@ -47,8 +51,8 @@ env["CDEFINES"] = 'TOS'
 env["CXXDEFINES"] = 'TOSCPP'
 
 ST_CFLAGS='-g -std=c99 -fomit-frame-pointer -m68000'
-ST_LDFLAGS='-m68000 -Wl,-Map,symbols.map -Wl,--traditional-format -nostdlib -fomit-frame-pointer'
-ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I./startup/'
+ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer'
+ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
 
 env["CCFLAGS"] = ''
 env["CFLAGS"] = ST_CFLAGS  # c only options 
@@ -56,8 +60,14 @@ env["LINKFLAGS"] = ST_LDFLAGS
 env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
+lzo_src = ["minilzo.c"]
+
+amidilib_src = lzo_src
+
 # main library components
-#env.Program(target = OUTPUT_EXE, source = )
+env.Program(target = AMIDI_TEST_EXE, source = amidilib_src)
+env.Program(target = YM2149_TEST_EXE, source = amidilib_src)
+env.Program(target = MIDI_SEQ_TEST_EXE, source = amidilib_src)
 
 
 

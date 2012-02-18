@@ -1,0 +1,65 @@
+#    Copyright 2007-2012 Pawel Goralski
+#    e-mail: pawel.goralski@nokturnal.pl
+#    This file is part of AMIDILIB.
+#    See license.txt for licensing information.
+
+import sys
+import os
+
+env = Environment(tools=['default'])
+
+#output executable name
+OUTPUT_DIR='../bin/'
+
+env["CC"] = 'm68k-atari-mint-gcc'
+env["CXX"] = 'm68k-atari-mint-g++'
+env["AS"] = 'vasmm68k_mot'
+env['AR'] = 'm68k-atari-mint-ar'
+env['OBJCOPY'] = 'm68k-atari-mint-objcopy'
+env['STRIP'] = 'm68k-atari-mint-strip -s'
+env['STACK'] = 'm68k-atari-mint-stack'
+
+env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "./include"]
+env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
+
+# VASM settings
+env['VASM'] = 'vasmm68k_mot'
+
+#############################################################################################################################
+# additional defines  
+#############################################################################################################################
+# DEBUG_BUILD - enables debug build
+# DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
+# DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
+# DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# FORCE_MALLOC forces use of libc malloc() for memory allocation, not native functions
+# TIME_CHECK_PORTABLE if set time measuring is based on stdlib functions
+# PORTABLE build portable,platform independent version 
+# MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
+# MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
+# IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
+
+#-DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
+#-DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
+
+env["CDEFINES"] = 'TOS'
+env["CXXDEFINES"] = 'TOSCPP'
+
+ST_CFLAGS='-g -std=c99 -fomit-frame-pointer -m68000'
+ST_LDFLAGS='-m68000 -Wl,-Map,symbols.map -Wl,--traditional-format -nostdlib -fomit-frame-pointer'
+ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I./startup/'
+
+env["CCFLAGS"] = ''
+env["CFLAGS"] = ST_CFLAGS  # c only options 
+env["LINKFLAGS"] = ST_LDFLAGS
+env["ASFLAGS"] = ST_VASM_FLAGS
+env['VASM_FLAGS'] = ST_VASM_FLAGS
+
+# main library components
+#env.Program(target = OUTPUT_EXE, source = )
+
+
+
+
+

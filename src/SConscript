@@ -13,7 +13,7 @@ OUTPUT_DIR='../bin/'
 AMIDI_TEST_EXE='amidi.ttp'
 YM2149_TEST_EXE='ym2149.tos'
 MIDI_SEQ_TEST_EXE='midiseq.tos'
-
+TIMINGS_TEST_EXE='timings.tos'
 
 env["CC"] = 'm68k-atari-mint-gcc'
 env["CXX"] = 'm68k-atari-mint-g++'
@@ -23,7 +23,7 @@ env['OBJCOPY'] = 'm68k-atari-mint-objcopy'
 env['STRIP'] = 'm68k-atari-mint-strip -s'
 env['STACK'] = 'm68k-atari-mint-stack'
 
-env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../include","../include/lzo","../include/ym2149"]
+env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
 env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
 
 # VASM settings
@@ -51,23 +51,30 @@ env["CDEFINES"] = 'TOS'
 env["CXXDEFINES"] = 'TOSCPP'
 
 ST_CFLAGS='-g -std=c99 -fomit-frame-pointer -m68000'
-ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer'
+ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
 ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
 
 env["CCFLAGS"] = ''
 env["CFLAGS"] = ST_CFLAGS  # c only options 
-env["LINKFLAGS"] = ST_LDFLAGS
+env["LINKFLAGS"] = ST_LDFLAGS 
 env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
 lzo_src = ["minilzo.c"]
+input_src = ["ikbd.s"]
 
-amidilib_src = lzo_src
+amidi_test_src = ["../demo/midi_rep/main.c"]
+timings_test_src = ["../demo/timings/timTest.c"]
+ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
+midiOut_test_src = ["../demo/midi_output/midiTest.c"]
+
+amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c","amidi.s"] + lzo_src + input_src
 
 # main library components
-env.Program(target = AMIDI_TEST_EXE, source = amidilib_src)
-env.Program(target = YM2149_TEST_EXE, source = amidilib_src)
-env.Program(target = MIDI_SEQ_TEST_EXE, source = amidilib_src)
+env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src + amidilib_src)
+env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src + amidilib_src)
+env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src + amidilib_src)
+env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src + amidilib_src)
 
 
 

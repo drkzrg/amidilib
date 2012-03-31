@@ -9,12 +9,63 @@ import os
 
 env = Environment(tools=['default'])
 
+Help("\nType: 'scons target=name' where name can be: \n 'f030' - for Atari Falcon030 build\n 'atarist' - for Atari ST build \n 'ataritt' - for Atari TT build \n 'ct60' - for Atari Falcon CT60/63\n 'unix' - for platform independent version (dummy)\n")
+
 debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
 
-//todo add target options
+#todo add target options
 target = ARGUMENTS.get('target', 0)
 
+ST_CFLAGS=''
+ST_LDFLAGS=''
+ST_VASM_FLAGS =''
+ST_CCFLAGS =''
+
+if (target == "unix"):
+    print "Building Unix target!"
+    portable=1;
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = ''
+    ST_CCFLAGS =''
+elif (target == "f030"):
+    print "Building Atari Falcon 030 target!"
+    portable=0;
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
+    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt'
+    ST_CCFLAGS =''
+elif (target == "atarist"):
+    print "Building Atari ST target!"
+    portable=0;  
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
+    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
+    ST_CCFLAGS =''
+elif (target == "ataritt"):
+    print "Building Atari TT target!"
+    portable=0;
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
+    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
+    ST_CCFLAGS =''
+elif (target == "ct60"):
+    print "Building Falcon CT60/63 target!"
+    portable=0;
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68060'
+    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt'
+    ST_CCFLAGS =''
+else:
+    print "Building unknown target!" 
+    portable=1;
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_VASM_FLAGS = ''
+    ST_CCFLAGS =''
+    
+    
 #output executable name
 OUTPUT_DIR='../bin/'
 AMIDI_TEST_EXE='amidi.ttp'
@@ -57,11 +108,6 @@ env['VASM'] = 'vasmm68k_mot'
 env["CDEFINES"] = 'TOS'
 env["CXXDEFINES"] = 'TOSCPP'
 
-ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
-ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
-ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
-ST_CCFLAGS =''
-
 if int(debug):
   ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';
 
@@ -86,11 +132,12 @@ ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
 midiOut_test_src = ["../demo/midi_output/midiTest.c"]
 
 if int(portable):
-  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c","amidi.s"] + ym2149_src+lzo_src + input_src
+  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c"] + ym2149_src+lzo_src 
 else:
   amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","amidi.s","testReplay.s"] + mfp_src + ym2149_src + lzo_src + input_src
 
 # main library components
+
 env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src + amidilib_src)
 env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src + amidilib_src)
 env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src + amidilib_src)

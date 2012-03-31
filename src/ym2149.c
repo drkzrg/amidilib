@@ -6,6 +6,7 @@
 */
 
 #include "ym2149.h"
+#include "midi_cmd.h"
 
 U8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
   
@@ -89,3 +90,29 @@ void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisege
      ymDoSound(ch,envelope,period,noisegenPeriod);
 }
 
+//plays given note and outputs it to midi/ym2149
+void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
+ymChannelData ch[3];
+
+  if(bMidiOutput==TRUE){
+    note_on(9,noteNb,127);	//output on channel 9, max velocity
+  }
+
+  if(bYmOutput==TRUE){
+
+     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
+     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
+     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
+	  
+     ch[CH_A].oscFreq=lByte;
+     ch[CH_A].oscStepSize=hByte;
+     ch[CH_B].oscFreq=lByte;
+     ch[CH_B].oscStepSize=hByte;
+     ch[CH_C].oscFreq=lByte;
+     ch[CH_C].oscStepSize=hByte;
+    
+    ymDoSound( ch,4 , period,128);
+    
+  }
+
+}

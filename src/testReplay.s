@@ -6,8 +6,11 @@
     xdef _installYMReplayRout	;initialises replay interrupt TB routine and prepares data
     xdef _deinstallYMReplayRout	;removes replay routine from system 
     xdef _defaultPlayMode
+    xdef _midiOutputEnabled
+    xdef _ymOutputEnabled
+    
     xref _playNote	;output note to external midi module and/or ym2149
-    xref _super_on	; self explanatory 
+    xref _super_on	;self explanatory 
     xref _super_off	;
     xref _oldTB		;saved old Timer B vector
     
@@ -15,8 +18,6 @@
     xref _tbMode	;data feed to timer, which control
     xref _tbData	;individual tick duration
     
-    xref _midiOutputEnabled
-    xref _ymOutputEnabled
     xref _ymSoundOff
     xref _am_allNotesOff
     xref _getMFPTimerSettings
@@ -292,6 +293,8 @@ _deinstallYMReplayRout:
 
 	bss
 	even
+_midiOutputEnabled:	ds.l	1
+_ymOutputEnabled: 	ds.l	1
 _currentSeqPtr:		ds.l	1
 _elapsedDelta:		ds.l	1
 _defaultPlayMode:	ds.l	1

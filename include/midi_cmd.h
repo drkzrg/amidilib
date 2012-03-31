@@ -10,7 +10,8 @@
 #define __MIDI_CMD_H__
 
 #include "c_vars.h"
-#include "include/midi_send.h"
+#include "midi_send.h"
+#include "events.h"
 
 /* small static buffer for sending MIDI commands */
 static U8 g_midi_cmd_buffer[4];

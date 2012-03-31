@@ -331,14 +331,3 @@ int main(void) {
 return 0;
 }
 
-void sequenceUpdate(){};
-
-
-#ifdef PORTABLE
-
-void turnOffKeyclick(void){
-  
-  
-}
-
-#endif

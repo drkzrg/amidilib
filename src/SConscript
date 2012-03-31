@@ -1,3 +1,4 @@
+
 #    Copyright 2007-2012 Pawel Goralski
 #    e-mail: pawel.goralski@nokturnal.pl
 #    This file is part of AMIDILIB.
@@ -7,6 +8,12 @@ import sys
 import os
 
 env = Environment(tools=['default'])
+
+debug = ARGUMENTS.get('debug', 0)
+portable = ARGUMENTS.get('portable', 0)
+
+//todo add target options
+target = ARGUMENTS.get('target', 0)
 
 #output executable name
 OUTPUT_DIR='../bin/'
@@ -44,39 +51,48 @@ env['VASM'] = 'vasmm68k_mot'
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 
-#-DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
-#-DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
+# -DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
+# -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
 
 env["CDEFINES"] = 'TOS'
 env["CXXDEFINES"] = 'TOSCPP'
 
-ST_CFLAGS='-g -std=c99 -fomit-frame-pointer -m68000'
+ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
 ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
 ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
+ST_CCFLAGS =''
 
-env["CCFLAGS"] = ''
-env["CFLAGS"] = ST_CFLAGS  # c only options 
+if int(debug):
+  ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';
+
+if int(portable):
+  ST_CFLAGS=ST_CFLAGS +' -DPORTABLE -DTIME_CHECK_PORTABLE'
+else:
+  ST_CFLAGS=ST_CFLAGS +' -DFORCE_MALLOC'
+
+env["CFLAGS"] = ST_CFLAGS  
 env["LINKFLAGS"] = ST_LDFLAGS 
 env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
 lzo_src = ["minilzo.c"]
 input_src = ["ikbd.s"]
+ym2149_src = ["ym2149.c"]
+mfp_src = ["mfp.c"]
 
 amidi_test_src = ["../demo/midi_rep/main.c"]
 timings_test_src = ["../demo/timings/timTest.c"]
 ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
 midiOut_test_src = ["../demo/midi_output/midiTest.c"]
 
-amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c","amidi.s"] + lzo_src + input_src
+if int(portable):
+  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c","amidi.s"] + ym2149_src+lzo_src + input_src
+else:
+  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","amidi.s","testReplay.s"] + mfp_src + ym2149_src + lzo_src + input_src
 
 # main library components
 env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src + amidilib_src)
 env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src + amidilib_src)
 env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src + amidilib_src)
 env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src + amidilib_src)
-
-
-
-
 

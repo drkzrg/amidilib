@@ -351,16 +351,4 @@ void getCurrentSeq (sSequence_t **pPtr){
 
 
 
-#ifdef PORTABLE
-void installReplayRout(U8 mode,U8 data){
-//todo  
-#warning installReplayRout() unimplemented! 
-}
 
-
-void deinstallReplayRout(void){
-//TODO!
-#warning deinstallReplayRout() unimplemented! 
-}
-
-#endif

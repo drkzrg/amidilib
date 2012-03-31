@@ -50,10 +50,11 @@ extern void turnOffKeyclick(void);
 extern void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
 extern void deinstallYMReplayRout();
 extern volatile U8 tbData,tbMode;
+extern volatile BOOL midiOutputEnabled;
+extern volatile BOOL ymOutputEnabled;
 #else
-void turnOffKeyclick(void){
-#warning TODO!
-}
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
 
 void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
 #warning TODO!
@@ -69,33 +70,7 @@ volatile sCurrentSequenceState currentState;
 volatile extern U32 counter;
 extern U32 defaultPlayMode;
 
-ymChannelData ch[3];
 static U32 iCurrentStep;
-//plays given note and outputs it to midi/ym2149
-void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
-
-  if(bMidiOutput==TRUE){
-    note_on(9,noteNb,127);	//output on channel 9, max velocity
-  }
-
-  if(bYmOutput==TRUE){
-
-     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
-     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
-     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
-	  
-     ch[CH_A].oscFreq=lByte;
-     ch[CH_A].oscStepSize=hByte;
-     ch[CH_B].oscFreq=lByte;
-     ch[CH_B].oscStepSize=hByte;
-     ch[CH_C].oscFreq=lByte;
-     ch[CH_C].oscStepSize=hByte;
-    
-    ymDoSound( ch,4 , period,128);
-    
-  }
-
-}
 
 // plays sample sequence 
 int playSampleSequence(const sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
@@ -133,9 +108,6 @@ extern U8 envelopeArray[8];
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;
-
-BOOL midiOutputEnabled;
-BOOL ymOutputEnabled;
 
 // output, test sequence for channel 1 
 static const sSequence testSequenceChannel1[]={
@@ -215,9 +187,9 @@ static const sSequence testSequenceChannel3[]={
   {0L,0L,0,0xAD}
 };
 
-
-
 int main(void){
+  ymChannelData ch[3];
+
   U32 defaultTempo=60000000/120;
   iCurrentStep=TEMPO_STEP;
   currentState.currentTempo=defaultTempo;
@@ -440,6 +412,4 @@ int main(void){
  return 0;
 }
 
-//dummy
-void sequenceUpdate(){};
 

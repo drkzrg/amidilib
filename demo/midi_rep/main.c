@@ -20,8 +20,6 @@ static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED=0x80;
 static const U8 KEY_RELEASED=0x00;
 extern void turnOffKeyclick(void);
-#else
-void turnOffKeyclick(void);
 #endif
 
 // display info screen
@@ -256,11 +254,4 @@ void displayTuneInfo(){
 }
 
 
-#ifdef PORTABLE
-void turnOffKeyclick(void){
-//todo
-#warning turnOffKeyclick() unimplemented!
-}
-
-#endif
 

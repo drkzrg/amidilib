@@ -55,6 +55,7 @@ extern volatile BOOL ymOutputEnabled;
 #else
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
+void turnOffKeyclick(void){}
 
 void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
 #warning TODO!

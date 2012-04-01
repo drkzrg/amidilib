@@ -15,7 +15,7 @@ extern U8 envelopeArray[8];
 
 
 #ifdef PORTABLE
-void turnOffKeyclick(void);
+void turnOffKeyclick(void){}
 #else
 #include <osbind.h>
 extern void turnOffKeyclick(void);

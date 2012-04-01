@@ -17,10 +17,16 @@ portable = ARGUMENTS.get('portable', 0)
 #todo add target options
 target = ARGUMENTS.get('target', 0)
 
+#to indicate that we are cross compiling
+CROSS=1
+CROSS_PREFIX='m68k-atari-mint-'
+
 ST_CFLAGS=''
 ST_LDFLAGS=''
 ST_VASM_FLAGS =''
 ST_CCFLAGS =''
+EXE_EXT_1=''
+EXE_EXT_2=''
 
 if (target == "unix"):
     print "Building Unix target!"
@@ -36,6 +42,8 @@ elif (target == "f030"):
     ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
 elif (target == "atarist"):
     print "Building Atari ST target!"
     portable=0;  
@@ -43,6 +51,8 @@ elif (target == "atarist"):
     ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
 elif (target == "ataritt"):
     print "Building Atari TT target!"
     portable=0;
@@ -50,6 +60,8 @@ elif (target == "ataritt"):
     ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target!"
     portable=0;
@@ -57,6 +69,8 @@ elif (target == "ct60"):
     ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
 else:
     print "Building unknown target!" 
     portable=1;
@@ -64,23 +78,33 @@ else:
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = ''
     ST_CCFLAGS =''
-    
-    
+    EXE_EXT_1=''
+    EXE_EXT_2=''
+
 #output executable name
 OUTPUT_DIR='../bin/'
-AMIDI_TEST_EXE='amidi.ttp'
-YM2149_TEST_EXE='ym2149.tos'
-MIDI_SEQ_TEST_EXE='midiseq.tos'
-TIMINGS_TEST_EXE='timings.tos'
+AMIDI_TEST_EXE='amidi' + EXE_EXT_2
+YM2149_TEST_EXE='ym2149' + EXE_EXT_1
+MIDI_SEQ_TEST_EXE='midiseq' + EXE_EXT_1
+TIMINGS_TEST_EXE='timings' + EXE_EXT_1
 
-env["CC"] = 'm68k-atari-mint-gcc'
-env["CXX"] = 'm68k-atari-mint-g++'
-env["AS"] = 'vasmm68k_mot'
-env['AR'] = 'm68k-atari-mint-ar'
-env['OBJCOPY'] = 'm68k-atari-mint-objcopy'
-env['STRIP'] = 'm68k-atari-mint-strip -s'
-env['STACK'] = 'm68k-atari-mint-stack'
-
+if (CROSS==1):
+  env["CC"] = CROSS_PREFIX + 'gcc'
+  env["CXX"] = CROSS_PREFIX + 'g++'
+  env["AS"] = 'vasmm68k_mot'
+  env['AR'] = CROSS_PREFIX + 'ar'
+  env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
+  env['STRIP'] = CROSS_PREFIX + 'strip -s'
+  env['STACK'] = CROSS_PREFIX + 'stack'
+else:
+  env["CC"] = 'gcc'
+  env["CXX"] = 'g++'
+  env["AS"] = 'vasmm68k_mot'
+  env['AR'] = 'ar'
+  env['OBJCOPY'] = 'objcopy'
+  env['STRIP'] = 'strip -s'
+  env['STACK'] = 'stack'
+  
 env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
 env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
 

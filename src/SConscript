@@ -13,12 +13,20 @@ Help("\nType: 'scons target=name' where name can be: \n 'f030' - for Atari Falco
 
 debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
+cross = ARGUMENTS.get('cross', 0)
 
 #todo add target options
 target = ARGUMENTS.get('target', 0)
 
 #to indicate that we are cross compiling
-CROSS=1
+if(((cross=='') or (cross=='no') or (cross=='n'))):
+  CROSS=0
+elif ((cross=='yes')or (cross=='y')):
+  CROSS=1
+else:
+  CROSS=0
+  print "Unknown cross parameter! Cross compilation is disabled."
+  
 CROSS_PREFIX='m68k-atari-mint-'
 
 ST_CFLAGS=''

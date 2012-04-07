@@ -67,6 +67,7 @@ if(seq!=0){
 
 //this will be called from an interrupt in each delta increment
 void sequenceUpdate(void){
+  
  static sTrack_t *pTrk=0;
  static sEventList *pCurrent=0;
  static evntFuncPtr myFunc=0; 
@@ -261,7 +262,7 @@ else{
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
 	  startPlaying=1;	//to indicate that we have to send MIDI start on next play
-	  MIDI_SEND_BYTE((U8 *)&MIDI_STOP);	//send midi STOP
+	  MIDI_SEND_BYTE((const U8 *)&MIDI_STOP);	//send midi STOP
 	  am_allNotesOff(16);
 	//done! 
 	}

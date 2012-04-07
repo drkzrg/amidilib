@@ -30,9 +30,8 @@
 
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
 
- 
- extern void installMIDIreplay(U8 mode,U8 data);
- extern void deinstallMIDIreplay(void);
+extern void installMIDIreplay(U8 mode,U8 data);
+extern void deinstallMIDIreplay(void);
 
 #endif
 

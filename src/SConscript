@@ -9,7 +9,16 @@ import os
 
 env = Environment(tools=['default'])
 
-Help("\nType: 'scons target=name' where name can be: \n 'f030' - for Atari Falcon030 build\n 'atarist' - for Atari ST build \n 'ataritt' - for Atari TT build \n 'ct60' - for Atari Falcon CT60/63\n 'unix' - for platform independent version (dummy)\n")
+Help("AMIDILIB Copyright 2007-2012 Pawel Goralski\n \
+Type: 'scons target=name cross=y/n debug=0/1'\n \
+where 'name' can be: \n \
+ 'f030' - for Atari Falcon030/TT build\n \
+ 'atarist' - for Atari ST build \n \
+ 'ct60' - for Atari Falcon CT60/63\n \
+ 'unix' - for platform independent version (dummy)\n\
+ cross - enables m68k-atari-mint cross compiler, set to 'n' by default\n\
+ debug - enables/disables build of debug version of library with additional tracing options,\n\
+ set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
@@ -35,12 +44,13 @@ ST_VASM_FLAGS =''
 ST_CCFLAGS =''
 EXE_EXT_1=''
 EXE_EXT_2=''
+LIB_POSTFIX=''
 
 if (target == "unix"):
     print "Building Unix target..."
     portable=1;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
-    ST_LDFLAGS='-march=68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = ''
     ST_CCFLAGS =''
 elif ((target == "f030") or (target == "ataritt")):
@@ -52,6 +62,7 @@ elif ((target == "f030") or (target == "ataritt")):
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
+    LIB_POSTFIX='030'
 elif (target == "atarist"):
     print "Building Atari ST/Ste target..."
     portable=0;  
@@ -61,6 +72,7 @@ elif (target == "atarist"):
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
+    LIB_POSTFIX='000'
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target..."
     portable=0;
@@ -70,6 +82,7 @@ elif (target == "ct60"):
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
+    LIB_POSTFIX='060'
 else:
     print "Trying build for unknown target..." 
     portable=1;
@@ -80,7 +93,7 @@ else:
     EXE_EXT_1=''
     EXE_EXT_2=''
 
-#output executable name
+# output executable name
 OUTPUT_DIR='../bin/'
 AMIDI_TEST_EXE='amidi' + EXE_EXT_2
 YM2149_TEST_EXE='ym2149' + EXE_EXT_1
@@ -101,12 +114,17 @@ else:
   env["CXX"] = 'g++'
   env["AS"] = 'vasmm68k_mot'
   env['AR'] = 'ar'
+  env['RANLIB'] = 'ranlib'
   env['OBJCOPY'] = 'objcopy'
   env['STRIP'] = 'strip -s'
   env['STACK'] = 'stack'
   
-env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
+if(portable!=1):  
+  env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
+  env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
+else:
+  env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]
+  env["LIBPATH"] = ['../bin/']
 
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
@@ -134,7 +152,8 @@ env["CXXDEFINES"] = 'TOSCPP'
 
 if int(debug):
   ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';
-
+  LIB_POSTFIX = LIB_POSTFIX+'d'
+  
 if int(portable):
   ST_CFLAGS=ST_CFLAGS +' -DPORTABLE -DTIME_CHECK_PORTABLE'
 else:
@@ -145,27 +164,46 @@ env["LINKFLAGS"] = ST_LDFLAGS
 env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
-lzo_src = ["minilzo.c"]
-input_src = ["ikbd.s"]
-ym2149_src = ["ym2149.c"]
+# core functionality
+roland_src = ["mt32.c","cm_500.c","cm_32l.c"]
+midi_src = ["amidilib.c","tbl_stat.c","midi_rep.c","midiseq.c"]
+core_src = ["c_vars.c","list.c","fmio.c","memory.c","amlog.c"]
+midiformats_src = ["iff.c"]
 mfp_src = ["mfp.c"]
 
-amidi_test_src = ["../demo/midi_rep/main.c"]
-timings_test_src = ["../demo/timings/timTest.c"]
-ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
-midiOut_test_src = ["../demo/midi_output/midiTest.c"]
+# other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
+if(portable!=1):
+  input_src = ["ikbd.s"]
+
+ym2149_src = ["ym2149.c"]
+rand_src = ["twisterm.c"]
+lzo_src = ["minilzo.c"]
 
 # main library 
 if int(portable):
-  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c"] + ym2149_src+lzo_src 
+  amidilib_src = core_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","amidi.s","testReplay.s"] + mfp_src + ym2149_src + lzo_src + input_src
+  amidilib_src = core_src + ["amidi.s","testReplay.s"] + mfp_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
 
-env.Library('amidi', amidilib_src)
- 
-# test programs
-env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi','m'])
-env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src,LIBS=['amidi','m'])
-env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src,LIBS=['amidi','m'])
-env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src,LIBS=['amidi','m'])
+# build library
+env.Library('amidi'+ LIB_POSTFIX, amidilib_src)
+
+#################### test programs entry points
+if(portable==1):
+  amidi_test_src = ["../demo/midi_rep/main.c"]
+  midiOut_test_src = ["../demo/midi_output/midiTest.c"]
+  timings_test_src = ["../demo/timings/timTest.c"]+ ym2149_src
+  ym2149_test_src = ["../demo/ymOutput/ymTest.c"]+ ym2149_src  
+else:
+  amidi_test_src = ["../demo/midi_rep/main.c"] + input_src
+  midiOut_test_src = ["../demo/midi_output/midiTest.c"] + input_src
+  timings_test_src = ["../demo/timings/timTest.c"] + input_src + ym2149_src
+  ym2149_test_src = ["../demo/ymOutput/ymTest.c"] + input_src + ym2149_src
+  
+  
+# build test programs and link them with amidilib
+env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
+env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
+env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
+env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
 

@@ -10,7 +10,7 @@
 
 #include "c_vars.h"
 #include "amlog.h"
-#include "memory.h"
+#include "memory/memory.h"
 
 #ifndef PORTABLE
 #include <mintbind.h>

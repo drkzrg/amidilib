@@ -9,7 +9,7 @@
 #define __AMIDILIB_H__
 
 #include "c_vars.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include "fmio.h"
 #include "roland.h"
 #include "midi.h"

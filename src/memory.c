@@ -5,7 +5,7 @@
     See license.txt for licensing information.
 */
 
-#include "include/memory.h"
+#include "include/memory/memory.h"
 
 #ifdef DEBUG_MEM
 static U32 g_memAlloc=0;

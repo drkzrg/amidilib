@@ -5,7 +5,6 @@
     See license.txt for licensing information.
 */
 #include "include/fmio.h"
-#include "include/memory.h"
 
 #ifdef PORTABLE
 void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){

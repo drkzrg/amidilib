@@ -167,7 +167,8 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 roland_src = ["mt32.c","cm_500.c","cm_32l.c"]
 midi_src = ["amidilib.c","tbl_stat.c","midi_rep.c","midiseq.c"]
-core_src = ["c_vars.c","list.c","fmio.c","memory.c","amlog.c"]
+memory_src = ["memory/memory.c","memory/stack.c"]
+core_src = ["c_vars.c","list.c","fmio.c","amlog.c"]
 midiformats_src = ["iff.c"]
 mfp_src = ["mfp.c"]
 
@@ -181,9 +182,9 @@ lzo_src = ["minilzo.c"]
 
 # main library 
 if int(portable):
-  amidilib_src = core_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
+  amidilib_src = core_src + memory_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = core_src + ["amidi.s","testReplay.s"] + mfp_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
+  amidilib_src = core_src + memory_src +["amidi.s","testReplay.s"] + mfp_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
 
 # build library
 env.Library('amidi'+ LIB_POSTFIX, amidilib_src)

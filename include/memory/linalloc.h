@@ -16,22 +16,10 @@ typedef struct _LinearBuffer{
   U32 totalSize;	// total linear memory size in bytes
   U32 offset;
   eMemoryFlag memType;  // memory type
-}LinearBuffer_t;
+}tLinearBuffer;
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(LinearBuffer_t *buf, U32 size){
-  if(!buf||!size) return NULL;
-  
-  U32 newOffset=buf->offset+size;
-  
-  if(newOffset<=buf->totalSize){
-      void *ptr=buf->pMemPtr+buf->offset;
-      buf->offset=newOffset;
-      return ptr;
-  }
-  
-  return NULL; //out of memory
-}
+void *linearBufferAlloc(tLinearBuffer *buf, U32 size);
 
 
 #endif

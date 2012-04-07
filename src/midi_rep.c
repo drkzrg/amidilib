@@ -33,11 +33,10 @@ if(seq!=0){
   dd=seq->arTracks[activeTrack]->currentState.timeSignature.dd;
   nn=seq->arTracks[activeTrack]->currentState.timeSignature.nn;
   cc=seq->arTracks[activeTrack]->currentState.timeSignature.cc;
-#warning no pow
-  //dd=(U16)pow(2.0f,(float)dd);
+  dd=(U16)pow(2.0f,(float)dd);
   
   //convert tempo from microseconds to seconds
-  //float freq=((float)(seq->arTracks[activeTrack]->currentState.currentTempo/(dd/4)*(cc/24))/1000000.0f);
+  float freq=((float)(seq->arTracks[activeTrack]->currentState.currentTempo/(dd/4)*(cc/24))/1000000.0f);
   float fTempoSecs=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
       
   //calculate 1 tick duration
@@ -169,9 +168,8 @@ else{
       dd=seqState->timeSignature.dd;
       nn=seqState->timeSignature.nn;
       cc=seqState->timeSignature.cc;
-      #warning no pow
   
-  //    dd=(U32)pow(2.0f,(float)dd);
+      dd=(U32)pow(2.0f,(float)dd);
       
       //convert quaternote duration in microseconds to seconds
       float freq=(float)seqState->currentTempo/1000000.0f;

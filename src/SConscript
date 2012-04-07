@@ -25,7 +25,7 @@ elif ((cross=='yes')or (cross=='y')):
   CROSS=1
 else:
   CROSS=0
-  print "Unknown cross parameter! Cross compilation is disabled."
+  print "Unknown cross parameter! Cross compilation is disabled. Using native compiler."
   
 CROSS_PREFIX='m68k-atari-mint-'
 
@@ -37,50 +37,41 @@ EXE_EXT_1=''
 EXE_EXT_2=''
 
 if (target == "unix"):
-    print "Building Unix target!"
+    print "Building Unix target..."
     portable=1;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
+    ST_LDFLAGS='-march=68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = ''
     ST_CCFLAGS =''
-elif (target == "f030"):
-    print "Building Atari Falcon 030 target!"
+elif ((target == "f030") or (target == "ataritt")):
+    print "Building Atari Falcon 030/TT target..."
     portable=0;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
-    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
 elif (target == "atarist"):
-    print "Building Atari ST target!"
+    print "Building Atari ST/Ste target..."
     portable=0;  
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68000'
-    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
-    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
-    ST_CCFLAGS =''
-    EXE_EXT_1='.tos'
-    EXE_EXT_2='.ttp'
-elif (target == "ataritt"):
-    print "Building Atari TT target!"
-    portable=0;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
-    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-m68000 -std=c99 -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
 elif (target == "ct60"):
-    print "Building Falcon CT60/63 target!"
+    print "Building Falcon CT60/63 target..."
     portable=0;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68060'
-    ST_LDFLAGS='-m68000 -Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
 else:
-    print "Building unknown target!" 
+    print "Trying build for unknown target..." 
     portable=1;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
@@ -101,6 +92,7 @@ if (CROSS==1):
   env["CXX"] = CROSS_PREFIX + 'g++'
   env["AS"] = 'vasmm68k_mot'
   env['AR'] = CROSS_PREFIX + 'ar'
+  env['RANLIB'] = CROSS_PREFIX + 'ranlib'
   env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
   env['STRIP'] = CROSS_PREFIX + 'strip -s'
   env['STACK'] = CROSS_PREFIX + 'stack'
@@ -114,7 +106,7 @@ else:
   env['STACK'] = 'stack'
   
 env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = '/usr/m68k-atari-mint/lib'
+env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
 
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
@@ -163,15 +155,17 @@ timings_test_src = ["../demo/timings/timTest.c"]
 ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
 midiOut_test_src = ["../demo/midi_output/midiTest.c"]
 
+# main library 
 if int(portable):
   amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","mfp.c"] + ym2149_src+lzo_src 
 else:
   amidilib_src = ["twisterm.c","mt32.c","midiseq.c","list.c","iff.c","fmio.c","cm_500.c","cm_32l.c","c_vars.c","amidilib.c","tbl_stat.c" ,"memory.c" ,"amlog.c","midi_rep.c","amidi.s","testReplay.s"] + mfp_src + ym2149_src + lzo_src + input_src
 
-# main library components
-
-env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src + amidilib_src)
-env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src + amidilib_src)
-env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src + amidilib_src)
-env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src + amidilib_src)
+env.Library('amidi', amidilib_src)
+ 
+# test programs
+env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi','m'])
+env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src,LIBS=['amidi','m'])
+env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src,LIBS=['amidi','m'])
+env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src,LIBS=['amidi','m'])
 

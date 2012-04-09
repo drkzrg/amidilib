@@ -64,6 +64,8 @@ void setDefaultConfig(){
   configuration.midiChannel = 1;	
   configuration.playMode = S_PLAY_ONCE;	//play once or in loop
   configuration.playState = PS_STOPPED;	//default play state: STOPPED or playing
+  configuration.eventPoolSize=0;
+  configuration.eventDataAllocatorSize=0;
   #ifndef PORTABLE
   configuration.midiBufferSize=MIDI_BUFFER_SIZE; //it's atari specific
   #endif
@@ -81,6 +83,9 @@ void setConfig(tAmidiConfig *newConfig){
   configuration.midiChannel=newConfig->midiChannel;	
   configuration.playMode=newConfig->playMode;		
   configuration.playState=newConfig->playState;		
+  configuration.eventPoolSize=newConfig->eventPoolSize;
+  configuration.eventDataAllocatorSize=newConfig->eventDataAllocatorSize;
+  
   #ifndef PORTABLE
   configuration.midiBufferSize=newConfig->midiBufferSize; 
   #endif

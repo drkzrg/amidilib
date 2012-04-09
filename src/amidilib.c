@@ -45,13 +45,6 @@ static const U8 outputFilename[] = "amidi.log";
 //default configuration filename
 static const U8 configFilename[] = "amidi.cfg";
 
-static U16 DEFAULT_PLAY_MODE;
-static U16 DEFAULT_PLAY_STATE;
-static U16 DEFAULT_DEVICE_TYPE; 	//default is CM32L output device with extra patches
-static U16 DEFAULT_MIDI_CHANNEL; 	// default is 0 in external module
-
-
-
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
  clock_t end;
@@ -61,6 +54,16 @@ static U16 DEFAULT_MIDI_CHANNEL; 	// default is 0 in external module
  long usp;
 #endif
 
+/**/ 
+const U8 *g_arMidiDeviceTypeName[]={
+  "LA",       
+  "LA extended",   
+  "GS/GM",       
+  "LA/GS mixed mode",
+  "MT32 GM emulation",
+  "Yamaha XG GM mode"
+};
+ 
 
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
@@ -393,14 +396,16 @@ S16 am_init(){
  // init logger
  am_initLog(outputFilename);
 #endif 
- void *cfgData=0;
- U32 cfgLen=0;
- 
-  cfgData=loadFile(configFilename,PREFER_TT,&cfgLen);
   
-  if(cfgData==NULL){
+  if(loadConfig(configFilename)==-1){
+    //configuration loading failed
     setDefaultConfig();
-    //TODO: saveConfig
+    if(saveConfig(configFilename)>0){
+     ;//configuration saved 
+    }else{
+      //error saving configuration
+    };
+    
   }else{
     setDefaultConfig();
     //TODO: process loaded file
@@ -408,7 +413,7 @@ S16 am_init(){
   }
  
 #ifndef PORTABLE 
- super_on();
+ U32 usp=Super(0L);
  
  /* clear our new buffer */
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
@@ -424,19 +429,13 @@ S16 am_init(){
 
  /* set up new MIDI buffer */
  (*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
- (*g_psMidiBufferInfo).ibufsiz = getConfig()->defaultMidiBufferSize;
+ (*g_psMidiBufferInfo).ibufsiz = getConfig()->midiBufferSize;
  (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
  (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
- super_off();
+ SuperToUser(usp);
 #endif
-
-//set other internal variables
-  DEFAULT_PLAY_MODE=getConfig()->defaultPlayMode;
-  DEFAULT_PLAY_STATE=getConfig()->defaultPlayState;
-  DEFAULT_DEVICE_TYPE=getConfig()->connectedDeviceType; 
-  DEFAULT_MIDI_CHANNEL=getConfig()->defaultMidiChannel; 
 
   // now depending on the connected device type and chosen operation mode
   // set appropriate channel
@@ -447,13 +446,27 @@ S16 am_init(){
    //set current channel as 1, default is 0 in external module
    control_change(0x00, currentChannel, currentBankSelect,0x00);
    program_change(currentChannel, currentPN);
-    
+
+   //check external module communication scheme
+   if(getConfig()->handshakeModeEnabled){
+    //TODO: interrogate connected external module type
+    //display info 
+     //if timeout turn off handshake mode
+     for (U8 i=0;i<16;++i){
+       getDeviceInfoResponse(i);
+     }
+     
+     
+   }
+   
+   
  return(1);
 }
 
 void am_deinit(){
 #ifndef PORTABLE
-  super_on();
+  U32 usp=Super(0L);
+ 
   /* restore standard MIDI buffer */
   (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
   (*g_psMidiBufferInfo).ibufsiz=g_sOldMidiBufferInfo.ibufsiz;
@@ -461,7 +474,7 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibuftl=g_sOldMidiBufferInfo.ibuftl;
   (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
-  super_off();
+  SuperToUser(usp);
 #endif  
 
 #ifdef DEBUG_BUILD
@@ -514,8 +527,8 @@ switch(fileTypeFlag){
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
-	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
-	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
+	  pTempTrack->currentState.playMode = getConfig()->playMode;
+	  pTempTrack->currentState.playState = getConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -544,8 +557,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
 
-	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
-	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
+	  pTempTrack->currentState.playMode = getConfig()->playMode;;
+	  pTempTrack->currentState.playState = getConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -597,8 +610,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
 
-	  pTempTrack->currentState.playMode = DEFAULT_PLAY_MODE;
-	  pTempTrack->currentState.playState = DEFAULT_PLAY_STATE;
+	  pTempTrack->currentState.playMode = getConfig()->playMode;;
+	  pTempTrack->currentState.playState = getConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -1772,9 +1785,9 @@ const U8 *getMIDIcontrollerName(U8 iNb)
  return(g_arMIDIcontrollers[iNb]);
 }
 
-#define DEVICE_RESPONSE_TIMEOUT_IN_SECONDS 5
 
 void getDeviceInfoResponse(U8 channel){
+  //TODO: rework it
   static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   BOOL bFlag=FALSE;
@@ -1793,7 +1806,7 @@ void getDeviceInfoResponse(U8 channel){
     begin=getTimeStamp(); // get current timestamp
 	
     /* get reply or there was timeout */
-    while((MIDI_DATA_READY&&(getTimeDelta()<DEVICE_RESPONSE_TIMEOUT_IN_SECONDS))) {
+    while((MIDI_DATA_READY&&(getTimeDelta()<getConfig()->midiConnectionTimeOut))) {
       data = GET_MIDI_DATA;
       begin=getTimeStamp(); // data received, reset timestamp
       
@@ -1912,4 +1925,11 @@ void am_destroySequence (sSequence_t **pPtr){
     amTrace((const U8 *)"am_destroySequence() done. \n");
   #endif
 }
+
+
+const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
+ if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];
+ else return NULL;
+}
+
 

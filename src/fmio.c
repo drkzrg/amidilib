@@ -7,7 +7,7 @@
 #include "include/fmio.h"
 
 #ifdef PORTABLE
-void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
+void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 U32 size = 0;
 void * ret=NULL;
 
@@ -36,7 +36,6 @@ void * ret=NULL;
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 
-U32 g_save_ssp;
 S16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 
@@ -248,7 +247,7 @@ const U8 *getGemdosError(S16 iErr)
 }
 
 /* loads file to specified type memory */
-void *loadFile(U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
+void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 S32 fileHandle;
 _DTA *pDTA=NULL;
 void *pData=NULL;

@@ -28,7 +28,7 @@ cross = ARGUMENTS.get('cross', 0)
 target = ARGUMENTS.get('target', 0)
 
 #to indicate that we are cross compiling
-if(((cross=='') or (cross=='no') or (cross=='n'))):
+if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
   CROSS=0
 elif ((cross=='yes')or (cross=='y')):
   CROSS=1

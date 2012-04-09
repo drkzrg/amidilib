@@ -22,10 +22,10 @@ S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize){
   //allocate memory
   void *pNewStack=0;
   
-  pNewStack=cMallocEx(elementSize*pPtr->size,PREFER_TT); 
+  pNewStack=amMallocEx(elementSize*pPtr->size,PREFER_TT); 
 
   if(pNewStack==0) return 1;
-    cMemSet(pNewStack,0,elementSize*pPtr->size);
+    amMemSet(pNewStack,0,elementSize*pPtr->size);
     pPtr->stack=pNewStack;
   
   return 0;  
@@ -38,7 +38,7 @@ void pushStack(tStack *pPtr, const void *newElement){
       //stack underflow
       pPtr->size=pPtr->size + DEFAULT_MAXSTACK;
       
-      if(cRealloc(pPtr->stack,pPtr->size*pPtr->elementSize)==NULL){
+      if(amRealloc(pPtr->stack,pPtr->size*pPtr->elementSize)==NULL){
         //Houston we have a problem. nothing can be done...
         puts("Warning: Stack overflow!\r\t");
       }
@@ -49,7 +49,7 @@ void pushStack(tStack *pPtr, const void *newElement){
 
     dst=((U32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
     
-    cMemCpy((void *)dst,newElement,pPtr->elementSize);
+    amMemCpy((void *)dst,newElement,pPtr->elementSize);
     return;
   }
 }
@@ -92,7 +92,7 @@ BOOL isStackEmpty(tStack *pPtr){
 
 void deinitStack(tStack *pPtr){
   
-  cFree(&pPtr->stack);
+  amFree(&pPtr->stack);
   
   pPtr->top=0;  
   pPtr->elementSize=0;

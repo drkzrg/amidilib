@@ -58,15 +58,15 @@ typedef struct AMIDI_version {
 
 /* some messages are ignored by specified sound source so why bother to process them? */
 /* second thing: sometimes we need different treatment for GS and LA sound sources */
-enum{
+typedef enum _midiDeviceTypes{
   DT_LA_SOUND_SOURCE=0,       /* native MT32 */
-  DT_LA_SOUND_SOURCE_EXT=1,   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
-  DT_GS_SOUND_SOURCE=2,       /* for pure GS/GM sound source */
-  DT_LA_GS_MIXED=4,           /* if both LA/GS sound sources are available, like in CM-500 */
-  DT_MT32_GM_EMULATION=5,     /* before loading midi data MT32 sound banks has to be patched */
-  DT_XG_GM_YAMAHA=6,
+  DT_LA_SOUND_SOURCE_EXT,   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
+  DT_GS_SOUND_SOURCE,       /* for pure GS/GM sound source */
+  DT_LA_GS_MIXED,           /* if both LA/GS sound sources are available, like in CM-500 */
+  DT_MT32_GM_EMULATION,     /* before loading midi data MT32 sound banks has to be patched */
+  DT_XG_GM_YAMAHA,
   DT_NUM_DEVICES		/* before loading midi data MT32 sound banks has to be patched */
-}eMidiDeviceTypes;
+} eMidiDeviceType;
 
 /** for internal use, midi file types  */
 typedef enum _midiFileTypes{
@@ -142,11 +142,6 @@ U16 am_getTimeDivision (void *pMidiPtr);
 **/
 extern U32 am_readVarLen();
 
-/**
- * Sends request to identify all attached MIDI devices.
- * Returns pointer to linked list with all MIDI devices attached, NULL if no devices are attached
-**/
-extern void *am_checkDevicesIdentity (void);
 
 /** Calculates checksum of Roland SysEx messages
 *	@param buf_start pointer to the start of SysEx message buffer
@@ -298,12 +293,13 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
 void am_destroySequence(sSequence_t **pPtr);
 
+/** returns meaningful name for Midi Device type enumeration.  */
+const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test   
  */
 void VLQtest(void);
-
 #endif
 
 

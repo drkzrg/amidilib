@@ -71,17 +71,6 @@
  */
 const U8 *getLastGemdosError(void);
 
-/**
- * enables supervisor mode (atari specific)
- */
-
-extern void super_on(void);
-
-/**
- * disables supervisor mode (atari specific)
- */
-extern void super_off(void);
-
 #endif
 
 
@@ -95,7 +84,7 @@ extern void super_off(void);
  * valid pointer - if file was loaded.
  */
 
-void *loadFile(U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
+void *loadFile(const U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
 
 /**
  * loads gets text description of actual GEMDOS error.

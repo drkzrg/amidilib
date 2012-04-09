@@ -190,4 +190,33 @@ void *amRealloc( void *pPtr, tMEMSIZE newSize){
 #endif
 }
 
+#ifdef DEBUG_BUILD
 
+void memoryCheck(void){
+#ifdef PORTABLE
+#warning memoryCheck() not implemented!
+    U32 mem=0;
+    amTrace((const U8*)"System memory check:\n");
+    amTrace((const U8*)"Free ram: %u\n",(U32)mem);
+	
+amTrace((const U8*)"memory: %u\n",(U32)mem);
+
+#else
+    U32 mem=0;
+    amTrace((const U8*)"System memory check:\n");
+	
+    /* mem tst */
+    mem=getFreeMem(ST_RAM);
+    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(TT_RAM);
+    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(PREFER_ST);
+    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
+	
+    mem=getFreeMem(PREFER_TT);
+    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
+#endif
+}
+#endif

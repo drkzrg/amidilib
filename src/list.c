@@ -15,7 +15,10 @@
 #include "include/amidilib.h"
 #include "include/amlog.h"
 #include "include/list/list.h"
-#include "include/mfp.h"
+
+#ifndef PORTABLE
+#include "include/timing/mfp.h"
+#endif
 
 /* adds event to linked list, list has to be inintialised with null */
 //event list, temp event

@@ -165,26 +165,28 @@ env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
 # core functionality
-roland_src = ["mt32.c","cm_500.c","cm_32l.c"]
-midi_src = ["amidilib.c","tbl_stat.c","midi_rep.c","midiseq.c"]
-memory_src = ["memory/memory.c","memory/stack.c"]
+roland_src = ["mt32.c","cm_500.c","cm_32l.c","tbl_stat.c"]
+midi_src = ["amidilib.c","midi_rep.c","midiseq.c","config.c"]
+memory_src = ["memory/memory.c","memory/stack.c","memory/linalloc.c"]
 core_src = ["c_vars.c","list.c","fmio.c","amlog.c"]
 midiformats_src = ["iff.c"]
-mfp_src = ["mfp.c"]
+timing_src = ["timing/mfp.c","timing/miditim.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 if(portable!=1):
   input_src = ["ikbd.s"]
-
+else: 
+  timing_src = ["timing/miditim.c"]
+  
 ym2149_src = ["ym2149.c"]
 rand_src = ["twisterm.c"]
 lzo_src = ["minilzo.c"]
 
 # main library 
 if int(portable):
-  amidilib_src = core_src + memory_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
+  amidilib_src = core_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = core_src + memory_src +["amidi.s","testReplay.s"] + mfp_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
+  amidilib_src = core_src + memory_src +["amidi.s","testReplay.s"] + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
 
 # build library
 env.Library('amidi'+ LIB_POSTFIX, amidilib_src)
@@ -200,7 +202,6 @@ else:
   midiOut_test_src = ["../demo/midi_output/midiTest.c"] + input_src
   timings_test_src = ["../demo/timings/timTest.c"] + input_src + ym2149_src
   ym2149_test_src = ["../demo/ymOutput/ymTest.c"] + input_src + ym2149_src
-  
   
 # build test programs and link them with amidilib
 env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])

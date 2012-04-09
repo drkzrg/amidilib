@@ -1,6 +1,10 @@
 
 #include "include/midi_rep.h"
-#include "include/mfp.h"
+
+#ifndef PORTABLE
+#include "include/timing/mfp.h"
+#endif
+
 #include "include/amidilib.h"
 #include "include/amidiseq.h"
 #include "include/midi_send.h"

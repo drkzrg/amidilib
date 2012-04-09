@@ -38,7 +38,6 @@ typedef enum
 #endif
 
 #include "c_vars.h"
-#include "amlog.h"
 
 void *amMallocEx (tMEMSIZE amount, U16 flag);
 void *amMalloc (tMEMSIZE amount);
@@ -54,6 +53,11 @@ void *amCalloc (tMEMSIZE nelements, tMEMSIZE elementSize);
 void *amRealloc( void *pPtr, tMEMSIZE newSize);
 U32 getFreeMem(eMemoryFlag memFlag);
 
+#ifdef DEBUG_BUILD
+/** function logs amount of all types of memory present in the system   
+ */
+void memoryCheck(void);
+#endif
 
 #endif
 

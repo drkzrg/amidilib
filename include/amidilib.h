@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2012 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -18,13 +18,10 @@
 #include "midi_rep.h"
 #include "amidiseq.h"
 #include "list/list.h"
-
-#ifdef TIME_CHECK_PORTABLE
-#include <time.h>
-#endif
+#include "timing/miditim.h"
 
 #define LIB_NAME "AMIDILIB : Atari (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2011 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
+#define AMIDI_INFO "(c)2007-2012 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
 
 #define AMIDI_MAJOR_VERSION 0
 #define AMIDI_MINOR_VERSION 9
@@ -72,16 +69,18 @@ enum{
 }eMidiDeviceTypes;
 
 /** for internal use, midi file types  */
-#define T_MIDI0   0
-#define T_MIDI1   1
-#define T_MIDI2   2
-#define T_XMIDI   3
-#define T_RMID    4  /** RMID little endian M$hit invention */
-#define T_SMF     5
-#define T_XMF     6
-#define T_SNG     7
-#define T_MUS     8	/* e.g Doom MIDI music format */
-
+typedef enum _midiFileTypes{
+  T_MIDI0=0,
+  T_MIDI1,
+  T_MIDI2,
+  T_XMIDI,
+  T_RMID,  /** RMID little endian M$hit invention */
+  T_SMF,
+  T_XMF,
+  T_SNG,
+  T_MUS,	/* e.g Doom MIDI music format */
+  T_MIDIFTMAX  
+} eMidiFileTypes;
 
 /* function prototypes  */
 /**
@@ -158,7 +157,6 @@ U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
 S16 am_init(void);
-
 
 /** dumps buffer to screen  */
 void am_dumpMidiBuffer();
@@ -280,32 +278,6 @@ const U8 *getMIDIcontrollerName(U8 iNb);
 /* returns info about connected devices  */
 const S8 *getConnectedDeviceInfo(void);
 
-/** Calculate timestep function
-*   BPM - beats per minute (tempo)
-*   PPU=QPM * PPQ *(1/UPS)*(1 minute /60 seconds)
-*   @param ups UPS - update interval
-*   @param PPQ - parts per quaternote
-*   @param qpm QPM - quaternotes per minute
-*/
-U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups);
-
-/** Calculate timestep function (float version)
-*   BPM - beats per minute (tempo)
-*   PPU=QPM * PPQ *(1/UPS)*(1 minute /60 seconds)
-*   @param ups UPS - update interval
-*   @param PPQ - parts per quaternote
-*   @param qpm QPM - quaternotes per minute
-*/
-float am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups);
-
-/** Simple time division to console function
-*   with example of handling timeDivision data
-*   @param timeDivision - time division value from midi file header
-*   @return decoded time division in PPQN or FPS
-*/
-
-U16 am_decodeTimeDivisionInfo(U16 timeDivision);
-
 /** Silents midi channels (n to n-1) - useful when we have for example hanging notes.
 *   @param numChannels - number of channel
 */
@@ -320,47 +292,18 @@ void getDeviceInfoResponse(U8 channel);
 
 const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
 
-/** Utility function returns MFP mode and data settings for MFP.
-*   @param freq - desired frequency
-*   @param mode - pointer to unsigned long int for MFP mode of operation value
-*   @param data - pointer to unsigned long int for MFP data value
-*/
-void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
- 
-/******************** time measuring functions */
-#ifdef TIME_CHECK_PORTABLE
-/** utility for measuring function execution time (end-begin timestamp in ms) 
-*   @param end - end timestamp
-*   @param begin - begin timestamp
-*/
-double am_diffclock(clock_t end, clock_t begin);
-#endif
-
 /** destroys loaded Sequence. 
 *   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
 *   if operation was completed succesfully. */
 
 void am_destroySequence(sSequence_t **pPtr);
 
-/** get current time signature  
-* @return returns current time signature in ms
-*/
-
-float getTimeStamp();
-
-/** Utility function for measuring delta time  
- *   @return delta time since last getTimeStamp() function call in ms
- */
-float getTimeDelta();
 
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test   
  */
 void VLQtest(void);
 
-/** function for displays amount of memory present in the system   
- */
-void memoryCheck(void);
 #endif
 
 

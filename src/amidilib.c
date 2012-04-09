@@ -16,8 +16,10 @@
 
 #ifndef PORTABLE
 #include <mint/ostruct.h>
-#include "include/mfp.h"
+#include "include/timing/mfp.h"
 #endif
+#include "include/timing/miditim.h"
+
 
 #include "include/amidilib.h"
 #include "include/amlog.h"
@@ -25,16 +27,30 @@
 #include "include/list/list.h"
 #include "include/midi_send.h"
 #include "include/c_vars.h"
+#include "include/config.h"
+
+#ifdef TIME_CHECK_PORTABLE
+#include <time.h>
+#endif
 
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
 /* for saving last running status */
 static U8 g_runningStatus;
-static U8 outputFilename[] = "amidi.log";
 
-static U16 DEFAULT_PLAY_MODE=S_PLAY_ONCE;
-static U16 DEFAULT_PLAY_STATE=PS_STOPPED;
-static U16 DEFAULT_DEVICE_TYPE=DT_LA_SOUND_SOURCE_EXT; //default is CM32L output device with extra patches
+#ifdef DEBUG_BUILD
+static const U8 outputFilename[] = "amidi.log";
+#endif
+
+//default configuration filename
+static const U8 configFilename[] = "amidi.cfg";
+
+static U16 DEFAULT_PLAY_MODE;
+static U16 DEFAULT_PLAY_STATE;
+static U16 DEFAULT_DEVICE_TYPE; 	//default is CM32L output device with extra patches
+static U16 DEFAULT_MIDI_CHANNEL; 	// default is 0 in external module
+
+
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -372,14 +388,24 @@ extern BOOL CON_LOG;
 extern FILE *ofp;
 
 S16 am_init(){
-  //TODO: load cfg or create default 
     
-  // init logger
+#ifdef DEBUG_BUILD
+ // init logger
  am_initLog(outputFilename);
+#endif 
+ void *cfgData=0;
+ U32 cfgLen=0;
  
- /* init sequence */
- /* nothing loaded, nothing played */
-
+  cfgData=loadFile(configFilename,PREFER_TT,&cfgLen);
+  
+  if(cfgData==NULL){
+    setDefaultConfig();
+    //TODO: saveConfig
+  }else{
+    setDefaultConfig();
+    //TODO: process loaded file
+    //if error reset everything to default
+  }
  
 #ifndef PORTABLE 
  super_on();
@@ -398,7 +424,7 @@ S16 am_init(){
 
  /* set up new MIDI buffer */
  (*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
- (*g_psMidiBufferInfo).ibufsiz = MIDI_BUFFER_SIZE;
+ (*g_psMidiBufferInfo).ibufsiz = getConfig()->defaultMidiBufferSize;
  (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
@@ -406,6 +432,22 @@ S16 am_init(){
  super_off();
 #endif
 
+//set other internal variables
+  DEFAULT_PLAY_MODE=getConfig()->defaultPlayMode;
+  DEFAULT_PLAY_STATE=getConfig()->defaultPlayState;
+  DEFAULT_DEVICE_TYPE=getConfig()->connectedDeviceType; 
+  DEFAULT_MIDI_CHANNEL=getConfig()->defaultMidiChannel; 
+
+  // now depending on the connected device type and chosen operation mode
+  // set appropriate channel
+   U8 currentChannel=1;
+   U8 currentPN=1;
+   U8 currentBankSelect=0;
+
+   //set current channel as 1, default is 0 in external module
+   control_change(0x00, currentChannel, currentBankSelect,0x00);
+   program_change(currentChannel, currentPN);
+    
  return(1);
 }
 
@@ -421,8 +463,10 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
   super_off();
 #endif  
+
+#ifdef DEBUG_BUILD
   am_deinitLog();
-  
+#endif  
  /* end sequence */
 }
 
@@ -1746,7 +1790,7 @@ void getDeviceInfoResponse(U8 channel){
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
     
-	begin=getTimeStamp(); // get current timestamp
+    begin=getTimeStamp(); // get current timestamp
 	
     /* get reply or there was timeout */
     while((MIDI_DATA_READY&&(getTimeDelta()<DEVICE_RESPONSE_TIMEOUT_IN_SECONDS))) {
@@ -1784,72 +1828,6 @@ const S8 *getConnectedDeviceInfo(void){
  return NULL;
 }
 
-/* function for calculating tempo */
-/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
-/* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
-
-/* BPM - beats per minute (tempo of music) */
-/* UPS - update interval (updates per second) */
-/* music resolution are in PPQ */
-
-U32  am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
-    U32 ppu;
-    U32 temp;
-    temp=(U32)qpm*(U32)ppq;
-    
-    if(temp<0x10000){
-        ppu=((temp*0x10000)/60)/(U32)ups;
-    }
-    else{
-        ppu=((temp/60)*0x10000)/(U32)ups;
-    }
-return ppu;
-}
-
-/* function for calculating tempo (float version) */
-/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
-/* BPM - beats per minute (tempo of music) */
-/* UPS - update interval (updates per second) */
-/* music resolution are in PPQ */
-
-float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
-    float ppu=0;
-    float temp=0;
-    ppu=(float)qpm*(float)ppq;
-    temp=(temp/ups)/60.0f;
-   
- return ppu;
-}
-
-/* support functions:
-    BPM = 60,000,000/MicroTempo
-    MicrosPerPPQN = MicroTempo/TimeBase
-    MicrosPerMIDIClock = MicroTempo/24
-    PPQNPerMIDIClock = TimeBase/24
-    MicrosPerSubFrame = 1000000 * Frames * SubFrames
-    SubFramesPerQuarterNote = MicroTempo/(Frames * SubFrames)
-    SubFramesPerPPQN = SubFramesPerQuarterNote/TimeBase
-    MicrosPerPPQN = SubFramesPerPPQN * Frames * SubFrames
-*/
-
-U16 am_decodeTimeDivisionInfo(U16 timeDivision){
-  U8 subframe=0;
-  
-  if(timeDivision&0x8000){
-    
-    /* SMPTE */
-    timeDivision&=0x7FFF;
-    subframe=timeDivision>>7;
-    amTrace((const U8*)"Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));
-    return 0;		//todo:
-  }
-   else{
-    /* PPQN */
-    amTrace((const U8*)"Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);
-    return timeDivision;
-   }
-}
-
 void am_allNotesOff(U16 numChannels){
 U16 iCounter;
   for(iCounter=0;iCounter<numChannels;iCounter++){
@@ -1885,39 +1863,7 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
   return NULL;
 }
 
-
-float getTimeStamp(){
-#ifdef TIME_CHECK_PORTABLE	 
-	begin=clock();
-#else
-	 // get Atari native system 200hz counter
-	 usp=Super(0);
-	 begin=*((long *)0x4ba);
-	 SuperToUser(usp);
-	
-#endif	 
-	  return (float)begin;
-}
-
-float getTimeDelta(){
-float delta=0.0f;
-
-#ifdef TIME_CHECK_PORTABLE	 
-     end=clock();
-     delta=(float)(am_diffclock(end,begin)/1000.0f);
-     return(delta);
-#else
-//calculate delta in seconds
-    usp=Super(0);
-    end=*((long *)0x4ba);
-    SuperToUser(usp);
-    delta=(end-begin)/200.0f;
-    return(delta);
-#endif
-}
-
 #ifdef DEBUG_BUILD
-
 /* variable quantity reading test */
 void VLQtest(void){
 /* VLQ test */
@@ -1938,26 +1884,6 @@ void VLQtest(void){
 	
     }
     /* End of VLQ test */
-}
-
-
-void memoryCheck(void){
-    U32 mem=0;
-    amTrace((const U8*)"System memory check:\n");
-	
-    /* mem tst */
-    mem=getFreeMem(ST_RAM);
-    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
-	
-    mem=getFreeMem(TT_RAM);
-    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
-	
-    mem=getFreeMem(PREFER_ST);
-    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
-	
-    mem=getFreeMem(PREFER_TT);
-    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
-	
 }
 #endif
 

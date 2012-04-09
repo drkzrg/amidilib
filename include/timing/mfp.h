@@ -28,6 +28,11 @@
 #define MFP_DEL100	0b00001110  /* delay 100 */
 #define MFP_DEL200	0b00001111  /* delay 200 */
 
+/** Utility function returns MFP mode and data settings for MFP.
+*   @param freq - desired frequency
+*   @param mode - pointer to unsigned long int for MFP mode of operation value
+*   @param data - pointer to unsigned long int for MFP data value
+*/
 void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
 
 extern void installMIDIreplay(U8 mode,U8 data);

@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "include/mfp.h"
+#include "include/timing/mfp.h"
 
 #ifndef PORTABLE
 /* calculates settings for MFP timers for given frequency of tick */

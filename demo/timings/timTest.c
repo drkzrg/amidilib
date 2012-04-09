@@ -20,7 +20,7 @@
 #include <osbind.h>
 #include "ikbd.h"
 #include "scancode.h"
-#include "mfp.h"
+#include "timing/mfp.h"
 #endif
 
 #define TEMPO_STEP 50000	// tempo change step in ms
@@ -196,11 +196,6 @@ int main(void){
   currentState.currentTempo=defaultTempo;
   currentState.currentPPQN=96;
   
-  // midi initial settings
-  U8 currentChannel=1;
-  U8 currentPN=127;
-  U8 currentBankSelect=0;
-  
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
   
@@ -232,9 +227,6 @@ int main(void){
  
   if(iError!=1) return -1;
   
-  //set current channel as 1, default is 0 in external module
-  control_change(0x00, currentChannel, currentBankSelect,0x00);
-  program_change(currentChannel, currentPN);
   printHelpScreen();
   turnOffKeyclick();
 

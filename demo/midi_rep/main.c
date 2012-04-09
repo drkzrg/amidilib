@@ -39,17 +39,8 @@ int main(int argc, char *argv[]){
     S16 iError=0;
     pMidiTune=0;
     
-    
     /* init library */
     iError=am_init();
-     
-    U8 currentChannel=1;
-    U8 currentPN=127;
-    U8 currentBankSelect=0;
-
-    //set current channel as 1, default is 0 in external module
-    control_change(0x00, currentChannel, currentBankSelect,0x00);
-    program_change(currentChannel, currentPN);
     
     if(argc>=1&&argv[1]!='\0'){
       fprintf(stderr,"Trying to load %s\n",argv[1]);

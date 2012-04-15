@@ -30,13 +30,15 @@ LIBRARYNAME = 'amidi'
 #to indicate that we are cross compiling
 if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
   CROSS=0
+  CROSS_PREFIX=''
 elif ((cross=='yes')or (cross=='y')):
   CROSS=1
+  CROSS_PREFIX='m68k-atari-mint-'
 else:
   CROSS=0
+  CROSS_PREFIX=''
   print "Unknown parameter! Cross compilation is disabled, switching to native compiler."
   
-CROSS_PREFIX='m68k-atari-mint-'
 
 ST_CFLAGS=''
 ST_LDFLAGS=''
@@ -47,7 +49,7 @@ EXE_EXT_2=''
 LIB_POSTFIX=''
 
 if (target == "unix"):
-    print "Building Unix target..."
+    print "Building Generic/Unix target..."
     portable=1;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
@@ -100,25 +102,15 @@ YM2149_TEST_EXE='ym2149' + EXE_EXT_1
 MIDI_SEQ_TEST_EXE='midiseq' + EXE_EXT_1
 TIMINGS_TEST_EXE='timings' + EXE_EXT_1
 
-if (CROSS==1):
-  env["CC"] = CROSS_PREFIX + 'gcc'
-  env["CXX"] = CROSS_PREFIX + 'g++'
+env["CC"] = CROSS_PREFIX + 'gcc'
+env["CXX"] = CROSS_PREFIX + 'g++'
+if(portable==0):
   env["AS"] = 'vasmm68k_mot'
-  env['AR'] = CROSS_PREFIX + 'ar'
-  env['RANLIB'] = CROSS_PREFIX + 'ranlib'
-  env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
-  env['STRIP'] = CROSS_PREFIX + 'strip -s'
-  env['STACK'] = CROSS_PREFIX + 'stack'
-else:
-  env["CC"] = 'gcc'
-  env["CXX"] = 'g++'
-  env['AR'] = 'ar'
-  if(portable==1):
-    env["AS"] = 'vasmm68k_mot'
-  env['RANLIB'] = 'ranlib'
-  env['OBJCOPY'] = 'objcopy'
-  env['STRIP'] = 'strip -s'
-  env['STACK'] = 'stack'
+env['AR'] = CROSS_PREFIX + 'ar'
+env['RANLIB'] = CROSS_PREFIX + 'ranlib'
+env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
+env['STRIP'] = CROSS_PREFIX + 'strip -s'
+env['STACK'] = CROSS_PREFIX + 'stack'
   
 if(portable==1):  
   env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]

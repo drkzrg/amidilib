@@ -26,6 +26,7 @@ cross = ARGUMENTS.get('cross', 0)
 
 #todo add target options
 target = ARGUMENTS.get('target', 0)
+LIBRARYNAME = 'amidi'
 
 #to indicate that we are cross compiling
 if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
@@ -95,7 +96,7 @@ else:
 
 # output executable name
 OUTPUT_DIR='../bin/'
-AMIDI_TEST_EXE='amidi' + EXE_EXT_2
+AMIDI_TEST_EXE='midiplay' + EXE_EXT_2
 YM2149_TEST_EXE='ym2149' + EXE_EXT_1
 MIDI_SEQ_TEST_EXE='midiseq' + EXE_EXT_1
 TIMINGS_TEST_EXE='timings' + EXE_EXT_1
@@ -112,8 +113,9 @@ if (CROSS==1):
 else:
   env["CC"] = 'gcc'
   env["CXX"] = 'g++'
-  env["AS"] = 'vasmm68k_mot'
   env['AR'] = 'ar'
+  if(portable==1):
+    env["AS"] = 'vasmm68k_mot'
   env['RANLIB'] = 'ranlib'
   env['OBJCOPY'] = 'objcopy'
   env['STRIP'] = 'strip -s'
@@ -187,13 +189,13 @@ rand_src = ["common/twisterm.c"]
 lzo_src = ["common/lzo/minilzo.c"]
 
 # main library 
-if int(portable):
+if int(portable==1):
   amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = core_src + discio_src + memory_src + ["tos/amidi.s","tos/testReplay.s"] + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
+  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src + ["tos/amidi.s","tos/testReplay.s"]
 
 # build library
-env.Library('amidi'+ LIB_POSTFIX, amidilib_src)
+env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
 
 #################### test programs entry points
 if(portable==1):
@@ -208,9 +210,9 @@ else:
   ym2149_test_src = ["../demo/ymOutput/ymTest.c"] + input_src + ym2149_src
   
 # build test programs and link them with amidilib
-env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
-env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
-env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
-env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
+env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
 

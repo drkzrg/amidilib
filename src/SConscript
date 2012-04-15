@@ -169,17 +169,17 @@ core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c
 roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_32l.c","common/roland/tbl_stat.c"]
 midiformats_src = ["common/formats/iff.c"]
 
-if(portable!=1):
-  input_src = ["tos/ikbd.s"]
-  discio_src = ["tos/discio/fmio.c"]
-  timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
-  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c"]
-  memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
-else: 
+if(portable): 
   timing_src = ["common/timing/miditim.c"]
   discio_src = ["portable/discio/fmio.c"]
   midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]
   memory_src = ["portable/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+else: 
+  input_src =  ["tos/ikbd.s"]
+  discio_src = ["tos/discio/fmio.c"]
+  timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
+  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c"]
+  memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]

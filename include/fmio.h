@@ -93,7 +93,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
  * @return pointer to const char * array with error description
  */
 
-
+S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize);
 
 
 #endif

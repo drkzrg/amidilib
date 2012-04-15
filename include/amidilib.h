@@ -297,8 +297,7 @@ void am_destroySequence(sSequence_t **pPtr);
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 
 #ifdef DEBUG_BUILD
-/** function for variable quantity reading test   
- */
+/** function for variable quantity reading test */
 void VLQtest(void);
 #endif
 

@@ -63,7 +63,7 @@ typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;				/* NULL terminated string */
    U32 timeDivision;				/* pulses per quater note(time division) */
-   U32 eotThreshold;				/*see define EOT_SILENCE_THRESHOLD */
+   U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
    U32 accumulatedDeltaCounter;			/* accumulated delta counter */
    U32 pulseCounter;				/* pulses per quaternote counter */
    U32 divider;					/* */

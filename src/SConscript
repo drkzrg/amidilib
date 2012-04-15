@@ -23,9 +23,8 @@ where 'name' can be: \n \
 debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
 cross = ARGUMENTS.get('cross', 0)
-
-#todo add target options
 target = ARGUMENTS.get('target', 0)
+
 LIBRARYNAME = 'amidi'
 
 #to indicate that we are cross compiling
@@ -35,7 +34,7 @@ elif ((cross=='yes')or (cross=='y')):
   CROSS=1
 else:
   CROSS=0
-  print "Unknown cross parameter! Cross compilation is disabled. Using native compiler."
+  print "Unknown parameter! Cross compilation is disabled, switching to native compiler."
   
 CROSS_PREFIX='m68k-atari-mint-'
 
@@ -121,13 +120,13 @@ else:
   env['STRIP'] = 'strip -s'
   env['STACK'] = 'stack'
   
-if(portable!=1):  
-  env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
-  env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
-else:
+if(portable==1):  
   env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]
   env["LIBPATH"] = ['../bin/']
-
+else:
+  env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
+  env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
+  
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
 

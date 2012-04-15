@@ -215,4 +215,4 @@ env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src, LIBS=[LIBRARYNAM
 env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
-
+# TODO if release strip symbols, pack with executable packer 

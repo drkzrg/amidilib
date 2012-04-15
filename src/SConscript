@@ -165,28 +165,32 @@ env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
 # core functionality
-roland_src = ["mt32.c","cm_500.c","cm_32l.c","tbl_stat.c"]
-midi_src = ["amidilib.c","midi_rep.c","midiseq.c","config.c"]
-memory_src = ["memory/memory.c","memory/stack.c","memory/linalloc.c"]
-core_src = ["c_vars.c","list.c","fmio.c","amlog.c"]
-midiformats_src = ["iff.c"]
-timing_src = ["timing/mfp.c","timing/miditim.c"]
+core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
+roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_32l.c","common/roland/tbl_stat.c"]
+midiformats_src = ["common/formats/iff.c"]
+
+if(portable!=1):
+  input_src = ["tos/ikbd.s"]
+  discio_src = ["tos/discio/fmio.c"]
+  timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
+  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c"]
+  memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+else: 
+  timing_src = ["common/timing/miditim.c"]
+  discio_src = ["portable/discio/fmio.c"]
+  midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]
+  memory_src = ["portable/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
-if(portable!=1):
-  input_src = ["ikbd.s"]
-else: 
-  timing_src = ["timing/miditim.c"]
-  
-ym2149_src = ["ym2149.c"]
-rand_src = ["twisterm.c"]
-lzo_src = ["minilzo.c"]
+ym2149_src = ["common/ym2149.c"]
+rand_src = ["common/twisterm.c"]
+lzo_src = ["common/lzo/minilzo.c"]
 
 # main library 
 if int(portable):
-  amidilib_src = core_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
+  amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = core_src + memory_src +["amidi.s","testReplay.s"] + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
+  amidilib_src = core_src + discio_src + memory_src + ["tos/amidi.s","tos/testReplay.s"] + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src
 
 # build library
 env.Library('amidi'+ LIB_POSTFIX, amidilib_src)
@@ -208,4 +212,5 @@ env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src,LIBS=['amidi'+ LIB_
 env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
 env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
 env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src,LIBS=['amidi'+ LIB_POSTFIX,'m'])
+
 

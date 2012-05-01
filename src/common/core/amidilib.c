@@ -423,7 +423,7 @@ S16 am_init(){
 
  /* set up new MIDI buffer */
  (*g_psMidiBufferInfo).ibuf = (char *)g_arMidiBuffer;
- (*g_psMidiBufferInfo).ibufsiz = getConfig()->midiBufferSize;
+ (*g_psMidiBufferInfo).ibufsiz = getGlobalConfig()->midiBufferSize;
  (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
@@ -442,7 +442,7 @@ S16 am_init(){
    program_change(currentChannel, currentPN);
 
    //check external module communication scheme
-   if(getConfig()->handshakeModeEnabled){
+   if(getGlobalConfig()->handshakeModeEnabled){
     //TODO: interrogate connected external module type
     //display info 
      //if timeout turn off handshake mode
@@ -521,8 +521,8 @@ switch(fileTypeFlag){
 	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
-	  pTempTrack->currentState.playMode = getConfig()->playMode;
-	  pTempTrack->currentState.playState = getConfig()->playState;
+	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
+	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -551,8 +551,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
 
-	  pTempTrack->currentState.playMode = getConfig()->playMode;;
-	  pTempTrack->currentState.playState = getConfig()->playState;
+	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
+	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -604,8 +604,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.currentTempo=defaultTempo;
 	  pTempTrack->currentState.newTempo=defaultTempo;
 
-	  pTempTrack->currentState.playMode = getConfig()->playMode;;
-	  pTempTrack->currentState.playState = getConfig()->playState;
+	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
+	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  
 	  pTempTrack->currentState.timeSignature.nn=4;
 	  pTempTrack->currentState.timeSignature.dd=4;
@@ -1800,7 +1800,7 @@ void getDeviceInfoResponse(U8 channel){
     begin=getTimeStamp(); // get current timestamp
 	
     /* get reply or there was timeout */
-    while((MIDI_DATA_READY&&(getTimeDelta()<getConfig()->midiConnectionTimeOut))) {
+    while((MIDI_DATA_READY&&(getTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
 	data = GET_MIDI_DATA;
 	begin=getTimeStamp(); // data received, reset timestamp
       

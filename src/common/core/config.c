@@ -132,7 +132,7 @@ void setGlobalConfig(tAmidiConfig *newConfig){
   configuration.useLZO=newConfig->useLZO;		
 }
 
-const tAmidiConfig *getConfig(){
+const tAmidiConfig *getGlobalConfig(){
   return &configuration;
 }
 

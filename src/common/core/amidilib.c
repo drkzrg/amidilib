@@ -54,13 +54,13 @@ static const U8 configFilename[] = "amidi.cfg";
  long usp;
 #endif
 
-/**/ 
+/* */ 
 const U8 *g_arMidiDeviceTypeName[]={
-  "LA",       
-  "LA extended",   
+  "Roland MT-32",       
+  "Roland CM-32L",   
   "GS/GM",       
   "LA/GS mixed mode",
-  "MT32 GM emulation",
+  "MT-32 GM emulation",
   "Yamaha XG GM mode"
 };
  

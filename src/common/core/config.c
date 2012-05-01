@@ -15,9 +15,13 @@ static tAmidiConfig configuration;
 
 static const U16 CONFIG_VERSION =0x0001; 	//config version
 
+static const U8 TRUE_TAG[] = "true";
+static const U8 FALSE_TAG[] = "false";
+
 //configuration tags
 static const U8 versionTag[]={"ver"};
 static const U8 connectedDeviceTag[]={"deviceType"};
+static const U8 operationModeTag[]={"deviceOperationMode"};
 static const U8 midiChannelTag[]={"midiChannel"};
 static const U8 playModeTag[]={"defaultPlayMode"};
 static const U8 playStateTag[]={"defaultPlayState"};
@@ -26,7 +30,7 @@ static const U8 eventDataAllocatorSizeTag[]={"eventDataAllocatorSize"};
 #ifndef PORTABLE
 static const U8 midiBufferSizeTag[]={"midiBufferSize"};
 #endif
-static const U8 midiConnectionTimeoutTag[]={"midiTimeout"};
+static const U8 midiConnectionTimeoutTag[]={"midiConnectionTimeout"};
 static const U8 handshakeCommunicationEnabledTag[]={"handshakeEnabled"};
 static const U8 streamedTag[]={"streamingEnabled"};
 static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
@@ -43,8 +47,10 @@ S32 saveConfig(const U8 *configFileName){
   //prepare data
   U32 length = 0;
   
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", versionTag,configuration.version);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", connectedDeviceTag,configuration.connectedDeviceType);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %x\r\n", versionTag,configuration.version);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", connectedDeviceTag,am_getMidiDeviceTypeName(configuration.connectedDeviceType));
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", operationModeTag,configuration.operationMode);
+  
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiChannelTag,configuration.midiChannel);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playModeTag,configuration.playMode);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playStateTag,configuration.playState);
@@ -56,10 +62,10 @@ S32 saveConfig(const U8 *configFileName){
   #endif
  
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", streamedTag,configuration.streamed);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", lzoCompressionTag,configuration.useLZO);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", lzoCompressionTag,configuration.useLZO?TRUE_TAG:FALSE_TAG);
   
   //save configuration state to file
   if(saveFile(configFileName,(void *)configData,length)<0){
@@ -96,6 +102,7 @@ void setDefaultConfig(){
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType = DT_LA_SOUND_SOURCE_EXT; 	//default is CM32L output device with extra patches	
+  configuration.operationMode=0;	
   configuration.midiChannel = 1;	
   configuration.playMode = S_PLAY_ONCE;	//play once or in loop
   configuration.playState = PS_STOPPED;	//default play state: STOPPED or playing
@@ -116,6 +123,8 @@ void setGlobalConfig(tAmidiConfig *newConfig){
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType=newConfig->connectedDeviceType;	
+  configuration.operationMode=newConfig->operationMode;	
+  
   configuration.midiChannel=newConfig->midiChannel;	
   configuration.playMode=newConfig->playMode;		
   configuration.playState=newConfig->playState;		

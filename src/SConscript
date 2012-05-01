@@ -35,11 +35,10 @@ elif ((cross=='yes')or (cross=='y')):
   CROSS=1
   CROSS_PREFIX='m68k-atari-mint-'
 else:
-  CROSS=0
-  CROSS_PREFIX=''
-  print "Unknown parameter! Cross compilation is disabled, switching to native compiler."
+  print "No compilation parameter set. Assuming cross compilation for Atari target."
+  CROSS=1
+  CROSS_PREFIX='m68k-atari-mint-'
   
-
 ST_CFLAGS=''
 ST_LDFLAGS=''
 ST_VASM_FLAGS =''
@@ -86,14 +85,9 @@ elif (target == "ct60"):
     EXE_EXT_2='.ttp'
     LIB_POSTFIX='060'
 else:
-    print "Trying build for unknown target..." 
-    portable=1;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
-    ST_VASM_FLAGS = ''
-    ST_CCFLAGS =''
-    EXE_EXT_1=''
-    EXE_EXT_2=''
+    print "Unknown target... Terminating build." 
+    Exit(1)
+  
 
 # output executable name
 OUTPUT_DIR='../bin/'
@@ -139,9 +133,6 @@ env['VASM'] = 'vasmm68k_mot'
 
 # -DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
 # -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
-
-env["CDEFINES"] = 'TOS'
-env["CXXDEFINES"] = 'TOSCPP'
 
 if int(debug):
   ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';

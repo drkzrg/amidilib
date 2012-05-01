@@ -10,13 +10,13 @@ import os
 env = Environment(tools=['default'])
 
 Help("AMIDILIB Copyright 2007-2012 Pawel Goralski\n \
-Type: 'scons target=name cross=y/n debug=0/1'\n \
-where 'name' can be: \n \
+Type: 'scons target=name (mandatory) cross=y/n (default=y, optional) debug=0/1 (default=0,optional)'\n \
+where name of 'target' can be: \n \
  'f030' - for Atari Falcon030/TT build\n \
  'atarist' - for Atari ST build \n \
  'ct60' - for Atari Falcon CT60/63\n \
  'unix' - for platform independent version (dummy)\n\
- cross - enables m68k-atari-mint cross compiler, set to 'n' by default\n\
+ cross - enables m68k-atari-mint cross compiler, set to 'y' by default\n\
  debug - enables/disables build of debug version of library with additional tracing options,\n\
  set to '0' by default")
 
@@ -85,9 +85,7 @@ elif (target == "ct60"):
     EXE_EXT_2='.ttp'
     LIB_POSTFIX='060'
 else:
-    print "Unknown target... Terminating build." 
-    Exit(1)
-  
+    print "Unknown target... Terminating build. Type in 'scons --help' from commandline for a list of options" 
 
 # output executable name
 OUTPUT_DIR='../bin/'
@@ -131,11 +129,11 @@ env['VASM'] = 'vasmm68k_mot'
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 
-# -DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST
-# -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT 
-
-if int(debug):
-  ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';
+if ((int(debug>0)) or debug != 'none'):
+  if(int(debug==1)):
+    ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT';
+  elif(int(debug==2)):
+    ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_MEM -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST';
   LIB_POSTFIX = LIB_POSTFIX+'d'
   
 if int(portable):
@@ -153,7 +151,7 @@ core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c
 roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_32l.c","common/roland/tbl_stat.c"]
 midiformats_src = ["common/formats/iff.c"]
 
-if(portable): 
+if int(portable==1): 
   timing_src = ["common/timing/miditim.c"]
   discio_src = ["portable/discio/fmio.c"]
   midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]

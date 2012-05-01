@@ -159,7 +159,7 @@ else{
 }
 }//track iteration
 
-//TODO: check buffer if not empty end ready send all midi data 
+  //TODO: check buffer if not empty end ready send all midi data 
 
     //handle tempo update
     if(seqState->currentTempo!=seqState->newTempo){

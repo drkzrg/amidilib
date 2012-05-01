@@ -1,7 +1,14 @@
 
+/**  Copyright 2007-2012 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include <amidilib.h>
-#include "config.h"
 #include <fmio.h>
+
+#include "config.h"
 
 //internal configuration
 static tAmidiConfig configuration;
@@ -28,32 +35,48 @@ static const U8 silenceThresholdTag[]={"silenceThreshold"};
 
 S32 parseConfig (const U8* pData);
 
-S32 saveConfig(const U8 *config){
+S32 saveConfig(const U8 *configFileName){
   U8 configData[CONFIG_SIZE]; configData[0]='/0';
   
-  //save configuration state to file
   //prepare data
+  U32 length = 0;
   
-  if(saveFile(config,(void *)configData,CONFIG_SIZE*sizeof(U8))>0){
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", versionTag,configuration.version);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", connectedDeviceTag,configuration.connectedDeviceType);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", midiChannelTag,configuration.midiChannel);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", playModeTag,configuration.playMode);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", playStateTag,configuration.playState);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", eventPoolSizeTag,configuration.eventPoolSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
+  
+  #ifndef PORTABLE
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", midiBufferSizeTag,configuration.midiBufferSize);
+  #endif
+  
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", silenceThresholdTag,configuration.midiSilenceThreshold);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", streamedTag,configuration.streamed);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", lzoCompressionTag,configuration.useLZO);
+  
+  //save configuration state to file
+  if(saveFile(configFileName,(void *)configData,length)>0){
     
   }else{
     //save failed
+    
     return -1;
   }
-  //open file
-  //slap data
-  //close file
-  //return 0 if ok
+  
   return 0;
 }
 
-S32 loadConfig(const U8 *config){
+S32 loadConfig(const U8 *configFileName){
 //check if config file exists
 //if not exit else parse it and se config
 void *cfgData=0;
 U32 cfgLen=0;
  
-  cfgData=loadFile(config,PREFER_TT,&cfgLen);
+  cfgData=loadFile(configFileName,PREFER_TT,&cfgLen);
   
   if(cfgData!=0){ 
     if(parseConfig(cfgData)>0){
@@ -82,13 +105,14 @@ void setDefaultConfig(){
   configuration.midiBufferSize=MIDI_BUFFER_SIZE; //it's atari specific
   #endif
   configuration.midiConnectionTimeOut=5;	//5s by default
+  configuration.midiSilenceThreshold=20;	
   configuration.handshakeModeEnabled=FALSE;
   configuration.streamed=FALSE;	
   configuration.useLZO=FALSE;		
 }
 
 //copies config
-void setConfig(tAmidiConfig *newConfig){
+void setGlobalConfig(tAmidiConfig *newConfig){
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType=newConfig->connectedDeviceType;	
@@ -102,6 +126,7 @@ void setConfig(tAmidiConfig *newConfig){
   configuration.midiBufferSize=newConfig->midiBufferSize; 
   #endif
   configuration.midiConnectionTimeOut=newConfig->midiConnectionTimeOut;
+  configuration.midiSilenceThreshold=newConfig->midiSilenceThreshold;
   configuration.handshakeModeEnabled=newConfig->handshakeModeEnabled;
   configuration.streamed=newConfig->streamed;		
   configuration.useLZO=newConfig->useLZO;		
@@ -115,3 +140,4 @@ S32 parseConfig(const U8* pData){
   setDefaultConfig();
   return 0;
 }
+

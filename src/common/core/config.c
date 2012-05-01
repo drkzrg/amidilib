@@ -26,6 +26,7 @@ static const U8 eventDataAllocatorSizeTag[]={"eventDataAllocatorSize"};
 #ifndef PORTABLE
 static const U8 midiBufferSizeTag[]={"midiBufferSize"};
 #endif
+static const U8 midiConnectionTimeoutTag[]={"midiTimeout"};
 static const U8 handshakeCommunicationEnabledTag[]={"handshakeEnabled"};
 static const U8 streamedTag[]={"streamingEnabled"};
 static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
@@ -53,7 +54,8 @@ S32 saveConfig(const U8 *configFileName){
   #ifndef PORTABLE
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiBufferSizeTag,configuration.midiBufferSize);
   #endif
-  
+ 
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", streamedTag,configuration.streamed);

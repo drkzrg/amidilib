@@ -397,21 +397,15 @@ S16 am_init(){
  am_initLog(outputFilename);
 #endif 
   
-  if(loadConfig(configFilename)==-1){
-    //configuration loading failed
-    setDefaultConfig();
-    if(saveConfig(configFilename)>0){
-     ;//configuration saved 
-    }else{
-      //error saving configuration
-    };
-    
+  loadConfig(configFilename);
+
+  //save configuration
+  if(saveConfig(configFilename)>0){
+    amTrace((const U8 *)"Configuration saved sucessfully.");
   }else{
-    setDefaultConfig();
-    //TODO: process loaded file
-    //if error reset everything to default
-  }
- 
+    amTrace((const U8 *)"Error: Cannot save global configuration.");
+  };
+  
 #ifndef PORTABLE 
  U32 usp=Super(0L);
  

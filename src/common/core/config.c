@@ -31,40 +31,37 @@ static const U8 streamedTag[]={"streamingEnabled"};
 static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
 static const U8 silenceThresholdTag[]={"silenceThreshold"};
 
-#define CONFIG_SIZE 1024 
+#define CONFIG_SIZE 512		//should be sufficient		 
 
 S32 parseConfig (const U8* pData);
 
 S32 saveConfig(const U8 *configFileName){
-  U8 configData[CONFIG_SIZE]; configData[0]='/0';
+  U8 configData[CONFIG_SIZE]; 
+  configData[0]='\0';
   
   //prepare data
   U32 length = 0;
   
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", versionTag,configuration.version);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", connectedDeviceTag,configuration.connectedDeviceType);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", midiChannelTag,configuration.midiChannel);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", playModeTag,configuration.playMode);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", playStateTag,configuration.playState);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", eventPoolSizeTag,configuration.eventPoolSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", versionTag,configuration.version);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", connectedDeviceTag,configuration.connectedDeviceType);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiChannelTag,configuration.midiChannel);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playModeTag,configuration.playMode);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playStateTag,configuration.playState);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", eventPoolSizeTag,configuration.eventPoolSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
   
   #ifndef PORTABLE
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", midiBufferSizeTag,configuration.midiBufferSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiBufferSizeTag,configuration.midiBufferSize);
   #endif
   
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", silenceThresholdTag,configuration.midiSilenceThreshold);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", streamedTag,configuration.streamed);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\n", lzoCompressionTag,configuration.useLZO);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", streamedTag,configuration.streamed);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", lzoCompressionTag,configuration.useLZO);
   
   //save configuration state to file
-  if(saveFile(configFileName,(void *)configData,length)>0){
-    
-  }else{
-    //save failed
-    
-    return -1;
+  if(saveFile(configFileName,(void *)configData,length)<0){
+    return -1L;
   }
   
   return 0;
@@ -72,7 +69,7 @@ S32 saveConfig(const U8 *configFileName){
 
 S32 loadConfig(const U8 *configFileName){
 //check if config file exists
-//if not exit else parse it and se config
+//if not exit else parse it and set config
 void *cfgData=0;
 U32 cfgLen=0;
  
@@ -81,6 +78,7 @@ U32 cfgLen=0;
   if(cfgData!=0){ 
     if(parseConfig(cfgData)>0){
       //parsed ok
+      setDefaultConfig(); //TODO: remove it when parsing will be working
     }else{
       //not ok reset to defaults
       setDefaultConfig();

@@ -278,8 +278,29 @@ U32 lRet=0L;
 }
 
 S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){
+S32 fileHandle;
+S16 iRet=0;
 
-  return 0;  
+    fileHandle = Fcreate( szFileName, 0 );
+    
+    if((fileHandle)>0L){
+     iRet=Fwrite(fileHandle,memBlockSize,memBlock);
+       
+     if(iRet>0){
+	 fprintf(stderr,"\n%s saved [%d bytes written].\n",szFileName,memBlockSize);
+      }else{
+	 /* print GEMDOS error code */
+        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+      }
+    
+    Fclose((int)fileHandle); 
+       
+    }else{
+       /* print GEMDOS error code */
+        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+    }
+
+  return -1;  
 }
 
 

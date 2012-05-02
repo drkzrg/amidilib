@@ -9,6 +9,7 @@
 #include "include/amidiseq.h"
 #include "include/midi_send.h"
 #include "include/list/list.h"
+#include "include/config.h"
 
 #include <math.h>
 
@@ -228,7 +229,9 @@ else{
 }
 
 
-//this will be called from an interrupt in each delta increment
+// this will be called from an interrupt in each delta increment
+// replay version with accumulated event buffer
+
 void sequenceUpdate2(void){
   
  static sTrack_t *pTrk=0;
@@ -349,52 +352,6 @@ else{
       
     }
     
-    /////////////////////// check for end of the track 
-//     if(silenceThrCounter==pCurrentSequence->eotThreshold){
-//       //we have meet the threshold, time to decide what to do next
-//       // if we play in loop mode: do not change actual state,reset track to the beginning
-//       
-//       switch(seqState->playMode){
-// 	
-// 	case S_PLAY_LOOP:{
-// 	   pCurrentSequence->accumulatedDeltaCounter=0;	//reset cumulated delta
-// 	  
-// 	  for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-// 	    pTrk=pCurrentSequence->arTracks[i];
-// 	    pTrk->currentState.deltaCounter=0;
-// 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
-// 	  }
-// 	  // notes off we could maybe do other things too
-// 	  am_allNotesOff(16);
-// 	  silenceThrCounter=0;
-// 	}break;
-// 	case S_PLAY_ONCE:{
-// 	  //set state only, the rest will be done in next interrupt
-// 	  seqState->playState=PS_STOPPED;
-// 	  silenceThrCounter=0;
-// 	}break;
-//       };
-//     }else{ 
-//       //silence threshold not met, check if all the tracks events are null if yes increase silenceThrCounter
-//       //else reset it
-//       BOOL bNothing=FALSE;
-//       for (U32 i=0;i<pCurrentSequence->ubNumTracks;i++){
-// 	pTrk=pCurrentSequence->arTracks[i];
-// 	//TODO: incorporate it in the playing state loop, so we can get rid of track iteration (?)
-// 	
-// 	if(pTrk!=0){
-// 	  if(pTrk->currentState.pCurrent!=0){
-// 	    bNothing=FALSE;
-// 	  }else 
-// 	    bNothing=TRUE;
-//       } /////////////////////////// end of eot check
-//     }//end of track loop
-//       if(bNothing==TRUE){
-// 	    ++silenceThrCounter;
-// 	  }else 
-// 	    silenceThrCounter=0;
-//       }//end of silence threshold not met
-//     
       //increase our cumulated delta
       ++pCurrentSequence->accumulatedDeltaCounter;
       

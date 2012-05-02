@@ -146,3 +146,45 @@ void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk){
 	infoBlk->func=g_arSeqCmdTable[eventType].func;
   
 }
+
+U8 getChannelNbFromEventBlock(sEventBlock_t *pBlock){
+   
+  switch(pBlock->type){
+    
+  case T_NOTEON:
+    return ((sNoteOn_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_NOTEOFF:
+    return ((sNoteOff_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_NOTEAFT:
+    return ((sNoteAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_CONTROL:
+    return ((sController_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_PRG_CH:
+    return ((sPrgChng_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_CHAN_AFT:
+    return ((sChannelAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+  case T_PITCH_BEND:
+    return ((sPitchBend_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+  break;
+//these events doesn't contain any delta information
+//so we are returning channel out of range	     
+  case T_META_SET_TEMPO:
+  case T_META_EOT:
+  case T_META_CUEPOINT:
+  case T_META_MARKER:
+  case T_SYSEX:
+    return 127;
+   break;
+  default:
+    return 127;
+  };
+
+  
+}
+

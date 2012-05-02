@@ -111,7 +111,7 @@ void sequenceUpdate(){
 	  
 	}else{
 	 ;  //TODO: silence whole channel
-	 //all_notes_off(U8 channel)
+	 
 	}
 		    
 	pCurrent=pCurrent->pNext;
@@ -130,8 +130,9 @@ void sequenceUpdate(){
 	    //TODO: slap raw data to buffer
 	 
 	  }else{
-	   ; //TODO: silence whole channel
-	   //all_notes_off(U8 channel)
+	    //silence whole channel
+	    U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
+	    if(ch!=127)  all_notes_off(ch);
 	  }
 	//next
 	  pCurrent=pCurrent->pNext;
@@ -276,8 +277,9 @@ void sequenceUpdate2(void){
 	  myFunc= pCurrent->eventBlock.infoBlock.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	}else{
-	 ;  //TODO: silence whole channel
-	 //all_notes_off(U8 channel)
+	     //silence whole channel
+	    U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
+	    if(ch!=127)  all_notes_off(ch);
 	}
 		    
 	pCurrent=pCurrent->pNext;
@@ -295,8 +297,9 @@ void sequenceUpdate2(void){
 	    myFunc= pCurrent->eventBlock.infoBlock.func;
 	    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	  }else{
-	   ; //TODO: silence whole channel
-	   //all_notes_off(U8 channel)
+	    //silence whole channel
+	    U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
+	    if(ch!=127)  all_notes_off(ch);
 	  }
 	//next
 	  pCurrent=pCurrent->pNext;

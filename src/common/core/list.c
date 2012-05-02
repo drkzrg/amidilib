@@ -64,13 +64,16 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     
     (*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
     (*dest)->eventBlock.type = src->type;
-    (*dest)->eventBlock.infoBlock.size = src->infoBlock.size;
-    (*dest)->eventBlock.infoBlock.func=src->infoBlock.func;
+    (*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
+    (*dest)->eventBlock.sendEventCb.func=src->sendEventCb.func;
+    (*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
+    (*dest)->eventBlock.copyEventCb.func=src->copyEventCb.func;
+    
     (*dest)->eventBlock.dataPtr=NULL;
 		
     /* allocate memory for event data and copy them to the new destination */
-    (*dest)->eventBlock.dataPtr = amMallocEx((src->infoBlock.size * sizeof(U8)),PREFER_TT);
-    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->infoBlock.size * sizeof(U8)));
+    (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
+    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8)));
     
 }
 
@@ -157,83 +160,84 @@ void printEventBlock(const sEventBlockPtr_t pPtr){
    amTrace((const U8*)"*********** event info: \n");
    amTrace((const U8*)"delta: %d\t",(unsigned int)pPtr->uiDeltaTime);
    amTrace((const U8*)"event type: %d\t",pPtr->type);
-   amTrace((const U8*)"function pointer: %p\t",pPtr->infoBlock.func);
-   amTrace((const U8*)"data size: %u\t",pPtr->infoBlock.size);
+   amTrace((const U8*)"send event callback: %p\t",pPtr->sendEventCb.func);
+   amTrace((const U8*)"send data size: %u\t",pPtr->sendEventCb.size);
+   amTrace((const U8*)"copy event callback: %p\t",pPtr->copyEventCb.func);
+   amTrace((const U8*)"copy data size: %u\t",pPtr->copyEventCb.size);
    amTrace((const U8*)"data pointer: %p\n",pPtr->dataPtr);
-   
    amTrace((const U8*)"data: \t");
    
    pbuf=(U8 *)pPtr->dataPtr;
    
-   for(x=0;x<pPtr->infoBlock.size;x++){
+   for(x=0;x<pPtr->sendEventCb.size;x++){
     amTrace((const U8*)"0x%x ",pbuf[x]);
    }
 
    amTrace((const U8*)"\n");
     switch((U16)(pPtr->type)){
     case T_NOTEON:{			  
-      amTrace((const U8*)"T_NOTEON: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+      amTrace((const U8*)"T_NOTEON: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
       return;
      }						  
      break;
 			  
       case T_NOTEOFF:{
-	  amTrace((const U8*)"T_NOTEOFF: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	  amTrace((const U8*)"T_NOTEOFF: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	  return;
 	}
        break;
 			  
       case T_NOTEAFT:{
-	  amTrace((const U8*)"T_NOTEAFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	  amTrace((const U8*)"T_NOTEAFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	  return;
       }
       break;
 			  
       case T_CONTROL:{
-	  amTrace((const U8*)"T_CONTROL: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	  amTrace((const U8*)"T_CONTROL: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	  return;
       }
       break;
 			  
 	case T_PRG_CH:{
-	    amTrace((const U8*)"T_PRG_CH: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	    amTrace((const U8*)"T_PRG_CH: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	    return;
 	}
 	  break;
 	case T_CHAN_AFT:{
-	    amTrace((const U8*)"T_CHAN_AFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	    amTrace((const U8*)"T_CHAN_AFT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	    return;
 	}
 	  	break;
 			  
 	case T_PITCH_BEND:{
-	      amTrace((const U8*)"T_PITCH_BEND: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	      amTrace((const U8*)"T_PITCH_BEND: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	      return;
 	}
 	  break;
 	case T_META_SET_TEMPO:{
-	      amTrace((const U8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func);
+	      amTrace((const U8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func);
 	      return;
 	}
 	break;	
 
 	case T_META_EOT:{
-	 amTrace((const U8*)"T_META_EOT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	 amTrace((const U8*)"T_META_EOT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
 	 return;
 	}break;  
 	
 	case T_META_CUEPOINT:{
-	 amTrace((const U8*)"T_META_CUEPOINT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	 amTrace((const U8*)"T_META_CUEPOINT: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
 	 return;
 	}break;
 	
 	case T_META_MARKER:{
-	 amTrace((const U8*)"T_META_MARKER: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	 amTrace((const U8*)"T_META_MARKER: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
 	 return;
 	}break;
 	
 	case T_SYSEX:{
-	 amTrace((const U8*)"T_SYSEX: block pointer: %p, function pointer: %p\n",pPtr,pPtr->infoBlock.func); 
+	 amTrace((const U8*)"T_SYSEX: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
 	return;
 	  
 	}break;

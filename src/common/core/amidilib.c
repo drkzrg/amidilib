@@ -816,8 +816,10 @@ if((*recallRS)==0){
 	
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.infoBlock);
-  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
+  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
+  
+  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
   
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
   pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -845,8 +847,10 @@ else {
   /* get last note info */
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.infoBlock);
-  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
+  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
+  
+  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
   
@@ -890,8 +894,10 @@ sEventBlock_t tempEvent;
 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEON;
-  getEventFuncInfo(T_NOTEON,&tempEvent.infoBlock);
-  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+  getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
+  getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
+  
+  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
   
   /*assert(tempEvent.dataPtr>0);*/
   pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -921,8 +927,9 @@ sEventBlock_t tempEvent;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEON;
-	getEventFuncInfo(T_NOTEON,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 
 	pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
 
@@ -962,8 +969,9 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 	
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEAFT;
-	getEventFuncInfo(T_NOTEAFT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -985,8 +993,10 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
         /* get parameters */
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_NOTEAFT;
-	getEventFuncInfo(T_NOTEAFT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
+
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -1023,8 +1033,10 @@ sEventBlock_t tempEvent;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CONTROL;
-	getEventFuncInfo(T_CONTROL,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
         channelNb=g_runningStatus&0x0F;
@@ -1044,8 +1056,10 @@ sEventBlock_t tempEvent;
         channelNb=g_runningStatus&0x0F;
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CONTROL;
-	getEventFuncInfo(T_CONTROL,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	/*assert(tempEvent.dataPtr>0);*/
 	pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -1086,8 +1100,10 @@ sEventBlock_t tempEvent;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PRG_CH;
-	getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 
 	pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -1104,8 +1120,10 @@ sEventBlock_t tempEvent;
           channel=(g_runningStatus&0x0F)+1;
 	  tempEvent.uiDeltaTime=delta;
 	  tempEvent.type=T_PRG_CH;
-	  getEventFuncInfo(T_PRG_CH,&tempEvent.infoBlock);
-	  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	  getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
+	  getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
+	  
+	  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 
 	  pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
 	  pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -1144,8 +1162,10 @@ if((*recallRS)==0){
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CHAN_AFT;
-	getEventFuncInfo(T_CHAN_AFT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	
 	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -1162,8 +1182,10 @@ if((*recallRS)==0){
     else{
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_CHAN_AFT;
-	getEventFuncInfo(T_CHAN_AFT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
@@ -1202,8 +1224,10 @@ tempEvent.dataPtr=0;
 
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PITCH_BEND;
-	getEventFuncInfo(T_PITCH_BEND,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 
 	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -1222,8 +1246,10 @@ tempEvent.dataPtr=0;
     else{
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_PITCH_BEND;
-	getEventFuncInfo(T_PITCH_BEND,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
@@ -1253,8 +1279,9 @@ void am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_SYSEX;
-  getEventFuncInfo(T_SYSEX,&tempEvent.infoBlock);
-  tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+  getEventFuncInfo(T_SYSEX,&tempEvent.sendEventCb);
+  getEventFuncCopyInfo(T_SYSEX,&tempEvent.copyEventCb);
+  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
   
   pEvntBlock=(sSysEX_EventBlock_t *)tempEvent.dataPtr;
   
@@ -1426,8 +1453,9 @@ sEventBlock_t tempEvent;
         (*pPtr)++;
         tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_META_MARKER;
-	getEventFuncInfo(T_META_MARKER,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_META_MARKER,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_META_MARKER,&tempEvent.copyEventCb);
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	
 	pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->pMarkerName=amMallocEx(ubLenght+1,PREFER_TT);
@@ -1459,8 +1487,10 @@ sEventBlock_t tempEvent;
         
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_META_CUEPOINT;
-	getEventFuncInfo(T_META_CUEPOINT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_META_CUEPOINT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_META_CUEPOINT,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	
 	pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->pCuePointName=0;
@@ -1569,8 +1599,10 @@ sEventBlock_t tempEvent;
 	
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_META_EOT;
-	getEventFuncInfo(T_META_EOT,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_META_EOT,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_META_EOT,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	
 	pEvntBlock=(sEot_EventBlock_t *)tempEvent.dataPtr;
 	pEvntBlock->dummy=0L;		//dummy value
@@ -1607,8 +1639,10 @@ sEventBlock_t tempEvent;
 	
 	tempEvent.uiDeltaTime=delta;
 	tempEvent.type=T_META_SET_TEMPO;
-	getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.infoBlock);
-	tempEvent.dataPtr=alloca(tempEvent.infoBlock.size);
+	getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_META_SET_TEMPO,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 	
 	pEvntBlock=(sTempo_EventBlock_t *)tempEvent.dataPtr;
 	

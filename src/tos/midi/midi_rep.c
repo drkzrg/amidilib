@@ -106,12 +106,13 @@ void sequenceUpdate(){
 #endif		
 	if(!(pTrk->currentState.bMute)){
 	  //output data only when track is not mute
-	  myFunc= pCurrent->eventBlock.infoBlock.func;
+	  myFunc= pCurrent->eventBlock.sendEventCb.func;
 	  //TODO: slap raw data to buffer
 	  
 	}else{
-	 ;  //TODO: silence whole channel
-	 
+	  //silence whole channel
+	  U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
+	  if(ch!=127)  all_notes_off(ch);
 	}
 		    
 	pCurrent=pCurrent->pNext;
@@ -126,7 +127,7 @@ void sequenceUpdate(){
 #endif		
 	  if(!(pTrk->currentState.bMute)){
 	    //the same as above
-	    //myFunc= pCurrent->eventBlock.infoBlock.func;
+	    //myFunc= pCurrent->eventBlock.sendEventCb.func;
 	    //TODO: slap raw data to buffer
 	 
 	  }else{
@@ -165,12 +166,12 @@ else{
 
     //handle tempo update
     if(seqState->currentTempo!=seqState->newTempo){
+      U32 mode=0,data=0;
+      U32 dd,nn,cc;
+      
       //update track current tempo
       seqState->currentTempo=seqState->newTempo;
 
-      U32 mode=0,data=0;
-     
-      U32 dd,nn,cc;
       dd=seqState->timeSignature.dd;
       nn=seqState->timeSignature.nn;
       cc=seqState->timeSignature.cc;
@@ -274,7 +275,7 @@ void sequenceUpdate2(void){
 #endif		
 	if(!(pTrk->currentState.bMute)){
 	  //output data only when track is not mute
-	  myFunc= pCurrent->eventBlock.infoBlock.func;
+	  myFunc= pCurrent->eventBlock.sendEventCb.func;
 	  (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	}else{
 	     //silence whole channel
@@ -294,7 +295,7 @@ void sequenceUpdate2(void){
 #endif		
 	  if(!(pTrk->currentState.bMute)){
 	    //the same as above
-	    myFunc= pCurrent->eventBlock.infoBlock.func;
+	    myFunc= pCurrent->eventBlock.sendEventCb.func;
 	    (*myFunc)((void *)pCurrent->eventBlock.dataPtr);
 	  }else{
 	    //silence whole channel

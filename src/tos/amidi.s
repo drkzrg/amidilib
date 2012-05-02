@@ -11,7 +11,7 @@ MIDI_CLOCK_ENABLE	equ	1
 MIDI_SEND_BUFFER_ENABLE	equ	0	;enables code part which sends MIDI data
 					;from internal buffer
 					;once per frame
-MIDI_SENDBUFFER_SIZE 	equ	8000
+MIDI_SENDBUFFER_SIZE 	equ	32*1024
 
 MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message (MIDI CLOCK)
 MIDI_START		equ 	$FA	;one byte MIDI realtime message (starts MIDI clock sync)
@@ -26,6 +26,7 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _pCurrentSequence	;current sequence pointer
     
     xdef _MIDIsendBuffer	;buffer with data to send
+    xdef _MIDIbytesToSend	;nb of bytes to send
     xdef _MIDIbufferReady	;if 0> buffer is ready for sending data, otherwise we want ti fill it
     
     xdef _tbData
@@ -240,8 +241,10 @@ _startPlaying:		ds.w	1
 _MIDIdataEndPtr:	ds.l	1
 	align 2
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
+_MIDIbytesToSend	ds.w	1	;nb of bytes to send
 _MIDIbufferReady:	ds.w	1
 _MIDIbufferPos:		ds.w	1	
+	align 2
 
 ;sSequence_t structure
    RSRESET

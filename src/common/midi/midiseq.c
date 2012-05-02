@@ -93,7 +93,6 @@ void  fNoteOn(void *pEvent){
   amTrace((const U8*)"Cuepoint %s.\n",pPtr->pCuePointName);
 #endif
   
-  
 } 
 
  void fHandleMarker(void *pEvent){
@@ -184,7 +183,7 @@ U8 getChannelNbFromEventBlock(sEventBlock_t *pBlock){
   };
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////
 //callbacks for copying events to intermediate buffer which is sent in one go 
 static const sEventInfoBlock_t g_arSeqCmdCopyDataTable[T_EVT_COUNT] = {
   {sizeof(sNoteOn_EventBlock_t),fNoteOnCopyData},
@@ -212,7 +211,7 @@ void  fNoteOnCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Note On data to buffer ch: %d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 #endif	
-	//TODO:
+	copy_note_on(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
 
 void  fNoteOffCopyData(void *pEvent){
@@ -220,7 +219,7 @@ void  fNoteOffCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
  	amTrace((const U8*)"Copying Note Off data to buffer ch: %d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 #endif	
-
+	copy_note_off(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
 
 void  fNoteAftCopyData(void *pEvent){
@@ -228,7 +227,8 @@ void  fNoteAftCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Note Aftertouch data to buffer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 #endif	
-      //TODO
+     
+	copy_polyphonic_key_press(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 }
 
  void  fProgramChangeCopyData (void *pEvent){
@@ -236,8 +236,8 @@ void  fNoteAftCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Program change data to buffer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
 #endif
-      //TODO
-   
+      //TODO: set program number depending on operating mode
+      copy_program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
  void  fControllerCopyData(void *pEvent){
@@ -245,8 +245,7 @@ void  fNoteAftCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Controller data to buffer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
 #endif
-	//TODO
-   
+	copy_control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
 
 void  fChannelAftCopyData(void *pEvent){
@@ -254,7 +253,7 @@ void  fChannelAftCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Channel Aftertouch data to buffer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
 #endif
-	
+	copy_channel_pressure(pPtr->ubChannelNb,pPtr->eventData.pressure);
 }
 
 void fPitchBendCopyData(void *pEvent){
@@ -262,13 +261,16 @@ void fPitchBendCopyData(void *pEvent){
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Copying Pitch bend data to buffer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 #endif
+	copy_pitch_bend_2(pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
 void fHandleSysEXCopyData(void *pEvent){
   sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-  amTrace((const U8*)"SysEX Message.\n");
+  amTrace((const U8*)"Copy SysEX Message.\n");
 #endif
-   
+//TODO: check buffer overflow   
+   amMemCpy(MIDIsendBuffer[MIDIbytesToSend],pPtr->pBuffer,pPtr->bufferSize);
+   MIDIbytesToSend+=pPtr->bufferSize;
 }
 

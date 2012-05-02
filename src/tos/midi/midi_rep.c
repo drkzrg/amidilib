@@ -18,9 +18,9 @@ extern volatile U16 startPlaying;
 extern volatile U8 tbData;
 extern volatile U8 tbMode;
 
-
 void initSeq(sSequence_t *seq){
-if(seq!=0){
+
+ if(seq!=0){
   U8 activeTrack=seq->ubActiveTrack;
   U32 mode=0,data=0;
   pCurrentSequence=seq;
@@ -52,7 +52,8 @@ if(seq!=0){
 #ifdef DEBUG_BUILD
   amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif 
-  startPlaying=1;	
+  startPlaying=1;
+  
   installReplayRout(mode, data);
   
 }
@@ -60,10 +61,9 @@ if(seq!=0){
 }
 
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
-extern volatile U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events
-				     //once per 
-extern volatile U16 MIDIbufferReady; //flag indicating buffer ready for sending data
-
+extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
+extern U16 MIDIbytesToSend; 
+extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
 
 //this will be called from an interrupt in each delta increment
 void sequenceUpdate(){
@@ -106,9 +106,8 @@ void sequenceUpdate(){
 #endif		
 	if(!(pTrk->currentState.bMute)){
 	  //output data only when track is not mute
-	  myFunc= pCurrent->eventBlock.sendEventCb.func;
-	  //TODO: slap raw data to buffer
-	  
+	  myFunc= pCurrent->eventBlock.copyEventCb.func;
+	  (*myFunc)(pCurrent->eventBlock.dataPtr);
 	}else{
 	  //silence whole channel
 	  U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
@@ -127,15 +126,15 @@ void sequenceUpdate(){
 #endif		
 	  if(!(pTrk->currentState.bMute)){
 	    //the same as above
-	    //myFunc= pCurrent->eventBlock.sendEventCb.func;
-	    //TODO: slap raw data to buffer
-	 
+	    myFunc= pCurrent->eventBlock.copyEventCb.func;
+	    (*myFunc)(pCurrent->eventBlock.dataPtr);
 	  }else{
 	    //silence whole channel
 	    U8 ch = getChannelNbFromEventBlock (&pCurrent->eventBlock);
 	    if(ch!=127)  all_notes_off(ch);
 	  }
-	//next
+	  
+	  //next
 	  pCurrent=pCurrent->pNext;
 	  pTrk->currentState.pCurrent=pCurrent;
 	}
@@ -162,8 +161,12 @@ else{
 }
 }//track iteration
 
-  //TODO: check buffer if not empty end ready send all midi data 
-
+    //TODO: make version with direct IKBD write
+    if(MIDIbytesToSend!=0){
+	MIDI_SEND_DATA(MIDIbytesToSend-1,MIDIsendBuffer);
+	MIDIbytesToSend=0;
+    }
+    
     //handle tempo update
     if(seqState->currentTempo!=seqState->newTempo){
       U32 mode=0,data=0;
@@ -232,7 +235,7 @@ else{
 
 
 // this will be called from an interrupt in each delta increment
-// replay version with accumulated event buffer
+// replay version with sending data directly to device
 
 void sequenceUpdate2(void){
   

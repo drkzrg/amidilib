@@ -15,6 +15,13 @@ extern volatile U16 startPlaying;
 extern volatile U8 tbData;
 extern volatile U8 tbMode;
 
+extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
+extern U16 MIDIbytesToSend; 
+extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
+
+extern BOOL bTempoChanged;
+extern BOOL bTimeSignatureChanged;
+
 void initSeq(sSequence_t *seq){
 
  if(seq!=0){
@@ -26,17 +33,16 @@ void initSeq(sSequence_t *seq){
   
     pCurrentSequence->pulseCounter=0;  
     pCurrentSequence->divider=0;  //not used atm
-  
     startPlaying=1;
+
+    fprintf(stderr,"mode: %d data: %d\r\n",mode, data);
     installReplayRout(mode, data);
   }
   
  return;
 }
 
-extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
-extern U16 MIDIbytesToSend; 
-extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
+
 
 //this will be called from an interrupt in each delta increment
 void sequenceUpdate(){
@@ -139,17 +145,19 @@ else{
 	MIDIbytesToSend=0;
     }
     
-    //handle tempo update
-    if(seqState->currentTempo!=seqState->newTempo){
+      //handle tempo/time signature update
+    //are there any time signature or tempo updates?
+    //if yes recalculate tempo
+    if(bTimeSignatureChanged||bTempoChanged){
       U8 mode=0,data=0;
-      
-      //update track current tempo
-      seqState->currentTempo=seqState->newTempo;
-      
+       
       calculateTempo(seqState,&mode, &data);
- 
       tbMode=mode;
       tbData=data;
+      
+      //reset flags
+      bTimeSignatureChanged=FALSE;
+      bTempoChanged=FALSE;
     }
       //increase our cumulated delta
       ++pCurrentSequence->accumulatedDeltaCounter;
@@ -175,6 +183,17 @@ else{
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;
 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+	     
+	    //reset default midi tempo settings
+	    //and recalculate the tempo
+	    setDefaultMidiTempoSettings( &pTrk->currentState);
+	    
+	    U8 mode=0,data=0;
+       
+	    calculateTempo(seqState,&mode, &data);
+	    tbMode=mode;
+	    tbData=data;
+
 	  }
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
@@ -286,16 +305,19 @@ else{
 #endif
 }
 }//track iteration
-    //handle tempo update
-    if(seqState->currentTempo!=seqState->newTempo){
-      //update track current tempo
-      seqState->currentTempo=seqState->newTempo;
+       //handle tempo/time signature update
+    //are there any time signature or tempo updates?
+    //if yes recalculate tempo
+    if(bTimeSignatureChanged||bTempoChanged){
       U8 mode=0,data=0;
-     
-      calculateTempo(seqState,&mode,&data);
-      
+       
+      calculateTempo(seqState,&mode, &data);
       tbMode=mode;
       tbData=data;
+      
+      //reset flags
+      bTimeSignatureChanged=FALSE;
+      bTempoChanged=FALSE;
     }
     
       //increase our cumulated delta
@@ -322,6 +344,16 @@ else{
 	    pTrk=pCurrentSequence->arTracks[i];
 	    pTrk->currentState.deltaCounter=0;
 	    pTrk->currentState.pCurrent=pTrk->currentState.pStart;
+	    
+	    //reset default midi tempo settings
+	    //and recalculate the tempo
+	    setDefaultMidiTempoSettings( &pTrk->currentState);
+	    
+	    U8 mode=0,data=0;
+       
+	    calculateTempo(seqState,&mode, &data);
+	    tbMode=mode;
+	    tbData=data;
 	  }
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
@@ -415,11 +447,12 @@ void getCurrentSeq (sSequence_t **pPtr){
 
 void calculateTempo(const sSequenceState_t *pPtr,U8 *mode, U8 *data){
   
-  float freq=pPtr->currentTempo/1000000.0f/pCurrentSequence->timeDivision;
+  float freq=pPtr->currentTempo/1000000.0f;
+  freq=freq/pCurrentSequence->timeDivision;
   
-  //calculate hz
+  //calculate freq in [hz]
   freq=1.0f/freq;	
- 
+  
   getMFPTimerSettings((U32)freq,mode,data);
  
   /*

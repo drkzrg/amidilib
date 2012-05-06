@@ -29,7 +29,10 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _tbMode
     xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
     xdef _startPlaying		;to let us now if there is an end of sequence
-				;so MIDI beat 0 is send only once
+				 ;so MIDI beat 0 is send only once
+    xdef _bTempoChanged		;flags indicatin tempo and time signature change
+    xdef _bTimeSignatureChanged
+			
 ;import symbols
     xref _sequenceUpdate
 
@@ -213,6 +216,8 @@ _MIDIdataEndPtr:	ds.l	1
 	align 2
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 _MIDIbytesToSend:	ds.w	1	;nb of bytes to send
+_bTempoChanged:		ds.l	1
+_bTimeSignatureChanged:	ds.l	1
 	align 2
 
 ;sSequence_t structure

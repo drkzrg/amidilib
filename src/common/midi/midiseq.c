@@ -11,6 +11,9 @@
 
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
 
+extern BOOL bTempoChanged;
+extern BOOL bTimeSignatureChanged;
+
 void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
@@ -76,7 +79,8 @@ void  fNoteOn(void *pEvent){
   
   if(pCurrentSequence!=0){
     U8 activeTrack=pCurrentSequence->ubActiveTrack;
-    pCurrentSequence->arTracks[activeTrack]->currentState.newTempo=pPtr->eventData.tempoVal;
+    pCurrentSequence->arTracks[activeTrack]->currentState.currentTempo=pPtr->eventData.tempoVal;
+    bTempoChanged=TRUE;
   }
 }
 
@@ -101,6 +105,21 @@ void  fNoteOn(void *pEvent){
   amTrace((const U8*)"Marker %s.\n",pPtr->pMarkerName);
 #endif
 } 
+
+void fHandleSignatureChange(void *pEvent){
+   sTimeSignature_EventBlock_t *pPtr=(sTimeSignature_EventBlock_t *)pEvent;
+
+#ifdef DEBUG_BUILD
+  amTrace((const U8*)"Time Signature change nn: %d, dd: %d, cc: %d, bb %d.\r\n",pPtr->timeSignature.nn,pPtr->timeSignature.dd,pPtr->timeSignature.cc,pPtr->timeSignature.bb);
+#endif
+ 
+  if(pCurrentSequence!=0){
+    U8 activeTrack=pCurrentSequence->ubActiveTrack;
+    pCurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
+    bTimeSignatureChanged=TRUE;
+  }
+  
+}
 
  void fHandleSysEX(void *pEvent){
   sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;
@@ -127,6 +146,7 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sEot_EventBlock_t),fHandleEOT},
    {sizeof(sCuePoint_EventBlock_t),fHandleCuePoint},
    {sizeof(sMarker_EventBlock_t),fHandleMarker},
+   {sizeof(sTimeSignature_EventBlock_t),fHandleSignatureChange},
    {sizeof(sSysEX_EventBlock_t),fHandleSysEX}
 };
 
@@ -197,6 +217,7 @@ static const sEventInfoBlock_t g_arSeqCmdCopyDataTable[T_EVT_COUNT] = {
    {sizeof(sEot_EventBlock_t),fHandleEOT},
    {sizeof(sCuePoint_EventBlock_t),fHandleCuePoint},
    {sizeof(sMarker_EventBlock_t),fHandleMarker},
+   {sizeof(sTimeSignature_EventBlock_t),fHandleSignatureChange},
    {sizeof(sSysEX_EventBlock_t),fHandleSysEXCopyData}
 };
 
@@ -237,7 +258,8 @@ void  fNoteAftCopyData(void *pEvent){
 	amTrace((const U8*)"Copying Program change data to buffer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
 #endif
       //TODO: set program number depending on operating mode
-      copy_program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
+      //note: operating mode is dependent from midi file content too. Set mode based file data with option of global override (user configurable)?
+	copy_program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
 
  void  fControllerCopyData(void *pEvent){

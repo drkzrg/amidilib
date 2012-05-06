@@ -206,3 +206,4 @@ if(debug=='none' or (int(debug)==0)):
     print "Stripping symbols"
     print "Packing executable"
     print "Creating release archive"
+    

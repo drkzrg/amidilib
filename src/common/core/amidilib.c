@@ -498,7 +498,6 @@ void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequ
 U32 trackCounter=0;
 U32 endAddr=0L;
 U32 ulChunkSize=0;
-U32 defaultTempo=60000000/DEFAULT_PPQ;
 
 sChunkHeader *pHeader=0;
 sTrack_t **ppTrack=0;
@@ -518,16 +517,12 @@ switch(fileTypeFlag){
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
 
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.newTempo=defaultTempo;
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
+
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  
-	  pTempTrack->currentState.timeSignature.nn=4;
-	  pTempTrack->currentState.timeSignature.dd=4;
-	  pTempTrack->currentState.timeSignature.cc=24;
-	  pTempTrack->currentState.timeSignature.bb=8;
+	 setDefaultMidiTempoSettings( &pTempTrack->currentState);
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -547,17 +542,14 @@ switch(fileTypeFlag){
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.newTempo=defaultTempo;
 
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
+
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
 	  
-	  pTempTrack->currentState.timeSignature.nn=4;
-	  pTempTrack->currentState.timeSignature.dd=4;
-	  pTempTrack->currentState.timeSignature.cc=24;
-	  pTempTrack->currentState.timeSignature.bb=8;
+	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
+	  
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -600,17 +592,13 @@ switch(fileTypeFlag){
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
-	  pTempTrack->currentState.currentTempo=defaultTempo;
-	  pTempTrack->currentState.newTempo=defaultTempo;
-
+	  
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  
-	  pTempTrack->currentState.timeSignature.nn=4;
-	  pTempTrack->currentState.timeSignature.dd=4;
-	  pTempTrack->currentState.timeSignature.cc=24;
-	  pTempTrack->currentState.timeSignature.bb=8;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  
+	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -1680,6 +1668,8 @@ sEventBlock_t tempEvent;
     }break;
     case MT_TIME_SIG:{
 	 sTimeSignature timeSign;
+	 sTimeSignature_EventBlock_t *pEvntBlock=NULL;
+	 
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Time signature: ",(unsigned long)delta);
 #endif
@@ -1691,14 +1681,21 @@ sEventBlock_t tempEvent;
         addr=((U32)(*pPtr))+ubLenght*sizeof(U8);
         *pPtr=(U8*)addr;
 	
-	(*pCurTrack)->currentState.timeSignature.nn=timeSign.nn;
-	(*pCurTrack)->currentState.timeSignature.dd=timeSign.dd;
-	(*pCurTrack)->currentState.timeSignature.cc=timeSign.cc;
-	(*pCurTrack)->currentState.timeSignature.bb=timeSign.bb;
+	tempEvent.uiDeltaTime=delta;
+	tempEvent.type = T_META_SET_SIGNATURE;
+	getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
+	getEventFuncCopyInfo(T_META_SET_SIGNATURE,&tempEvent.copyEventCb);
+	
+	tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+	pEvntBlock=(sTimeSignature_EventBlock_t *)tempEvent.dataPtr;
+        pEvntBlock->timeSignature=timeSign;
+
+	/* add event to list */
+	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	
         /* print out info */
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const U8*)"nn: %d\tdd: %d\tcc: %d\tbb: %d\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
+        amTrace((const U8*)"Time signature change nn: %d\tdd: %d\tcc: %d\tbb: %d\r\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
 #endif
 	return FALSE;
     }break;
@@ -1960,4 +1957,11 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  else return NULL;
 }
 
+void setDefaultMidiTempoSettings( sSequenceState_t *pSeqState){
+	  pSeqState->currentTempo=DEFAULT_TEMPO;
+	  pSeqState->timeSignature.nn=4;
+	  pSeqState->timeSignature.dd=4;
+	  pSeqState->timeSignature.cc=24;
+	  pSeqState->timeSignature.bb=8;
+}
 

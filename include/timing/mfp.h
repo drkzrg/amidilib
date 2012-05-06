@@ -33,7 +33,7 @@
 *   @param mode - pointer to unsigned long int for MFP mode of operation value
 *   @param data - pointer to unsigned long int for MFP data value
 */
-void getMFPTimerSettings(U32 freq,U32 *mode,U32 *data);
+void getMFPTimerSettings(U32 freq,U8 *mode,U8 *data);
 
 extern void installMIDIreplay(U8 mode,U8 data);
 extern void deinstallMIDIreplay(void);

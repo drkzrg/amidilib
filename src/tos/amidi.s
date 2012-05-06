@@ -7,7 +7,7 @@
 
 ;constants
 AMIDI_MAX_TRACKS	equ	65536
-MIDI_CLOCK_ENABLE	equ	1
+MIDI_CLOCK_ENABLE	equ	0
 MIDI_SEND_BUFFER_ENABLE	equ	0	;enables code part which sends MIDI data
 					;from internal buffer
 					;once per frame
@@ -114,6 +114,7 @@ update:
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
 
       if (MIDI_SEND_BUFFER_ENABLE==1)
+      echo	"[VASM]***************** MIDI SEND BUFER DIRECT IKBD WRITE ENABLED"	
       ;send the whole buffer if not empty
       move.l	_MIDIdataEndPtr,d1  ;count
       movea.l  	#_MIDIsendBuffer,a0  ;buffer
@@ -136,7 +137,8 @@ update:
       bra.s	.loop
 .done:
       movea.l	#_MIDIsendBuffer,_MIDIdataEndPtr ; set endptr to the beginning
-						 ; of the buffer
+      else						 ; of the buffer
+      echo	"[VASM]***************** MIDI SEND BUFFER DIRECT IKBD WRITE DISABLED"	
       endif
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1 	;set counter
@@ -183,8 +185,8 @@ _amMidiSendIKBD:
       movem.l	d0-d7/a0-a6,-(sp)
       bsr.w	_super_on
 
-      move.l	$42(sp),d1  ;count
-      ;move.l  	$46(sp),a0  ;buffer
+      move.l	_MIDIbytesToSend,d1  ;count
+      move.l  	#_MIDIsendBuffer,a0  ;buffer
 .loop:      
       cmpi.l	#0,d1	
       beq.s	.done
@@ -241,7 +243,7 @@ _startPlaying:		ds.w	1
 _MIDIdataEndPtr:	ds.l	1
 	align 2
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
-_MIDIbytesToSend	ds.w	1	;nb of bytes to send
+_MIDIbytesToSend:	ds.w	1	;nb of bytes to send
 _MIDIbufferReady:	ds.w	1
 _MIDIbufferPos:		ds.w	1	
 	align 2

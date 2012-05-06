@@ -113,9 +113,10 @@ typedef struct EventInfoBlock_t{
 
 typedef struct EventBlock_t{
  U32 uiDeltaTime;					/* event delta time */	
- sEventInfoBlock_t infoBlock;				/* function info block */ 
+ sEventInfoBlock_t sendEventCb;				/* send event function callback info block */ 
+ sEventInfoBlock_t copyEventCb;			/* copy to internal buffer function callback info block */ 
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
- U8	type;							/* event type */
+ U8	type;						/* event type */
  }PACK sEventBlock_t, *sEventBlockPtr_t;
 
 /** SysEX */
@@ -145,24 +146,38 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 };
 
 //inline functions for sending data to external module
- const U8 *getEventName(U32 id);
+  const U8 *getEventName(U32 id);
 
-  void  fNoteOn (void *pEvent);
-  void  fNoteOff (void *pEvent);
-  void  fNoteAft (void *pEvent);
-  void  fProgramChange (void *pEvent);
-  void  fController (void *pEvent);
-  void  fChannelAft (void *pEvent);
-  void  fPitchBend (void *pEvent);
-  void  fSetTempo (void *pEvent);
-  void  fHandleEOT(void *pEvent);
-  void fHandleCuePoint(void *pEvent);
-  void fHandleMarker(void *pEvent);
-  void fHandleSysEX(void *pEvent);
+  void fNoteOn (void *pEvent);
+  void fNoteOff (void *pEvent);
+  void fNoteAft (void *pEvent);
+  void fProgramChange (void *pEvent);
+  void fController (void *pEvent);
+  void fChannelAft (void *pEvent);
+  void fPitchBend (void *pEvent);
+  void fSetTempo (void *pEvent);
+  void fHandleEOT (void *pEvent);
+  void fHandleCuePoint (void *pEvent);
+  void fHandleMarker (void *pEvent);
+  void fHandleSysEX (void *pEvent);
  
+  void fNoteOnCopyData (void *pEvent);
+  void fNoteOffCopyData (void *pEvent);
+  void fNoteAftCopyData (void *pEvent);
+  void fProgramChangeCopyData (void *pEvent);
+  void fControllerCopyData (void *pEvent);
+  void fChannelAftCopyData (void *pEvent);
+  void fPitchBendCopyData (void *pEvent);
+  void fHandleSysEXCopyData (void *pEvent);
+  
 /* returns the info struct about event: size and pointer to the handler  */
- void getEventFuncInfo(U8 eventType, sEventInfoBlock_t *infoBlk);
+ void getEventFuncInfo (U8 eventType, sEventInfoBlock_t *infoBlk);
 
+ /* returns the info struct about event: size and pointer to the handler  */
+ void getEventFuncCopyInfo(U8 eventType, sEventInfoBlock_t *infoBlk);
+ 
+/* returns channel number from info block (max 16 channels) or 127 if no channel info is available */
+ U8 getChannelNbFromEventBlock (sEventBlock_t *pBlock);
 
 #endif
 

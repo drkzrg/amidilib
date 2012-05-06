@@ -11,15 +11,20 @@
 #include "c_vars.h"
 #include "memory/memory.h"
 
+//event linear buffer
 typedef struct _LinearBuffer{
   U8 *pMemPtr;          // linear memory pointer start
   U32 totalSize;	// total linear memory size in bytes
   U32 offset;
   eMemoryFlag memType;  // memory type
-}tLinearBuffer;
+} tLinearBuffer;
+
+S32 createLinearBuffer(U32 bufferSize, eMemoryFlag memType);
+void destroyLinearBuffer();
 
 // non aligned allocation from linear buffer
 void *linearBufferAlloc(tLinearBuffer *buf, U32 size);
+void *linearBufferAllocAlign(tLinearBuffer *buf, U32 size,U32 alignFlag);
 
 
 #endif

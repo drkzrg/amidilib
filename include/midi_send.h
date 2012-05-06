@@ -33,13 +33,13 @@ static INLINE U16 amMidiDataReady(U8 deviceNo){
 #endif
 }
 
-static INLINE U32 amMidiSendByte(U8 deviceNo,U16 data){
+static INLINE U32 amMidiSendByte(U8 deviceNo,U8 data){
 #ifdef PORTABLE
 //TODO:
   amTrace((const U8*)"WARNING: amMidiSendByte() not implemented\n");
   return 0L;
 #else
-  return Bconout(deviceNo,data);
+  return Bconout(deviceNo,(S16)data);
 #endif
 }
 
@@ -54,7 +54,7 @@ static INLINE void amMidiSendData(const U16 count,const U8 *data){
   //bypass os, write directly to IKBD to send data
   amMidiSendIKBD(count,data);  
 #else
-  //use xbios function
+ //use xbios function
  Midiws(count,data);
 #endif  
 
@@ -81,7 +81,7 @@ amTrace((const U8*)"WARNING: amMidiGetData() not implemented\n");
 /* returns != 0 if data are in system MIDI buffer */
 #define MIDI_DATA_READY amMidiDataReady(DEV_MIDI)
 /* sends 1 byte to MIDI output */
-#define MIDI_SEND_BYTE(data) amMidiSendByte(DEV_MIDI,(U8 *)data)
+#define MIDI_SEND_BYTE(data) amMidiSendByte(DEV_MIDI,data)
 /* sends multiple bytes to MIDI output, count is number of bytes to send */
 #define MIDI_SEND_DATA(count,data) amMidiSendData(count-1,data)
 /* reads 1 unsigned byte from MIDI input */

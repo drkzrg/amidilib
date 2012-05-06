@@ -1,19 +1,16 @@
 
 //tos version
 
-#include "include/midi_rep.h"
+#include "midi_rep.h"
+#include "timing/mfp.h"
 
-#include "include/timing/mfp.h"
-
-#include "include/amidilib.h"
-#include "include/amidiseq.h"
-#include "include/midi_send.h"
-#include "include/list/list.h"
-#include "include/config.h"
+#include "amidilib.h"
+#include "midi_send.h"
+#include "config.h"
 
 #include <math.h>
 
-extern volatile sSequence_t *pCurrentSequence;
+extern sSequence_t *pCurrentSequence;
 extern volatile U16 startPlaying;
 extern volatile U8 tbData;
 extern volatile U8 tbMode;
@@ -21,46 +18,22 @@ extern volatile U8 tbMode;
 void initSeq(sSequence_t *seq){
 
  if(seq!=0){
-  U8 activeTrack=seq->ubActiveTrack;
-  U32 mode=0,data=0;
-  pCurrentSequence=seq;
-  
-  U32 dd,nn,cc;
-  dd=seq->arTracks[activeTrack]->currentState.timeSignature.dd;
-  nn=seq->arTracks[activeTrack]->currentState.timeSignature.nn;
-  cc=seq->arTracks[activeTrack]->currentState.timeSignature.cc;
-  dd=(U16)pow(2.0f,(float)dd);
-  
-  //convert tempo from microseconds to seconds
-  float freq=((float)(seq->arTracks[activeTrack]->currentState.currentTempo/(dd/4)*(cc/24))/1000000.0f);
-  float fTempoSecs=seq->arTracks[activeTrack]->currentState.currentTempo/1000000.0f;
-      
-  //calculate 1 tick duration
-  fTempoSecs=fTempoSecs/(pCurrentSequence->timeDivision);
-      
-  //calculate hz
-  fTempoSecs=(1.0f/(float)fTempoSecs);	
-  
-  pCurrentSequence->pulseCounter=0;  
-  pCurrentSequence->divider=0;  //not used atm
-  
-#ifdef DEBUG_BUILD
-  amTrace("freq: %f %u\n",fTempoSecs,(U32)freq);
-#endif  
-  getMFPTimerSettings((U32)fTempoSecs,&mode,&data);
+    U8 activeTrack=seq->ubActiveTrack;
+    U8 mode=0,data=0;
+    pCurrentSequence=seq;
 
-#ifdef DEBUG_BUILD
-  amTrace("calculated mode: %d, data: %d\n",mode,data);
-#endif 
-  startPlaying=1;
+    calculateTempo(&(seq->arTracks[activeTrack]->currentState),&mode,&data);
   
-  installReplayRout(mode, data);
+    pCurrentSequence->pulseCounter=0;  
+    pCurrentSequence->divider=0;  //not used atm
   
-}
+    startPlaying=1;
+    installReplayRout(mode, data);
+  }
+  
  return;
 }
 
-extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
 extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
 extern U16 MIDIbytesToSend; 
 extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
@@ -169,33 +142,16 @@ else{
     
     //handle tempo update
     if(seqState->currentTempo!=seqState->newTempo){
-      U32 mode=0,data=0;
-      U32 dd,nn,cc;
+      U8 mode=0,data=0;
       
       //update track current tempo
       seqState->currentTempo=seqState->newTempo;
-
-      dd=seqState->timeSignature.dd;
-      nn=seqState->timeSignature.nn;
-      cc=seqState->timeSignature.cc;
-  
-      dd=(U32)pow(2.0f,(float)dd);
       
-      //convert quaternote duration in microseconds to seconds
-      float freq=(float)seqState->currentTempo/1000000.0f;
-
-      //calculate one tick duration in seconds(quaternote duration)
-      freq=(freq/(dd/4))/(pCurrentSequence->timeDivision/(dd/4))*nn;
-      
-      //calculate hz
-      freq=1.0f/freq;	
-     
-      getMFPTimerSettings(freq,&mode,&data);
-      tbMode=(U8)mode;
-      tbData=(U8)data;
-      
+      calculateTempo(seqState,&mode, &data);
+ 
+      tbMode=mode;
+      tbData=data;
     }
-    
       //increase our cumulated delta
       ++pCurrentSequence->accumulatedDeltaCounter;
       
@@ -224,7 +180,7 @@ else{
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
 	  startPlaying=1;	//to indicate that we have to send MIDI start on next play
-	  MIDI_SEND_BYTE((const U8 *)&MIDI_STOP);	//send midi STOP
+	  MIDI_SEND_BYTE(MIDI_STOP);	//send midi STOP
 	  am_allNotesOff(16);
 	//done! 
 	}
@@ -335,28 +291,12 @@ else{
     if(seqState->currentTempo!=seqState->newTempo){
       //update track current tempo
       seqState->currentTempo=seqState->newTempo;
-      U32 mode=0,data=0;
+      U8 mode=0,data=0;
      
-      U32 dd,nn,cc;
-      dd=seqState->timeSignature.dd;
-      nn=seqState->timeSignature.nn;
-      cc=seqState->timeSignature.cc;
-  
-      dd=(U32)pow(2.0f,(float)dd);
+      calculateTempo(seqState,&mode,&data);
       
-      //convert quaternote duration in microseconds to seconds
-      float freq=(float)seqState->currentTempo/1000000.0f;
-
-      //calculate one tick duration in seconds(quaternote duration)
-      freq=(freq/(dd/4))/(pCurrentSequence->timeDivision/(dd/4))*nn;
-      
-      //calculate hz
-      freq=1.0f/freq;	
-     
-      getMFPTimerSettings(freq,&mode,&data);
-      tbMode=(U8)mode;
-      tbData=(U8)data;
-      
+      tbMode=mode;
+      tbData=data;
     }
     
       //increase our cumulated delta
@@ -387,7 +327,7 @@ else{
 	  //turn all notes off on external module
 	  bNoteOffSent=TRUE;
 	  startPlaying=1;	//to indicate that we have to send MIDI start on next play
-	  MIDI_SEND_BYTE((const U8 *)&MIDI_STOP);	//send midi STOP
+	  MIDI_SEND_BYTE(MIDI_STOP);	//send midi STOP
 	  am_allNotesOff(16);
 	//done! 
 	}
@@ -474,4 +414,42 @@ void getCurrentSeq (sSequence_t **pPtr){
 }
 
 
+void calculateTempo(const sSequenceState_t *pPtr,U8 *mode, U8 *data){
+  
+  float freq=pPtr->currentTempo/1000000.0f/pCurrentSequence->timeDivision;
+  
+  //calculate hz
+  freq=1.0f/freq;	
+ 
+  getMFPTimerSettings((U32)freq,mode,data);
+ 
+  /*
+   U32 dd,nn,cc;
 
+  dd = pPtr->timeSignature.dd;
+  nn = pPtr->timeSignature.nn;
+  cc = pPtr->timeSignature.cc;
+   
+   * dd=(U32)pow(2.0f,(float)dd);
+  //convert tempo from microseconds to seconds
+  float freq=((float)(pPtr->currentTempo/(dd/4)*(cc/24))/1000000.0f);
+  float fTempoSecs=pPtr->currentTempo/1000000.0f;
+   
+  //calculate one tick duration in seconds(quaternote duration)
+  freq=(freq/(dd/4))/(pCurrentSequence->timeDivision/(dd/4))*nn;
+      
+  //calculate hz
+  freq=1.0f/freq;	
+  
+  #ifdef DEBUG_BUILD
+    amTrace("freq: %f %f\n",fTempoSecs,(U32)freq);
+  #endif  
+  
+  getMFPTimerSettings((U32)fTempoSecs,mode,data);
+  fprintf(stderr,"Set freq %f\tSet mode: %d data:%d\r\n",fTempoSecs,mode,data);
+  */
+  
+  #ifdef DEBUG_BUILD
+    amTrace("calculated mode: %d, data: %d\n",mode,data);
+  #endif  
+}

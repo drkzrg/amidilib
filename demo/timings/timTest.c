@@ -74,7 +74,7 @@ extern U32 defaultPlayMode;
 static U32 iCurrentStep;
 
 // plays sample sequence 
-int playSampleSequence(const sSequence *testSequenceChannel1, U32 mode,U32 data, volatile sCurrentSequenceState *pInitialState){
+int playSampleSequence(const sSequence *testSequenceChannel1, U8 mode,U8 data, volatile sCurrentSequenceState *pInitialState){
   pInitialState->currentIdx=0;			//initial position
   pInitialState->state=PS_STOPPED;			//track state
   pInitialState->seqPtr=(const sSequence *)testSequenceChannel1;	//ptr to sequence
@@ -236,7 +236,7 @@ int main(void){
 
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-  U32 mode,data;
+  U8 mode,data;
   
   U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
   

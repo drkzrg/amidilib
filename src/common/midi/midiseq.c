@@ -270,7 +270,7 @@ void fHandleSysEXCopyData(void *pEvent){
   amTrace((const U8*)"Copy SysEX Message.\n");
 #endif
 //TODO: check buffer overflow   
-   amMemCpy(MIDIsendBuffer[MIDIbytesToSend],pPtr->pBuffer,pPtr->bufferSize);
+   amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pPtr->pBuffer,pPtr->bufferSize);
    MIDIbytesToSend+=pPtr->bufferSize;
 }
 

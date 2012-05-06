@@ -8,9 +8,6 @@
 ;constants
 AMIDI_MAX_TRACKS	equ	65536
 MIDI_CLOCK_ENABLE	equ	0
-MIDI_SEND_BUFFER_ENABLE	equ	0	;enables code part which sends MIDI data
-					;from internal buffer
-					;once per frame
 MIDI_SENDBUFFER_SIZE 	equ	32*1024
 
 MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message (MIDI CLOCK)
@@ -27,7 +24,6 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     
     xdef _MIDIsendBuffer	;buffer with data to send
     xdef _MIDIbytesToSend	;nb of bytes to send
-    xdef _MIDIbufferReady	;if 0> buffer is ready for sending data, otherwise we want ti fill it
     
     xdef _tbData
     xdef _tbMode
@@ -113,33 +109,6 @@ update:
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
       jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
 
-      if (MIDI_SEND_BUFFER_ENABLE==1)
-      echo	"[VASM]***************** MIDI SEND BUFER DIRECT IKBD WRITE ENABLED"	
-      ;send the whole buffer if not empty
-      move.l	_MIDIdataEndPtr,d1  ;count
-      movea.l  	#_MIDIsendBuffer,a0  ;buffer
-  
-.loop:
-      move.l	a0,d2
-      cmp.l	d1,d2
-      beq.s	.done
-      cmpi.l	#0,(a0)	
-      beq.s	.done
-      
-      ;slap data to d0
-      move.b	(a0)+,d0
-.wait:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait		;no, wait!
-      move.b	d0,$fffffc06.w	;write to MIDI data register
-
-      subq.l	#1,d1
-      bra.s	.loop
-.done:
-      movea.l	#_MIDIsendBuffer,_MIDIdataEndPtr ; set endptr to the beginning
-      else						 ; of the buffer
-      echo	"[VASM]***************** MIDI SEND BUFFER DIRECT IKBD WRITE DISABLED"	
-      endif
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1 	;set counter
 
@@ -244,8 +213,6 @@ _MIDIdataEndPtr:	ds.l	1
 	align 2
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 _MIDIbytesToSend:	ds.w	1	;nb of bytes to send
-_MIDIbufferReady:	ds.w	1
-_MIDIbufferPos:		ds.w	1	
 	align 2
 
 ;sSequence_t structure

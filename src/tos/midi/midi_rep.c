@@ -134,7 +134,6 @@ else{
 }
 }//track iteration
 
-    //TODO: make version with direct IKBD write
     if(MIDIbytesToSend!=0){
 	MIDI_SEND_DATA(MIDIbytesToSend-1,MIDIsendBuffer);
 	MIDIbytesToSend=0;

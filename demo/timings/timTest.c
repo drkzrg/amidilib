@@ -1,13 +1,13 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2012 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
 //////////////////////////////////////////////////// timing test program
-// program reads delta times from table and outputs sound through ym2149
-// with given, adjustable tempo
+// program reads delta times/notes from table and outputs sound through ym2149
+// with adjustable tempo
 /////////////////////////////////////////////////////////////////////////
  
 #include <stdio.h>
@@ -18,37 +18,48 @@
 
 #ifndef PORTABLE
 #include <osbind.h>
-#include "ikbd.h"
+#include "input/ikbd.h"
 #include "scancode.h"
 #include "timing/mfp.h"
 #endif
-
-#define TEMPO_STEP 50000	// tempo change step in ms
 
 typedef struct{
   U32 delta;
   U32 tempo;	// 0 == stop
   U8 note;	// 0-127 range
   U8 dummy;	// just fill in
-} sSequence; 
+} sEvent; 
 
+typedef struct{
+  BOOL bIsActive;
+  U8 volume;
+}sTrackState; 
 
 /////////////////////////////////////////////////
 //check if we are on the end of test sequence
+typedef struct{
+  sTrackState state;
+  U32 timeElapsedInt;
+  const sEvent *seqPtr;	
+} sTrack;
 
 typedef struct{
-  volatile U32 currentTempo;	//quaternote duration in ms, 500ms default
-  volatile U32 currentPPQN;	//pulses per quater note
-  volatile U32 currentIdx;	//current position in table
-  volatile const sSequence *seqPtr;	//sequence ptr
-  volatile U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
+  U32 currentTempo;	//quaternote duration in ms, 500ms default
+  U32 currentPPQN;	//pulses per quater note
+  U32 currentBPM;	//beats per minute (60 000000 / currentTempo)
+  U32 timeElapsedFrac; //sequence elapsed time
+  U32 timeStep; 	//sequence elapsed time
+  sTrack *tracks[3];	//one per ym channel
+  U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
 } sCurrentSequenceState;
+
 
 
 #ifndef PORTABLE
 extern void turnOffKeyclick(void);
 extern void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
 extern void deinstallYMReplayRout();
+
 extern volatile U8 tbData,tbMode;
 extern volatile BOOL midiOutputEnabled;
 extern volatile BOOL ymOutputEnabled;
@@ -67,24 +78,37 @@ void deinstallYMReplayRout(){
 
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
-volatile sCurrentSequenceState currentState;
+sCurrentSequenceState currentState;
 volatile extern U32 counter;
 extern U32 defaultPlayMode;
 
 static U32 iCurrentStep;
 
 // plays sample sequence 
-int playSampleSequence(const sSequence *testSequenceChannel1, U8 mode,U8 data, volatile sCurrentSequenceState *pInitialState){
-  pInitialState->currentIdx=0;			//initial position
+int playSampleSequence(const sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
+U8 mode,data; 
   pInitialState->state=PS_STOPPED;			//track state
-  pInitialState->seqPtr=(const sSequence *)testSequenceChannel1;	//ptr to sequence
+  pInitialState->currentPPQN=DEFAULT_PPQN;
+  pInitialState->currentTempo=DEFAULT_MPQN;
+  pInitialState->currentBPM=DEFAULT_TEMPO;
+  pInitialState->timeElapsedFrac=0;
+  pInitialState->timeStep=am_calculateTimeStep(pInitialState->currentBPM, pInitialState->currentPPQN, SEQUENCER_UPDATE_HZ);
   
-  //install replay routine 96 ticks per 500ms interval 
+  pInitialState->tracks[0]->seqPtr=testSequence[0];	//ptr to sequence
+  pInitialState->tracks[0]->state.bIsActive=TRUE;
+  pInitialState->tracks[1]->seqPtr=testSequence[1];	//ptr to sequence
+  pInitialState->tracks[1]->state.bIsActive=TRUE;
+  pInitialState->tracks[2]->seqPtr=testSequence[2];	//ptr to sequence
+  pInitialState->tracks[2]->state.bIsActive=TRUE;
+  
+  getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
+  
+  //install replay routine 
   installYMReplayRout(mode, data, pInitialState);
   return 0;
 }
 
-BOOL isEOT(sSequence *pSeqPtr){
+BOOL isEOT(sEvent *pSeqPtr){
 
   if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)) return TRUE;
    else return FALSE;
@@ -101,17 +125,14 @@ void printHelpScreen(){
   
   printf("[spacebar] - turn off all sounds / stop sequence \n");
   printf("[Esc] - quit\n");
-  printf("(c) Nokturnal 2010\n");
+  printf("(c) Nokturnal 2012\n");
   printf("================================================\n");
 }
 
 extern U8 envelopeArray[8];
-static const U8 KEY_PRESSED = 0xff;
-static const U8 KEY_UNDEFINED=0x80;
-static const U8 KEY_RELEASED=0x00;
 
 // output, test sequence for channel 1 
-static const sSequence testSequenceChannel1[]={
+static const sEvent testSequenceChannel1[]={
   {0L,500,56,0xAD},
   {32L,500,127,0xAD},
   {32L,500,110,0xAD},
@@ -127,7 +148,7 @@ static const sSequence testSequenceChannel1[]={
 };
 
 // output test sequence for channel 2
-static const sSequence testSequenceChannel2[]={
+static const sEvent testSequenceChannel2[]={
   {0L,500L,36,0xAD},
   {64L,500L,37,0xAD},
   {128L,500L,36,0xAD},
@@ -160,7 +181,7 @@ static const sSequence testSequenceChannel2[]={
 };
 
 // output test sequence for channel 2
-static const sSequence testSequenceChannel3[]={
+static const sEvent testSequenceChannel3[]={
   {10L,500L,65,0xAD},
   {10L,500L,66,0xAD},
   {10L,500L,65,0xAD},
@@ -191,10 +212,8 @@ static const sSequence testSequenceChannel3[]={
 int main(void){
   ymChannelData ch[3];
 
-  U32 defaultTempo=60000000/120;
-  iCurrentStep=TEMPO_STEP;
-  currentState.currentTempo=defaultTempo;
-  currentState.currentPPQN=96;
+  currentState.currentTempo=DEFAULT_TEMPO;
+  currentState.currentPPQN=DEFAULT_PPQN;
   
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
@@ -243,7 +262,12 @@ int main(void){
   getMFPTimerSettings(freq,&mode,&data);
   
   //prepare sequence
-  playSampleSequence(testSequenceChannel3,mode,data, &currentState);
+  const sEvent *sequences[3]={0};
+  sequences[0]=testSequenceChannel1;
+  sequences[1]=testSequenceChannel2;
+  sequences[2]=testSequenceChannel3;
+  
+  playSampleSequence(sequences,&currentState);
   
   //enter main loop
   while(bQuit==FALSE){
@@ -281,37 +305,37 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-	    U32 tempo=currentState.currentTempo;
-	    if(tempo<800000){
-	    
-	      if(tempo<50000){
-	       iCurrentStep=5000;
-	    }else 
-	      iCurrentStep=TEMPO_STEP;
-	    
-	     currentState.currentTempo=tempo+iCurrentStep;
-	     U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
-	     
-	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
-	  
+// 	    U32 tempo=currentState.currentTempo;
+// 	    if(tempo<800000){
+// 	    
+// 	      if(tempo<50000){
+// 	       iCurrentStep=5000;
+// 	    }else 
+// 	      iCurrentStep=TEMPO_STEP;
+// 	    
+// 	     currentState.currentTempo=tempo+iCurrentStep;
+// 	     U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
+// 	     
+// 	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
+// 	  
 	  }break;
 	  case SC_ARROW_DOWN:{
-	    U32 tempo=currentState.currentTempo;
-	    
-	    if(tempo!=0){
-	      
-	      if(tempo<=50000&&tempo>5000){
-		iCurrentStep=5000;
-	      }
-	      else if(tempo<=5000){
-		iCurrentStep=100;
-	      }
-	      else iCurrentStep=TEMPO_STEP;
-	      currentState.currentTempo=tempo-iCurrentStep;
-	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
-	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
-	    }
-	    
+// 	    U32 tempo=currentState.currentTempo;
+// 	    
+// 	    if(tempo!=0){
+// 	       
+// 	      if(tempo<=50000&&tempo>5000){
+// 		iCurrentStep=5000;
+// 	      }
+// 	      else if(tempo<=5000){
+// 		iCurrentStep=100;
+// 	      }
+// 	      else iCurrentStep=TEMPO_STEP;
+// 	      currentState.currentTempo=tempo-iCurrentStep;
+// 	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
+// 	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
+// 	    }
+// 	    
 	  }break;
 	  
 	  case SC_I:{

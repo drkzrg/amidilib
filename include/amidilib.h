@@ -296,6 +296,10 @@ void am_destroySequence(sSequence_t **pPtr);
 /** returns meaningful name for Midi Device type enumeration.  */
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 
+/** returns meaningful name for Midi Device type enumeration.  */
+void setDefaultMidiTempoSettings( sSequenceState_t *pSeqState);
+
+
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test */
 void VLQtest(void);

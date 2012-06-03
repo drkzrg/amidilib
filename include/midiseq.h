@@ -27,6 +27,7 @@ enum eEventType{
 	T_META_EOT,
 	T_META_CUEPOINT,
 	T_META_MARKER,
+	T_META_SET_SIGNATURE,
 	T_SYSEX,
 	T_EVT_COUNT		/* total number of events */
 };
@@ -81,6 +82,7 @@ typedef struct Tempo_EventBlock_t{
  sTempo_t eventData;	/* tempo event data  */
 } PACK sTempo_EventBlock_t;
 
+/* */
 typedef struct Eot_EventBlock_t{
  U32 dummy;
 } PACK sEot_EventBlock_t;
@@ -92,6 +94,10 @@ typedef struct CuePoint_EventBlock_t{
 typedef struct Marker_EventBlock_t{
  U8 *pMarkerName;	/* marker name, maybe something else */
 } PACK sMarker_EventBlock_t;
+
+typedef struct TimeSignature_EventBlock_t{
+ sTimeSignature timeSignature;
+} PACK sTimeSignature_EventBlock_t;
 
 typedef struct SysEX_EventBlock_t{
  U32 bufferSize ; 					/* size of SysEX buffer */
@@ -142,6 +148,7 @@ static const char *g_arEventNames[T_EVT_COUNT]={
 	"End of track(Meta)",
 	"Cuepoint(Meta)",
 	"Marker(Meta)",
+	"Set time signature (Meta)"
 	"SysEX Msg"
 };
 
@@ -160,7 +167,8 @@ static const char *g_arEventNames[T_EVT_COUNT]={
   void fHandleCuePoint (void *pEvent);
   void fHandleMarker (void *pEvent);
   void fHandleSysEX (void *pEvent);
- 
+  void fHandleSignatureChange (void *pEvent);
+  
   void fNoteOnCopyData (void *pEvent);
   void fNoteOffCopyData (void *pEvent);
   void fNoteAftCopyData (void *pEvent);

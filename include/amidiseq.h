@@ -14,9 +14,6 @@
 #define AMIDI_MAX_TRACKS 65536
 #define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
 					/* sequence is considered finished and ready to STOP or LOOP */
-
-#define DEFAULT_TEMPO 0x007A120UL	/* 500000ms */
-#define DEFAULT_PPQ	120		/* pulses per quarternote */
 #define DEFAULT_TIME_SIG 0x0404	
 	
 /** sequence replay mode */
@@ -40,10 +37,8 @@ typedef struct EventList{
 
 typedef volatile struct SequenceState_t{
  U32 currentTempo;		      // quaternote duration in ms, 500ms default
- U32 newTempo;			      // track new tempo in ms, if newTempo!=currentTempo
-				      // then we have tempo change, which id handled in player
-				      // and then currentTempo=newTempo;
  sTimeSignature timeSignature;	      //time signature				      
+ 
  U16 playState;			      // STOP, PLAY, PAUSED	
  U16 playMode;	      		      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 

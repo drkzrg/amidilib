@@ -4,12 +4,9 @@
 #ifndef PORTABLE
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
-
 #endif
 
 #include "include/amlog.h"
-
-
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;
@@ -22,25 +19,26 @@
 
 
 /* function for calculating tempo */
-/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
 /* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
 
+/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
 /* BPM - beats per minute (tempo of music) */
 /* UPS - update interval (updates per second) */
+/* PPQ - pulses per quaternote - music resolution */
 /* music resolution are in PPQ */
 
-U32  am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
+U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
     U32 ppu;
     U32 temp;
     temp=(U32)qpm*(U32)ppq;
     
     if(temp<0x10000){
         ppu=((temp*0x10000)/60)/(U32)ups;
-    }
-    else{
+    }else{
         ppu=((temp/60)*0x10000)/(U32)ups;
     }
-return ppu;
+    
+ return ppu;
 }
 
 /* function for calculating tempo (float version) */

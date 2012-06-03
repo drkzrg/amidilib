@@ -444,17 +444,25 @@ void getCurrentSeq (sSequence_t **pPtr){
   (*pPtr)=pCurrentSequence;
 }
 
+#define UPDATE_INTERVAL_HZ 50
 
 void calculateTempo(const sSequenceState_t *pPtr,U8 *mode, U8 *data){
+  
+  U16 bpm=(U16)(60000000.0f/pPtr->currentTempo);
+  U16 td = (U16)pCurrentSequence->timeDivision;
+  float ups=0.0f;
+  U32 upsInt=0;
   
   float freq=pPtr->currentTempo/1000000.0f;
   freq=freq/pCurrentSequence->timeDivision;
   
   //calculate freq in [hz]
-  freq=1.0f/freq;	
-  
+  freq=1.0f/freq*4;	
   getMFPTimerSettings((U32)freq,mode,data);
  
+  ups=am_calculateTimeStepFlt(bpm, td, UPDATE_INTERVAL_HZ);
+  upsInt=am_calculateTimeStep(bpm, td, UPDATE_INTERVAL_HZ);
+  
   /*
    U32 dd,nn,cc;
 
@@ -482,6 +490,7 @@ void calculateTempo(const sSequenceState_t *pPtr,U8 *mode, U8 *data){
   */
   
   #ifdef DEBUG_BUILD
+    amTrace("%dhz update interval, Time step(float/int)%f/%x\r\n",UPDATE_INTERVAL_HZ,ups,upsInt);
     amTrace("calculated mode: %d, data: %d\n",mode,data);
   #endif  
 }

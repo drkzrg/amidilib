@@ -520,7 +520,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
 	  
 	 setDefaultMidiTempoSettings( &pTempTrack->currentState);
 	  
@@ -546,7 +546,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
 	  
 	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
 	  
@@ -596,7 +596,7 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQ;
+	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
 	  
 	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
 	  
@@ -1958,7 +1958,7 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
 }
 
 void setDefaultMidiTempoSettings( sSequenceState_t *pSeqState){
-	  pSeqState->currentTempo=DEFAULT_TEMPO;
+	  pSeqState->currentTempo=DEFAULT_MPQN;  //500000ms
 	  pSeqState->timeSignature.nn=4;
 	  pSeqState->timeSignature.dd=4;
 	  pSeqState->timeSignature.cc=24;

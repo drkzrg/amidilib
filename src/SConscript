@@ -59,7 +59,7 @@ elif ((target == "f030") or (target == "ataritt")):
     portable=0;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
-    ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt'
+    ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
@@ -69,7 +69,7 @@ elif (target == "atarist"):
     portable=0;  
     ST_CFLAGS='-m68000 -std=c99 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
-    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt'
+    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
@@ -79,7 +79,7 @@ elif (target == "ct60"):
     portable=0;
     ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68060'
     ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
-    ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt'
+    ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'

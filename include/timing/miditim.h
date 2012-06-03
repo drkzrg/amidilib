@@ -54,10 +54,10 @@ float getTimeStamp();
  */
 float getTimeDelta();
 
-static const U32 DEFAULT_MPQN=500000;	   // tempo change step in ms
-static const U32 DEFAULT_PPQN=120;	   // default pulses per quater note
+static const U32 DEFAULT_MPQN=500000;	   // microsecs per quaternote
+static const U32 DEFAULT_PPQN=120;	   // default pulses per quater note (resolution)
 static const U32 SEQUENCER_UPDATE_HZ=127;  // sequencer update rate
-static const U32 DEFAULT_TEMPO=120;	   //60000000/500000 quaternotes per minute
+static const U32 DEFAULT_TEMPO=120;	   //60,000,000/DEFAULT_MPQN quaternotes per minute
 
 
 #endif

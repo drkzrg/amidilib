@@ -23,52 +23,23 @@
 #include "timing/mfp.h"
 #endif
 
-typedef struct{
-  U32 delta;
-  U32 tempo;	// 0 == stop
-  U8 note;	// 0-127 range
-  U8 dummy;	// just fill in
-} sEvent; 
-
-typedef struct{
-  BOOL bIsActive;
-  U8 volume;
-}sTrackState; 
-
-/////////////////////////////////////////////////
-//check if we are on the end of test sequence
-typedef struct{
-  sTrackState state;
-  U32 timeElapsedInt;
-  const sEvent *seqPtr;	
-} sTrack;
-
-typedef struct{
-  U32 currentTempo;	//quaternote duration in ms, 500ms default
-  U32 currentPPQN;	//pulses per quater note
-  U32 currentBPM;	//beats per minute (60 000000 / currentTempo)
-  U32 timeElapsedFrac; //sequence elapsed time
-  U32 timeStep; 	//sequence elapsed time
-  sTrack *tracks[3];	//one per ym channel
-  U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
-} sCurrentSequenceState;
-
-
+#include "sampleSequence.h"
 
 #ifndef PORTABLE
 extern void turnOffKeyclick(void);
-extern void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr);
+extern void installYMReplayRout(U8 mode,U8 data, sCurrentSequenceState *pPtr);
 extern void deinstallYMReplayRout();
 
 extern volatile U8 tbData,tbMode;
 extern volatile BOOL midiOutputEnabled;
 extern volatile BOOL ymOutputEnabled;
+
 #else
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
 void turnOffKeyclick(void){}
 
-void installYMReplayRout(U8 mode,U8 data,volatile sCurrentSequenceState *pPtr){
+void installYMReplayRout(U8 mode,U8 data, sCurrentSequenceState *pPtr){
 #warning TODO!
 }
 void deinstallYMReplayRout(){
@@ -78,27 +49,21 @@ void deinstallYMReplayRout(){
 
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
-sCurrentSequenceState currentState;
-volatile extern U32 counter;
-extern U32 defaultPlayMode;
-
-static U32 iCurrentStep;
-
 // plays sample sequence 
-int playSampleSequence(const sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
+int initSequence(const sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
 U8 mode,data; 
   pInitialState->state=PS_STOPPED;			//track state
   pInitialState->currentPPQN=DEFAULT_PPQN;
   pInitialState->currentTempo=DEFAULT_MPQN;
   pInitialState->currentBPM=DEFAULT_TEMPO;
   pInitialState->timeElapsedFrac=0;
-  pInitialState->timeStep=am_calculateTimeStep(pInitialState->currentBPM, pInitialState->currentPPQN, SEQUENCER_UPDATE_HZ);
+  pInitialState->timeStep=am_calculateTimeStep(DEFAULT_TEMPO, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
   
-  pInitialState->tracks[0]->seqPtr=testSequence[0];	//ptr to sequence
+  pInitialState->tracks[0]->seqPtr=testSequence[0];	
   pInitialState->tracks[0]->state.bIsActive=TRUE;
-  pInitialState->tracks[1]->seqPtr=testSequence[1];	//ptr to sequence
+  pInitialState->tracks[1]->seqPtr=testSequence[1];	
   pInitialState->tracks[1]->state.bIsActive=TRUE;
-  pInitialState->tracks[2]->seqPtr=testSequence[2];	//ptr to sequence
+  pInitialState->tracks[2]->seqPtr=testSequence[2];	
   pInitialState->tracks[2]->state.bIsActive=TRUE;
   
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
@@ -108,10 +73,9 @@ U8 mode,data;
   return 0;
 }
 
-BOOL isEOT(sEvent *pSeqPtr){
-
-  if((pSeqPtr->delta==0&&pSeqPtr->note==0&&pSeqPtr->tempo==0)) return TRUE;
-   else return FALSE;
+void updateSequenceStep(){
+  
+  
 }
 
 void printHelpScreen(){
@@ -131,89 +95,15 @@ void printHelpScreen(){
 
 extern U8 envelopeArray[8];
 
-// output, test sequence for channel 1 
-static const sEvent testSequenceChannel1[]={
-  {0L,500,56,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {0,0,0,0xAD}
-};
-
-// output test sequence for channel 2
-static const sEvent testSequenceChannel2[]={
-  {0L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {0L,500L,40,0xAD},
-  {0L,500L,41,0xAD},
-  {0L,500L,42,0xAD},
-  {0L,500L,43,0xAD},
-  {1L,500L,65,0xAD},
-  {2L,500L,66,0xAD},
-  {3L,500L,65,0xAD},
-  {4L,500L,66,0xAD},
-  {5L,500L,65,0xAD},
-  {6L,500L,66,0xAD},
-  {7L,500L,65,0xAD},
-  {8L,500L,66,0xAD},
-  {9L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {15L,500L,65,0xAD},
-  {20L,500L,66,0xAD},
-  {40L,500L,65,0xAD},
-  {80L,500L,66,0xAD},
-  {160L,500L,65,0xAD},
-  {320L,500L,66,0xAD},
-  {0L,0L,0,0xAD}
-};
-
-// output test sequence for channel 2
-static const sEvent testSequenceChannel3[]={
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {0L,0L,0,0xAD}
-};
-
+sCurrentSequenceState g_CurrentState;
+ 
 int main(void){
+ 
+
   ymChannelData ch[3];
 
-  currentState.currentTempo=DEFAULT_TEMPO;
-  currentState.currentPPQN=DEFAULT_PPQN;
+  g_CurrentState.currentTempo=DEFAULT_TEMPO;
+  g_CurrentState.currentPPQN=DEFAULT_PPQN;
   
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
@@ -255,11 +145,6 @@ int main(void){
 
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-  U8 mode,data;
-  
-  U32 freq=currentState.currentTempo/currentState.currentPPQN;			//
-  
-  getMFPTimerSettings(freq,&mode,&data);
   
   //prepare sequence
   const sEvent *sequences[3]={0};
@@ -267,11 +152,11 @@ int main(void){
   sequences[1]=testSequenceChannel2;
   sequences[2]=testSequenceChannel3;
   
-  playSampleSequence(sequences,&currentState);
+  initSequence(sequences,&g_CurrentState);
   
   //enter main loop
   while(bQuit==FALSE){
-  //printf("%ld, %ld \n",counter,currentState.currentIdx);
+  //printf("%ld, %ld \n",counter,g_CurrentState.currentIdx);
     
   for (int i=0; i<128; i++) {
      
@@ -305,7 +190,7 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-// 	    U32 tempo=currentState.currentTempo;
+// 	    U32 tempo=g_CurrentState.currentTempo;
 // 	    if(tempo<800000){
 // 	    
 // 	      if(tempo<50000){
@@ -313,14 +198,14 @@ int main(void){
 // 	    }else 
 // 	      iCurrentStep=TEMPO_STEP;
 // 	    
-// 	     currentState.currentTempo=tempo+iCurrentStep;
-// 	     U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
+// 	     g_CurrentState.currentTempo=tempo+iCurrentStep;
+// 	     U32 freq=(U32)(g_CurrentState.currentTempo/g_CurrentState.currentPPQN);
 // 	     
-// 	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
+// 	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)g_CurrentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
 // 	  
 	  }break;
 	  case SC_ARROW_DOWN:{
-// 	    U32 tempo=currentState.currentTempo;
+// 	    U32 tempo=g_CurrentState.currentTempo;
 // 	    
 // 	    if(tempo!=0){
 // 	       
@@ -331,9 +216,9 @@ int main(void){
 // 		iCurrentStep=100;
 // 	      }
 // 	      else iCurrentStep=TEMPO_STEP;
-// 	      currentState.currentTempo=tempo-iCurrentStep;
-// 	      U32 freq=(U32)(currentState.currentTempo/currentState.currentPPQN);
-// 	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)currentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
+// 	      g_CurrentState.currentTempo=tempo-iCurrentStep;
+// 	      U32 freq=(U32)(g_CurrentState.currentTempo/g_CurrentState.currentPPQN);
+// 	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)g_CurrentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
 // 	    }
 // 	    
 	  }break;
@@ -344,21 +229,21 @@ int main(void){
 	  case SC_M:{
 	    // toggle play mode PLAY ONCE / LOOP
 	    
-	    if(currentState.state==S_PLAY_LOOP){
+	    if(g_CurrentState.state==S_PLAY_LOOP){
 	      printf("Play sequence once.\n");
-	      currentState.state=S_PLAY_ONCE;
+	      g_CurrentState.state=S_PLAY_ONCE;
 	    }
-	    else if(currentState.state==S_PLAY_ONCE){
+	    else if(g_CurrentState.state==S_PLAY_ONCE){
 	      printf("Play sequence in loop.\n");
-	      currentState.state=S_PLAY_LOOP;
+	      g_CurrentState.state=S_PLAY_LOOP;
 	    }else{
-	      if(defaultPlayMode==S_PLAY_LOOP){
+	      if(g_CurrentState.defaultPlayMode==S_PLAY_LOOP){
 		printf("Play sequence once.\n");
-		defaultPlayMode=S_PLAY_ONCE;
+		g_CurrentState.defaultPlayMode=S_PLAY_ONCE;
 	      }
-	      else if(defaultPlayMode==S_PLAY_ONCE){
+	      else if(g_CurrentState.defaultPlayMode==S_PLAY_ONCE){
 		printf("Play sequence in loop.\n");
-		defaultPlayMode=S_PLAY_LOOP;
+		g_CurrentState.defaultPlayMode=S_PLAY_LOOP;
 	      }
 	    
 	    }
@@ -368,34 +253,34 @@ int main(void){
 	  case SC_P:{
 	    printf("Pause/Resume sequence\n");
 	    static U32 iFormerState;
-	    if(currentState.state==PS_STOPPED){
-	      currentState.state=defaultPlayMode;
-	    }else if(currentState.state==S_PLAY_ONCE){
-	      iFormerState=currentState.state; 
-	      currentState.state=PS_PAUSED;
+	    if(g_CurrentState.state==PS_STOPPED){
+	      g_CurrentState.state=g_CurrentState.defaultPlayMode;
+	    }else if(g_CurrentState.state==S_PLAY_ONCE){
+	      iFormerState=g_CurrentState.state; 
+	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==S_PLAY_LOOP){
-	      iFormerState=currentState.state;
-	      currentState.state=PS_PAUSED;
+	    else if(g_CurrentState.state==S_PLAY_LOOP){
+	      iFormerState=g_CurrentState.state;
+	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==S_PLAY_RANDOM){
-	      iFormerState=currentState.state;
-	      currentState.state=PS_PAUSED;
+	    else if(g_CurrentState.state==S_PLAY_RANDOM){
+	      iFormerState=g_CurrentState.state;
+	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
 	    }
-	    else if(currentState.state==PS_PAUSED){
-	      currentState.state=iFormerState;
+	    else if(g_CurrentState.state==PS_PAUSED){
+	      g_CurrentState.state=iFormerState;
 	      
 	    }
 	  }break;
 	  case SC_SPACEBAR:{
 	    printf("Stop sequence\n");
-	    currentState.state=PS_STOPPED;
+	    g_CurrentState.state=PS_STOPPED;
 	    am_allNotesOff(16);
 	    ymSoundOff();
 	  }break;
@@ -403,11 +288,6 @@ int main(void){
 	}
      
      }
-     
-     /*if (Ikbd_keyboard[i]==KEY_RELEASED) {
-	Ikbd_keyboard[i]=KEY_UNDEFINED;
-     }*/
-     
      
     }
     

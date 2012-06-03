@@ -49,6 +49,13 @@ void deinstallYMReplayRout(){
 
 void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
+BOOL isEOT(sEvent *pEvent){
+  if(pEvent->delta==0&&pEvent->note==0&&pEvent->tempo==0)
+    return TRUE;
+  else 
+    return FALSE;
+}
+
 // plays sample sequence 
 int initSequence(const sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
 U8 mode,data; 
@@ -73,9 +80,30 @@ U8 mode,data;
   return 0;
 }
 
+sCurrentSequenceState g_CurrentState;
+
 void updateSequenceStep(){
-  
-  
+   g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
+   U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
+   g_CurrentState.timeElapsedFrac &= 0xffff;
+
+  for (int i=0;i<3;i++){
+    //for each active track
+    if(g_CurrentState.tracks[i]->seqPtr!=0&&g_CurrentState.tracks[i]->state.bIsActive==TRUE){
+      
+      sEvent *pEvent=g_CurrentState.tracks[i]->seqPtr;
+      g_CurrentState.tracks[i]->timeElapsedInt+=TimeAdd;
+      
+      while(pEvent!=0&&(!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i]->timeElapsedInt ){
+	  g_CurrentState.tracks[i]->timeElapsedInt -= pEvent->delta;
+	  playNote(pEvent->note,midiOutputEnabled,ymOutputEnabled);
+	  pEvent++;
+      }
+      //update track counter
+      g_CurrentState.tracks[i]->seqPtr=pEvent;
+    }  
+    
+  }
 }
 
 void printHelpScreen(){
@@ -95,7 +123,7 @@ void printHelpScreen(){
 
 
 
-sCurrentSequenceState g_CurrentState;
+
  
 int main(void){
  

@@ -21,8 +21,8 @@
     xref _am_allNotesOff
     
     xref _updateSequenceStep	;our sequence update routine
-    xref _super_on	;self explanatory 
-    xref _super_off	;
+    xref _super_on		;self explanatory 
+    xref _super_off		;
 
 _installYMReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
@@ -70,7 +70,9 @@ update:
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer
 
-; deinstalls MIDI replay on timer B 
+; deinstalls MIDI replay on timer B
+; TODO: make different timer versions (TA,TB,TC) on defines for comparison
+
 _deinstallYMReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
 	bsr.w	_super_on
@@ -88,6 +90,7 @@ _deinstallYMReplayRout:
 	rts
 
 	bss
+
 	even
 _midiOutputEnabled:	ds.l	1
 _ymOutputEnabled: 	ds.l	1

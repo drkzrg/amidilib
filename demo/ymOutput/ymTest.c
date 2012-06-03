@@ -10,10 +10,6 @@
 #include "ym2149.h"
 #include "c_vars.h"
 
-
-extern U8 envelopeArray[8];
-
-
 #ifdef PORTABLE
 void turnOffKeyclick(void){}
 #else

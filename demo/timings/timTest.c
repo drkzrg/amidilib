@@ -6,7 +6,7 @@
 */
 
 //////////////////////////////////////////////////// timing test program
-// program reads delta times/notes from table and outputs sound through ym2149
+// program reads delta times/notes from table and outputs sound through ym2149/midi out
 // with adjustable tempo
 /////////////////////////////////////////////////////////////////////////
  
@@ -93,7 +93,7 @@ void printHelpScreen(){
   printf("================================================\n");
 }
 
-extern U8 envelopeArray[8];
+
 
 sCurrentSequenceState g_CurrentState;
  

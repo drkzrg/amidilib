@@ -199,5 +199,7 @@ void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod)
 void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod);
 void ymSoundOff();
 
+static const U8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
+
 #endif
 

@@ -57,7 +57,7 @@ BOOL isEOT(sEvent *pEvent){
 }
 
 // plays sample sequence 
-int initSequence(const sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
+int initSequence(sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
 U8 mode,data; 
   pInitialState->state=PS_STOPPED;			//track state
   pInitialState->currentPPQN=DEFAULT_PPQN;
@@ -175,7 +175,7 @@ int main(void){
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
   
   //prepare sequence
-  const sEvent *sequences[3]={0};
+  sEvent *sequences[3]={0};
   sequences[0]=testSequenceChannel1;
   sequences[1]=testSequenceChannel2;
   sequences[2]=testSequenceChannel3;

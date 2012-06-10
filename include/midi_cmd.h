@@ -229,11 +229,16 @@ static INLINE void poly(U8 channel, U8 numberOfPoly){
 
 //////////////////////////////////////////////////////////////////////////////
 // helper functions for copying midi data to internal buffer
+#ifdef PORTABLE
+U8 MIDIsendBuffer[32000]; //buffer from which we will send all data from the events once per frame
+U16 MIDIbytesToSend; 
+U16 MIDIbufferReady; //flag indicating buffer ready for sending data
 
+#else
 extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
 extern U16 MIDIbytesToSend; 
 extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
-
+#endif
 /* common, channel voice messages */
 /**
  * copies NOTE OFF MIDI message (key depressed)

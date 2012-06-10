@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2012 Pawel Goralski
+/** Copyright 2007-2012 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -21,12 +21,11 @@ typedef struct{
   U8 dummy;
 }sTrackState; 
 
-/////////////////////////////////////////////////
-//check if we are on the end of test sequence
 typedef struct{
   sTrackState state;
   U32 timeElapsedInt;
-  sEvent *seqPtr;	
+  sEvent *seqPtr;
+  U32 seqPosIdx;	//song position
 } sTrack;
 
 typedef struct{
@@ -35,14 +34,14 @@ typedef struct{
   U32 currentBPM;	//beats per minute (60 000000 / currentTempo)
   U32 timeElapsedFrac; //sequence elapsed time
   U32 timeStep; 	//sequence elapsed time
-  sTrack *tracks[3];	//one per ym channel
-  U32 state;		// 0=STOP, 1-PLAYING, 2-PAUSED
-  U32 defaultPlayMode;
+  sTrack *tracks[3];	      //one per ym channel
+  ePlayState state;	      //state 
+  ePlayMode defaultPlayMode;  //play in loop, play once etc..
 } sCurrentSequenceState;
 
 //sample sequence data
 // output, test sequence for channel 1 
-static sEvent testSequenceChannel1[]={
+  sEvent testSequenceChannel1[]={
   {0L,500,56,0xAD},
   {32L,500,127,0xAD},
   {32L,500,110,0xAD},
@@ -58,7 +57,7 @@ static sEvent testSequenceChannel1[]={
 };
 
 // output test sequence for channel 2
-static sEvent testSequenceChannel2[]={
+  sEvent testSequenceChannel2[]={
   {0L,500L,36,0xAD},
   {64L,500L,37,0xAD},
   {128L,500L,36,0xAD},
@@ -91,7 +90,7 @@ static sEvent testSequenceChannel2[]={
 };
 
 // output test sequence for channel 2
-static sEvent testSequenceChannel3[]={
+ sEvent testSequenceChannel3[]={
   {10L,500L,65,0xAD},
   {10L,500L,66,0xAD},
   {10L,500L,65,0xAD},

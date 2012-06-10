@@ -9,10 +9,15 @@
 #include "include/amidiseq.h"
 #include "include/midi_cmd.h"
 
+#ifdef PORTABLE
+extern sSequence_t *pCurrentSequence;	//here is stored current sequence
+BOOL bTempoChanged;
+BOOL bTimeSignatureChanged;
+#else
 extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
-
 extern BOOL bTempoChanged;
 extern BOOL bTimeSignatureChanged;
+#endif
 
 void  fNoteOn(void *pEvent){
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;

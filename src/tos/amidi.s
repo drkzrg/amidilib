@@ -1,5 +1,5 @@
 ;================================================
-;    Copyright 2007-2011 Pawel Goralski
+;    Copyright 2007-2012 Pawel Goralski
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
@@ -32,10 +32,11 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
 				 ;so MIDI beat 0 is send only once
     xdef _bTempoChanged		;flags indicatin tempo and time signature change
     xdef _bTimeSignatureChanged
-			
+    xdef _updateMidiFunc		;our replay routine installed on interrupt
+    xdef update			;no underscore, it will be not used from C level atm
 ;import symbols
     xref _sequenceUpdate
-
+    
 
 _installReplayRout:
 	movem.l	  d0-d7/a0-a6,-(sp)
@@ -43,16 +44,17 @@ _installReplayRout:
 	move.w	sr,-(sp)	;save status register
 	or.w	#$0700,sr	;turn off all interupts
 
-	move.l	$42(sp),d1  ;mode
-        move.l  $46(sp),d0  ;data
+	move.l	$42(sp),d1  	;mode
+        move.l  $46(sp),d0  	;data
+        move.l	$50(sp),update  ;interrupt routine ptr
         
-	move.b	d1,_tbMode  		;save parameters for later
+	move.b	d1,_tbMode  	;save parameters for later
 	move.b	d0,_tbData
-
-	clr.b     $fffffa1b		;turn off tb
+        
+	clr.b     $fffffa1b	;turn off tb
 	
 	move.l	  $120,_oldTB	
-	move.l    #update,$120		;slap interrupt
+	move.l    update,$120		;slap interrupt
 	
 	move.b    d0,$fffffa21		;put data 
 	move.b    d1,$fffffa1b		;put mode 
@@ -61,10 +63,10 @@ _installReplayRout:
 	
 	move.w 	  (sp)+,sr 		;restore Status Register
 	bsr.w	  _super_off
-	movem.l (sp)+,d0-d7/a0-a6		;restore registers
+	movem.l (sp)+,d0-d7/a0-a6	;restore registers
 	rts
 
-update:
+_updateMidiFunc:
       movem.l   d0-7/a0-6,-(a7)	;save registers
       clr.b     $fffffa1b
 
@@ -119,7 +121,7 @@ update:
       move.l	d1,pulseCounter(a0)	;save it
 .setInt:
       ;prepare next tick
-      move.l    #update,$120		;slap interrupt 
+      move.l    update,$120		;slap interrupt 
       move.b    _tbData,$fffffa21	;set data
       move.b    _tbMode,$fffffa1b	;div mode
       bset.b    #0,$fffffa07		;go!
@@ -199,26 +201,23 @@ _super_off:
 	RTS
 
 	bss
-	align 2
+	align 4
 old_ssp:		ds.l	1
-	align 2
 _pCurrentSequence:	ds.l	1
-	align 2
 _oldTB:			ds.l	1
-	align 2
+update:			ds.l	1
 _tbData:		ds.b	1
-	align 2
+	align 4
 _tbMode:		ds.b	1
 	align 2		
 _startPlaying:		ds.w	1
-	align 2
 _MIDIdataEndPtr:	ds.l	1
 	align 2
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 _MIDIbytesToSend:	ds.w	1	;nb of bytes to send
 _bTempoChanged:		ds.l	1
 _bTimeSignatureChanged:	ds.l	1
-	align 2
+	align 4
 
 ;sSequence_t structure
    RSRESET

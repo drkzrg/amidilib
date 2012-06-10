@@ -13,19 +13,22 @@
 // main AMIDILIB sequence replay interface
 #ifdef PORTABLE
 /** installs sequence replay routine (portable version) */
-void installReplayRout(U8 mode,U8 data);
+void installReplayRout(U8 mode,U8 data,void *func);
 
 /** deinstalls sequence replay routine (portable version) */
 void deinstallReplayRout(void);
+void updateMidiFunc(void);
 #else
 
 #define DIVIDER 100000
 
 /** installs sequence replay routine (hooked to timer B atm) */
-extern void installReplayRout(U8 mode,U8 data);
+extern void installReplayRout(U8 mode,U8 data,void *func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRout(void);
+extern void updateMidiFunc(void);
+
 #endif
 
 /** update sequence function called from interrupt routine */

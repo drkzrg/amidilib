@@ -5,10 +5,10 @@
     See license.txt for licensing information.
 */
 
-//////////////////////////////////////////////////// timing test program
+/////////////////////////////////////////////////////////////////// timing test program
 // program reads delta times/notes from table and outputs sound through ym2149/midi out
 // with adjustable tempo
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
  
 #include <stdio.h>
 #include <ctype.h> 
@@ -25,29 +25,24 @@
 
 #include "sampleSequence.h"
 
+sCurrentSequenceState g_CurrentState;
+
+BOOL handleTempoChange;
+
 #ifndef PORTABLE
 extern void turnOffKeyclick(void);
-extern void installYMReplayRout(U8 mode,U8 data, sCurrentSequenceState *pPtr);
-extern void deinstallYMReplayRout();
+extern void customSeqReplay(void);
 
-extern volatile U8 tbData,tbMode;
 extern volatile BOOL midiOutputEnabled;
 extern volatile BOOL ymOutputEnabled;
-
 #else
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
 void turnOffKeyclick(void){}
-
-void installYMReplayRout(U8 mode,U8 data, sCurrentSequenceState *pPtr){
-#warning TODO!
-}
-void deinstallYMReplayRout(){
-#warning TODO! 
-}
+void customSeqReplay(void){};
 #endif
 
-void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
+extern void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
 BOOL isEOT(sEvent *pEvent){
   if(pEvent->delta==0&&pEvent->note==0&&pEvent->tempo==0)
@@ -57,53 +52,120 @@ BOOL isEOT(sEvent *pEvent){
 }
 
 // plays sample sequence 
-int initSequence(sEvent *testSequence[3], sCurrentSequenceState *pInitialState){
-U8 mode,data; 
-  pInitialState->state=PS_STOPPED;			//track state
+int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pInitialState){
+U8 mode,data;
+  handleTempoChange=FALSE;
+  
+  pInitialState->tracks[0]->seqPtr=ch1;	
+  pInitialState->tracks[0]->state.bIsActive=TRUE;
+  pInitialState->tracks[0]->seqPosIdx=0;
+  
+  pInitialState->tracks[1]->seqPtr=ch2;	
+  pInitialState->tracks[1]->state.bIsActive=FALSE;
+  pInitialState->tracks[1]->seqPosIdx=0;
+  
+  pInitialState->tracks[2]->seqPtr=ch3;	
+  pInitialState->tracks[2]->state.bIsActive=FALSE;
+  pInitialState->tracks[2]->seqPosIdx=0;  
+
+  pInitialState->state=PS_STOPPED;
   pInitialState->currentPPQN=DEFAULT_PPQN;
   pInitialState->currentTempo=DEFAULT_MPQN;
-  pInitialState->currentBPM=DEFAULT_TEMPO;
+  pInitialState->currentBPM=DEFAULT_BPM;
+  pInitialState->defaultPlayMode=S_PLAY_LOOP;
+  
   pInitialState->timeElapsedFrac=0;
-  pInitialState->timeStep=am_calculateTimeStep(DEFAULT_TEMPO, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
-  
-  pInitialState->tracks[0]->seqPtr=testSequence[0];	
-  pInitialState->tracks[0]->state.bIsActive=TRUE;
-  pInitialState->tracks[1]->seqPtr=testSequence[1];	
-  pInitialState->tracks[1]->state.bIsActive=TRUE;
-  pInitialState->tracks[2]->seqPtr=testSequence[2];	
-  pInitialState->tracks[2]->state.bIsActive=TRUE;
-  
+  pInitialState->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+
+#ifndef PORTABLE
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
   
   //install replay routine 
-  installYMReplayRout(mode, data, pInitialState);
+  installReplayRout(mode, data, (void *)customSeqReplay);
+#endif
+
   return 0;
 }
 
-sCurrentSequenceState g_CurrentState;
-
 void updateSequenceStep(){
-   g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
-   U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
-   g_CurrentState.timeElapsedFrac &= 0xffff;
+BOOL endOfSequence;
 
+g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
+U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
+g_CurrentState.timeElapsedFrac &= 0xffff;
+
+  //check sequence state if paused do nothing
+  if(g_CurrentState.state==PS_PAUSED) return;
+  
+  //check sequence state if stopped reset position on all tracks
+  //and reset tempo to default
+  
+  if(g_CurrentState.state==PS_STOPPED){
+      //repeat for each track
+    for (int i=0;i<3;i++){
+      g_CurrentState.tracks[i]->seqPosIdx=0;
+    }
+    //reset tempo to default
+    g_CurrentState.currentPPQN=DEFAULT_PPQN;
+    g_CurrentState.currentTempo=DEFAULT_MPQN;
+    g_CurrentState.currentBPM=DEFAULT_BPM;
+    g_CurrentState.timeElapsedFrac=0;
+    g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+    return;
+  }
+  
+   
+  //repeat for each track
   for (int i=0;i<3;i++){
+    
     //for each active track
-    if(g_CurrentState.tracks[i]->seqPtr!=0&&g_CurrentState.tracks[i]->state.bIsActive==TRUE){
+      U32 count=g_CurrentState.tracks[i]->seqPosIdx;
+      sEvent *pEvent=&(g_CurrentState.tracks[i]->seqPtr[count]);
       
-      sEvent *pEvent=g_CurrentState.tracks[i]->seqPtr;
       g_CurrentState.tracks[i]->timeElapsedInt+=TimeAdd;
       
-      while(pEvent!=0&&(!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i]->timeElapsedInt ){
+      while((!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i]->timeElapsedInt ){
+	  endOfSequence=FALSE;
 	  g_CurrentState.tracks[i]->timeElapsedInt -= pEvent->delta;
-	  playNote(pEvent->note,midiOutputEnabled,ymOutputEnabled);
-	  pEvent++;
+	  
+	  if(g_CurrentState.tracks[i]->state.bIsActive==TRUE){
+	    playNote(pEvent->note,midiOutputEnabled,ymOutputEnabled);
+	  }
+	  ++count;
+	  pEvent=&(g_CurrentState.tracks[i]->seqPtr[count]);
       }
-      //update track counter
-      g_CurrentState.tracks[i]->seqPtr=pEvent;
-    }  
-    
+      
+      //check for end of sequence
+      if(isEOT(pEvent)){
+	endOfSequence=TRUE;
+      }
+  
+    g_CurrentState.tracks[i]->seqPosIdx=count;
   }
+  
+  //check if we have end of sequence
+  //on all tracks
+  if(endOfSequence==TRUE){
+    if(g_CurrentState.defaultPlayMode==S_PLAY_ONCE){
+      //reset set state to stopped
+      //reset song position on all tracks
+      g_CurrentState.state=PS_STOPPED;
+    }else if(g_CurrentState.defaultPlayMode==S_PLAY_LOOP){
+      g_CurrentState.state=PS_PLAYING;
+      g_CurrentState.currentPPQN=DEFAULT_PPQN;
+      g_CurrentState.currentTempo=DEFAULT_MPQN;
+      g_CurrentState.currentBPM=DEFAULT_BPM;
+      g_CurrentState.timeElapsedFrac=0;
+      g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+    }
+  }
+  
+  if(handleTempoChange==TRUE){
+    g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;
+    g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
+    handleTempoChange=FALSE;
+  }
+  
 }
 
 void printHelpScreen(){
@@ -120,22 +182,13 @@ void printHelpScreen(){
   printf("(c) Nokturnal 2012\n");
   printf("================================================\n");
 }
+#define TEMPO_STEP 10000
 
-
-
-
- 
 int main(void){
- 
-
   ymChannelData ch[3];
-
-  g_CurrentState.currentTempo=DEFAULT_TEMPO;
-  g_CurrentState.currentPPQN=DEFAULT_PPQN;
-  
+  U32 iCurrentStep=TEMPO_STEP;
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
-  
   BOOL bQuit=FALSE;
 
   //set up ym2149 sound
@@ -167,6 +220,9 @@ int main(void){
   printHelpScreen();
   turnOffKeyclick();
 
+  //prepare sequence
+  initSequence(&testSequenceChannel1[0],&testSequenceChannel2[0],&testSequenceChannel3[0],&g_CurrentState);
+  
 #ifndef PORTABLE
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
@@ -174,17 +230,8 @@ int main(void){
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
   
-  //prepare sequence
-  sEvent *sequences[3]={0};
-  sequences[0]=testSequenceChannel1;
-  sequences[1]=testSequenceChannel2;
-  sequences[2]=testSequenceChannel3;
-  
-  initSequence(sequences,&g_CurrentState);
-  
   //enter main loop
   while(bQuit==FALSE){
-  //printf("%ld, %ld \n",counter,g_CurrentState.currentIdx);
     
   for (int i=0; i<128; i++) {
      
@@ -218,37 +265,37 @@ int main(void){
 	    }
 	  }break;
 	  case SC_ARROW_UP:{
-// 	    U32 tempo=g_CurrentState.currentTempo;
-// 	    if(tempo<800000){
-// 	    
-// 	      if(tempo<50000){
-// 	       iCurrentStep=5000;
-// 	    }else 
-// 	      iCurrentStep=TEMPO_STEP;
-// 	    
-// 	     g_CurrentState.currentTempo=tempo+iCurrentStep;
-// 	     U32 freq=(U32)(g_CurrentState.currentTempo/g_CurrentState.currentPPQN);
-// 	     
-// 	    printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)g_CurrentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);}
-// 	  
+
+ 	    U32 tempo=g_CurrentState.currentTempo;
+ 	    
+ 	    if(tempo!=0){
+ 	      if(tempo<=50000&&tempo>5000){
+ 		iCurrentStep=5000;
+ 	      }
+ 	      else if(tempo<=5000){
+ 		iCurrentStep=100;
+ 	      }
+ 	      else 
+		iCurrentStep=TEMPO_STEP;
+ 	      
+	      g_CurrentState.currentTempo=tempo-iCurrentStep;
+	      handleTempoChange=TRUE;
+	      
+ 	      printf("Current tempo: %u [ms]\n",(unsigned int)g_CurrentState.currentTempo);
+ 	    }
 	  }break;
 	  case SC_ARROW_DOWN:{
-// 	    U32 tempo=g_CurrentState.currentTempo;
-// 	    
-// 	    if(tempo!=0){
-// 	       
-// 	      if(tempo<=50000&&tempo>5000){
-// 		iCurrentStep=5000;
-// 	      }
-// 	      else if(tempo<=5000){
-// 		iCurrentStep=100;
-// 	      }
-// 	      else iCurrentStep=TEMPO_STEP;
-// 	      g_CurrentState.currentTempo=tempo-iCurrentStep;
-// 	      U32 freq=(U32)(g_CurrentState.currentTempo/g_CurrentState.currentPPQN);
-// 	      printf("Current tempo: %u [ms](freq %u),\ntimer mode: %u, count:%u\n",(unsigned int)g_CurrentState.currentTempo,(unsigned int)freq,(unsigned int)tbMode,(unsigned int)tbData);
-// 	    }
-// 	    
+	   U32 tempo=g_CurrentState.currentTempo;
+ 	    if(tempo<800000){
+ 	      if(tempo<50000){
+ 	       iCurrentStep=5000;
+	      }else 
+		iCurrentStep=TEMPO_STEP;
+ 	    
+ 	      g_CurrentState.currentTempo=tempo+iCurrentStep;
+	      handleTempoChange=TRUE;
+ 	      printf("Current tempo: %u [ms]",(unsigned int)g_CurrentState.currentTempo);
+	    }
 	  }break;
 	  
 	  case SC_I:{
@@ -256,7 +303,6 @@ int main(void){
 	  }break;
 	  case SC_M:{
 	    // toggle play mode PLAY ONCE / LOOP
-	    
 	    if(g_CurrentState.state==S_PLAY_LOOP){
 	      printf("Play sequence once.\n");
 	      g_CurrentState.state=S_PLAY_ONCE;
@@ -273,9 +319,7 @@ int main(void){
 		printf("Play sequence in loop.\n");
 		g_CurrentState.defaultPlayMode=S_PLAY_LOOP;
 	      }
-	    
 	    }
-	    
 	  }break;
 	  
 	  case SC_P:{
@@ -288,22 +332,18 @@ int main(void){
 	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
-	    }
-	    else if(g_CurrentState.state==S_PLAY_LOOP){
+	    }else if(g_CurrentState.state==S_PLAY_LOOP){
 	      iFormerState=g_CurrentState.state;
 	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
-	    }
-	    else if(g_CurrentState.state==S_PLAY_RANDOM){
+	    }else if(g_CurrentState.state==S_PLAY_RANDOM){
 	      iFormerState=g_CurrentState.state;
 	      g_CurrentState.state=PS_PAUSED;
 	      am_allNotesOff(16);
 	      ymSoundOff();
-	    }
-	    else if(g_CurrentState.state==PS_PAUSED){
+	    }else if(g_CurrentState.state==PS_PAUSED){
 	      g_CurrentState.state=iFormerState;
-	      
 	    }
 	  }break;
 	  case SC_SPACEBAR:{
@@ -313,18 +353,18 @@ int main(void){
 	    ymSoundOff();
 	  }break;
 	  
-	}
+	} //end switch
      
-     }
+     } // end if
      
-    }
+    } //end for
     
     
-  }
+  }//end while
 
   am_allNotesOff(16);
   ymSoundOff();
-  deinstallYMReplayRout();   
+  deinstallReplayRout();   
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);

@@ -25,8 +25,7 @@
 
 #include "sampleSequence.h"
 
-sCurrentSequenceState g_CurrentState;
-
+static sCurrentSequenceState g_CurrentState;
 BOOL handleTempoChange;
 
 #ifndef PORTABLE
@@ -53,20 +52,21 @@ BOOL isEOT(sEvent *pEvent){
 
 // plays sample sequence 
 int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pInitialState){
-U8 mode,data;
+  U8 mode,data;
   handleTempoChange=FALSE;
+  VOIDFUNCPTR replayRout=customSeqReplay;
+ 
+  pInitialState->tracks[0].seqPtr=ch1;	
+  pInitialState->tracks[0].state.bIsActive=TRUE;
+  pInitialState->tracks[0].seqPosIdx=0;
   
-  pInitialState->tracks[0]->seqPtr=ch1;	
-  pInitialState->tracks[0]->state.bIsActive=TRUE;
-  pInitialState->tracks[0]->seqPosIdx=0;
+  pInitialState->tracks[1].seqPtr=ch2;	
+  pInitialState->tracks[1].state.bIsActive=FALSE;
+  pInitialState->tracks[1].seqPosIdx=0;
   
-  pInitialState->tracks[1]->seqPtr=ch2;	
-  pInitialState->tracks[1]->state.bIsActive=FALSE;
-  pInitialState->tracks[1]->seqPosIdx=0;
-  
-  pInitialState->tracks[2]->seqPtr=ch3;	
-  pInitialState->tracks[2]->state.bIsActive=FALSE;
-  pInitialState->tracks[2]->seqPosIdx=0;  
+  pInitialState->tracks[2].seqPtr=ch3;	
+  pInitialState->tracks[2].state.bIsActive=FALSE;
+  pInitialState->tracks[2].seqPosIdx=0;  
 
   pInitialState->state=PS_STOPPED;
   pInitialState->currentPPQN=DEFAULT_PPQN;
@@ -75,13 +75,18 @@ U8 mode,data;
   pInitialState->defaultPlayMode=S_PLAY_LOOP;
   
   pInitialState->timeElapsedFrac=0;
-  pInitialState->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
-
+  pInitialState->timeStep=am_calculateTimeStep((U16)DEFAULT_BPM, (U16)DEFAULT_PPQN, (U16)SEQUENCER_UPDATE_HZ);
+  
+  amTrace("\nInitial seqence timestep:%d\n",pInitialState->timeStep);
+  
 #ifndef PORTABLE
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
-  
+
+  amTrace("Seqencer update[hz]:%d, timer mode: %d, data: %d\n",(U16)SEQUENCER_UPDATE_HZ,mode,data);
   //install replay routine 
-  installReplayRout(mode, data, (void *)customSeqReplay);
+  installReplayRout(mode, data, replayRout);
+  amTrace("ok..");
+  
 #endif
 
   return 0;
@@ -103,7 +108,7 @@ g_CurrentState.timeElapsedFrac &= 0xffff;
   if(g_CurrentState.state==PS_STOPPED){
       //repeat for each track
     for (int i=0;i<3;i++){
-      g_CurrentState.tracks[i]->seqPosIdx=0;
+      g_CurrentState.tracks[i].seqPosIdx=0;
     }
     //reset tempo to default
     g_CurrentState.currentPPQN=DEFAULT_PPQN;
@@ -119,20 +124,20 @@ g_CurrentState.timeElapsedFrac &= 0xffff;
   for (int i=0;i<3;i++){
     
     //for each active track
-      U32 count=g_CurrentState.tracks[i]->seqPosIdx;
-      sEvent *pEvent=&(g_CurrentState.tracks[i]->seqPtr[count]);
+      U32 count=g_CurrentState.tracks[i].seqPosIdx;
+      sEvent *pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
       
-      g_CurrentState.tracks[i]->timeElapsedInt+=TimeAdd;
+      g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while((!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i]->timeElapsedInt ){
+      while((!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
 	  endOfSequence=FALSE;
-	  g_CurrentState.tracks[i]->timeElapsedInt -= pEvent->delta;
+	  g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;
 	  
-	  if(g_CurrentState.tracks[i]->state.bIsActive==TRUE){
+	  if(g_CurrentState.tracks[i].state.bIsActive==TRUE){
 	    playNote(pEvent->note,midiOutputEnabled,ymOutputEnabled);
 	  }
 	  ++count;
-	  pEvent=&(g_CurrentState.tracks[i]->seqPtr[count]);
+	  pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
       }
       
       //check for end of sequence
@@ -140,7 +145,7 @@ g_CurrentState.timeElapsedFrac &= 0xffff;
 	endOfSequence=TRUE;
       }
   
-    g_CurrentState.tracks[i]->seqPosIdx=count;
+    g_CurrentState.tracks[i].seqPosIdx=count;
   }
   
   //check if we have end of sequence
@@ -221,7 +226,7 @@ int main(void){
   turnOffKeyclick();
 
   //prepare sequence
-  initSequence(&testSequenceChannel1[0],&testSequenceChannel2[0],&testSequenceChannel3[0],&g_CurrentState);
+  initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
   
 #ifndef PORTABLE
   /* Install our asm ikbd handler */

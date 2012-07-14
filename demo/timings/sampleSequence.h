@@ -34,14 +34,14 @@ typedef struct{
   U32 currentBPM;	//beats per minute (60 000000 / currentTempo)
   U32 timeElapsedFrac; //sequence elapsed time
   U32 timeStep; 	//sequence elapsed time
-  sTrack *tracks[3];	      //one per ym channel
+  sTrack tracks[3];	      //one per ym channel
   ePlayState state;	      //state 
   ePlayMode defaultPlayMode;  //play in loop, play once etc..
 } sCurrentSequenceState;
 
 //sample sequence data
 // output, test sequence for channel 1 
-  sEvent testSequenceChannel1[]={
+  static sEvent testSequenceChannel1[]={
   {0L,500,56,0xAD},
   {32L,500,127,0xAD},
   {32L,500,110,0xAD},
@@ -57,7 +57,7 @@ typedef struct{
 };
 
 // output test sequence for channel 2
-  sEvent testSequenceChannel2[]={
+ static sEvent testSequenceChannel2[]={
   {0L,500L,36,0xAD},
   {64L,500L,37,0xAD},
   {128L,500L,36,0xAD},
@@ -90,7 +90,7 @@ typedef struct{
 };
 
 // output test sequence for channel 2
- sEvent testSequenceChannel3[]={
+ static sEvent testSequenceChannel3[]={
   {10L,500L,65,0xAD},
   {10L,500L,66,0xAD},
   {10L,500L,65,0xAD},

@@ -17,7 +17,7 @@
     
     xref _updateSequenceStep	;our sequence update routine
     xref update			;our installed interrupt routine
-
+	even
 _customSeqReplay:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	
@@ -42,5 +42,5 @@ _customSeqReplay:
 	even
 _midiOutputEnabled:	ds.l	1
 _ymOutputEnabled: 	ds.l	1
-
+	align 4
 

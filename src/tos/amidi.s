@@ -46,7 +46,7 @@ _installReplayRout:
 
 	move.l	$42(sp),d1  	;mode
         move.l  $46(sp),d0  	;data
-        move.l	$50(sp),update  ;interrupt routine ptr
+        move.l	$52(sp),update  ;interrupt routine ptr
         
 	move.b	d1,_tbMode  	;save parameters for later
 	move.b	d0,_tbData

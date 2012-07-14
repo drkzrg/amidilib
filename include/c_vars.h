@@ -35,6 +35,7 @@ typedef signed long long	S64; //non-standard!
 typedef unsigned long long 	U64; //non-standard!
 
 typedef size_t tMEMSIZE;
+typedef void (*VOIDFUNCPTR)();
 
 #ifndef TRUE
 #define TRUE 1

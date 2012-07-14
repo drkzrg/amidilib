@@ -132,11 +132,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   elif(int(debug)==3):
-    ST_CFLAGS='-g '+ ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   LIB_POSTFIX = LIB_POSTFIX+'d'
 else:
     print "Release build... Code optimisation is turned on."
@@ -162,6 +162,7 @@ if int(portable==1):
   discio_src = ["portable/discio/fmio.c"]
   midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]
   memory_src = ["portable/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+
 else: 
   input_src =  ["tos/ikbd.s"]
   discio_src = ["tos/discio/fmio.c"]
@@ -173,7 +174,7 @@ else:
 ym2149_src = ["common/ym2149.c"]
 rand_src = ["common/twisterm.c"]
 lzo_src = ["common/lzo/minilzo.c"]
-
+ 
 # main library 
 if int(portable==1):
   amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
@@ -184,23 +185,24 @@ else:
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
 
 #################### test programs entry points
-if(portable==1):
-  amidi_test_src = ["../demo/midi_rep/main.c"]
-  midiOut_test_src = ["../demo/midi_output/midiTest.c"]
-  timings_test_src = ["../demo/timings/timTest.c"]+ ym2149_src
-  ym2149_test_src = ["../demo/ymOutput/ymTest.c"]+ ym2149_src  
-else:
-  amidi_test_src = ["../demo/midi_rep/main.c"] + input_src
-  midiOut_test_src = ["../demo/midi_output/midiTest.c"] + input_src
-  timings_test_src = ["../demo/timings/timTest.c"] + input_src + ym2149_src
-  ym2149_test_src = ["../demo/ymOutput/ymTest.c"] + input_src + ym2149_src
+amidi_test_src = ["../demo/midi_rep/main.c"] 
+midiOut_test_src = ["../demo/midi_output/midiTest.c"] 
+timings_test_src = ["../demo/timings/timTest.c"] 
+ym2149_test_src = ["../demo/ymOutput/ymTest.c"] 
   
 # build test programs and link them with amidilib
-env.Program(target = AMIDI_TEST_EXE, source = amidi_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(target = YM2149_TEST_EXE, source = ym2149_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(target = MIDI_SEQ_TEST_EXE, source = midiOut_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(target = TIMINGS_TEST_EXE, source = timings_test_src, LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+if(portable==1):
+  env.Program(AMIDI_TEST_EXE, [amidi_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(YM2149_TEST_EXE, [ym2149_test_src+ env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(TIMINGS_TEST_EXE, [timings_test_src+ env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+else:
+  env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(TIMINGS_TEST_EXE, [timings_test_src + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
+  
 # TODO if release strip symbols, pack with executable packer 
 if(debug=='none' or (int(debug)==0)):
     print "Stripping symbols"

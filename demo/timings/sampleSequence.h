@@ -35,87 +35,92 @@ typedef struct{
   U32 timeElapsedFrac; //sequence elapsed time
   U32 timeStep; 	//sequence elapsed time
   sTrack tracks[3];	      //one per ym channel
-  ePlayState state;	      //state 
-  ePlayMode defaultPlayMode;  //play in loop, play once etc..
+  ePlayState state;	      //current state playing/paused/stopped 
+  ePlayMode playMode;  //play in loop, play once etc..
+  
 } sCurrentSequenceState;
 
 //sample sequence data
 // output, test sequence for channel 1 
   static sEvent testSequenceChannel1[]={
   {0L,500,56,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
-  {32L,500,127,0xAD},
-  {32L,500,110,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {0L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
   {0,0,0,0xAD}
 };
 
 // output test sequence for channel 2
  static sEvent testSequenceChannel2[]={
-  {0L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {128L,500L,36,0xAD},
-  {64L,500L,37,0xAD},
-  {0L,500L,40,0xAD},
-  {0L,500L,41,0xAD},
-  {0L,500L,42,0xAD},
-  {0L,500L,43,0xAD},
-  {1L,500L,65,0xAD},
-  {2L,500L,66,0xAD},
-  {3L,500L,65,0xAD},
-  {4L,500L,66,0xAD},
-  {5L,500L,65,0xAD},
-  {6L,500L,66,0xAD},
-  {7L,500L,65,0xAD},
-  {8L,500L,66,0xAD},
-  {9L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {15L,500L,65,0xAD},
-  {20L,500L,66,0xAD},
-  {40L,500L,65,0xAD},
-  {80L,500L,66,0xAD},
-  {160L,500L,65,0xAD},
-  {320L,500L,66,0xAD},
-  {0L,0L,0,0xAD}
+  {0L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {0L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {0,0,0,0xAD}
 };
 
 // output test sequence for channel 2
  static sEvent testSequenceChannel3[]={
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {10L,500L,65,0xAD},
-  {10L,500L,66,0xAD},
-  {0L,0L,0,0xAD}
+  {0L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {0L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {32L,500,46,0xAD},
+  {16L,500,56,0xAD},
+  {0,0,0,0xAD}
+
 };
 
 #endif

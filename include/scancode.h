@@ -29,7 +29,6 @@
 #define SC_HELP 0x62
 #define SC_UNDO 0x61
 
-
 #define SC_Z 0x2c
 #define SC_X 0x2d
 #define SC_LT 0x33

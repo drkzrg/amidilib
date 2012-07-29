@@ -50,15 +50,15 @@ LIB_POSTFIX=''
 if (target == "unix"):
     print "Building Generic/Unix target..."
     portable=1;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = ''
     ST_CCFLAGS =''
 elif ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
     portable=0;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68030'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99 -m68030'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -67,8 +67,8 @@ elif ((target == "f030") or (target == "ataritt")):
 elif (target == "atarist"):
     print "Building Atari ST/Ste target..."
     portable=0;  
-    ST_CFLAGS='-m68000 -std=c99 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99 -m68000'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -77,8 +77,8 @@ elif (target == "atarist"):
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target..."
     portable=0;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer -m68060'
-    ST_LDFLAGS='-Wl,--traditional-format -fomit-frame-pointer -lm'
+    ST_CFLAGS='-std=c99 -m68060'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -138,6 +138,7 @@ if ( (debug != 'none') and (int(debug)>0)):
   elif(int(debug)==3):
     ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   LIB_POSTFIX = LIB_POSTFIX+'d'
+  ST_CFLAGS='-O0 ' + ST_CFLAGS  
 else:
     print "Release build... Code optimisation is turned on."
     ST_CFLAGS='-O2 ' + ST_CFLAGS  

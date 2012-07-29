@@ -193,7 +193,8 @@ void onTogglePlayMode(sCurrentSequenceState *pState){
 
 void onTempoUp(sCurrentSequenceState *pSeqPtr){
 U32 iCurrentStep;
-
+  if(g_CurrentState.state==PS_STOPPED) return;
+  
   if(pSeqPtr->currentTempo<0) pSeqPtr->currentTempo=0;
 
   if(pSeqPtr->currentTempo!=0){
@@ -215,6 +216,8 @@ U32 iCurrentStep;
 
 void onTempoDown(sCurrentSequenceState *pSeqPtr){
 U32 iCurrentStep;
+
+if(g_CurrentState.state==PS_STOPPED) return;
 
   if(pSeqPtr->currentTempo<50000){
     iCurrentStep=5000;
@@ -252,30 +255,15 @@ void onToggleYmEnable(){
 }
 
 void onTogglePlayPauseSequence(sCurrentSequenceState *pSeqPtr){
-static U32 iFormerState;
 
 printf("Pause/Resume sequence\n");
   
   if(pSeqPtr->state==PS_STOPPED){
-      iFormerState=pSeqPtr->state; 
       pSeqPtr->state=PS_PLAYING;
-  }else if(pSeqPtr->playMode==S_PLAY_ONCE){
-      iFormerState=pSeqPtr->state; 
+  }else if(pSeqPtr->state==PS_PLAYING){
       pSeqPtr->state=PS_PAUSED;
-      am_allNotesOff(16);
-      ymSoundOff();
-  }else if(pSeqPtr->playMode==S_PLAY_LOOP){
-      iFormerState=pSeqPtr->state;
-      pSeqPtr->state=PS_PAUSED;
-      am_allNotesOff(16);
-      ymSoundOff();
-  }else if(pSeqPtr->playMode==S_PLAY_RANDOM){
-      iFormerState=pSeqPtr->state;
-      pSeqPtr->state=PS_PAUSED;
-      am_allNotesOff(16);
-      ymSoundOff();
-  }else if(pSeqPtr->playMode==PS_PAUSED){
-      pSeqPtr->state=iFormerState;
+  }else if(pSeqPtr->state==PS_PAUSED){
+      pSeqPtr->state=PS_PLAYING;
   }
 }
 
@@ -351,7 +339,12 @@ BOOL endOfSequence;
 static BOOL bStopped=FALSE;
 
   //check sequence state if paused do nothing
-  if(g_CurrentState.state==PS_PAUSED) return;
+  if(g_CurrentState.state==PS_PAUSED) {
+    if(midiOutputEnabled==TRUE) am_allNotesOff(16);
+    if(ymOutputEnabled==TRUE) ymSoundOff();
+    return;
+  }
+  
   if(g_CurrentState.state==PS_PLAYING) bStopped=FALSE;
   //check sequence state if stopped reset position on all tracks
   //and reset tempo to default, but only once

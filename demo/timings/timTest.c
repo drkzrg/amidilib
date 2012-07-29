@@ -44,7 +44,6 @@ void customSeqReplay(void){};
 #endif
 
 #define TEMPO_STEP 10000
-U32 iCurrentStep;
 
 extern void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
 
@@ -59,32 +58,32 @@ BOOL isEOT(sEvent *pEvent);
 
 // plays sample sequence 
 int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
-void updateSequenceStep();
+void updateSequenceStep(); 
+void onEndSequence(); //end sequence handler
 void printHelpScreen();
 
 
 int main(void){
   ymChannelData ch[3];
-  iCurrentStep=TEMPO_STEP;
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
   BOOL bQuit=FALSE;
 
   //set up ym2149 sound
   /////////////////////////////////////
-  ch[CH_A].amp=15;
+  ch[CH_A].amp=16;
   ch[CH_A].oscFreq=0;
   ch[CH_A].oscStepSize=0;  
   ch[CH_A].toneEnable=1;
   ch[CH_A].noiseEnable=0;
   
-  ch[CH_B].amp=15;
+  ch[CH_B].amp=16;
   ch[CH_B].oscFreq=0;
   ch[CH_B].oscStepSize=0;
   ch[CH_B].toneEnable=1;
   ch[CH_B].noiseEnable=0;
   
-  ch[CH_C].amp=15;
+  ch[CH_C].amp=16;
   ch[CH_C].oscFreq=0;
   ch[CH_C].oscStepSize=0;
   ch[CH_C].toneEnable=1;
@@ -131,7 +130,7 @@ int main(void){
 	    onTempoUp(&g_CurrentState);
 	  }break;
 	  case SC_ARROW_DOWN:{
-	   onTempoDown(&g_CurrentState);
+	    onTempoDown(&g_CurrentState);
 	  }break;
 	  case SC_I:{
 	    printHelpScreen();
@@ -145,7 +144,6 @@ int main(void){
 	  case SC_SPACEBAR:{
 	    onStopSequence(&g_CurrentState);
 	    initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
-  
 	  }break;
 	  
 	} //end switch
@@ -194,39 +192,39 @@ void onTogglePlayMode(sCurrentSequenceState *pState){
 }
 
 void onTempoUp(sCurrentSequenceState *pSeqPtr){
-  U32 tempo=pSeqPtr->currentTempo;
+U32 iCurrentStep;
 
-  if(tempo!=0){
-    if(tempo<=50000&&tempo>5000){
+  if(pSeqPtr->currentTempo<0) pSeqPtr->currentTempo=0;
+
+  if(pSeqPtr->currentTempo!=0){
+    if(pSeqPtr->currentTempo<=50000&&pSeqPtr->currentTempo>5000){
       iCurrentStep=5000;
     }
-    else if(tempo<=5000){
+    else if(pSeqPtr->currentTempo<=5000){
       iCurrentStep=100;
     }
     else 
       iCurrentStep=TEMPO_STEP;
  	      
-    pSeqPtr->currentTempo=tempo-iCurrentStep;
-    handleTempoChange=TRUE;
-	      
-    printf("Current tempo: %u [ms]\n",(unsigned int)pSeqPtr->currentTempo);
+    pSeqPtr->currentTempo-=iCurrentStep;
+    handleTempoChange=TRUE;    
   }
+  
+  printf("Current tempo: %ld [ms]\n",pSeqPtr->currentTempo);
 }
 
 void onTempoDown(sCurrentSequenceState *pSeqPtr){
-U32 tempo=pSeqPtr->currentTempo;
- 
- if(tempo<800000){
-   
-  if(tempo<50000){
+U32 iCurrentStep;
+
+  if(pSeqPtr->currentTempo<50000){
     iCurrentStep=5000;
   }else 
     iCurrentStep=TEMPO_STEP;  
    
-  pSeqPtr->currentTempo=tempo+iCurrentStep;
+  pSeqPtr->currentTempo+=iCurrentStep;
   handleTempoChange=TRUE;
-  printf("Current tempo: %u [ms]\n",(unsigned int)pSeqPtr->currentTempo);
- }
+ 
+  printf("Current tempo: %ld [ms]\n",pSeqPtr->currentTempo);
 }
 
 void onToggleMidiEnable(){
@@ -255,9 +253,11 @@ void onToggleYmEnable(){
 
 void onTogglePlayPauseSequence(sCurrentSequenceState *pSeqPtr){
 static U32 iFormerState;
-  printf("Pause/Resume sequence\n");
+
+printf("Pause/Resume sequence\n");
   
   if(pSeqPtr->state==PS_STOPPED){
+      iFormerState=pSeqPtr->state; 
       pSeqPtr->state=PS_PLAYING;
   }else if(pSeqPtr->playMode==S_PLAY_ONCE){
       iFormerState=pSeqPtr->state; 
@@ -287,7 +287,7 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
 }
 
 BOOL isEOT(sEvent *pEvent){
-  if(pEvent->delta==0&&pEvent->note==0&&pEvent->tempo==0)
+  if(pEvent->delta==0&&pEvent->note==0)
     return TRUE;
   else 
     return FALSE;
@@ -335,15 +335,11 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
   pSeqPtr->timeElapsedFrac=0;
   pSeqPtr->timeStep=am_calculateTimeStep((U16)DEFAULT_BPM, (U16)DEFAULT_PPQN, (U16)SEQUENCER_UPDATE_HZ);
   
-  amTrace("\nInitial seqence timestep:%d\n",pSeqPtr->timeStep);
-  
 #ifndef PORTABLE
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
-  amTrace("Seqencer update[hz]:%d, timer mode: %d, data: %d\n",(U16)SEQUENCER_UPDATE_HZ,mode,data);
   //install replay routine 
   installReplayRout(mode, data, replayRout);
-  amTrace("ok..");
   
 #endif
 
@@ -352,19 +348,17 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
 
 void updateSequenceStep(){
 BOOL endOfSequence;
-
-g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
-U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
-g_CurrentState.timeElapsedFrac &= 0xffff;
+static BOOL bStopped=FALSE;
 
   //check sequence state if paused do nothing
   if(g_CurrentState.state==PS_PAUSED) return;
-  
+  if(g_CurrentState.state==PS_PLAYING) bStopped=FALSE;
   //check sequence state if stopped reset position on all tracks
-  //and reset tempo to default
+  //and reset tempo to default, but only once
   
-  if(g_CurrentState.state==PS_STOPPED){
-      //repeat for each track
+  if(g_CurrentState.state==PS_STOPPED&&bStopped==FALSE){
+    bStopped=TRUE;
+    //repeat for each track
     for (int i=0;i<3;i++){
       g_CurrentState.tracks[i].seqPosIdx=0;
     }
@@ -376,11 +370,23 @@ g_CurrentState.timeElapsedFrac &= 0xffff;
     g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
     return;
   }
+  else if(g_CurrentState.state==PS_STOPPED){
+    return;
+  }
   
+  if(handleTempoChange==TRUE){
+    g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;
+    g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
+    //amTrace("\nSet new timestep:%d\n",g_CurrentState.timeStep);
+    handleTempoChange=FALSE;
+  }
+  
+   g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
+   U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
+   g_CurrentState.timeElapsedFrac &= 0xffff;
    
   //repeat for each track
   for (int i=0;i<3;i++){
-    
     //for each active track
       U32 count=g_CurrentState.tracks[i].seqPosIdx;
       sEvent *pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
@@ -409,32 +415,35 @@ g_CurrentState.timeElapsedFrac &= 0xffff;
   //check if we have end of sequence
   //on all tracks
   if(endOfSequence==TRUE){
-    if(g_CurrentState.playMode==S_PLAY_ONCE){
+    onEndSequence();
+    endOfSequence=FALSE;
+  }
+}
+
+void onEndSequence(){
+
+  if(g_CurrentState.playMode==S_PLAY_ONCE){
       //reset set state to stopped
       //reset song position on all tracks
       g_CurrentState.state=PS_STOPPED;
+      
     }else if(g_CurrentState.playMode==S_PLAY_LOOP){
       g_CurrentState.state=PS_PLAYING;
-      g_CurrentState.currentPPQN=DEFAULT_PPQN;
-      g_CurrentState.currentTempo=DEFAULT_MPQN;
-      g_CurrentState.currentBPM=DEFAULT_BPM;
-      g_CurrentState.timeElapsedFrac=0;
-      g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
-    }
-  
-    for (int i=0;i<3;i++){
-      g_CurrentState.tracks[i].seqPosIdx=0;
     }
     
-    endOfSequence=FALSE;
-  }
+    if(midiOutputEnabled==TRUE) am_allNotesOff(16);
+    if(ymOutputEnabled==TRUE) ymSoundOff();
   
-  if(handleTempoChange==TRUE){
-    g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;
-    g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
-    amTrace("\nSet new timestep:%d\n",g_CurrentState.timeStep);
-    handleTempoChange=FALSE;
-  }
+    g_CurrentState.currentPPQN=DEFAULT_PPQN;
+    g_CurrentState.currentTempo=DEFAULT_MPQN;
+    g_CurrentState.currentBPM=DEFAULT_BPM;
+    g_CurrentState.timeElapsedFrac=0;
+    g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
+     
+    for (int i=0;i<3;i++){
+      g_CurrentState.tracks[i].seqPosIdx=0;
+    }  
   
 }
+
 

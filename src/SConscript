@@ -128,15 +128,16 @@ env['VASM'] = 'vasmm68k_mot'
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
+# USE_INLINE if defined some functions are inlined
 
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DIKBD_MIDI_SEND_DIRECT -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS='-O0 ' + ST_CFLAGS  
 else:

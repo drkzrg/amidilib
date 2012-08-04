@@ -400,17 +400,19 @@ S16 am_init(){
   loadConfig(configFilename);
 
   //save configuration
-  if(saveConfig(configFilename)>0){
-    amTrace((const U8 *)"Configuration saved sucessfully.");
+  if(saveConfig(configFilename)>=0L){
+    printf("Configuration saved sucessfully.");
   }else{
-    amTrace((const U8 *)"Error: Cannot save global configuration.");
-  };
+    printf("Error: Cannot save global configuration.");
+  }
   
 #ifndef PORTABLE 
- U32 usp=Super(0L);
  
  /* clear our new buffer */
+ U32 usp=0L;
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
+
+ usp=Super(0L);
  g_psMidiBufferInfo=(_IOREC*)Iorec(XB_DEV_MIDI);
 		
  /* copy old MIDI buffer info */
@@ -436,25 +438,35 @@ S16 am_init(){
    U8 currentChannel=1;
    U8 currentPN=1;
    U8 currentBankSelect=0;
-
+#ifndef PORTABLE 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  usp=0L;
+  usp=Super(0L);
+#endif
+#endif
    //set current channel as 1, default is 0 in external module
    control_change(0x00, currentChannel, currentBankSelect,0x00);
    program_change(currentChannel, currentPN);
 
+#ifndef PORTABLE 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  SuperToUser(usp);
+#endif
+#endif   
+   
    //check external module communication scheme
    if(getGlobalConfig()->handshakeModeEnabled){
     //TODO: interrogate connected external module type
     //display info 
      //if timeout turn off handshake mode
      for (U8 i=0;i<16;++i){
-       getDeviceInfoResponse(i);
+      // getDeviceInfoResponse(i);
      }
-     
-     
-   }
+    
+ }
    
    
- return(1);
+ return 1;
 }
 
 void am_deinit(){
@@ -1823,7 +1835,7 @@ void getDeviceInfoResponse(U8 channel){
   getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
   getInfoSysEx[5]=channel;
   getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
-  
+
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 

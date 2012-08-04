@@ -57,7 +57,11 @@ BOOL checkEndianess();
 #ifdef _MSC_VER
   #define INLINE __forceinline /* use __forceinline (VC++ specific) */
 #else
+#ifdef USE_INLINE
   #define INLINE inline        /* use standard inline */
+#else
+  #define INLINE              /* no inline */
+#endif
 #endif
 
 

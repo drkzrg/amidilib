@@ -14,7 +14,7 @@
 
 #ifdef IKBD_MIDI_SEND_DIRECT  
   //bypass of Atari XBIOS, writes directly to IKBD to send data 
-  extern void amMidiSendIKBD();  
+  extern void amMidiSendIKBD(const U16 count,const U8 *data);  
 #endif
 
 #endif
@@ -52,7 +52,7 @@ static INLINE void amMidiSendData(const U16 count,const U8 *data){
   
 #ifdef IKBD_MIDI_SEND_DIRECT  
   //bypass os, write directly to IKBD to send data
-  amMidiSendIKBD();  
+  amMidiSendIKBD(count,data);  
 #else
  //use xbios function
  Midiws(count,data);

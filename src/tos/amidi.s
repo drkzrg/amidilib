@@ -156,11 +156,12 @@ _turnOffKeyclick:
       rts
 
 _amMidiSendIKBD:
-      movem.l	d0-d7/a0-a6,-(sp)
-      bsr.w	_super_on
-
-      move.l	_MIDIbytesToSend,d1  ;count
-      move.l  	#_MIDIsendBuffer,a0  ;buffer
+      movem.l	d0-d1/a0,-(sp)
+      ;bsr.w	_super_on
+      ;todo correct it
+      move.l  $38(sp),d1  	;mode
+      move.l  $42(sp),a0  	;data
+       
 .loop:      
       cmpi.l	#0,d1	
       beq.s	.done
@@ -175,8 +176,9 @@ _amMidiSendIKBD:
       subq.l	#1,d1
       bra.s	.loop
 .done:
-      bsr.w	_super_off
-      movem.l (sp)+,d0-d7/a0-a6
+      ;bsr.w	_super_off
+     
+      movem.l (sp)+,d0-d1/a0
       rts
 
 ;enter supervisor mode

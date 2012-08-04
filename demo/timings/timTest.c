@@ -100,6 +100,7 @@ int main(void){
 
   //prepare sequence
   initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
+  g_CurrentState.playMode=S_PLAY_LOOP; //set initial mode
   
 #ifndef PORTABLE
   /* Install our asm ikbd handler */
@@ -281,7 +282,7 @@ BOOL isEOT(sEvent *pEvent){
     return FALSE;
 }
 
-void printHelpScreen(){
+void INLINE printHelpScreen(){
   printf("===============================================\n");
   printf("/|\\ delta timing and sound output test..\n");
   printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
@@ -307,19 +308,18 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
   pSeqPtr->tracks[0].seqPosIdx=0;
   
   pSeqPtr->tracks[1].seqPtr=ch2;	
-  pSeqPtr->tracks[1].state.bIsActive=FALSE;
+  pSeqPtr->tracks[1].state.bIsActive=TRUE;
   pSeqPtr->tracks[1].seqPosIdx=0;
   
   pSeqPtr->tracks[2].seqPtr=ch3;	
-  pSeqPtr->tracks[2].state.bIsActive=FALSE;
+  pSeqPtr->tracks[2].state.bIsActive=TRUE;
   pSeqPtr->tracks[2].seqPosIdx=0;  
 
   pSeqPtr->state=PS_STOPPED;
   pSeqPtr->currentPPQN=DEFAULT_PPQN;
   pSeqPtr->currentTempo=DEFAULT_MPQN;
   pSeqPtr->currentBPM=DEFAULT_BPM;
-  pSeqPtr->playMode=S_PLAY_LOOP;
-  
+ 
   pSeqPtr->timeElapsedFrac=0;
   pSeqPtr->timeStep=am_calculateTimeStep((U16)DEFAULT_BPM, (U16)DEFAULT_PPQN, (U16)SEQUENCER_UPDATE_HZ);
   
@@ -328,7 +328,8 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
 
   //install replay routine 
   installReplayRout(mode, data, replayRout);
-  
+#else
+#warning Not implemented!  
 #endif
 
   return 0;
@@ -386,7 +387,7 @@ static BOOL bStopped=FALSE;
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while((!isEOT(pEvent))&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
+      while((isEOT(pEvent)==FALSE)&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
 	  endOfSequence=FALSE;
 	  g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;
 	  

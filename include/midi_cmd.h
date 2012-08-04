@@ -31,6 +31,7 @@ static INLINE void note_off (U8 channel, U8 note, U8 velocity )
 	g_midi_cmd_buffer[0]=(EV_NOTE_OFF<<4)|(channel);
 	g_midi_cmd_buffer[1]=note;
 	g_midi_cmd_buffer[2]=velocity;
+
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
 }
 

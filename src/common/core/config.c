@@ -68,11 +68,11 @@ S32 saveConfig(const U8 *configFileName){
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", lzoCompressionTag,configuration.useLZO?TRUE_TAG:FALSE_TAG);
   
   //save configuration state to file
-  if(saveFile(configFileName,(void *)configData,length)<0){
-    return -1L;
+  if(saveFile(configFileName,(void *)configData,length)>=0L){
+    return 0L;
   }
   
-  return 0;
+  return -1L;
 }
 
 S32 loadConfig(const U8 *configFileName){
@@ -93,7 +93,7 @@ U32 cfgLen=0;
     }
     
     amFree(&cfgData);
-    return 0;
+    return 0L;
   }
   else return -1L; //fuck up!
 }

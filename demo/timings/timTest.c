@@ -99,7 +99,7 @@ int main(void){
 
   //prepare sequence
   initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
-  g_CurrentState.playMode=S_PLAY_LOOP; //set initial mode
+ 
   
 #ifndef PORTABLE
   /* Install our asm ikbd handler */
@@ -298,6 +298,7 @@ void INLINE printHelpScreen(){
 
 // plays sample sequence 
 int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr){
+  static BOOL bPlayModeInit=FALSE;
   U8 mode,data;
   handleTempoChange=FALSE;
   VOIDFUNCPTR replayRout=customSeqReplay;
@@ -321,6 +322,12 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
  
   pSeqPtr->timeElapsedFrac=0;
   pSeqPtr->timeStep=am_calculateTimeStep((U16)DEFAULT_BPM, (U16)DEFAULT_PPQN, (U16)SEQUENCER_UPDATE_HZ);
+  
+   if(bPlayModeInit==FALSE){
+     //init but only once, user can switch this option during runtime
+      bPlayModeInit=TRUE;
+      g_CurrentState.playMode=S_PLAY_LOOP; 
+    }
   
 #ifndef PORTABLE
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
@@ -360,6 +367,7 @@ static BOOL bStopped=FALSE;
     g_CurrentState.currentTempo=DEFAULT_MPQN;
     g_CurrentState.currentBPM=DEFAULT_BPM;
     g_CurrentState.timeElapsedFrac=0;
+    
     g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
     return;
   }

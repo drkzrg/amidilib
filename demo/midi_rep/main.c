@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "include/amidilib.h"
+#include "amidilib.h"
 
 #ifndef PORTABLE
 #include "input/ikbd.h"
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]){
 		  printInfoScreen();
 		 }break;
 
-		 case SC_SPACE:{
+		 case SC_SPACEBAR:{
 		  stopSeq();
 		 }break;
 	      };

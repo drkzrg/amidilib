@@ -25,7 +25,7 @@
 
 /* Const */
 
-#define IKBD_JOY_UP		(1<<0)
+#define IKBD_JOY_UP	(1<<0)
 #define IKBD_JOY_DOWN	(1<<1)
 #define IKBD_JOY_LEFT	(1<<2)
 #define IKBD_JOY_RIGHT	(1<<3)

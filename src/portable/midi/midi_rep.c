@@ -1,13 +1,15 @@
 
-//portable version 
-#include "include/midi_rep.h"
-
-#include "include/amidilib.h"
-#include "include/amidiseq.h"
-#include "include/midi_send.h"
-#include "include/list/list.h"
 
 #include <math.h>
+
+//portable version 
+#include "midi_rep.h"
+
+#include "amidilib.h"
+#include "amidiseq.h"
+#include "midi_send.h"
+#include "list/list.h"
+
 
 sSequence_t *pCurrentSequence;	//here is stored current sequence
 U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events

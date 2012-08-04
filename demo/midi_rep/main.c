@@ -13,12 +13,8 @@
 #include "include/amidilib.h"
 
 #ifndef PORTABLE
-#include "include/ikbd.h"
-#include "include/scancode.h"
+#include "input/ikbd.h"
 
-static const U8 KEY_PRESSED = 0xff;
-static const U8 KEY_UNDEFINED=0x80;
-static const U8 KEY_RELEASED=0x00;
 extern void turnOffKeyclick(void);
 #endif
 
@@ -158,7 +154,7 @@ int main(int argc, char *argv[]){
 		  printInfoScreen();
 		 }break;
 
-		 case SC_SPACEBAR:{
+		 case SC_SPACE:{
 		  stopSeq();
 		 }break;
 	      };

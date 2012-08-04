@@ -19,7 +19,6 @@
 #ifndef PORTABLE
 #include <osbind.h>
 #include "input/ikbd.h"
-#include "scancode.h"
 #include "timing/mfp.h"
 #endif
 

@@ -64,7 +64,7 @@ typedef struct Sequence_t{
    U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
    U16 ubNumTracks;            	        	/* number of tracks 1-65536 */
    U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];		/* up to AMIDI_MAX_TRACKS (16) tracks available */
 } PACK sSequence_t;
 
 #endif

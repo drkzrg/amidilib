@@ -51,13 +51,15 @@ void initSeq(sSequence_t *seq){
 #ifndef PORTABLE
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
-    //install replay routine 
-    installReplayRout(mode, data, replayRout);
-
     #ifdef DEBUG_BUILD
     amTrace("%dhz update interval, Time step 0x%x\r\n",SEQUENCER_UPDATE_HZ,seq->timeStep);
     amTrace("calculated mode: %d, data: %d\n",mode,data);
     #endif  
+    
+    //install replay routine 
+    installReplayRout(mode, data, replayRout);
+
+   
 #endif    
   }
   

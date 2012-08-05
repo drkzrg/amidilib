@@ -26,10 +26,8 @@ void displayTuneInfo();
  * main program entry
  */
 
-sSequence_t *pMidiTune;	//here we store our sequence data
-
 int main(int argc, char *argv[]){
-
+    sSequence_t *pMidiTune=0;	//here we store our sequence data
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;

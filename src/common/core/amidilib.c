@@ -140,7 +140,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
       return -1;
     }
    
-   amMemSet(pSequence,0,sizeof(sSequence_t));
+   amMemSet(*pSequence,0,sizeof(sSequence_t));
    (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
     
    int iRet=0;

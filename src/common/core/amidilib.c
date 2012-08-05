@@ -530,8 +530,10 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 
-	  (*pCurSequence)->arTracks[0]->currentState.currentPPQN=DEFAULT_PPQN;
-	  
+	  pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
+	  pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
+	  pTempTrack->currentState.currentBPM=DEFAULT_BPM;
+
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
 	  
@@ -550,6 +552,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
+	  pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
+	  pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -593,6 +597,8 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 	  pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
+	  pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
+	  pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;

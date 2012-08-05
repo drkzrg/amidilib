@@ -537,8 +537,6 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack);
 	  //So coooooool......
-	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.bMute=FALSE;
     }
     break;
@@ -558,8 +556,6 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack );
 	
-	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  //So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  
@@ -603,8 +599,6 @@ switch(fileTypeFlag){
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack);
 	  
-	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
 	  //So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  

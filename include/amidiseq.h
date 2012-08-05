@@ -45,8 +45,6 @@ typedef struct TrackState_t{
  ePlayState playState;		      // STOP, PLAY, PAUSED	
  ePlayMode playMode;	      	      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 
- struct EventList *pStart,*pCurrent;  // start of track and current event pointer
-				      // they point to track events tied to sSequenceState_t
  BOOL bMute;			      // if TRUE track events aren't sent to external module
 }PACK sTrackState_t;
 

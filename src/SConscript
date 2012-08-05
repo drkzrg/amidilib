@@ -169,7 +169,7 @@ else:
   input_src =  ["tos/ikbd.s"]
   discio_src = ["tos/discio/fmio.c"]
   timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
-  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c"]
+  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/midiReplay.s"]
   memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression

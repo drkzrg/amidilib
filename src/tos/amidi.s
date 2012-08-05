@@ -35,7 +35,7 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _updateMidiFunc		;our replay routine installed on interrupt
     xdef update			;no underscore, it will be not used from C level atm
 ;import symbols
-    xref _sequenceUpdate
+    ;xref _sequenceUpdate
     
 
 _installReplayRout:
@@ -66,6 +66,7 @@ _installReplayRout:
 	movem.l (sp)+,d0-d7/a0-a6	;restore registers
 	rts
 
+	;not used, remove it
 _updateMidiFunc:
       movem.l   d0-7/a0-6,-(a7)	;save registers
       clr.b     $fffffa1b
@@ -112,7 +113,7 @@ _updateMidiFunc:
 
 .skipClock:
       eor.w	#$0f0,$ffff8240		;change 1st color in palette (TODO: remove it in the final version)
-      jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
+      ;jsr	_sequenceUpdate		;jump to sequence handler, sneaky bastard ;>
 
       move.l	_pCurrentSequence,a0
       move.l	pulseCounter(a0),d1 	;set counter

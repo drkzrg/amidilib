@@ -140,13 +140,9 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
       return -1;
     }
    
-    (*pSequence)->pSequenceName=NULL;	 	/* name of the sequence empty string */
-    (*pSequence)->ubNumTracks=0;		/*  */
-    (*pSequence)->ubActiveTrack=0; 		/* first one from the array */
-    (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
-    (*pSequence)->pulseCounter=0;
-    (*pSequence)->timeDivision=0;
-
+   amMemSet(pSequence,0,sizeof(sSequence_t));
+   (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
+    
    int iRet=0;
    iRet=am_getHeaderInfo(pMidiPtr);
     
@@ -188,12 +184,12 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 		 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
                  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
        
-		 /* Store time division for sequence, TODO: SMPTE handling */
-		  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-                  
+		 
 		  /* create one track list only */
 		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-		  
+		  /* Store time division for sequence, TODO: SMPTE handling */
+		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+                  
 		  
 		  /* init event list */
 		  (*pSequence)->arTracks[0]->pTrkEventList=0;
@@ -227,7 +223,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
           startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
 	  /* Store time division for sequence, TODO: SMPTE handling */
-	  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+	 
 	  (*pSequence)->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
@@ -236,6 +232,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 
 	   /* init event list */
 	   (*pSequence)->arTracks[i]->pTrkEventList=0;
+	   (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 	  }
 	  
           while (startPtr!=0){
@@ -259,7 +256,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		
 	  /* Store time division for sequence, TODO: SMPTE handling */
-	  (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 	  (*pSequence)->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
@@ -268,6 +264,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	
 	    /* init event list */
 	    (*pSequence)->arTracks[i]->pTrkEventList=0;
+	    (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+	  
 	  }
            
            while (startPtr!=0){
@@ -532,18 +530,15 @@ switch(fileTypeFlag){
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
 
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
-	  
-	 setDefaultMidiTempoSettings( &pTempTrack->currentState);
+	  (*pCurSequence)->arTracks[0]->currentState.currentPPQN=DEFAULT_PPQN;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
 	  
 	  startPtr=processMIDItrackEvents(&startPtr,(const void *)end,ppTrack);
-	  
+	  //So coooooool......
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.deltaCounter=0; 		//So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
     }
     break;
@@ -554,14 +549,9 @@ switch(fileTypeFlag){
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 	  
-
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
-
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
-	  
-	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
-	  
+	  pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -570,7 +560,7 @@ switch(fileTypeFlag){
 	
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.deltaCounter=0; //So coooooool......
+	  //So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  
 	  /* increase track counter */
@@ -603,14 +593,10 @@ switch(fileTypeFlag){
 	  /* we have got track data :)) */
 	  /* add all of them to given track */ 
 	  sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
-	  
-	  
+
 	  pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
 	  pTempTrack->currentState.playState = getGlobalConfig()->playState;
-	  
-	  (*pCurSequence)->timeDivision=DEFAULT_PPQN;
-	  
-	  setDefaultMidiTempoSettings( &pTempTrack->currentState);
+	  pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
 	  
 	  ppTrack=&pTempTrack;
 	  end=(void *)endAddr;
@@ -619,7 +605,7 @@ switch(fileTypeFlag){
 	  
 	  pTempTrack->currentState.pStart=(sEventList *)pTempTrack->pTrkEventList;
 	  pTempTrack->currentState.pCurrent=(sEventList *)pTempTrack->pTrkEventList;
-	  pTempTrack->currentState.deltaCounter=0; 			//So coooooool......
+	  //So coooooool......
 	  pTempTrack->currentState.bMute=FALSE;
 	  
 	  /* increase track counter */
@@ -1969,11 +1955,5 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  else return NULL;
 }
 
-void setDefaultMidiTempoSettings( sSequenceState_t *pSeqState){
-	  pSeqState->currentTempo=DEFAULT_MPQN;  //500000ms
-	  pSeqState->timeSignature.nn=4;
-	  pSeqState->timeSignature.dd=4;
-	  pSeqState->timeSignature.cc=24;
-	  pSeqState->timeSignature.bb=8;
-}
+
 

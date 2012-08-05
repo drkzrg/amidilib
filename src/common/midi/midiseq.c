@@ -83,8 +83,10 @@ void  fNoteOn(void *pEvent){
 #endif
   
   if(pCurrentSequence!=0){
+    //set new tempo value and indicate that tempo has changed
+    //it will be handled in interrupt routine
     U8 activeTrack=pCurrentSequence->ubActiveTrack;
-    pCurrentSequence->arTracks[activeTrack]->currentState.currentTempo=pPtr->eventData.tempoVal;
+    pCurrentSequence->arTracks[activeTrack]->currentState.currentPPQN=pPtr->eventData.tempoVal;
     bTempoChanged=TRUE;
   }
 }

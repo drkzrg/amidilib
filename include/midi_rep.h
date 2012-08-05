@@ -31,9 +31,6 @@ extern void updateMidiFunc(void);
 
 #endif
 
-/** update sequence function called from interrupt routine */
-void sequenceUpdate(void);
-
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
 */
@@ -65,9 +62,5 @@ void toggleReplayMode(void);
  
 void getCurrentSeq (sSequence_t **pPtr);
 
-/** Retrieves tempo information from current sequence and calculates MFP settings. 
-* @return fills values of mode and data (passed via address) 
-*/
-void calculateTempo (const sSequenceState_t *pPtr,U8 *mode, U8 *data);
 
 #endif

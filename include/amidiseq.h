@@ -35,21 +35,23 @@ typedef struct EventList{
  sEventBlock_t eventBlock;
 }PACK sEventList;
 
-typedef volatile struct SequenceState_t{
- U32 currentTempo;		      // quaternote duration in ms, 500ms default
- sTimeSignature timeSignature;	      //time signature				      
- 
- U16 playState;			      // STOP, PLAY, PAUSED	
- U16 playMode;	      		      // current play mode (loop, play_once, random) 
+typedef struct TrackState_t{
+ sTimeSignature timeSignature;	      //time signature
+ U32 currentTempo;		      //quaternote duration in ms, 500ms default
+ U32 currentPPQN;		      //pulses per quater note
+ U32 currentBPM;	              //beats per minute (60 000000 / currentTempo)
+ U32 currentSeqPos;		      //index of current event in list
+ U32 timeElapsedInt;		      //track elapsed time
+ ePlayState playState;		      // STOP, PLAY, PAUSED	
+ ePlayMode playMode;	      	      // current play mode (loop, play_once, random) 
 				      // sets the active track, by default 0 
- U32 deltaCounter;		      // internal counter for sending events in proper time, relative to last event 				      
- struct EventList *pStart,*pCurrent;  //start of track and current event pointer
-				      //they point to track events tied to sSequenceState_t
-  BOOL bMute;			      //if TRUE track events aren't sent to external module
-}PACK sSequenceState_t;
+ struct EventList *pStart,*pCurrent;  // start of track and current event pointer
+				      // they point to track events tied to sSequenceState_t
+ BOOL bMute;			      // if TRUE track events aren't sent to external module
+}PACK sTrackState_t;
 
  typedef struct Track_t{
-  sSequenceState_t currentState;        /* current sequence state */
+  sTrackState_t currentState;        /* current sequence state */
   sEventList *pTrkEventList;  		/* track event list */
   U8 *pTrackName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
 }PACK sTrack_t;
@@ -57,11 +59,9 @@ typedef volatile struct SequenceState_t{
 typedef struct Sequence_t{
    /** internal midi data storage format */
    U8 *pSequenceName;				/* NULL terminated string */
-   U32 timeDivision;				/* pulses per quater note(time division) */
+   U32 timeElapsedFrac; 			//sequence elapsed time
+   U32 timeStep; 				//sequence time step
    U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
-   U32 accumulatedDeltaCounter;			/* accumulated delta counter */
-   U32 pulseCounter;				/* pulses per quaternote counter */
-   U32 divider;					/* */
    U16 ubNumTracks;            	        	/* number of tracks 1-65536 */
    U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */

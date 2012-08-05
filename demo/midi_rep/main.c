@@ -70,14 +70,14 @@ int main(int argc, char *argv[]){
 	
 	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-	  fprintf(stderr,"PPQN: %d\n",pMidiTune->timeDivision);
+	  fprintf(stderr,"PPQN: %d\n",pMidiTune->arTracks[0]->currentState.currentPPQN);
 	  
 	  #ifdef MIDI_PARSER_TEST
 	  //output loaded midi file 
 	  amTrace((const U8*)"Parsed MIDI read test\n");
 	  amTrace((const U8*)"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  amTrace((const U8*)"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-	  amTrace((const U8*)"PPQN: %d\n",pMidiTune->timeDivision);
+	  amTrace((const U8*)"PPQN: %d\n",pMidiTune->arTracks[0]->currentState.currentPPQN);
 	  amTrace((const U8*)"Active track: %d\n",pMidiTune->ubActiveTrack);
 	  
 	  //output data loaded in each track
@@ -91,7 +91,6 @@ int main(int argc, char *argv[]){
 	  
 		//log state
 		amTrace((const U8*)"state: \n");
-		amTrace((const U8*)"internalCounter: %d \n",p->currentState.deltaCounter);
 		amTrace((const U8*)"Start event ptr: %p \n",p->currentState.pStart);
 		amTrace((const U8*)"Current event ptr: %p \n",p->currentState.pCurrent);
 		
@@ -222,7 +221,7 @@ void printInfoScreen(){
 void displayTuneInfo(){
   sSequence_t *pPtr=0;
   getCurrentSeq(&pPtr);
-  U32 td=pPtr->timeDivision;
+  U32 td=pPtr->arTracks[0]->currentState.currentPPQN;
   U32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
   U16 numTrk=pPtr->ubNumTracks;
   

@@ -14,13 +14,13 @@
 
 #ifdef IKBD_MIDI_SEND_DIRECT  
   //bypass of Atari XBIOS, writes directly to IKBD to send data 
-  extern void amMidiSendIKBD(const U16 count,const U8 *data);  
+  extern void amMidiSendIKBD();  
 #endif
 
 #endif
 
   
-#include "include/midi_send.h"
+#include "midi_send.h"
 
 //midi data sending, platform specific
 static INLINE U16 amMidiDataReady(U8 deviceNo){
@@ -33,6 +33,7 @@ static INLINE U16 amMidiDataReady(U8 deviceNo){
 #endif
 }
 
+#ifndef IKBD_MIDI_SEND_DIRECT  
 static INLINE U32 amMidiSendByte(U8 deviceNo,U8 data){
 #ifdef PORTABLE
 //TODO:
@@ -49,19 +50,17 @@ static INLINE void amMidiSendData(const U16 count,const U8 *data){
  amTrace((const U8*)"WARNING: amMidiSendData() not implemented\n");
  return;
 #else
-  
-#ifdef IKBD_MIDI_SEND_DIRECT  
-  //bypass os, write directly to IKBD to send data
-  amMidiSendIKBD(count,data);  
-#else
  //use xbios function
  Midiws(count,data);
-#endif  
-
-
  return; 
 #endif
 }
+#else
+ //bypass os, write directly to IKBD to send data
+ //we do nothing here, midi data buffer will be emptied in interrupt routine
+ //if we use MIDI_SEND_DATA manually we need to call amMidiSendIKBD() function.
+#endif //IKBD_MIDI_SEND_DIRECT
+
 
 static INLINE U8 amMidiGetData(U8 deviceId){
 #ifdef PORTABLE
@@ -80,10 +79,14 @@ amTrace((const U8*)"WARNING: amMidiGetData() not implemented\n");
 
 /* returns != 0 if data are in system MIDI buffer */
 #define MIDI_DATA_READY amMidiDataReady(DEV_MIDI)
+
+#ifndef IKBD_MIDI_SEND_DIRECT 
 /* sends 1 byte to MIDI output */
 #define MIDI_SEND_BYTE(data) amMidiSendByte(DEV_MIDI,data)
 /* sends multiple bytes to MIDI output, count is number of bytes to send */
 #define MIDI_SEND_DATA(count,data) amMidiSendData(count-1,data)
+#endif
+
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA amMidiGetData(DEV_MIDI)
 

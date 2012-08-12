@@ -4,18 +4,19 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
+#include <stdlib.h>
 
-#include <stdio.h>
-#include <ctype.h> 
-#include "ym2149.h"
 #include "c_vars.h"
+#include "ym2149/ym2149.h"
+#include <ctype.h>
 
 #ifdef PORTABLE
 void turnOffKeyclick(void){}
 #else
 #include <osbind.h>
-extern void turnOffKeyclick(void);
+#include "input/ikbd.h"
 #endif
+
 void printHelpScreen(){
   printf("===============================================\n");
   printf("/|\\ ym2149 sound output test..\n");

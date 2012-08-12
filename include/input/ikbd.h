@@ -42,6 +42,7 @@ extern U16	Ikbd_joystick;		/* Joystick on port 1 */
 /* Functions */ 
 extern void IkbdInstall(void);
 extern void IkbdUninstall(void);
+extern void turnOffKeyclick(void);
 
 static const U8 KEY_PRESSED = 0xff;
 static const U8 KEY_UNDEFINED = 0x80;

@@ -21,7 +21,7 @@ typedef struct {
 S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize);
 
 //void element has to be of the constant size
-void pushStack(tStack *pPtr, const void *newElement);
+void pushStack(tStack *pPtr, void *newElement);
 void popStack(tStack *pPtr);
 void *getTopStackElement();
 BOOL isStackFull(tStack *pPtr);

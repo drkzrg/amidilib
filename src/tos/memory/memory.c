@@ -5,8 +5,13 @@
     See license.txt for licensing information.
 */
 
-#include "include/memory/memory.h"
-#include "include/amlog.h"
+//atari TOS version
+
+#include "amlog.h"
+#include "memory/memory.h"
+
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef DEBUG_MEM
 static U32 g_memAlloc=0;
@@ -27,13 +32,12 @@ U32 getFreeMem(eMemoryFlag memFlag){
 
 
 
-void *amMemMove (void *pDest,const void *pSrc,tMEMSIZE iSize){
-
+void *amMemMove (void *pDest,void *pSrc,tMEMSIZE iSize){
  return memmove(pDest,pSrc,iSize);
 }
 
 
-void *amMemCpy (void *pDest, const void *pSrc,tMEMSIZE iSize){
+void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
   
@@ -62,7 +66,7 @@ void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
   return pPtr;
 }
 
-int amMemCmp ( const void *pSrc1, const void *pSrc2, tMEMSIZE iNum){
+int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum){
   return memcmp(pSrc1,pSrc2,iNum);
 }
 
@@ -143,9 +147,10 @@ void *amCalloc(tMEMSIZE nelements, tMEMSIZE elementSize){
 }
 
 
-void *amRealloc( const void *pPtr, tMEMSIZE newSize){
+void *amRealloc( void *pPtr, tMEMSIZE newSize){
  return realloc(pPtr,newSize);
 }
+
 
 #ifdef DEBUG_BUILD
 

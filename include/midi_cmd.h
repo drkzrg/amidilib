@@ -10,12 +10,26 @@
 #define __MIDI_CMD_H__
 
 #include "c_vars.h"
-#include "include/memory/memory.h"
+#include "memory/memory.h"
 #include "midi_send.h"
 #include "events.h"
 
+
+#ifndef IKBD_MIDI_SEND_DIRECT
 /* small static buffer for sending MIDI commands */
 static U8 g_midi_cmd_buffer[4];
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// helper functions for copying midi data to internal buffer
+#ifdef PORTABLE
+U8 MIDIsendBuffer[32000]; //buffer from which we will send all data from the events once per frame
+U16 MIDIbytesToSend; 
+#else
+extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
+extern U16 MIDIbytesToSend; 
+#endif
+
 
 /* common, channel voice messages */
 /**
@@ -26,13 +40,18 @@ static U8 g_midi_cmd_buffer[4];
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
 
-static INLINE void note_off (U8 channel, U8 note, U8 velocity )
-{
+static INLINE void note_off (U8 channel, U8 note, U8 velocity ){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_NOTE_OFF<<4)|(channel);
+	MIDIsendBuffer[MIDIbytesToSend++]=note;
+	MIDIsendBuffer[MIDIbytesToSend++]=velocity;
+#else
 	g_midi_cmd_buffer[0]=(EV_NOTE_OFF<<4)|(channel);
 	g_midi_cmd_buffer[1]=note;
 	g_midi_cmd_buffer[2]=velocity;
 
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
@@ -42,12 +61,17 @@ static INLINE void note_off (U8 channel, U8 note, U8 velocity )
  * @param note specifies which note to play 0-127 (0x00-0x7F)
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
-static INLINE void note_on (U8 channel, U8 note, U8 velocity)
-{
+static INLINE void note_on (U8 channel, U8 note, U8 velocity){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_NOTE_ON<<4)|(channel);
+	MIDIsendBuffer[MIDIbytesToSend++]=note;
+	MIDIsendBuffer[MIDIbytesToSend++]=velocity;
+#else
 	g_midi_cmd_buffer[0]=(EV_NOTE_ON<<4)|channel;
 	g_midi_cmd_buffer[1]=note;
 	g_midi_cmd_buffer[2]=velocity;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif
 }
 
 /**
@@ -58,12 +82,17 @@ static INLINE void note_on (U8 channel, U8 note, U8 velocity)
  * @param value value 0-127 (0x00-0x7F)
  */
 
-static INLINE void polyphonic_key_press(U8 channel, U8 note, U8 value)
-{
+static INLINE void polyphonic_key_press(U8 channel, U8 note, U8 value){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_NOTE_AFTERTOUCH<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=note;
+	MIDIsendBuffer[MIDIbytesToSend++]=value;
+#else
 	g_midi_cmd_buffer[0]=(EV_NOTE_AFTERTOUCH<<4)|channel;
 	g_midi_cmd_buffer[1]=note;
 	g_midi_cmd_buffer[2]=value;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif
 }
 /**
  * sends CONTROL CHANGE MIDI message
@@ -73,14 +102,20 @@ static INLINE void polyphonic_key_press(U8 channel, U8 note, U8 value)
  * @param value value sent to given controller 0-127 (0x00-0x7F)
  */
 
-static INLINE void control_change(U8 controller, U8 channel, U8 value1, U8 value2)
-{
+static INLINE void control_change(U8 controller, U8 channel, U8 value1, U8 value2){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=controller;
+	MIDIsendBuffer[MIDIbytesToSend++]=value1;
+	MIDIsendBuffer[MIDIbytesToSend++]=value2;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=controller;
 	g_midi_cmd_buffer[2]=value1;
 	g_midi_cmd_buffer[3]=value2;
 	
 	MIDI_SEND_DATA(4,g_midi_cmd_buffer);
+#endif 
 }
 
 /**
@@ -89,11 +124,15 @@ static INLINE void control_change(U8 controller, U8 channel, U8 value1, U8 value
  * @param programNb program number 1-128 (0x00-0x7F)
  */
 
-static INLINE void program_change(U8 channel, U8 programNb)
-{
+static INLINE void program_change(U8 channel, U8 programNb){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_PROGRAM_CHANGE<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=programNb;
+#else
 	g_midi_cmd_buffer[0]=(EV_PROGRAM_CHANGE<<4)|channel;
 	g_midi_cmd_buffer[1]=programNb;
 	MIDI_SEND_DATA(2,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
@@ -103,11 +142,15 @@ static INLINE void program_change(U8 channel, U8 programNb)
  * @remarks valid only for GS sound source
  */
 
-static INLINE void channel_pressure (U8 channel, U8 value)
-{
+static INLINE void channel_pressure (U8 channel, U8 value){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CHANNEL_AFTERTOUCH<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=value;
+#else
 	g_midi_cmd_buffer[0]=(EV_CHANNEL_AFTERTOUCH<<4)|channel;
 	g_midi_cmd_buffer[1]=value;
 	MIDI_SEND_DATA(2,g_midi_cmd_buffer);
+#endif
 }
 
 /**
@@ -115,12 +158,17 @@ static INLINE void channel_pressure (U8 channel, U8 value)
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  * @param value signed U16 value -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
-static INLINE void pitch_bend (U8 channel, U16 value)
-{
+static INLINE void pitch_bend (U8 channel, U16 value){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_PITCH_BEND<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=(U8)((value>>4)&0x0F);
+	MIDIsendBuffer[MIDIbytesToSend++]=(U8)(value&0x0F);
+#else
 	g_midi_cmd_buffer[0]=(EV_PITCH_BEND<<4)|channel;
 	g_midi_cmd_buffer[1]=(U8)((value>>4)&0x0F);
 	g_midi_cmd_buffer[2]=(U8)(value&0x0F);
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif
 }
 
 /**
@@ -130,12 +178,17 @@ static INLINE void pitch_bend (U8 channel, U16 value)
  * @param sbyte U8 value which gives with fbyte S16 value with range: -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
 
-static INLINE void pitch_bend_2 (U8 channel, U8 fbyte, U8 sbyte)
-{
+static INLINE void pitch_bend_2 (U8 channel, U8 fbyte, U8 sbyte){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_PITCH_BEND<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=fbyte;
+	MIDIsendBuffer[MIDIbytesToSend++]=sbyte;
+#else
 	g_midi_cmd_buffer[0]=(EV_PITCH_BEND<<4)|channel;
 	g_midi_cmd_buffer[1]=fbyte;
 	g_midi_cmd_buffer[2]=sbyte;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /* channel mode messages */
@@ -144,76 +197,106 @@ static INLINE void pitch_bend_2 (U8 channel, U8 fbyte, U8 sbyte)
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void all_sounds_off(U8 channel)
-{
+static INLINE void all_sounds_off(U8 channel){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_SOUNDS_OFF;
+	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
+#else
+
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_SOUNDS_OFF;
 	g_midi_cmd_buffer[2]=0x00;
 
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
-
+#endif
 }
 
 /**
  * sends RESET ALL CONTROLLERS MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void reset_all_controllers(U8 channel)
-{
+static INLINE void reset_all_controllers(U8 channel){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_RESET_ALL;
+	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_RESET_ALL;
 	g_midi_cmd_buffer[2]=0x00;
 
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
  * sends ALL NOTES OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void all_notes_off(U8 channel)
-{
+static INLINE void all_notes_off(U8 channel){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_ALL_NOTES_OFF;
+	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_ALL_NOTES_OFF;
 	g_midi_cmd_buffer[2]=0x00;
 
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
  * sends OMNI OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void omni_off(U8 channel)
-{
+static INLINE void omni_off(U8 channel){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_OFF;
+	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_OMNI_OFF;
 	g_midi_cmd_buffer[2]=0x00;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
  * sends OMNI ON MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void omni_on(U8 channel)
-{
+static INLINE void omni_on(U8 channel){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_ON;
+	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_OMNI_ON;
 	g_midi_cmd_buffer[2]=0x00;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
  * sends MONO MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void mono(U8 channel, U8 numberOfMono)
-{
+static INLINE void mono(U8 channel, U8 numberOfMono){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_MONO;
+	MIDIsendBuffer[MIDIbytesToSend++]=numberOfMono;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_MONO;
 	g_midi_cmd_buffer[2]=numberOfMono;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
 /**
@@ -222,24 +305,18 @@ static INLINE void mono(U8 channel, U8 numberOfMono)
  */
 
 static INLINE void poly(U8 channel, U8 numberOfPoly){
+#ifdef IKBD_MIDI_SEND_DIRECT
+	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
+	MIDIsendBuffer[MIDIbytesToSend++]=C_POLY;
+	MIDIsendBuffer[MIDIbytesToSend++]=numberOfPoly;
+#else
 	g_midi_cmd_buffer[0]=(EV_CONTROLLER<<4)|channel;
 	g_midi_cmd_buffer[1]=C_POLY;
 	g_midi_cmd_buffer[2]=numberOfPoly;
 	MIDI_SEND_DATA(3,g_midi_cmd_buffer);
+#endif	
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// helper functions for copying midi data to internal buffer
-#ifdef PORTABLE
-U8 MIDIsendBuffer[32000]; //buffer from which we will send all data from the events once per frame
-U16 MIDIbytesToSend; 
-U16 MIDIbufferReady; //flag indicating buffer ready for sending data
-
-#else
-extern U8 MIDIsendBuffer[]; //buffer from which we will send all data from the events once per frame
-extern U16 MIDIbytesToSend; 
-extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
-#endif
 /* common, channel voice messages */
 /**
  * copies NOTE OFF MIDI message (key depressed)

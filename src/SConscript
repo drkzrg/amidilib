@@ -24,6 +24,7 @@ debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
 cross = ARGUMENTS.get('cross', 0)
 target = ARGUMENTS.get('target', 0)
+ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
 
 LIBRARYNAME = 'amidi'
 
@@ -130,24 +131,33 @@ env['VASM'] = 'vasmm68k_mot'
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined
 
+
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DDEBUG_CONSOLE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_FILE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD  -DDEBUG_FILE_OUTPUT -DEBUG_CONSOLE_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_FILE_OUTPUT -DDEBUG_CONSOLE_OUTPUT'
+  
   LIB_POSTFIX = LIB_POSTFIX+'d'
-  ST_CFLAGS='-O0 ' + ST_CFLAGS  
+  ST_CFLAGS= ST_CFLAGS  
 else:
     print "Release build... Code optimisation is turned on."
-    ST_CFLAGS='-O2 ' + ST_CFLAGS  
+    ST_CFLAGS= ST_CFLAGS  
     
-if int(portable):
+if (int(portable)):
   ST_CFLAGS=ST_CFLAGS +' -DPORTABLE -DTIME_CHECK_PORTABLE'
 else:
-  ST_CFLAGS=ST_CFLAGS +' -DFORCE_MALLOC'
+  if(ikbd_direct=="yes"):
+    print "Sending data directly via IKBD ENABLED"
+    ST_CFLAGS=ST_CFLAGS +' -DFORCE_MALLOC -DIKBD_MIDI_SEND_DIRECT'
+    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+  elif(((ikbd_direct=='') or (ikbd_direct=='no') or (ikbd_direct=='n') or (ikbd_direct == None))):  
+    print "Sending data directly via IKBD DISABLED"
+    ST_CFLAGS=ST_CFLAGS +' -DFORCE_MALLOC'
+    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
 
 env["CFLAGS"] = ST_CFLAGS  
 env["LINKFLAGS"] = ST_LDFLAGS 
@@ -164,12 +174,12 @@ if int(portable==1):
   discio_src = ["portable/discio/fmio.c"]
   midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]
   memory_src = ["portable/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
-
 else: 
+  m68kasm_common_src = ["tos/common.s"]
   input_src =  ["tos/ikbd.s"]
   discio_src = ["tos/discio/fmio.c"]
   timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
-  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/midiReplay.s"]
+  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/amidi.s"]
   memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
@@ -181,7 +191,7 @@ lzo_src = ["common/lzo/minilzo.c"]
 if int(portable==1):
   amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
 else:
-  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src + ["tos/amidi.s","tos/testReplay.s"]
+  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src + ["tos/midiReplay.s"]
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
@@ -189,19 +199,23 @@ env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
 #################### test programs entry points
 amidi_test_src = ["../demo/midi_rep/main.c"] 
 midiOut_test_src = ["../demo/midi_output/midiTest.c"] 
-timings_test_src = ["../demo/timings/timTest.c"] 
+if int(portable==1):
+  timings_test_src = ["../demo/timings/timTest.c"] 
+else:  
+  timings_test_src = ["../demo/timings/timTest.c","tos/testReplay.s"] 
+  
 ym2149_test_src = ["../demo/ymOutput/ymTest.c"] 
   
 # build test programs and link them with amidilib
 if(portable==1):
   env.Program(AMIDI_TEST_EXE, [amidi_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(YM2149_TEST_EXE, [ym2149_test_src+ env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(TIMINGS_TEST_EXE, [timings_test_src+ env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 else:
   env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(TIMINGS_TEST_EXE, [timings_test_src + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
   

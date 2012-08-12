@@ -10,8 +10,7 @@
 
 #include "c_vars.h"
 #include "midi.h"
-#include "include/midi_cmd.h"	/* for sending midi commands */
-#include "include/amlog.h" 
+#include "midi_cmd.h"	/* for sending midi commands */
 
 /* max tracks per sequence */
 /* event type enums */
@@ -118,12 +117,15 @@ typedef struct EventInfoBlock_t{
 } PACK sEventInfoBlock_t;
 
 typedef struct EventBlock_t{
- U32 uiDeltaTime;					/* event delta time */	
+ U32 uiDeltaTime;					/* event delta time */
+ U8 type;						/* event type */
+ U8 pad0;
+ U16 pad1; 
  sEventInfoBlock_t sendEventCb;				/* send event function callback info block */ 
  sEventInfoBlock_t copyEventCb;			/* copy to internal buffer function callback info block */ 
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
- U8	type;						/* event type */
- }PACK sEventBlock_t, *sEventBlockPtr_t;
+  
+}PACK sEventBlock_t, *sEventBlockPtr_t;
 
 /** SysEX */
 typedef struct SysEx_t{

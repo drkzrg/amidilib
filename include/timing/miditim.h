@@ -7,7 +7,6 @@
 #include <time.h>
 #endif
 
-
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)
 *   PPU=QPM * PPQ *(1/UPS)*(1 minute /60 seconds)

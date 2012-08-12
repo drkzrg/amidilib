@@ -4,10 +4,11 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-#include "include/fmio.h"
 
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+
+#include "fmio.h"
 
 S16 g_lastGDOSerror=0;
 
@@ -299,8 +300,7 @@ S32 iRet=0;
         fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
 	return -1L;  
     }
-
-  
+ 
 }
 
 

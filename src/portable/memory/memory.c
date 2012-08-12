@@ -4,10 +4,11 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-//portable version 
 
-#include "include/memory/memory.h"
-#include "include/amlog.h"
+//portable version 
+#include "amlog.h"
+#include "memory/memory.h"
+
 
 #ifdef DEBUG_MEM
 static U32 g_memAlloc=0;
@@ -29,12 +30,12 @@ void *pMem=0;
 
 
 
-void *amMemMove (void *pDest, const void *pSrc,tMEMSIZE iSize){
+void *amMemMove (void *pDest, void *pSrc,tMEMSIZE iSize){
   return memmove(pDest,pSrc,iSize);
 }
 
 
-void *amMemCpy (void *pDest, const void *pSrc,tMEMSIZE iSize){
+void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
  
@@ -57,7 +58,8 @@ void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
   pPtr = memset(pSrc,iCharacter,iNum);
   
   #ifdef DEBUG_MEM
-    if(pPtr!=pSrc) amTrace((const U8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
+    if(pPtr!=pSrc) 
+      amTrace((const U8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
     else{
       amTrace((const U8 *)"\tamMemSet() memory: %p, %d x value written: %x!\n",pSrc,iNum,iCharacter);
     }
@@ -66,7 +68,7 @@ void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
   return pPtr;
 }
 
-int amMemCmp ( const void *pSrc1, const void *pSrc2, tMEMSIZE iNum){
+int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum){
   return memcmp(pSrc1,pSrc2,iNum);
 }
 

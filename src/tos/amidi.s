@@ -5,66 +5,19 @@
 ;    See license.txt for licensing information.
 ;================================================
 
-;constants
-AMIDI_MAX_TRACKS	equ	65536
-MIDI_CLOCK_ENABLE	equ	0
-MIDI_SENDBUFFER_SIZE 	equ	32*1024
-
-MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message (MIDI CLOCK)
-MIDI_START		equ 	$FA	;one byte MIDI realtime message (starts MIDI clock sync)
-MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
-
+;TODO: remove it/obsolete/not used..
+    include "common_m68k.inc"
 ;export symbols
-    xdef _super_on		; self explanatory 
-    xdef _super_off		;
-    xdef _turnOffKeyclick	;
-    xdef _installReplayRout	;initialises replay interrupt TB routine and prepares data
-    xdef _deinstallReplayRout	;removes replay routine from system 
     xdef _pCurrentSequence	;current sequence pointer
     
-    xdef _MIDIsendBuffer	;buffer with data to send
-    xdef _MIDIbytesToSend	;nb of bytes to send
-    
-    xdef _tbData
-    xdef _tbMode
-    xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
     xdef _startPlaying		;to let us now if there is an end of sequence
-				 ;so MIDI beat 0 is send only once
-    xdef _bTempoChanged		;flags indicatin tempo and time signature change
+				;so MIDI beat 0 is send only once
+    xdef _bTempoChanged		;flags indicating tempo and time signature change
     xdef _bTimeSignatureChanged
-    xdef _updateMidiFunc		;our replay routine installed on interrupt
-    xdef update			;no underscore, it will be not used from C level atm
-;import symbols
-    ;xref _sequenceUpdate
+    xdef _updateMidiFunc	;our replay routine installed on interrupt
     
-
-_installReplayRout:
-	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	  _super_on
-	move.w	sr,-(sp)	;save status register
-	or.w	#$0700,sr	;turn off all interupts
-
-	move.l	$42(sp),d1  	;mode
-        move.l  $46(sp),d0  	;data
-        move.l	$52(sp),update  ;interrupt routine ptr
-        
-	move.b	d1,_tbMode  	;save parameters for later
-	move.b	d0,_tbData
-        
-	clr.b     $fffffa1b	;turn off tb
-	
-	move.l	  $120,_oldTB	
-	move.l    update,$120		;slap interrupt
-	
-	move.b    d0,$fffffa21		;put data 
-	move.b    d1,$fffffa1b		;put mode 
-	bset.b    #0,$fffffa07
-	bset.b    #0,$fffffa13
-	
-	move.w 	  (sp)+,sr 		;restore Status Register
-	bsr.w	  _super_off
-	movem.l (sp)+,d0-d7/a0-a6	;restore registers
-	rts
+    ;import symbols
+    xref _sequenceUpdate
 
 	;not used, remove it
 _updateMidiFunc:
@@ -132,92 +85,10 @@ _updateMidiFunc:
       bclr.b	#0,$fffffa0f  		; finished!
       rte
 
-; deinstalls MIDI replay on timer B 
-_deinstallReplayRout:
-	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	_super_on
-
-	move.w	sr,-(a7)		;save status register
-	or.w	#$0700,sr
-
-	clr.b     $fffffa1b	;turn off tb
-	move.l	 _oldTB,$120	;save old tb
-	
-        move.w	(sp)+,sr	;restore Status Register
-
-	bsr.w	_super_off
-	movem.l (sp)+,d0-d7/a0-a6
-	rts
-
-_turnOffKeyclick:
-      bsr.w	_super_on
-      bclr	#0,$484.w
-
-      bsr.w	_super_off
-      rts
-
-_amMidiSendIKBD:
-      movem.l	d0-d1/a0,-(sp)
-      ;bsr.w	_super_on
-      ;todo correct it
-      move.l  $38(sp),d1  	;mode
-      move.l  $42(sp),a0  	;data
-       
-.loop:      
-      cmpi.l	#0,d1	
-      beq.s	.done
-      
-      ;slap data to d0
-      move.b	(a0)+,d0
-.wait:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait		;no, wait!
-      move.b	d0,$fffffc06.w	;write to MIDI data register
-
-      subq.l	#1,d1
-      bra.s	.loop
-.done:
-      ;bsr.w	_super_off
-     
-      movem.l (sp)+,d0-d1/a0
-      rts
-
-;enter supervisor mode
-_super_on:
-	movem.l	d0/a0,-(sp)
-	clr.l	-(sp)
-	move.w	#$20,-(sp)
-	trap	#1
-	addq.l	#6,sp
-	move.l	d0,old_ssp
-	movem.l	(sp)+,d0/a0
-	RTS
-
-;leave supervisor mode
-_super_off:
-	movem.l	d0/a0,-(sp)
-	move.l	old_ssp,-(sp)
-	move.w	#$20,-(sp)
-	trap	#1
-	addq.l	#6,sp
-	movem.l	(sp)+,d0/a0 
-	RTS
-
-	bss
-	align 4
-old_ssp:		ds.l	1
-_pCurrentSequence:	ds.l	1
-_oldTB:			ds.l	1
-update:			ds.l	1
-_tbData:		ds.b	1
-	align 4
-_tbMode:		ds.b	1
-	align 2		
+      BSS
+_pCurrentSequence:	ds.l	1      
 _startPlaying:		ds.w	1
 _MIDIdataEndPtr:	ds.l	1
-	align 2
-_MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
-_MIDIbytesToSend:	ds.w	1	;nb of bytes to send
 _bTempoChanged:		ds.l	1
 _bTimeSignatureChanged:	ds.l	1
 	align 4

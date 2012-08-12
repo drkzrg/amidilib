@@ -96,6 +96,10 @@ ymChannelData ch[3];
     note_on(9,noteNb,127);	//output on channel 9, max velocity
   }
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    amMidiSendIKBD();
+#endif
+
   if(bYmOutput==TRUE){
 
      U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;

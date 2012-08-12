@@ -46,7 +46,7 @@ void pauseSeq(void);
 void playSeq(void);
 
 /** setups sequence for replay. Sequence is stopped by default */
-void initSeq(sSequence_t *seq);
+void initSeq(sSequence_t **seq);
 
 /** mutes selected track or first one if there is only one */
 void muteTrack(U16 trackNb,BOOL bMute);

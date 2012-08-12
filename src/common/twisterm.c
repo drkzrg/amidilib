@@ -160,7 +160,7 @@
  * to a function.  We do so with a couple of careful #defines.
  */
 
-#include "include/twisterm/twisterm.h"
+#include "twisterm/twisterm.h"
 
 /*
  * Table of contents:

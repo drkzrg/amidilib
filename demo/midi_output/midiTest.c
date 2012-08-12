@@ -6,28 +6,20 @@
 */
 
 #include <stdio.h>
-
 #include <string.h>
 #include <unistd.h>
 
+#include "c_vars.h"
 #include "amidilib.h"
 
-#include "include/c_vars.h"
-#include "include/scancode.h"	// scancode definitions
-
 #ifndef PORTABLE
-#include "include/ikbd.h"
-extern void turnOffKeyclick(void);
+#include "input/scancode.h"	// scancode definitions
+#include "input/ikbd.h"
 #endif
-
-static const U8 KEY_PRESSED = 0xff;
-static const U8 KEY_UNDEFINED=0x80;
-static const U8 KEY_RELEASED=0x00;
 
 extern const char *g_arMIDI2key[];	//midi note to musical tone table 
 extern const char *g_arCM32Linstruments[]; //MT32 instruments on 2-9 channel
 extern const char *g_arCM32Lrhythm[]; //MT32 rhytm part
-
 
 void printHelpScreen(){
   printf("===============================================\n");
@@ -74,7 +66,6 @@ void decreaseGlobalMasterVolume(){
 
 //======================================================================================================
 int main(void) {
-  
   U32 i, quit;
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   U8 currentOctave=3;	
@@ -91,13 +82,18 @@ int main(void) {
   U32 iError=am_init();
  
   if(iError!=1) return -1;
-  
+
   //set current channel as 1, default is 0 in external module
   control_change(0x00, currentChannel, currentBankSelect,0x00);
   program_change(currentChannel, currentPN);
-				  
-  printHelpScreen();
+
+#ifndef PORTABLE 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    amMidiSendIKBD();	
+#endif
+#endif   
   
+  printHelpScreen();
 
 #ifndef PORTABLE
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));

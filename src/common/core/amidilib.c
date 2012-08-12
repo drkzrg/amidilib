@@ -5,29 +5,20 @@
     See license.txt for licensing information.
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <alloca.h>
-
-#ifdef MIDI_PARSER_DEBUG
-#include <assert.h>
-#endif
+#include "amidilib.h"
 
 #ifndef PORTABLE
 #include <mint/ostruct.h>
-#include "include/timing/mfp.h"
+#include "timing/mfp.h"
 #endif
-#include "include/timing/miditim.h"
 
+#include "fmio.h"
+#include "xmidi.h"
+#include "roland.h"
+#include "timing/miditim.h"
 
-#include "include/amidilib.h"
-#include "include/amlog.h"
-
-#include "include/list/list.h"
-#include "include/midi_send.h"
-#include "include/c_vars.h"
-#include "include/config.h"
+#include "list/list.h"
+#include "config.h"
 
 #ifdef TIME_CHECK_PORTABLE
 #include <time.h>
@@ -55,7 +46,7 @@ static const U8 configFilename[] = "amidi.cfg";
 #endif
 
 /* */ 
-const U8 *g_arMidiDeviceTypeName[]={
+static const U8 *g_arMidiDeviceTypeName[]={
   "Roland MT-32",       
   "Roland CM-32L",   
   "GS/GM",       
@@ -140,8 +131,9 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
       return -1;
     }
    
-   amMemSet(*pSequence,0,sizeof(sSequence_t));
+   amMemSet((*pSequence),0,sizeof(sSequence_t));
    (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
+   (*pSequence)->ubActiveTrack=0;
     
    int iRet=0;
    iRet=am_getHeaderInfo(pMidiPtr);
@@ -183,14 +175,15 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 
 		 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
                  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
-       
-		 
-		  /* create one track list only */
+
+		 /* create one track list only */
 		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+		  amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
 		  /* Store time division for sequence, TODO: SMPTE handling */
-		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-                  
 		  
+		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+		 
+		    
 		  /* init event list */
 		  (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  
@@ -223,15 +216,13 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
           startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
 	  /* Store time division for sequence, TODO: SMPTE handling */
-	 
 	  (*pSequence)->ubNumTracks=iNumTracks;
 	  
 	  /* create one track list only */
 	  for(int i=0;i<iNumTracks;i++){
 	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-
+	  amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
 	   /* init event list */
-	   (*pSequence)->arTracks[i]->pTrkEventList=0;
 	   (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 	  }
 	  
@@ -260,8 +251,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	  
 	  /* create one track list only */
 	  for(int i=0;i<iNumTracks;i++){
-	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	
+	    (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+	    amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
 	    /* init event list */
 	    (*pSequence)->arTracks[i]->pTrkEventList=0;
 	    (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
@@ -405,7 +396,6 @@ S16 am_init(){
   }
   
 #ifndef PORTABLE 
- 
  /* clear our new buffer */
  U32 usp=0L;
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
@@ -436,19 +426,14 @@ S16 am_init(){
    U8 currentChannel=1;
    U8 currentPN=1;
    U8 currentBankSelect=0;
-#ifndef PORTABLE 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  usp=0L;
-  usp=Super(0L);
-#endif
-#endif
+
    //set current channel as 1, default is 0 in external module
    control_change(0x00, currentChannel, currentBankSelect,0x00);
    program_change(currentChannel, currentPN);
 
 #ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
-  SuperToUser(usp);
+    amMidiSendIKBD();	
 #endif
 #endif   
    
@@ -1822,10 +1807,16 @@ void getDeviceInfoResponse(U8 channel){
   getInfoSysEx[5]=channel;
   getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  for(int i=0;i<10;i++){
+    MIDIsendBuffer[MIDIbytesToSend++]=getInfoSysEx[i];
+  }
+  amMidiSendIKBD();
+#else
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
    // am_dumpMidiBuffer(); 
-    
+#endif    
     begin=getTimeStamp(); // get current timestamp
 	
     /* get reply or there was timeout */

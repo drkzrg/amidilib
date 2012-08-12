@@ -33,7 +33,7 @@ S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize){
 
 
 //void element has to be of the constant size
-void pushStack(tStack *pPtr, const void *newElement){
+void pushStack(tStack *pPtr, void *newElement){
   if(pPtr->top==pPtr->size){ 
       //stack underflow
       pPtr->size=pPtr->size + DEFAULT_MAXSTACK;
@@ -45,10 +45,8 @@ void pushStack(tStack *pPtr, const void *newElement){
     return;
   }
   else{
-    U32 dst;
-
+    U32 dst=0;
     dst=((U32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
-    
     amMemCpy((void *)dst,newElement,pPtr->elementSize);
     return;
   }
@@ -98,3 +96,4 @@ void deinitStack(tStack *pPtr){
   pPtr->elementSize=0;
   pPtr->size = 0;
 }
+

@@ -15,6 +15,7 @@
 
 #include "amidilib.h"
 #include "ym2149.h" 
+#include "timing/miditim.h"
 
 #ifndef PORTABLE
 #include <osbind.h>
@@ -53,12 +54,12 @@ void onToggleMidiEnable();
 void onToggleYmEnable();
 void onTogglePlayPauseSequence(sCurrentSequenceState *pSeqPtr);
 void onStopSequence(sCurrentSequenceState *pSeqPtr);
-BOOL isEOT(sEvent *pEvent);
+BOOL isEndSeq(sEvent *pEvent);
 
 // plays sample sequence 
 int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
 void updateSequenceStep(); 
-void onEndSequence(); //end sequence handler
+void onEndSeq(); //end sequence handler
 void printHelpScreen();
 
 
@@ -274,7 +275,7 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
   ymSoundOff();
 }
 
-BOOL isEOT(sEvent *pEvent){
+BOOL isEndSeq(sEvent *pEvent){
   if(pEvent->delta==0&&pEvent->note==0)
     return TRUE;
   else 
@@ -394,7 +395,7 @@ static BOOL bStopped=FALSE;
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while((isEOT(pEvent)==FALSE)&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
+      while((isEndSeq(pEvent)==FALSE)&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
 	  endOfSequence=FALSE;
 	  g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;
 	  
@@ -406,7 +407,7 @@ static BOOL bStopped=FALSE;
       }
       
       //check for end of sequence
-      if(isEOT(pEvent)){
+      if(isEndSeq(pEvent)){
 	endOfSequence=TRUE;
       }
   
@@ -416,12 +417,12 @@ static BOOL bStopped=FALSE;
   //check if we have end of sequence
   //on all tracks
   if(endOfSequence==TRUE){
-    onEndSequence();
+    onEndSeq();
     endOfSequence=FALSE;
   }
 }
 
-void onEndSequence(){
+void onEndSeq(){
 
   if(g_CurrentState.playMode==S_PLAY_ONCE){
       //reset set state to stopped

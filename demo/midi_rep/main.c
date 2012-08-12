@@ -11,11 +11,12 @@
 #include <limits.h>
 
 #include "amidilib.h"
+#include "amidiseq.h"	//sequence structs
+#include "fmio.h"	//disc i/o
+#include "timing/miditim.h" 
 
 #ifndef PORTABLE
 #include "input/ikbd.h"
-
-extern void turnOffKeyclick(void);
 #endif
 
 // display info screen
@@ -31,8 +32,7 @@ int main(int argc, char *argv[]){
     void *pMidi=NULL;
     U16 iRet=0;
     S16 iError=0;
-    pMidiTune=0;
-    
+   
     /* init library */
     iError=am_init();
     
@@ -86,11 +86,6 @@ int main(int argc, char *argv[]){
 		amTrace((const U8*)"Track #[%d] \t",i+1);
 		amTrace((const U8*)"Track name: %s\n",p->pTrackName);
 		amTrace((const U8*)"Track ptr %p\n",p->pTrkEventList);
-	  
-		//log state
-		amTrace((const U8*)"state: \n");
-		amTrace((const U8*)"Start event ptr: %p \n",p->currentState.pStart);
-		amTrace((const U8*)"Current event ptr: %p \n",p->currentState.pCurrent);
 		
 		//print out all events
 		if(p->pTrkEventList!=0){
@@ -115,7 +110,7 @@ int main(int argc, char *argv[]){
 	  BOOL bQuit=FALSE;
 
 	  //install replay rout 
-	  initSeq(pMidiTune);
+	  initSeq(&pMidiTune);
 	  
 	  while(bQuit!=TRUE){
 

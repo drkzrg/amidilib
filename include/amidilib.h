@@ -9,16 +9,7 @@
 #define __AMIDILIB_H__
 
 #include "c_vars.h"
-#include "memory/memory.h"
-#include "fmio.h"
-#include "roland.h"
-#include "midi.h"
-#include "xmidi.h"
-#include "midi_cmd.h"
 #include "midi_rep.h"
-#include "amidiseq.h"
-#include "list/list.h"
-#include "timing/miditim.h"
 
 #define LIB_NAME "AMIDILIB : Atari (X)MIDI replay library\n"
 #define AMIDI_INFO "(c)2007-2012 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
@@ -295,8 +286,6 @@ void am_destroySequence(sSequence_t **pPtr);
 
 /** returns meaningful name for Midi Device type enumeration.  */
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
-
-
 
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test */

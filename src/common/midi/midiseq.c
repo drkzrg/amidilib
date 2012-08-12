@@ -5,21 +5,25 @@
     See license.txt for licensing information.
 */
 
-#include "include/midiseq.h"
-#include "include/amidiseq.h"
-#include "include/midi_cmd.h"
+#include "midiseq.h"
+#include "amidiseq.h"
+#include "midi_cmd.h"
+#include "midi_rep.h"
 
 #ifdef PORTABLE
-extern sSequence_t *pCurrentSequence;	//here is stored current sequence
+//here is stored current sequence
+extern sSequence_t *g_CurrentSequence;
 BOOL bTempoChanged;
 BOOL bTimeSignatureChanged;
 #else
-extern volatile sSequence_t *pCurrentSequence;	//here is stored current sequence
+//here is stored current sequence
+extern sSequence_t *g_CurrentSequence;
+
 extern BOOL bTempoChanged;
 extern BOOL bTimeSignatureChanged;
 #endif
 
-void  fNoteOn(void *pEvent){
+void  fNoteOn(void *pEvent) {
 	sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
 	amTrace((const U8*)"Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
@@ -78,15 +82,14 @@ void  fNoteOn(void *pEvent){
 
  void fSetTempo(void *pEvent){
   sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;	
- #ifdef DEBUG_BUILD
-  amTrace((const U8*)"Setting new replay tempo...\n");
-#endif
+  sSequence_t *seq=0;
+  getCurrentSeq(&seq);
   
-  if(pCurrentSequence!=0){
+  if(seq!=0){
     //set new tempo value and indicate that tempo has changed
     //it will be handled in interrupt routine
-    U8 activeTrack=pCurrentSequence->ubActiveTrack;
-    pCurrentSequence->arTracks[activeTrack]->currentState.currentPPQN=pPtr->eventData.tempoVal;
+    U8 activeTrack=seq->ubActiveTrack;
+    seq->arTracks[activeTrack]->currentState.currentPPQN=pPtr->eventData.tempoVal;
     bTempoChanged=TRUE;
   }
 }
@@ -115,14 +118,14 @@ void  fNoteOn(void *pEvent){
 
 void fHandleSignatureChange(void *pEvent){
    sTimeSignature_EventBlock_t *pPtr=(sTimeSignature_EventBlock_t *)pEvent;
-
+  
 #ifdef DEBUG_BUILD
   amTrace((const U8*)"Time Signature change nn: %d, dd: %d, cc: %d, bb %d.\r\n",pPtr->timeSignature.nn,pPtr->timeSignature.dd,pPtr->timeSignature.cc,pPtr->timeSignature.bb);
 #endif
  
-  if(pCurrentSequence!=0){
-    U8 activeTrack=pCurrentSequence->ubActiveTrack;
-    pCurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
+  if(g_CurrentSequence!=0){
+    U8 activeTrack=g_CurrentSequence->ubActiveTrack;
+    g_CurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
     bTimeSignatureChanged=TRUE;
   }
   

@@ -9,13 +9,9 @@
 #define __FMIO_H__
 
 #include "c_vars.h"
-#include "amlog.h"
 #include "memory/memory.h"
 
 #ifndef PORTABLE
-#include <mintbind.h>
-#include <mint/osbind.h>
-
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */
 #define XB_DEV_KBD 1    /* Keyboard port */

@@ -48,11 +48,17 @@ const U8 *getCM32LRhythmName(U8 ubNoteNb)
 }
 
 void MT32Reset(void){
+#ifdef IKBD_MIDI_SEND_DIRECT  
+  for(int i=0;i<7;i++){
+    MIDIsendBuffer[MIDIbytesToSend++]=g_arReset[i];
+  }
+  amMidiSendIKBD();
+#else
 	MIDI_SEND_DATA(8,g_arReset);
+#endif	
 }
 
-void patchMT32toGM(void)
-{
+void patchMT32toGM(void){
 
 }
 

@@ -426,6 +426,11 @@ S16 am_init(){
    U8 currentChannel=1;
    U8 currentPN=1;
    U8 currentBankSelect=0;
+#ifndef PORTABLE 
+#ifdef IKBD_MIDI_SEND_DIRECT
+   MIDIbytesToSend=0;
+#endif
+#endif   
 
    //set current channel as 1, default is 0 in external module
    control_change(0x00, currentChannel, currentBankSelect,0x00);

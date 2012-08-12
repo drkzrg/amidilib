@@ -94,10 +94,6 @@ ymChannelData ch[3];
 
   if(bMidiOutput==TRUE){
     note_on(9,noteNb,127);	//output on channel 9, max velocity
-    
-    #ifdef IKBD_MIDI_SEND_DIRECT
-    amMidiSendIKBD();
-    #endif
   }
 
   if(bYmOutput==TRUE){

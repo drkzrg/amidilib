@@ -1,5 +1,5 @@
 #!/bin/bash   
-scons cross=y target=f030 debug=0 ikbd_direct=no --tree=prune
+scons cross=y target=atarist debug=0 ikbd_direct=yes --tree=prune
 m68k-atari-mint-stack ../bin/*.tos --size=128k
 m68k-atari-mint-stack ../bin/*.ttp --size=128k
 m68k-atari-mint-flags -S ../bin/*.tos

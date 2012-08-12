@@ -7,17 +7,13 @@
 ;    midi delta handling and timing demo
 
     include "timing/mfp_m68k.inc"
-
-    xdef _midiOutputEnabled     ;midi out enabled flag
-    xdef _ymOutputEnabled	;ym2149 output enable flag
+    include "common_m68k.inc"
+    
     xdef _customSeqReplay	;custom sequence replay handler
-    
-    xref _tbMode	;data feed to timer, which control
-    xref _tbData	;individual tick duration
-    
     xref _updateSequenceStep	;our sequence update routine
-    xref update			;our installed interrupt routine
+
 	even
+	
 _customSeqReplay:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	
@@ -26,6 +22,30 @@ _customSeqReplay:
 	
 	jsr 	_updateSequenceStep
 
+	if (IKBD_MIDI_SEND_DIRECT==1)
+	echo	"[VASM]***************** IKBD MIDI DATA SEND DIRECT ENABLED"
+	move.l #_MIDIsendBuffer,a0
+	move.w	_MIDIbytesToSend,d1
+.loop:      
+      cmpi.l	#0,d1	
+      beq.s	.done
+      moveq	#0,d0
+	
+      ;slap data to d0
+      move.b	(a0)+,d0
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+
+      subq.l	#1,d1
+      bra.s	.loop
+.done:
+	move.w	#0,_MIDIbytesToSend 
+	else
+	echo	"[VASM]***************** IKBD MIDI DATA SEND DIRECT DISABLED"
+	endif
+	
 	;prepare next tick
         move.l    update,$120		;slap interrupt 
 	move.b    _tbData,$fffffa21	;set data
@@ -36,11 +56,3 @@ _customSeqReplay:
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer
-
-	bss
-
-	even
-_midiOutputEnabled:	ds.l	1
-_ymOutputEnabled: 	ds.l	1
-	align 4
-

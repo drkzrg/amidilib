@@ -216,7 +216,7 @@ else:
   env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
   env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(TIMINGS_TEST_EXE, [timings_test_src + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+  env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
   
 # TODO if release strip symbols, pack with executable packer 

@@ -14,7 +14,7 @@
 #include <ctype.h> 
 
 #include "amidilib.h"
-#include "ym2149.h" 
+#include "ym2149/ym2149.h"
 #include "timing/miditim.h"
 
 #ifndef PORTABLE
@@ -28,12 +28,12 @@
 static sCurrentSequenceState g_CurrentState;
 
 #ifndef PORTABLE
-extern void turnOffKeyclick(void);
 extern void customSeqReplay(void);
 volatile BOOL handleTempoChange;
 
-extern volatile BOOL midiOutputEnabled;
-extern volatile BOOL ymOutputEnabled;
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
+
 #else
 volatile BOOL midiOutputEnabled;
 volatile BOOL ymOutputEnabled;

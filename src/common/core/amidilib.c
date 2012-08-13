@@ -1865,10 +1865,6 @@ U16 iCounter;
   for(iCounter=0;iCounter<numChannels;iCounter++){
   all_notes_off(iCounter);
  }
-#ifdef IKBD_MIDI_SEND_DIRECT
-    amMidiSendIKBD();
-#endif
- 
 }        
 #ifdef TIME_CHECK_PORTABLE	
 /* utility for measuring function time execution in ms */

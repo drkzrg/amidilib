@@ -25,6 +25,7 @@ _midiSeqReplay:
 	if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[VASM]***************** IKBD MIDI DATA SEND DIRECT ENABLED"
 	move.l #_MIDIsendBuffer,a0
+	moveq	#0,d1
 	move.w	_MIDIbytesToSend,d1
 .loop:      
       cmpi.l	#0,d1	

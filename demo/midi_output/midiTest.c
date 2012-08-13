@@ -172,101 +172,58 @@ int main(void) {
 				  //note on handling
 				  case SC_Q:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
-				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
 				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+0));
 				  }break;
 				  case SC_A:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+1,currentVelocity);
-    				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+1));
+    				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+1));
 				  }break;
 				  case SC_W:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+2,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+2));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+2));
 				  }break;
 				  case SC_S:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+3,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+3));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+3));
 				  }break;
 				  case SC_E:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+4));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+4));
 				  }break;
 				  
 				  case SC_D:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+5));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+5));
 				  }break;
 				  
 				  case SC_R:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+6,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+6));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+6));
 				  }break;
 				  
 				  case SC_F:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+7,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+7));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+7));
 				  }break;
 				  
 				  case SC_T:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+8,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+8));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+8));
 				  }break;
 				  
 				  case SC_G:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+9,currentVelocity);				        				    
-				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
 				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+9));
 				  }break;
 				  
 				  case SC_Y:{
 				    note_on(currentChannel,noteBaseArray[currentOctave]+10,currentVelocity);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				     printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+10));
+       				    printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+10));
 				  }break;
 				  
 				  case SC_H:{
 				     note_on(currentChannel,noteBaseArray[currentOctave]+11,currentVelocity);
-       				     #ifdef IKBD_MIDI_SEND_DIRECT
-				     amMidiSendIKBD();	
-				     #endif
-
-				     printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+11));
+       				     printf("%s\n",getNoteName(currentChannel,currentPN,noteBaseArray[currentOctave]+11));
 				  }break;
 				  
 				  // change program number
@@ -311,11 +268,7 @@ int main(void) {
 				      am_allNotesOff(16);
 				      currentChannel--;
 				      program_change(currentChannel, currentPN);
-       				    #ifdef IKBD_MIDI_SEND_DIRECT
-				    amMidiSendIKBD();	
-				    #endif
-
-				      printf("active channel: %d \n",currentChannel);
+       				      printf("active channel: %d \n",currentChannel);
 				    }
 				    
 				  }break;
@@ -325,10 +278,6 @@ int main(void) {
 					am_allNotesOff(16);
 					currentChannel++;
 				        program_change(currentChannel, currentPN);
-    				    #ifdef IKBD_MIDI_SEND_DIRECT
-				      amMidiSendIKBD();	
-				    #endif
-
 					printf("Current channel: %d \n",currentChannel);
 				    }
 				  }break;
@@ -360,7 +309,10 @@ int main(void) {
 				  }break;
  
 				}
-				
+			#ifdef IKBD_MIDI_SEND_DIRECT
+			     amMidiSendIKBD();	
+			#endif
+				  	
 				
 			}
 			if (Ikbd_keyboard[i]==KEY_RELEASED) {
@@ -370,7 +322,8 @@ int main(void) {
 				switch(i){
 				  //note off handling
 				  case SC_Q:{
-				     note_off(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
+				  note_off(currentChannel,noteBaseArray[currentOctave]+0,currentVelocity);
+				    
 				  }break;
 				  
 				  case SC_A:{
@@ -388,10 +341,12 @@ int main(void) {
 				  
 				  case SC_E:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
+				  
 				  }break;
 				  
 				  case SC_D:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
+				    
 				  }
 				  
 				  case SC_R:{
@@ -432,7 +387,11 @@ int main(void) {
 				  }break;
 				  
 				};
-				
+			  
+			  #ifdef IKBD_MIDI_SEND_DIRECT
+			      amMidiSendIKBD();	
+			  #endif
+				  
 				
 			}
 		}

@@ -16,37 +16,34 @@
 #include "amidilib.h"
 #include "ym2149/ym2149.h"
 #include "timing/miditim.h"
-
-#ifndef PORTABLE
-#include <osbind.h>
-#include "input/ikbd.h"
-#include "timing/mfp.h"
-#endif
-
 #include "sampleSequence.h"
 
-static sCurrentSequenceState g_CurrentState;
+#define TEMPO_STEP 10000
 
-#ifndef PORTABLE
-extern void customSeqReplay(void);
-volatile BOOL handleTempoChange;
-
-BOOL midiOutputEnabled;
-BOOL ymOutputEnabled;
-
-#else
+#ifdef PORTABLE
 volatile BOOL midiOutputEnabled;
 volatile BOOL ymOutputEnabled;
 volatile BOOL handleTempoChange;
 
 void turnOffKeyclick(void){}
 void customSeqReplay(void){};
+#else
+
+#include <osbind.h>
+#include "input/ikbd.h"
+#include "timing/mfp.h"
+
+extern void customSeqReplay(void);
+extern void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
+extern void amMidiSendIKBD();
+
+volatile BOOL handleTempoChange;
+BOOL midiOutputEnabled;
+BOOL ymOutputEnabled;
 #endif
 
-#define TEMPO_STEP 10000
 
-extern void playNote(U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
-
+// functions
 void onTogglePlayMode(sCurrentSequenceState *pSeqPtr);
 void onTempoUp(sCurrentSequenceState *pSeqPtr);
 void onTempoDown(sCurrentSequenceState *pSeqPtr);
@@ -62,6 +59,7 @@ void updateSequenceStep();
 void onEndSeq(); //end sequence handler
 void printHelpScreen();
 
+sCurrentSequenceState g_CurrentState; //current sequence
 
 int main(void){
   ymChannelData ch[3];
@@ -157,6 +155,8 @@ int main(void){
   }//end while
 
   am_allNotesOff(16);
+  amMidiSendIKBD();
+  
   ymSoundOff();
   deinstallReplayRout();   
 

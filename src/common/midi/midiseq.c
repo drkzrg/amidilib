@@ -20,7 +20,6 @@ BOOL bTimeSignatureChanged;
 extern sSequence_t *g_CurrentSequence;
 
 extern BOOL bTempoChanged;
-extern BOOL bTimeSignatureChanged;
 #endif
 
 void  fNoteOn(void *pEvent) {
@@ -126,7 +125,7 @@ void fHandleSignatureChange(void *pEvent){
   if(g_CurrentSequence!=0){
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
     g_CurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
-    bTimeSignatureChanged=TRUE;
+    
   }
   
 }

@@ -33,3 +33,4 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _tbMode		;mode value passed to mfp registers to install callback
     xdef _midiOutEnabled	;
     xdef _ymOutEnabled		;
+    xdef _bTempoChanged		;flags indicating tempo and time signature change

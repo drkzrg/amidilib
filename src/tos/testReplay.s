@@ -11,9 +11,8 @@
     
     xdef _customSeqReplay	;custom sequence replay handler
     xref _updateSequenceStep	;our sequence update routine
-
-	even
 	
+	TEXT
 _customSeqReplay:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	
@@ -23,7 +22,7 @@ _customSeqReplay:
 	jsr 	_updateSequenceStep
 
 	if (IKBD_MIDI_SEND_DIRECT==1)
-	echo	"[VASM]***************** IKBD MIDI DATA SEND DIRECT ENABLED"
+	echo	"[testReplay.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 	moveq	#0,d1
 	move.l 	#_MIDIsendBuffer,a0
 	move.w	_MIDIbytesToSend,d1
@@ -34,7 +33,7 @@ _customSeqReplay:
       ;slap data to d0
       move.w	(a0)+,d0	;get word
       move.w	d0,d2		;make copy
-      andi.w	#$FF00,d2
+      andi.w	#$FF00,d2	;get first byte
       lsr.w	#8,d2
 .wait1:
       btst	#1,$fffffc04.w	;is data register empty?
@@ -46,7 +45,7 @@ _customSeqReplay:
       
       ;not done
       move.w	d0,d2
-      andi.w	#$00FF,d2
+      andi.w	#$00FF,d2	;get second byte
 .wait2:
       btst	#1,$fffffc04.w	;is data register empty?
       beq.s	.wait2		;no, wait!
@@ -61,7 +60,7 @@ _customSeqReplay:
 .done:
 	move.w	#0,_MIDIbytesToSend 
 	else
-	echo	"[VASM]***************** IKBD MIDI DATA SEND DIRECT DISABLED"
+	echo	"[testReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 	
 	;prepare next tick

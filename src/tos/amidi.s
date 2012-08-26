@@ -7,6 +7,7 @@
 
 ;TODO: remove it/obsolete/not used..
     include "common_m68k.inc"
+
 ;export symbols
     xdef _pCurrentSequence	;current sequence pointer
     
@@ -42,7 +43,7 @@ _updateMidiFunc:
       move.l	_pCurrentSequence,a0
 
       if (MIDI_CLOCK_ENABLE==1)
-      echo	"[VASM]***************** MIDI clock generation enabled (PPQN/24)"
+      echo	"[amidi.s] MIDI clock generation enabled (PPQN/24)"
       ;divide pulse counter mod 24 if there is no remainder send byte directly to MIDI port 
       ;if result == 0 send midi status byte
       move.l	pulseCounter(a0),d1
@@ -61,7 +62,7 @@ _updateMidiFunc:
       beq.s	.wait				;no, wait!
       move.b	#MIDI_CLOCK_BYTE,$fffffc06.w	;write to MIDI data registers
       else
-      echo	"[VASM]***************** MIDI clock generation disabled"
+      echo	"[amidi.s] MIDI clock generation disabled"
       endif
 
 .skipClock:
@@ -90,7 +91,7 @@ _pCurrentSequence:	ds.l	1
 _startPlaying:		ds.w	1
 _MIDIdataEndPtr:	ds.l	1
 _bTempoChanged:		ds.l	1
-_bTimeSignatureChanged:	ds.l	1
+
 	align 4
 
 ;sSequence_t structure
@@ -106,11 +107,3 @@ ubActiveTrack	rs.w	1	; range 0-(ubNumTracks-1) tracks
 arTracks	rs.l	AMIDI_MAX_TRACKS; up to AMIDI_MAX_TRACKS (65536) tracks available
 
   RSRESET
-
-
-
-
-
-
-
-

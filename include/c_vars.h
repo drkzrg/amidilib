@@ -65,7 +65,7 @@ BOOL checkEndianess();
 #endif
 
 
-//TODO: make it more cross-compilator friendly
+//TODO: make it more cross-compiler friendly
 // atm it's gcc specific
 #ifndef STRUCT_PACK
 #define PACK

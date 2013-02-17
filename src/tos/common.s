@@ -65,11 +65,11 @@ _amMidiSendIKBD:
       movem.l	d0-d1/a0,-(sp)
       bsr.w	_super_on
       
-      moveq   #0,d1
+      move.w  #0,d1
       move.l  #_MIDIsendBuffer,a0
-      move.l _MIDIbytesToSend,d1
+      move.w _MIDIbytesToSend,d1
 
-      cmpi.l	#0,d1	
+      cmpi.w	#0,d1	
       beq.s	.done		;nothing to be done
 
 .send:      
@@ -82,8 +82,8 @@ _amMidiSendIKBD:
       btst	#1,$fffffc04.w	;is data register empty?
       beq.s	.wait1		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       ;not done
@@ -94,8 +94,8 @@ _amMidiSendIKBD:
       beq.s	.wait2		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
       
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       bra.s	.send
@@ -147,7 +147,7 @@ _tbData:		ds.b	1
 dummy1:			ds.b	1	
 _tbMode:		ds.b	1
 dummy2:			ds.b	1
-_MIDIbytesToSend:	ds.l	1	;nb of bytes to send
+_MIDIbytesToSend:	ds.w	1	;nb of bytes to send
 _midiOutEnabled:	ds.l	1	;
 _ymOutEnabled:		ds.l	1	;
 _bTempoChanged:		ds.l	1

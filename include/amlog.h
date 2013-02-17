@@ -9,11 +9,11 @@
 #define __AMLOG_H__
 
 #include <stdarg.h>
+#include <unistd.h>
+
 #include "c_vars.h"
 
-#ifndef _MSC_VER
-#include <unistd.h>
-#endif
+
 
 /* small trick to get rid of logs/debug info in final build :D haxx0r! let the compiler do dirty work */
 #if DEBUG_BUILD
@@ -24,7 +24,6 @@
 
 //inits logs
 void am_initLog();
-
 void am_deinitLog();
 
 /** Utility function sends text buffer to console and text log.

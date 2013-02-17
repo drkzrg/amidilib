@@ -68,7 +68,7 @@ elif ((target == "f030") or (target == "ataritt")):
 elif (target == "atarist"):
     print "Building Atari ST/Ste target..."
     portable=0;  
-    ST_CFLAGS='-std=c99 -m68000'
+    ST_CFLAGS='-std=c99 -m68000 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''

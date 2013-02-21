@@ -109,23 +109,23 @@ _amMidiSendIKBD:
 
  ;enter supervisor mode
 _super_on:
-	movem.l	d0/a0,-(sp)
+	movem.l	d0-7/a0-a6,-(sp)
 	clr.l	-(sp)
 	move.w	#$20,-(sp)
 	trap	#1
 	addq.l	#6,sp
 	move.l	d0,old_ssp
-	movem.l	(sp)+,d0/a0
+	movem.l	(sp)+,d0-7/a0-a6
 	RTS
 
 ;leave supervisor mode
 _super_off:
-	movem.l	d0/a0,-(sp)
+	movem.l	d0-7/a0-a6,-(sp)
 	move.l	old_ssp,-(sp)
 	move.w	#$20,-(sp)
 	trap	#1
 	addq.l	#6,sp
-	movem.l	(sp)+,d0/a0 
+	movem.l	(sp)+,d0-7/a0-a6 
 	RTS
 
 ;########################## redirect output to serial		

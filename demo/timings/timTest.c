@@ -207,8 +207,10 @@ U32 iCurrentStep;
     }
     else 
       iCurrentStep=TEMPO_STEP;
- 	      
-    pSeqPtr->currentTempo-=iCurrentStep;
+ 
+    if(!(pSeqPtr->currentTempo-iCurrentStep<=0))
+      pSeqPtr->currentTempo-=iCurrentStep;
+    
     handleTempoChange=TRUE;    
   }
   

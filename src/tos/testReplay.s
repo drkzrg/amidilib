@@ -27,7 +27,7 @@ _customSeqReplay:
 	move.l 	#_MIDIsendBuffer,a0
 	move.w	_MIDIbytesToSend,d1
 	
-	cmpi.l	#0,d1	
+	cmpi.w	#0,d1	
 	beq.s	.done		;nothing to be done
 .send:      
       ;slap data to d0
@@ -39,8 +39,8 @@ _customSeqReplay:
       btst	#1,$fffffc04.w	;is data register empty?
       beq.s	.wait1		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       ;not done
@@ -51,8 +51,8 @@ _customSeqReplay:
       beq.s	.wait2		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
       
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       bra.s	.send

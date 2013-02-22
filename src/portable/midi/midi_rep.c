@@ -23,7 +23,7 @@ return;
 }
 
 
-void initSeq(sSequence_t *seq){
+void initSeq(sSequence_t **seq){
   //TODO! 
  return;
 }

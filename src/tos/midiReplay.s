@@ -25,7 +25,7 @@ _midiSeqReplay:
 	if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 
-	moveq	#0,d1
+	move.w	#0,d1
 	move.l 	#_MIDIsendBuffer,a0
 	move.w	_MIDIbytesToSend,d1
 
@@ -39,8 +39,8 @@ _midiSeqReplay:
       btst	#1,$fffffc04.w	;is data register empty?
       beq.s	.wait1		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       ;not done
@@ -51,8 +51,8 @@ _midiSeqReplay:
       beq.s	.wait2		;no, wait!
       move.b	d2,$fffffc06.w	;write to MIDI data register
       
-      subq.l	#1,d1
-      cmpi.l	#0,d1	
+      subq.w	#1,d1
+      cmpi.w	#0,d1	
       beq.s	.done
       
       bra.s	.send

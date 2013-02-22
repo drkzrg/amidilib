@@ -344,10 +344,12 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
   return 0;
 }
 
+
+
 void updateSequenceStep(){
 BOOL endOfSequence;
 static BOOL bStopped=FALSE;
-
+  
   //check sequence state if paused do nothing
   if(g_CurrentState.state==PS_PAUSED) {
     if(midiOutputEnabled==TRUE) am_allNotesOff(16);

@@ -1,15 +1,14 @@
 
 //tos version
 #include <lzo/lzoconf.h>
+#include <math.h>
 
 #include "timing/mfp.h"
-
 #include "amidilib.h"
 #include "midi_send.h"
 #include "config.h"
 #include "timing/miditim.h"
 
-#include <math.h>
 extern void midiSeqReplay(void);
 
 extern volatile BOOL midiOutEnabled;
@@ -37,7 +36,7 @@ void initSeq(sSequence_t **seq){
      (*seq)->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
      (*seq)->arTracks[i]->currentState.currentSeqPos=0;
 
-     (*seq)->arTracks[i]->currentState.playState=PS_STOPPED;
+     (*seq)->arTracks[i]->currentState.playState=PS_PLAYING;
      (*seq)->arTracks[i]->currentState.playMode=S_PLAY_LOOP;
     } 
   

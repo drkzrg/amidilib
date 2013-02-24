@@ -113,7 +113,7 @@ amTrace((const U8 *)"destroyList()\n");
 		sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
 		amFree((void **)&(pTemp->pCuePointName));
 	      }break;
-	      
+
 	      case T_SYSEX:{
 		sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
 		amFree((void **)&(pTemp->pBuffer));
@@ -236,6 +236,11 @@ void printEventBlock(const sEventBlockPtr_t pPtr){
 	 return;
 	}break;
 	
+	case T_META_SET_SIGNATURE:{
+	 amTrace((const U8*)"T_META_SET_SIGNATURE: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
+	 return;
+	}break;
+
 	case T_SYSEX:{
 	 amTrace((const U8*)"T_SYSEX: block pointer: %p, function pointer: %p\n",pPtr,pPtr->sendEventCb.func); 
 	return;
@@ -243,7 +248,7 @@ void printEventBlock(const sEventBlockPtr_t pPtr){
 	}break;
 	
 	default:{
-	      amTrace((const U8*)"printEventBlock() error unknown event type %d\n",(U16)(pPtr->type));
+	      amTrace((const U8*)"printEventBlock() error unknown/unsupported event type %d\n",(U16)(pPtr->type));
 	      return;
 	}
 	break;

@@ -122,11 +122,10 @@ void fHandleSignatureChange(void *pEvent){
   amTrace((const U8*)"Time Signature change nn: %d, dd: %d, cc: %d, bb %d.\r\n",pPtr->timeSignature.nn,pPtr->timeSignature.dd,pPtr->timeSignature.cc,pPtr->timeSignature.bb);
 #endif
  
-  if(g_CurrentSequence!=0){
+  /*if(g_CurrentSequence!=0){
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
     g_CurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
-    
-  }
+  }*/
   
 }
 
@@ -204,6 +203,7 @@ U8 getChannelNbFromEventBlock(sEventBlock_t *pBlock){
   case T_META_EOT:
   case T_META_CUEPOINT:
   case T_META_MARKER:
+  case T_META_SET_SIGNATURE:
   case T_SYSEX:
     return 127;
    break;

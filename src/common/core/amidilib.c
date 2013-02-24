@@ -1681,6 +1681,7 @@ sEventBlock_t tempEvent;
 	/* add event to list */
 	addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 	
+	
         /* print out info */
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"Time signature change nn: %d\tdd: %d\tcc: %d\tbb: %d\r\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
@@ -1734,7 +1735,7 @@ sEventBlock_t tempEvent;
     default:{
 	#ifdef MIDI_PARSER_DEBUG
        amTrace((const U8*)"delta: %u\tUnknown meta event.\n",(unsigned long)delta);
-	   #endif
+	#endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
         /* we should put here assertion failed or something with "send this file to author" message */

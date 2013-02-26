@@ -118,8 +118,16 @@ if(portable==1):
   env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]
   env["LIBPATH"] = ['../bin/']
 else:
-  include_path = prefix + "/m68k-atari-mint/include"
-  lib_path = prefix + "/m68k-atari-mint/lib"
+  include_path=''
+  lib_path=''
+  
+  if(CROSS==1):
+	include_path = prefix + "/m68k-atari-mint/include"
+	lib_path = prefix + "/m68k-atari-mint/lib"
+  else:
+	include_path = prefix + "/include"
+	lib_path = prefix + "/lib"
+	
   env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
   env["LIBPATH"] = [lib_path,'../bin/']
   

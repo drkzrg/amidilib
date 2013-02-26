@@ -15,17 +15,18 @@ where name of 'target' can be: \n \
  'f030' - for Atari Falcon030/TT build\n \
  'atarist' - for Atari ST build \n \
  'ct60' - for Atari Falcon CT60/63\n \
- 'unix' - for platform independent version (dummy)\n\
- cross - enables m68k-atari-mint cross compiler, set to 'y' by default\n\
- debug - enables/disables build of debug version of library with additional tracing options,\n\
+ 'unix' - for platform independent version (dummy)\n \
+ 'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
+ 'prefix' - prefix path to cross tools (optional) \n \
+ 'debug' - enables/disables build of debug version of library with additional tracing options,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
 portable = ARGUMENTS.get('portable', 0)
 cross = ARGUMENTS.get('cross', 0)
+prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
-
 LIBRARYNAME = 'amidi'
 
 #to indicate that we are cross compiling
@@ -34,12 +35,18 @@ if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
   CROSS_PREFIX=''
 elif ((cross=='yes')or (cross=='y')):
   CROSS=1
-  CROSS_PREFIX='m68k-atari-mint-'
+  if((prefix!='')):
+	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+  else:
+	CROSS_PREFIX = 'm68k-atari-mint-'
 else:
   print "No compilation parameter set. Assuming cross compilation for Atari target."
   CROSS=1
-  CROSS_PREFIX='m68k-atari-mint-'
-  
+  if((prefix!='')):
+	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+  else:
+	CROSS_PREFIX = 'm68k-atari-mint-'
+	
 ST_CFLAGS=''
 ST_LDFLAGS=''
 ST_VASM_FLAGS =''
@@ -47,6 +54,8 @@ ST_CCFLAGS =''
 EXE_EXT_1=''
 EXE_EXT_2=''
 LIB_POSTFIX=''
+
+print "Cross tools path: " + prefix
 
 if (target == "unix"):
     print "Building Generic/Unix target..."
@@ -109,8 +118,10 @@ if(portable==1):
   env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]
   env["LIBPATH"] = ['../bin/']
 else:
-  env["CPPPATH"] = ["/usr/m68k-atari-mint/include", "../","../include","../include/lzo","../include/ym2149","../include/input"]
-  env["LIBPATH"] = ['/usr/m68k-atari-mint/lib','../bin/']
+  include_path = prefix + "/m68k-atari-mint/include"
+  lib_path = prefix + "/m68k-atari-mint/lib"
+  env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
+  env["LIBPATH"] = [lib_path,'../bin/']
   
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'

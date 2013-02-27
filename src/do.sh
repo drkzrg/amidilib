@@ -58,14 +58,14 @@ fi
 
 if [ -f ../bin/ym2149.tos ];
 then 
-   "$tools_prefix""m68k-atari-mint-stack" ../bin/ym2149.tos --size=$stack_size
-   "$tools_prefix""m68k-atari-mint-flags" -S ../bin/ym2149.tos
+   $tools_prefix"m68k-atari-mint-stack" ../bin/ym2149.tos --size=$stack_size
+   $tools_prefix"m68k-atari-mint-flags" -S ../bin/ym2149.tos
    cp -v ../bin/ym2149.tos $install_dir
 fi
 if [ -f ../bin/midiseq.tos ];
 then 
-   "$tools_prefix""m68k-atari-mint-stack" ../bin/midiseq.tos --size=$stack_size
-   "$tools_prefix""m68k-atari-mint-flags" -S ../bin/midiseq.tos
+   $tools_prefix"m68k-atari-mint-stack" ../bin/midiseq.tos --size=$stack_size
+   $tools_prefix"m68k-atari-mint-flags" -S ../bin/midiseq.tos
    cp -v ../bin/midiseq.tos $install_dir
 fi
 if [ -f ../bin/timings.tos ];

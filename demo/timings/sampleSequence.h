@@ -33,8 +33,8 @@ typedef struct{
   U32 currentBPM;	//beats per minute (60 000000 / currentTempo)
   U32 timeElapsedFrac; //sequence elapsed time
   U32 timeStep; 	//sequence elapsed time
-  sTrack tracks[3];	      //one per ym channel
-  ePlayState state;	      //current state playing/paused/stopped 
+  sTrack tracks[3];	//one per ym channel
+  ePlayState state;	//current state playing/paused/stopped 
   ePlayMode playMode;  //play in loop, play once etc..
   
 } sCurrentSequenceState;

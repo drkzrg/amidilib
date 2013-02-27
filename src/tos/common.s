@@ -153,3 +153,5 @@ _ymOutEnabled:		ds.l	1	;
 _bTempoChanged:		ds.l	1
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 
+
+

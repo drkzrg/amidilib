@@ -158,7 +158,9 @@ int main(int argc, char *argv[]){
 	    }
 	      
 	   } //end of for 	  
-	}
+	   
+	
+	  }
 	/* Uninstall our ikbd handler */
 	Supexec(IkbdUninstall);
 #else

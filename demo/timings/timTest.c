@@ -295,6 +295,10 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
 
   pSeqPtr->timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
   
+  for (int i=0;i<3;i++){
+      pSeqPtr->tracks[i].seqPosIdx=0UL;
+  }  
+  
   am_allNotesOff(16);
   ymSoundOff();
 }
@@ -317,7 +321,7 @@ void INLINE printHelpScreen(){
   
   printf("[spacebar] - turn off all sounds / stop sequence \n");
   printf("[Esc] - quit\n");
-  printf("(c) Nokturnal 2012\n");
+  printf("(c) Nokturnal 2013\n");
   printf("================================================\n");
 }
 
@@ -454,6 +458,7 @@ void onEndSeq(){
       //reset set state to stopped
       //reset song position on all tracks
       g_CurrentState.state=PS_STOPPED;
+      onStopSequence(&g_CurrentState);
       
     }else if(g_CurrentState.playMode==S_PLAY_LOOP){
       g_CurrentState.state=PS_PLAYING;

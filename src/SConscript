@@ -60,14 +60,14 @@ print "Cross tools path: " + prefix
 if (target == "unix"):
     print "Building Generic/Unix target..."
     portable=1;
-    ST_CFLAGS='-std=c99'
+    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = ''
     ST_CCFLAGS =''
 elif ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
     portable=0;
-    ST_CFLAGS='-std=c99 -m68030'
+    ST_CFLAGS='-std=c99 -m68030 -m68882 --ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
@@ -87,7 +87,7 @@ elif (target == "atarist"):
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target..."
     portable=0;
-    ST_CFLAGS='-std=c99 -m68060'
+    ST_CFLAGS='-std=c99 -m68060 --ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''

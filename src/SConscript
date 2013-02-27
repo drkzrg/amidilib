@@ -95,7 +95,7 @@ elif (target == "ct60"):
     EXE_EXT_2='.ttp'
     LIB_POSTFIX='060'
 else:
-    print "Unknown target... Terminating build. Type in 'scons --help' from commandline for a list of options" 
+    print "Unknown target...["+target+"] Terminating build. Type in 'scons --help' from commandline for a list of options" 
 
 # output executable name
 OUTPUT_DIR='../bin/'

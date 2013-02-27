@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2012 Pawel Goralski
+/**  Copyright 2007-2013 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -18,7 +18,7 @@
 #include "timing/miditim.h"
 #include "sampleSequence.h"
 
-#define TEMPO_STEP 10000
+#define TEMPO_STEP 10000UL
 
 #ifdef PORTABLE
 volatile BOOL midiOutputEnabled;
@@ -193,44 +193,59 @@ void onTogglePlayMode(sCurrentSequenceState *pState){
 }
 
 void onTempoUp(sCurrentSequenceState *pSeqPtr){
-U32 iCurrentStep;
-  if(g_CurrentState.state==PS_STOPPED) return;
-  
-  if(pSeqPtr->currentTempo<0) pSeqPtr->currentTempo=0;
+U32 iCurrentStep=0L;
+U32 iCurrentTempo=0L;
 
-  if(pSeqPtr->currentTempo!=0){
-    if(pSeqPtr->currentTempo<=50000&&pSeqPtr->currentTempo>5000){
-      iCurrentStep=5000;
-    }
-    else if(pSeqPtr->currentTempo<=5000){
-      iCurrentStep=100;
-    }
-    else 
-      iCurrentStep=TEMPO_STEP;
- 
-    if(!(pSeqPtr->currentTempo-iCurrentStep<=0))
-      pSeqPtr->currentTempo-=iCurrentStep;
+  if(handleTempoChange!=FALSE) return;
+
+  iCurrentTempo=pSeqPtr->currentTempo;
+
+  if(pSeqPtr->state==PS_STOPPED) return;
+  
+  if(iCurrentTempo<=0UL) {
+    pSeqPtr->currentTempo=0L;
+    return;
+  }
     
-    handleTempoChange=TRUE;    
+  if((iCurrentTempo<=50000UL&&iCurrentTempo>5000UL)){
+      iCurrentStep=5000UL;
+  }else if(iCurrentTempo<=5000UL){
+      iCurrentStep=100UL;
+  }else{ 
+      iCurrentStep=TEMPO_STEP;
   }
   
-  printf("Current tempo: %ld [ms]\n",pSeqPtr->currentTempo);
+  if(!((iCurrentTempo-iCurrentStep)<=0UL)){
+      iCurrentTempo=iCurrentTempo-iCurrentStep;
+      pSeqPtr->currentTempo=iCurrentTempo;
+  }
+
+  printf("Current tempo: %d [ms]\n",iCurrentTempo);
+  handleTempoChange=TRUE;    
 }
 
 void onTempoDown(sCurrentSequenceState *pSeqPtr){
-U32 iCurrentStep;
+U32 iCurrentStep=0L;
+U32 iCurrentTempo=0L;
+
+if(handleTempoChange!=FALSE) return;
 
 if(g_CurrentState.state==PS_STOPPED) return;
 
-  if(pSeqPtr->currentTempo<50000){
-    iCurrentStep=5000;
-  }else 
+iCurrentTempo=pSeqPtr->currentTempo;
+
+  if(iCurrentTempo<=50000UL){
+    iCurrentStep=5000UL;
+  }else if(iCurrentTempo>50000UL){
     iCurrentStep=TEMPO_STEP;  
-   
-  pSeqPtr->currentTempo+=iCurrentStep;
+  } 
+  
+  iCurrentTempo=iCurrentTempo+iCurrentStep;
+  pSeqPtr->currentTempo=iCurrentTempo;
+  
+  printf("Current tempo: %d [ms]\n",iCurrentTempo);
+
   handleTempoChange=TRUE;
- 
-  printf("Current tempo: %ld [ms]\n",pSeqPtr->currentTempo);
 }
 
 void onToggleMidiEnable(){
@@ -273,6 +288,13 @@ printf("Pause/Resume sequence\n");
 void onStopSequence(sCurrentSequenceState *pSeqPtr){
   printf("Stop sequence\n");
   pSeqPtr->state=PS_STOPPED;
+  pSeqPtr->currentBPM=DEFAULT_BPM;
+  pSeqPtr->currentTempo=DEFAULT_MPQN;
+  pSeqPtr->currentPPQN=DEFAULT_PPQN;
+  pSeqPtr->timeElapsedFrac=0UL;
+
+  pSeqPtr->timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
+  
   am_allNotesOff(16);
   ymSoundOff();
 }
@@ -361,7 +383,7 @@ static BOOL bStopped=FALSE;
   //check sequence state if stopped reset position on all tracks
   //and reset tempo to default, but only once
   
-  if(g_CurrentState.state==PS_STOPPED&&bStopped==FALSE){
+  if((g_CurrentState.state==PS_STOPPED&&bStopped==FALSE)){
     bStopped=TRUE;
     //repeat for each track
     for (int i=0;i<3;i++){
@@ -371,7 +393,7 @@ static BOOL bStopped=FALSE;
     g_CurrentState.currentPPQN=DEFAULT_PPQN;
     g_CurrentState.currentTempo=DEFAULT_MPQN;
     g_CurrentState.currentBPM=DEFAULT_BPM;
-    g_CurrentState.timeElapsedFrac=0;
+    g_CurrentState.timeElapsedFrac=0UL;
     
     g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
     return;
@@ -439,15 +461,13 @@ void onEndSeq(){
     
     if(midiOutputEnabled==TRUE) am_allNotesOff(16);
     if(ymOutputEnabled==TRUE) ymSoundOff();
-  
     g_CurrentState.currentPPQN=DEFAULT_PPQN;
-    g_CurrentState.currentTempo=DEFAULT_MPQN;
-    g_CurrentState.currentBPM=DEFAULT_BPM;
-    g_CurrentState.timeElapsedFrac=0;
-    g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
+    g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;  //do not reset current tempo !!!!
+    g_CurrentState.timeElapsedFrac=0UL;
+    g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
      
     for (int i=0;i<3;i++){
-      g_CurrentState.tracks[i].seqPosIdx=0;
+      g_CurrentState.tracks[i].seqPosIdx=0UL;
     }  
   
 }

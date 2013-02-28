@@ -57,8 +57,12 @@ typedef struct{
 enum{
   CH_A=0,
   CH_B=1,
-  CH_C=2
+  CH_C=2,
+  CH_ALL
 };
+
+
+
 
 /* MIDI notes to ym2149 tone mapping */
 /* notes are mapped from 21 to 108 */
@@ -195,7 +199,7 @@ static const ymData g_arMIDI2ym2149Tone[128]={
 /* 127 */ {0x0000,0x00,0x00}  /* undefined */                                    
 };
 
-void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod);
+void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod,U8 affectsChannels);
 void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod);
 void ymSoundOff();
 

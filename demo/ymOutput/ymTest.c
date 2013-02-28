@@ -5,10 +5,11 @@
     See license.txt for licensing information.
 */
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "c_vars.h"
 #include "ym2149/ym2149.h"
-#include <ctype.h>
+
 
 #ifdef PORTABLE
 void turnOffKeyclick(void){}

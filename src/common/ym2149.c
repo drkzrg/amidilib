@@ -122,8 +122,7 @@ void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisege
 void playNote(U8 channel,U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
 ymChannelData ch[3];
 
-  if(bYmOutput==TRUE){
-
+  
      U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
      U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
      U16 period=g_arMIDI2ym2149Tone[noteNb].period;
@@ -137,20 +136,24 @@ ymChannelData ch[3];
 	note_on(channel,noteNb,127);	//output on channel 9, max velocity
        }
        
-       ch[CH_A].oscFreq=lByte;
-       ch[CH_A].oscStepSize=hByte;
+       if(bYmOutput==TRUE){
+	ch[CH_A].oscFreq=lByte;
+	ch[CH_A].oscStepSize=hByte;
 	ymDoSound( ch,4 , period,128,CH_A);
+       }
       }break;
       case 2:{
 	
 	 if(bMidiOutput==TRUE){
 	    note_on(channel,noteNb,127);	//output on channel 9, max velocity
 	 }
+	  
 	 
-	 ch[CH_B].oscFreq=lByte;
-	 ch[CH_B].oscStepSize=hByte;
-	 ymDoSound( ch,4 , period,128,CH_B);
-      
+	 if(bYmOutput==TRUE){
+	    ch[CH_B].oscFreq=lByte;
+	    ch[CH_B].oscStepSize=hByte;
+	    ymDoSound( ch,4 , period,128,CH_B);
+	 }
 	
       }break;
       case 3:{
@@ -159,9 +162,11 @@ ymChannelData ch[3];
 	  note_on(channel,noteNb,127);	//output on channel 9, max velocity
 	}
 
-	 ch[CH_C].oscFreq=lByte;
-	 ch[CH_C].oscStepSize=hByte;
-	 ymDoSound( ch,4 , period,128,CH_C);
+	 if(bYmOutput==TRUE){
+	  ch[CH_C].oscFreq=lByte;
+	  ch[CH_C].oscStepSize=hByte;
+	  ymDoSound( ch,4 , period,128,CH_C);
+	 }
 	 
       }break;
       default:{
@@ -172,19 +177,17 @@ ymChannelData ch[3];
 	  note_on(channel-2,noteNb,127);	//output on channel 9, max velocity
 	}
 	
-	 ch[CH_A].oscFreq=lByte;
-	 ch[CH_A].oscStepSize=hByte;
-	 ch[CH_B].oscFreq=lByte;
-	 ch[CH_B].oscStepSize=hByte;
-	 ch[CH_C].oscFreq=lByte;
-	 ch[CH_C].oscStepSize=hByte;
-	 
+	 if(bYmOutput==TRUE){
+	  ch[CH_A].oscFreq=lByte;
+	  ch[CH_A].oscStepSize=hByte;
+	  ch[CH_B].oscFreq=lByte;
+	  ch[CH_B].oscStepSize=hByte;
+	  ch[CH_C].oscFreq=lByte;
+	  ch[CH_C].oscStepSize=hByte;
 	 ymDoSound( ch,4 , period,128,CH_ALL);
+	}
+	
       }break;
      }
-    
-   
-    
-  }
 
 }

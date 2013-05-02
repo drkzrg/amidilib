@@ -38,11 +38,11 @@ typedef size_t tMEMSIZE;
 typedef void (*VOIDFUNCPTR)();
 
 #ifndef TRUE
-#define TRUE 1
+#define TRUE 1UL
 #endif
 
 #ifndef FALSE
-#define FALSE 0
+#define FALSE 0UL
 #endif
 
 void compilerSanityCheck(void);

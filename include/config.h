@@ -36,4 +36,11 @@ void setGlobalConfig(tAmidiConfig *newConfig);
 void setDefaultConfig();
 const tAmidiConfig *getGlobalConfig();
 
+// parsing helper functions
+S32 getBoolVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, BOOL *val);
+S32 getUIntVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, U32 *val);
+S32 getIntVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, S32 *val);
+S32 getUShortVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, U16 *val);
+S32 getShortVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, S16 *val);
+
 #endif

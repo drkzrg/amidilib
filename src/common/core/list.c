@@ -29,7 +29,7 @@ static tLinearBuffer eventBuffer;
 S32 initEventBuffer(){
   tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
   amTrace((const U8 *)"initEventBuffer() trying to allocate %d bytes\n",memSize);
-  return createLinearBuffer(&eventBuffer, memSize, PREFER_TT)
+  return createLinearBuffer(&eventBuffer, memSize, PREFER_TT);
 }
 
 void destroyEventBuffer(){

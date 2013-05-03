@@ -9,6 +9,7 @@
 #define __LINALLOC_H__
 
 #include "c_vars.h"
+#include "amlog.h"
 #include "memory/memory.h"
 
 //event linear buffer
@@ -27,6 +28,11 @@ void *linearBufferAlloc(tLinearBuffer *buf, U32 size);
 void linearBufferFree(tLinearBuffer *buf); //clears all linear buffer
 
 void *linearBufferAllocAlign(tLinearBuffer *buf, U32 size,U32 alignFlag);
+
+
+static INLINE void linearBufferPrintInfo(tLinearBuffer *buf){
+  amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);  
+}
 
 
 #endif

@@ -86,6 +86,7 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     
     if((*dest)==NULL){
 	amTrace((const U8 *)"copyEvent() out of memory [event block]\n");
+	linearBufferPrintInfo(&eventBuffer);
     }else{
 	(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
 	(*dest)->eventBlock.type = src->type;
@@ -104,6 +105,7 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     
 	if((*dest)->eventBlock.dataPtr==NULL){
 	    amTrace((const U8 *)"copyEvent() out of memory [callback block]\n");
+	    linearBufferPrintInfo(&eventBuffer);
 	}else{
 	    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8))); 
 	}

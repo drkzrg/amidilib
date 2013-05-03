@@ -16,7 +16,7 @@
 //internal configuration
 static tAmidiConfig configuration;
 
-static const U16 CONFIG_VERSION =0x0001+1; 	//config version
+static const U16 CONFIG_VERSION = 0x0001+1+1; 	//config version, changed default event memory pools for events
 
 static const U8 TRUE_TAG[] = "true";
 static const U8 FALSE_TAG[] = "false";
@@ -39,7 +39,10 @@ static const U8 streamedTag[]={"streamingEnabled"};
 static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
 static const U8 silenceThresholdTag[]={"silenceThreshold"};
 
-#define CONFIG_SIZE 512		//should be sufficient		 
+static const U32 DEFAULT_EVENT_POOL_SIZE =  6000UL; //nb of events
+static const U32 DEFAULT_EVENT_ALLOC_SIZE = 32UL; //event size in bytes
+
+static const U16 CONFIG_SIZE = 512;		//should be sufficient		 
 
 S32 parseConfig (const U8* pData, const tMEMSIZE bufferLenght);
 
@@ -86,7 +89,7 @@ U32 cfgLen=0;
  
   cfgData=loadFile(configFileName,PREFER_TT,&cfgLen);
   
-  if(cfgData!=0){ 
+  if(cfgData!=NULL){ 
     if(parseConfig(cfgData, cfgLen)<0){
       //not ok reset to defaults
       printf("Invalid configuration. Resetting to defaults.\n");
@@ -98,8 +101,10 @@ U32 cfgLen=0;
     amFree(&cfgData);
     return 0L;
   }
-  else 
+  else{ 
+    setDefaultConfig();
     return -1L; //fuck up!
+  }
 }
 
 void setConnectedDeviceType(eMidiDeviceType type){
@@ -112,10 +117,10 @@ void setDefaultConfig(){
   configuration.connectedDeviceType = DT_LA_SOUND_SOURCE_EXT; 	//default is CM32L output device with extra patches	
   configuration.operationMode=0;	
   configuration.midiChannel = 1;	
-  configuration.playMode = S_PLAY_ONCE;	//play once or in loop
-  configuration.playState = PS_STOPPED;	//default play state: STOPPED or playing
-  configuration.eventPoolSize=0;
-  configuration.eventDataAllocatorSize=0;
+  configuration.playMode = S_PLAY_ONCE;				//play once or in loop
+  configuration.playState = PS_STOPPED;				//default play state: STOPPED or playing
+  configuration.eventPoolSize=DEFAULT_EVENT_POOL_SIZE;
+  configuration.eventDataAllocatorSize=DEFAULT_EVENT_ALLOC_SIZE;
   
   #ifndef PORTABLE
   configuration.midiBufferSize=MIDI_BUFFER_SIZE; //it's atari specific

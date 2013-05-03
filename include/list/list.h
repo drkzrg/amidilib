@@ -20,4 +20,9 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest);
 void printEventList(const sEventList *listPtr);
 void printEventBlock(const sEventBlockPtr_t pPtr);
 
+#ifdef EVENT_LINEAR_BUFFER
+S32 initEventBuffer();
+void destroyEventBuffer();
+#endif
+
 #endif

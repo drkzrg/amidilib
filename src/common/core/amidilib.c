@@ -24,6 +24,7 @@
 #include <time.h>
 #endif
 
+
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
 /* for saving last running status */
@@ -234,8 +235,8 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
         break;
 
         case T_MIDI2:{
-		/* handle MIDI type 2 */
-		/* several tracks not tied to each others tracks */
+	  /* handle MIDI type 2 */
+	  /* several tracks not tied to each others tracks */
 	  /* init sequence table */
 	  for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
 	    /* we will allocate needed track tables when appropriate */
@@ -421,37 +422,53 @@ S16 am_init(){
  SuperToUser(usp);
 #endif
 
-  // now depending on the connected device type and chosen operation mode
-  // set appropriate channel
-   U8 currentChannel=1;
-   U8 currentPN=1;
-   U8 currentBankSelect=0;
+  
 #ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
    MIDIbytesToSend=0;
 #endif
 #endif   
-
-   //set current channel as 1, default is 0 in external module
-   control_change(0x00, currentChannel, currentBankSelect,0x00);
-   program_change(currentChannel, currentPN);
+  
+   // now depending on the connected device type and chosen operation mode
+   // set appropriate channel
+   //prepare device for receiving messages
+   
+   switch(getGlobalConfig()->connectedDeviceType){
+    case DT_LA_SOUND_SOURCE:     
+    case DT_LA_SOUND_SOURCE_EXT:{
+      amTrace("\nSetting MT32 device on ch: %d\n", getGlobalConfig()->midiChannel);
+      program_change(getGlobalConfig()->midiChannel, 1);
+    }break;
+    
+    case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
+    case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
+    case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
+    case DT_XG_GM_YAMAHA:
+    default:{
+      amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
+      control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);
+      program_change(getGlobalConfig()->midiChannel, 1);
+    }break;
+    
+   }
 
 #ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
     amMidiSendIKBD();	
 #endif
 #endif   
-   
+    
+   //TODO: interrogate connected external module type
    //check external module communication scheme
-   if(getGlobalConfig()->handshakeModeEnabled){
-    //TODO: interrogate connected external module type
+ //  if(getGlobalConfig()->handshakeModeEnabled){
+    
     //display info 
      //if timeout turn off handshake mode
-     for (U8 i=0;i<16;++i){
+  //   for (U8 i=0;i<16;++i){
       // getDeviceInfoResponse(i);
-     }
+ //    }
     
- }
+// }
    
    
  return 1;
@@ -1951,6 +1968,5 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];
  else return NULL;
 }
-
 
 

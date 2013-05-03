@@ -99,6 +99,10 @@ U32 cfgLen=0;
     return -1L; //fuck up!
 }
 
+void setConnectedDeviceType(eMidiDeviceType type){
+  configuration.connectedDeviceType=type;
+}
+
 void setDefaultConfig(){
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	

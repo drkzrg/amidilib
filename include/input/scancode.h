@@ -5,6 +5,7 @@
 #define SC_ESC 0x01
 #define SC_CONTROL 0x1d
 #define SC_SPACEBAR 0x39
+#define SC_BACKSPACE 0x0e
 
 #define SC_Q 0x10
 #define SC_A 0x1e

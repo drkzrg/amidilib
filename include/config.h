@@ -34,6 +34,8 @@ S32 saveConfig(const U8 *config);
 S32 loadConfig(const U8 *config);
 void setGlobalConfig(tAmidiConfig *newConfig);
 void setDefaultConfig();
+
+void setConnectedDeviceType(eMidiDeviceType type);
 const tAmidiConfig *getGlobalConfig();
 
 // parsing helper functions

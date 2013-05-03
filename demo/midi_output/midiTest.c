@@ -11,6 +11,7 @@
 
 #include "c_vars.h"
 #include "amidilib.h"
+#include "config.h"
 
 #ifndef PORTABLE
 #include "input/scancode.h"	// scancode definitions
@@ -27,13 +28,29 @@ void printHelpScreen(){
   printf("[q-h] - play note\n");
   printf("[1-8] - choose octave \n");
   printf("'[' or ']' - change program number for active channel -/+ \n");
-  printf(" [B] - change GS source instrument for active channel\n\t (bank select + program number) -/+ \n");
+  printf(" [B] - change instrument for active channel\n\t -/+ \n");
   printf(" [Arrow Up/Down] - adjust bank select -/+ \n");
   printf("'<' or '>' - change active channel/part\n");
   printf("'z' or 'x' - change note velocity -/+ \n");
   printf("[C] - change chorus settings for all channels\n");
   printf("[V] - change reverb settings for all channels\n");
   printf("[HELP] - show this help screen \n");
+  
+  switch(getGlobalConfig()->connectedDeviceType){
+    case DT_LA_SOUND_SOURCE:     
+    case DT_LA_SOUND_SOURCE_EXT:{
+      printf("[current mode] - LA synth  \n");
+    }break;
+    
+    case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
+    case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
+    case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
+    case DT_XG_GM_YAMAHA:{
+    printf("[current mode] - GS/GM synth\n");
+    }break;
+    
+   }  
+  
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
   printf("(c) Nokturnal 2010\n");
@@ -41,10 +58,29 @@ void printHelpScreen(){
 }
 
 
-void changeGSprogramNumber(U8 channel,U8 bank,U8 pn){
-  printf("Change GS instrument, bank: %d, pn: %d\n", bank,pn);
-  control_change(C_BANK_SELECT, channel, bank,0x00);
-  program_change(channel, pn);
+void changeCurrentInstrument(U8 channel,U8 bank,U8 pn){
+  
+    
+  switch(getGlobalConfig()->connectedDeviceType){
+    case DT_LA_SOUND_SOURCE:     
+    case DT_LA_SOUND_SOURCE_EXT:{
+      printf("\nSetting LA instrument pn: [%d] on ch: [%d]\n", pn, channel);
+      program_change(channel, pn);
+    }break;
+    
+    case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
+    case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
+    case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
+    case DT_XG_GM_YAMAHA:
+    default:{
+      printf("\nSetting GS/GM instrument bank:[%d]: pn [%d]: on [ch]: %d\n", bank, pn, channel);
+
+      control_change(C_BANK_SELECT, channel, bank,0x00);
+      program_change(channel, pn);
+    }break;
+    
+   }  
+  
   #ifdef IKBD_MIDI_SEND_DIRECT
     amMidiSendIKBD();	
   #endif
@@ -72,8 +108,8 @@ int main(void) {
   U32 i, quit;
   U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   U8 currentOctave=3;	
-  U8 currentChannel=1;
   U8 currentVelocity=127;
+  U8 currentChannel=0;
   U8 currentPN=1;
   U8 currentBankSelect=0;
 
@@ -85,17 +121,15 @@ int main(void) {
   U32 iError=am_init();
  
   if(iError!=1) return -1;
-
-  //set current channel as 1, default is 0 in external module
-  control_change(0x00, currentChannel, currentBankSelect,0x00);
-  program_change(currentChannel, currentPN);
-
+  
 #ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
     amMidiSendIKBD();	
 #endif
 #endif   
   
+  currentChannel=getGlobalConfig()->midiChannel;  
+    
   printHelpScreen();
 
 #ifndef PORTABLE
@@ -301,13 +335,33 @@ int main(void) {
 				  
 				  }break;
 				  case SC_B:{
-				    changeGSprogramNumber(currentChannel,currentBankSelect,currentPN);
+				    changeCurrentInstrument(currentChannel,currentBankSelect,currentPN);
 				  }break;
 				  
 				  case SC_HELP:{
 				   printHelpScreen();
 				  }break;
- 
+				  
+				  case SC_BACKSPACE:{
+				    switch(getGlobalConfig()->connectedDeviceType){
+				      case DT_LA_SOUND_SOURCE:     
+				      case DT_LA_SOUND_SOURCE_EXT:{
+					setConnectedDeviceType(DT_GS_SOUND_SOURCE);
+					 printHelpScreen();
+				      }break;
+    
+				      case DT_GS_SOUND_SOURCE:       
+				      case DT_LA_GS_MIXED:           
+				      case DT_MT32_GM_EMULATION:     
+				      case DT_XG_GM_YAMAHA:{
+					setConnectedDeviceType(DT_LA_SOUND_SOURCE_EXT);
+					printHelpScreen();
+				    }break;
+    
+				  }  
+				    
+				  }break;
+				  
 				}
 			#ifdef IKBD_MIDI_SEND_DIRECT
 			     amMidiSendIKBD();	
@@ -376,8 +430,27 @@ int main(void) {
 				  // send chosen program number
 				  case SC_SQ_LEFT_BRACE:
 				  case SC_SQ_RIGHT_BRACE:{
-				    printf("ch: %d %s (#PC %d)\n",currentChannel,g_arCM32Linstruments[currentPN], currentPN);
-				    program_change(currentChannel, currentPN);
+				    
+				    
+				     switch(getGlobalConfig()->connectedDeviceType){
+				      case DT_LA_SOUND_SOURCE:     
+				      case DT_LA_SOUND_SOURCE_EXT:{
+					printf("ch: [%d] [%s] (#PC %d)\n",currentChannel,g_arCM32Linstruments[currentPN], currentPN);
+					program_change(currentChannel, currentPN);
+				      }break;
+    
+				      case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
+				      case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
+				      case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
+				      case DT_XG_GM_YAMAHA:
+				      default:{
+					printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, g_arCM32Linstruments[currentPN], currentPN);
+				    
+					control_change(C_BANK_SELECT, currentChannel,currentBankSelect,0x00);
+					program_change(currentChannel, currentPN);
+				      }break;
+				    }
+				    
 				  }break;
 				
 				  case SC_SPACEBAR:{

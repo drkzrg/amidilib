@@ -12,9 +12,9 @@
 #include "../amidiseq.h"
 
 void initEventList(sEventList **listPtr);
-void addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr );
+S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr );
+S16 copyEvent(const sEventBlock_t *src, sEventList **dest);
 U32 destroyList(sEventList **listPtr);
-void copyEvent(const sEventBlock_t *src, sEventList **dest);
 
 /* for debugging purposes */
 void printEventList(const sEventList *listPtr);

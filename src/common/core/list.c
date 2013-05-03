@@ -41,7 +41,7 @@ void destroyEventBuffer(){
 /* adds event to linked list, list has to be inintialised with null */
 //event list, temp event
 
-void addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){
+S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){
  sEventList *pTempPtr=NULL;
  sEventList *pNewItem=NULL;
 
@@ -56,24 +56,29 @@ if(*listPtr!=NULL){
   }
     
   /* insert at the end of list */
-  copyEvent(eventBlockPtr, &pNewItem);
-	
-  pNewItem->pNext=NULL;		/* next node is NULL for new node */
-  pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
+  if(copyEvent(eventBlockPtr, &pNewItem)>=0){
+      pNewItem->pNext=NULL;		/* next node is NULL for new node */
+      pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
 		  
-  /* add newly created list node to our list */
-  pTempPtr->pNext=pNewItem;
+      /* add newly created list node to our list */
+      pTempPtr->pNext=pNewItem;
+      return 1;  
+  }	
   
 }else{
   
-  copyEvent(eventBlockPtr, listPtr);
+  if(copyEvent(eventBlockPtr, listPtr)>=0){
+      (*listPtr)->pPrev=NULL;		/* first element in the list, no previous item */
+      (*listPtr)->pNext=NULL;
+      return 1;
+  }
   
-  (*listPtr)->pPrev=NULL;		/* first element in the list, no previous item */
-  (*listPtr)->pNext=NULL;
  }
+ 
+ return -1;
 }
 
-void copyEvent(const sEventBlock_t *src, sEventList **dest){
+S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
   #ifdef DEBUG_MEM
     amTrace((const U8 *)"copyEvent() src: %p dst: %p\n",src,dest);
   #endif
@@ -87,6 +92,7 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     if((*dest)==NULL){
 	amTrace((const U8 *)"copyEvent() out of memory [event block]\n");
 	linearBufferPrintInfo(&eventBuffer);
+	return -1;
     }else{
 	(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
 	(*dest)->eventBlock.type = src->type;
@@ -106,10 +112,13 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
 	if((*dest)->eventBlock.dataPtr==NULL){
 	    amTrace((const U8 *)"copyEvent() out of memory [callback block]\n");
 	    linearBufferPrintInfo(&eventBuffer);
+	    return -1;
 	}else{
 	    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8))); 
+	    return 1;
 	}
     }
+    return -1;
 }
 
 U32 destroyList(sEventList **listPtr){

@@ -1,8 +1,13 @@
 
 #include "memory/linalloc.h"
 #include "mint/mintbind.h"
-#include "memory.h"
 
+#include "memory.h"
+#include "amlog.h"
+
+void linearBufferPrintInfo(tLinearBuffer *buf){
+  amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);  
+}
 
 S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType){
   

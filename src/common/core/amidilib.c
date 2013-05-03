@@ -430,6 +430,10 @@ S16 am_init(){
 #endif
 #endif   
   
+   
+#ifdef EVENT_LINEAR_BUFFER
+
+#endif   
    // now depending on the connected device type and chosen operation mode
    // set appropriate channel
    //prepare device for receiving messages
@@ -458,24 +462,35 @@ S16 am_init(){
     amMidiSendIKBD();	
 #endif
 #endif   
-    
+
+#ifdef EVENT_LINEAR_BUFFER    
+    if(initEventBuffer()<0){
+       printf("Error: Couldn't allocate memory for internal midi event buffer.\n");
+    }
+#endif
+
    //TODO: interrogate connected external module type
    //check external module communication scheme
- //  if(getGlobalConfig()->handshakeModeEnabled){
+ if(getGlobalConfig()->handshakeModeEnabled){
     
     //display info 
      //if timeout turn off handshake mode
-  //   for (U8 i=0;i<16;++i){
-      // getDeviceInfoResponse(i);
- //    }
-    
-// }
+    //   for (U8 i=0;i<16;++i){
+    // getDeviceInfoResponse(i);
+    //    }
+    ;
+ }
    
    
  return 1;
 }
 
 void am_deinit(){
+
+#ifdef EVENT_LINEAR_BUFFER
+    destroyEventBuffer();
+#endif  
+  
 #ifndef PORTABLE
   U32 usp=Super(0L);
  
@@ -795,7 +810,8 @@ BOOL bEOF=FALSE;
 
 
 void am_noteOff(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
-sEventBlock_t tempEvent;
+sEventBlock_t tempEvent; 			//TODO: allocate new event here from linear allocator and add it to the list
+
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
 tempEvent.dataPtr=0;

@@ -20,7 +20,23 @@
 #include "timing/mfp.h"
 #endif
 
-#include "memory/linalloc.h" /* custom memory allocator */
+#ifdef EVENT_LINEAR_BUFFER
+#include "memory/linalloc.h" 	/* custom memory allocator */
+#include "config.h"
+
+static tLinearBuffer eventBuffer;
+
+S32 initEventBuffer(){
+  tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
+  amTrace((const U8 *)"initEventBuffer() trying to allocate %d bytes\n",memSize);
+  return createLinearBuffer(&eventBuffer, memSize, PREFER_TT)
+}
+
+void destroyEventBuffer(){
+   destroyLinearBuffer(&eventBuffer);
+}
+
+#endif
 
 /* adds event to linked list, list has to be inintialised with null */
 //event list, temp event
@@ -62,8 +78,12 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     amTrace((const U8 *)"copyEvent() src: %p dst: %p\n",src,dest);
   #endif
     
+#ifdef EVENT_LINEAR_BUFFER
+    (*dest)=linearBufferAlloc(&eventBuffer, sizeof(sEventList));
+#else
     (*dest)=(sEventList *)amMallocEx(sizeof(sEventList),PREFER_TT);
-    
+#endif
+
     (*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
     (*dest)->eventBlock.type = src->type;
     (*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
@@ -74,9 +94,12 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
     (*dest)->eventBlock.dataPtr=NULL;
 		
     /* allocate memory for event data and copy them to the new destination */
+#ifdef EVENT_LINEAR_BUFFER
+    (*dest)->eventBlock.dataPtr = =linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
+#else
     (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
-    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8)));
-    
+#endif
+     amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8)));
 }
 
 U32 destroyList(sEventList **listPtr){
@@ -87,7 +110,11 @@ amTrace((const U8 *)"destroyList()\n");
 #endif
 	
 	if(*listPtr!=NULL){
-	
+	  
+#ifdef EVENT_LINEAR_BUFFER
+	  linearBufferFree(&eventBuffer);
+	  *listPtr=0; //that's right :P
+#else	
 	  /*go to the end of the list */
 	  pTemp=*listPtr;
 			
@@ -131,6 +158,8 @@ amTrace((const U8 *)"destroyList()\n");
 	/* we are at first element */
 	/* remove it */
 	amFree((void **)listPtr);
+	
+    #endif
   }
 return 0;
 }

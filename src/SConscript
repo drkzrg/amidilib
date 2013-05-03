@@ -149,6 +149,7 @@ env['VASM'] = 'vasmm68k_mot'
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined
+# EVENT_LINEAR_BUFFER library uses custom memory pool for midi events instead of using standard memory allocation calls, memory pool is configurable(see eventPoolSize/eventDataAllocatorSize)
 
 
 if ( (debug != 'none') and (int(debug)>0)):

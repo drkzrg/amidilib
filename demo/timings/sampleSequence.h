@@ -57,7 +57,7 @@ typedef struct{
   {32L,38,0xAD},
   {64L,39,0xAD},
   {96L,40,0xAD},
-  {16L,0,0xAD}
+  {0L,0,0xAD}
 };
 
 // output test sequence for channel 2
@@ -77,7 +77,7 @@ typedef struct{
   {32L,38,0xAD},
   {64L,39,0xAD},
   {96L,40,0xAD},
-  {16L,0,0xAD}
+  {0L,0,0xAD}
 };
 
 // output test sequence for channel 2
@@ -98,7 +98,7 @@ typedef struct{
   {32L,38,0xAD},
   {64L,39,0xAD},
   {96L,40,0xAD},
-  {16L,0,0xAD}
+  {0L,0,0xAD}
 };
 
 #endif

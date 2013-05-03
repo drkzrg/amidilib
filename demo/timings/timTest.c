@@ -474,11 +474,11 @@ void onEndSeq(){
       onStopSequence(&g_CurrentState);
       return;
     }else if(g_CurrentState.playMode==S_PLAY_LOOP){
-      g_CurrentState.state=PS_PLAYING;
+      g_CurrentState.state=PS_PLAYING;  
       
       g_CurrentState.currentPPQN=DEFAULT_PPQN;
       g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;  //do not reset current tempo !!!!
-      //g_CurrentState.timeElapsedFrac=0UL;
+      g_CurrentState.timeElapsedFrac=0UL;
       g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
   
       for (int i=0;i<3;i++){
@@ -489,6 +489,7 @@ void onEndSeq(){
        if(midiOutputEnabled==TRUE) am_allNotesOff(16);
        if(ymOutputEnabled==TRUE) ymSoundOff();
        
+         
    }
     
     

@@ -348,7 +348,7 @@ int main(void) {
 				      case DT_LA_SOUND_SOURCE:     
 				      case DT_LA_SOUND_SOURCE_EXT:{
 					setConnectedDeviceType(DT_GS_SOUND_SOURCE);
-					 printHelpScreen();
+					printf("Set MT32 mode.\n");
 				      }break;
     
 				      case DT_GS_SOUND_SOURCE:       
@@ -356,7 +356,7 @@ int main(void) {
 				      case DT_MT32_GM_EMULATION:     
 				      case DT_XG_GM_YAMAHA:{
 					setConnectedDeviceType(DT_LA_SOUND_SOURCE_EXT);
-					printHelpScreen();
+					printf("Set GS/GM mode.\n");
 				    }break;
     
 				  }  

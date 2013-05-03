@@ -89,6 +89,7 @@ U32 cfgLen=0;
   if(cfgData!=0){ 
     if(parseConfig(cfgData, cfgLen)<0){
       //not ok reset to defaults
+      printf("Invalid configuration. Resetting to defaults.\n");
       setDefaultConfig();
     }
     
@@ -232,7 +233,7 @@ S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, B
   U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
    
   if(substrPtr) {
-       amTrace("found the string '%s' at position: %d\n", tagName, substrPtr - data);
+      
        U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
        if(rval!=NULL){
@@ -241,11 +242,11 @@ S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, B
 	 
 	if(strncmp(rval,TRUE_TAG,4)==0){
 	  *val=TRUE;
-	   amTrace("found the value '%s' = [ TRUE ]\n", tagName);
+	  
 	   return 0; 
 	}else if(strncmp(rval,FALSE_TAG,4)==0){
 	  *val=FALSE;
-	  amTrace("found the value '%s' = [ FALSE ]\n", tagName);
+	 
 	  return 0; 
 	}else{
 	  amTrace("entry '%s' was not found\n", tagName); return -1;
@@ -264,7 +265,7 @@ S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U
   U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-        amTrace("found the string '%s' at position: %d\n", tagName, substrPtr - data);
+       
 	
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
@@ -273,8 +274,7 @@ S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U
 	 rval++;
 	 
 	 *val=(U32)strtol(rval,(char **)NULL, 10);
-	amTrace("found the value '%s' = [ %d ]\n", tagName, *val);
-	 return 0; 
+	
 	}else{
 	  return -1;
 	}
@@ -290,7 +290,7 @@ S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S3
   U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-        amTrace("found the string '%s' at position: %d\n", tagName, substrPtr - data);
+       
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
@@ -298,7 +298,7 @@ S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S3
 	 rval++;
 	 
 	*val=(S32)strtol(rval,(char **)NULL, 10);
-	amTrace("found the value '%s' = [ %d ]\n", tagName, *val);
+	
 	 return 0; 
 	}else{
 	  return -1;
@@ -315,7 +315,7 @@ S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght,
   U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-        amTrace("found the string '%s' at position: %d\n", tagName, substrPtr - data);
+      
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
@@ -323,7 +323,7 @@ S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght,
 	 rval++;
 	 
 	 *val=(U16)strtol(rval,(char **)NULL, 10);
-	amTrace("found the value '%s' = [ %d ]\n", tagName, *val);
+	
 	 return 0; 
 	}else{
 	  return -1;
@@ -340,8 +340,7 @@ S32 getShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, 
   U8 *substrPtr=(U8 *)strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-        amTrace("found the string '%s' at position: %d\n", tagName, substrPtr - data);
-	
+        
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
@@ -349,16 +348,14 @@ S32 getShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, 
 	  rval++;
 	  
 	  *val = (S16)strtol(rval,(char **)NULL, 10);
-	  
-	  amTrace("found the value '%s' = [ %d ]\n", tagName, *val);
+	
 	 return 0; 
 	}else{
 	  return -1;
 	}
 	
-	
     } else {
-        amTrace("entry '%s' was not found,\n", tagName); return -1;
+        amTrace("config entry '%s' was not found,\n", tagName); return -1;
     }
   
   return -1;

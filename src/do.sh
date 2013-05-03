@@ -6,7 +6,7 @@
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
-tools_prefix='/opt/cross-mint'
+tools_prefix='/usr/'
 install_dir='/home/saulot/Pulpit/HD/AMIDIDEV'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 emu_dir='/home/saulot/Pulpit/HD/'
@@ -31,7 +31,7 @@ then
    rm ../bin/timings.tos
 fi
 
-build_options="cross=y target=atarist debug=0 prefix=$tools_prefix ikbd_direct=yes"
+build_options="cross=y target=atarist debug=1 prefix=$tools_prefix ikbd_direct=yes"
 
 #clean all stuff
 scons $build_options -c

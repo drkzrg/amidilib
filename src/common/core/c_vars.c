@@ -11,7 +11,7 @@
 ################################################################################### */
 
 #include <assert.h>
-#include "include/c_vars.h"
+#include "c_vars.h"
 
 /* Compiler sanity check */
 

@@ -54,8 +54,8 @@ int main(int argc, char *argv[]){
      /* process MIDI*/
      /* check midi header */
       fprintf(stderr,"Please wait...\n");
+
       float time=0,delta=0;
-    
       time = getTimeStamp();
       iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();

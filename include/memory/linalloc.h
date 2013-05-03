@@ -19,8 +19,8 @@ typedef struct _LinearBuffer{
   eMemoryFlag memType;  // memory type
 } tLinearBuffer;
 
-S32 createLinearBuffer(U32 bufferSize, eMemoryFlag memType);
-void destroyLinearBuffer();
+S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType);
+void destroyLinearBuffer (tLinearBuffer *buf);
 
 // non aligned allocation from linear buffer
 void *linearBufferAlloc(tLinearBuffer *buf, U32 size);

@@ -5,7 +5,7 @@
     See license.txt for licensing information.
 */
 
-#include "include/amlog.h"
+#include "amlog.h"
 
 /* variables for debug output to file */
 #ifdef DEBUG_FILE_OUTPUT

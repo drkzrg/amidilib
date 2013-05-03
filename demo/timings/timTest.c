@@ -243,7 +243,7 @@ iCurrentTempo=pSeqPtr->currentTempo;
   iCurrentTempo=iCurrentTempo+iCurrentStep;
   pSeqPtr->currentTempo=iCurrentTempo;
   
-  printf("Current tempo: %d [ms]\n",iCurrentTempo);
+  printf("qn duration: %d [ms]\n",iCurrentTempo);
 
   handleTempoChange=TRUE;
 }
@@ -325,6 +325,9 @@ void INLINE printHelpScreen(){
   printf("[Esc] - quit\n");
   printf("(c) Nokturnal 2013\n");
   printf("================================================\n");
+  
+  
+  
 }
 
 // plays sample sequence 

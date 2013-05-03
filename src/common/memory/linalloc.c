@@ -3,22 +3,43 @@
 #include "mint/mintbind.h"
 #include "memory.h"
 
-static tLinearBuffer bufferInfo; 
-S32 createLinearBuffer(U32 bufferSize, eMemoryFlag memType){
+
+S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType){
+  buf->pMemPtr = amMallocEx(bufferSize,memType);
   
-  bufferInfo.pMemPtr = amMallocEx(bufferSize,memType);
-  
-  if(bufferInfo.pMemPtr!=0){
-    bufferInfo.memType=memType;
-    bufferInfo.totalSize=bufferSize;
+  if(buf->pMemPtr!=0){
+    buf->memType=memType;
+    buf->totalSize=bufferSize;
   return 0L;
  } 
  
  return -1L;
 }
 
-void destroyLinearBuffer(){
-  amFree((void**)&bufferInfo);
+void destroyLinearBuffer(tLinearBuffer *buf){
+  
+  switch(buf->memType){
+    //release memory block depending on type
+    case ST_RAM:
+    case TT_RAM:
+    case PREFER_ST:
+    case PREFER_TT:{
+#ifdef DEBUG_MEM
+      amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+#else
+      amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+#endif      
+       amFree((void **)&buf->pMemPtr);
+    }break;
+    case PREFER_DSP:
+    case PREFER_SUPERVIDEL:
+    case PREFER_RADEON:
+    default:{;}break;
+  }
+  
+  buf->pMemPtr=0;
+  buf->totalSize=0L;	
+  buf->offset=0L;
 }
 
 // non aligned allocation from linear buffer
@@ -36,7 +57,17 @@ void *linearBufferAlloc(tLinearBuffer *buf, U32 size){
   return NULL; //out of memory
 }
 
-// non aligned allocation from linear buffer
+// non aligned allocation from linear buffer (TODO)
 void *linearBufferAllocAlign(tLinearBuffer *buf, U32 size,U32 alignFlag){
+  if(!buf||!size) return NULL;
   
+  U32 newOffset=buf->offset+size;
+  
+  if(newOffset<=buf->totalSize){
+      void *ptr=buf->pMemPtr+buf->offset;
+      buf->offset=newOffset;
+      return ptr;
+  }
+  
+  return NULL; //out of memory
 }

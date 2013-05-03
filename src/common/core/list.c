@@ -95,7 +95,7 @@ void copyEvent(const sEventBlock_t *src, sEventList **dest){
 		
     /* allocate memory for event data and copy them to the new destination */
 #ifdef EVENT_LINEAR_BUFFER
-    (*dest)->eventBlock.dataPtr = =linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
+    (*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
 #else
     (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
 #endif

@@ -59,7 +59,7 @@ if(*listPtr!=NULL){
   if(copyEvent(eventBlockPtr, &pNewItem)>=0){
       pNewItem->pNext=NULL;		/* next node is NULL for new node */
       pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
-		  
+
       /* add newly created list node to our list */
       pTempPtr->pNext=pNewItem;
       return 1;  

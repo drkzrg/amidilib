@@ -43,11 +43,11 @@ void destroyLinearBuffer(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
 #else
-      amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
-#endif      
-       amFree((void **)&buf->pMemPtr);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+#endif 
+      if(buf->pMemPtr!=0) amFree((void **)&buf->pMemPtr);
     }break;
     case PREFER_DSP:
     case PREFER_SUPERVIDEL:
@@ -99,11 +99,10 @@ void linearBufferFree(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
 #else
-      amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
 #endif      
-       amFree((void **)&buf->pMemPtr);
     }break;
     case PREFER_DSP:
     case PREFER_SUPERVIDEL:

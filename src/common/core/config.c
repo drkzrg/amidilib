@@ -91,6 +91,8 @@ U32 cfgLen=0;
       //not ok reset to defaults
       printf("Invalid configuration. Resetting to defaults.\n");
       setDefaultConfig();
+    }else{
+      printf("Configuration loaded.\n");
     }
     
     amFree(&cfgData);
@@ -142,6 +144,7 @@ void setGlobalConfig(tAmidiConfig *newConfig){
   #ifndef PORTABLE
   configuration.midiBufferSize=newConfig->midiBufferSize; 
   #endif
+  
   configuration.midiConnectionTimeOut=newConfig->midiConnectionTimeOut;
   configuration.midiSilenceThreshold=newConfig->midiSilenceThreshold;
   configuration.handshakeModeEnabled=newConfig->handshakeModeEnabled;
@@ -158,70 +161,33 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
   S32 iError=0;
   
   //config version 
-  if(getUShortVal(versionTag,pData,bufferLenght,&configuration.version)<0){ 
-    iError=-1;
-  }else{
-    // check version if ok then proceed if not throw error
-    if(configuration.version!=CONFIG_VERSION){
-        iError=-1;
-    }
-  }
+  iError=getUShortVal(versionTag,pData,bufferLenght,&configuration.version); 
+   
+   // check version if ok then proceed if not throw error
+   if(iError>0 && configuration.version!=CONFIG_VERSION){
+       iError=-1;
+   }
   
-  if(getUShortVal(connectedDeviceTag,pData,bufferLenght,&configuration.connectedDeviceType)<0){ 
-   iError=-1;
-  }
- 
-  if(getUShortVal(operationModeTag,pData,bufferLenght, &configuration.operationMode)<0){ 
-   iError=-1;
-  }
   
-  if(getUShortVal(midiChannelTag,pData,bufferLenght,&configuration.midiChannel)<0){ 
-   iError=-1;
-  }
+  iError=getUShortVal(connectedDeviceTag,pData,bufferLenght,&configuration.connectedDeviceType);
  
- if(getUShortVal(playModeTag,pData,bufferLenght,&configuration.playMode)<0){ 
-   iError=-1;
-  }
+  iError=getUShortVal(operationModeTag,pData,bufferLenght, &configuration.operationMode);
+  iError=getUShortVal(midiChannelTag,pData,bufferLenght,&configuration.midiChannel);
+  iError=getUShortVal(playModeTag,pData,bufferLenght,&configuration.playMode);
   
-  if(getUShortVal(playStateTag,pData,bufferLenght,&configuration.playState)<0){ 
-   iError=-1;
-  }
- 
-  if(getUIntVal(eventPoolSizeTag,pData,bufferLenght,&configuration.eventPoolSize)<0){ 
-   iError=-1;
-  }
- 
-  if(getUIntVal(eventDataAllocatorSizeTag,pData,bufferLenght,&configuration.eventDataAllocatorSize)<0){ 
-   iError=-1;
-  }
- 
- 
-  if(getIntVal(midiConnectionTimeoutTag,pData,bufferLenght,&configuration.midiConnectionTimeOut)<0){ 
-   iError=-1;
-  }
-  
-  if(getIntVal(silenceThresholdTag,pData,bufferLenght,&configuration.midiSilenceThreshold)<0){ 
-   iError=-1;
-  }
+  iError=getUShortVal(playStateTag,pData,bufferLenght,&configuration.playState);
+  iError=getUIntVal(eventPoolSizeTag,pData,bufferLenght,&configuration.eventPoolSize);
+  iError=getUIntVal(eventDataAllocatorSizeTag,pData,bufferLenght,&configuration.eventDataAllocatorSize);
+  iError=getIntVal(midiConnectionTimeoutTag,pData,bufferLenght,&configuration.midiConnectionTimeOut);
+  iError=getIntVal(silenceThresholdTag,pData,bufferLenght,&configuration.midiSilenceThreshold);
   
   #ifndef PORTABLE
-    if(getIntVal(midiBufferSizeTag,pData,bufferLenght,&configuration.midiBufferSize)<0){ 
-      iError=-1;
-    }
+     iError=getIntVal(midiBufferSizeTag,pData,bufferLenght,&configuration.midiBufferSize);
   #endif
   
-  
-  if(getBoolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled)<0){ 
-      iError=-1;
-  }
-  
-  if(getBoolVal(streamedTag,pData,bufferLenght,&configuration.streamed)<0){ 
-      iError=-1;
-  }
-  
-  if(getBoolVal(lzoCompressionTag,pData,bufferLenght,&configuration.useLZO)<0){ 
-      iError=-1;
-  }
+  iError=getBoolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled); 
+  iError=getBoolVal(streamedTag,pData,bufferLenght,&configuration.streamed);
+  iError=getBoolVal(lzoCompressionTag,pData,bufferLenght,&configuration.useLZO); 
   
   return iError;
 }
@@ -242,22 +208,15 @@ S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, B
 	 
 	if(strncmp(rval,TRUE_TAG,4)==0){
 	  *val=TRUE;
-	  
 	   return 0; 
 	}else if(strncmp(rval,FALSE_TAG,4)==0){
 	  *val=FALSE;
-	 
 	  return 0; 
-	}else{
-	  amTrace("entry '%s' was not found\n", tagName); return -1;
-	  return -1;
 	}  
-	
        }
   
-      amTrace("entry '%s' was not found,\n", tagName); 
+    amTrace("entry '%s' was not found,\n", tagName); 
     return -1;
-	  
   }
 }
 
@@ -265,8 +224,6 @@ S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U
   U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-       
-	
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
@@ -274,7 +231,7 @@ S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U
 	 rval++;
 	 
 	 *val=(U32)strtol(rval,(char **)NULL, 10);
-	
+	 return 0; 
 	}else{
 	  return -1;
 	}
@@ -294,19 +251,16 @@ S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S3
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
-	 rval++;
-	 rval++;
-	 
-	*val=(S32)strtol(rval,(char **)NULL, 10);
-	
-	 return 0; 
+	  rval++;
+	  rval++;
+	  *val=(S32)strtol(rval,(char **)NULL, 10);
+	return 0; 
 	}else{
 	  return -1;
 	}
-    } else {
-       amTrace("entry '%s' was not found,\n", tagName);  return -1;
-    }
-  
+    } 
+    
+  amTrace("entry '%s' was not found,\n", tagName);  return -1;
   return -1;
 }
 
@@ -319,19 +273,16 @@ S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght,
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
-	 rval++;
-	 rval++;
-	 
-	 *val=(U16)strtol(rval,(char **)NULL, 10);
-	
-	 return 0; 
+	  rval++;
+	  rval++;
+	  *val=(U16)strtol(rval,(char **)NULL, 10);
+	  return 0; 
 	}else{
 	  return -1;
 	}
-    } else {
-       amTrace("entry '%s' was not found,\n", tagName); return -1;
-    }
+    } 
   
+  amTrace("entry '%s' was not found,\n", tagName); return -1;
   return -1;
 }
 
@@ -340,24 +291,20 @@ S32 getShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, 
   U8 *substrPtr=(U8 *)strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-        
 	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
-	  rval++;
-	  rval++;
-	  
-	  *val = (S16)strtol(rval,(char **)NULL, 10);
-	
+	 rval++;
+	 rval++;
+	 *val = (S16)strtol(rval,(char **)NULL, 10);
 	 return 0; 
 	}else{
 	  return -1;
 	}
 	
-    } else {
-        amTrace("config entry '%s' was not found,\n", tagName); return -1;
-    }
-  
+    } 
+    
+  amTrace("config entry '%s' was not found,\n", tagName); return -1;
   return -1;
 }
 

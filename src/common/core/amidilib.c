@@ -394,6 +394,7 @@ S16 am_init(){
     printf("Configuration saved sucessfully.");
   }else{
     printf("Error: Cannot save global configuration.");
+    return -1;
   }
   
 #ifndef PORTABLE 

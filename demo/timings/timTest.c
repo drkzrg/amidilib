@@ -466,7 +466,7 @@ static BOOL bStopped=FALSE;
 }
 
 void onEndSeq(){
-printf("on End seq");
+
   if(g_CurrentState.playMode==S_PLAY_ONCE){
       //reset set state to stopped 
       //reset song position on all tracks

@@ -216,6 +216,7 @@ void printInfoScreen(){
 void displayTuneInfo(){
   sSequence_t *pPtr=0;
   getCurrentSeq(&pPtr);
+  
   U32 td=pPtr->arTracks[0]->currentState.currentPPQN;
   U32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
   U16 numTrk=pPtr->ubNumTracks;

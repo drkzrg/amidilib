@@ -35,6 +35,7 @@ void printHelpScreen(){
   printf("[C] - change chorus settings for all channels\n");
   printf("[V] - change reverb settings for all channels\n");
   printf("[HELP] - show this help screen \n");
+  printf("[Backspace] - switch between [LA] / [GS/GM] mode \n");
   
   switch(getGlobalConfig()->connectedDeviceType){
     case DT_LA_SOUND_SOURCE:     
@@ -53,7 +54,7 @@ void printHelpScreen(){
   
   printf("[spacebar] - turn off all sounds \n");
   printf("[Esc] - quit\n");
-  printf("(c) Nokturnal 2010\n");
+  printf("(c) Nokturnal 2013\n");
   printf("================================================\n");
 }
 

@@ -129,12 +129,14 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     (*pSequence)=0;
     (*pSequence)=(sSequence_t *)amMallocEx(sizeof(sSequence_t),PREFER_TT);
     
-    if((*pSequence)==0){ 
+    if((*pSequence)==0){
+      amTrace((const U8*)"It's not valid MIDI file...\n");
+      fprintf(stderr, "Error: Cannot allocate memory for sequence.\n");
       return -1;
     }
    
    amMemSet((*pSequence),0,sizeof(sSequence_t));
-   (*pSequence)->eotThreshold=EOT_SILENCE_THRESHOLD;
+   (*pSequence)->eotThreshold = getGlobalConfig()->midiSilenceThreshold;
    (*pSequence)->ubActiveTrack=0;
     
    int iRet=0;

@@ -20,40 +20,40 @@ extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
 
 volatile BOOL handleTempoChange;
 static BOOL bTempoChanged=FALSE;
-sSequence_t *g_CurrentSequence;
+static sSequence_t *g_CurrentSequence;
 
-void initSeq(sSequence_t **seq){
+void initSeq(sSequence_t *seq){
  
- if(*seq!=0){
-    U8 activeTrack=(*seq)->ubActiveTrack;
+ if(seq!=0){
+    U8 activeTrack=seq->ubActiveTrack;
     U8 mode=0,data=0;
     g_CurrentSequence=0;
-    g_CurrentSequence=(*seq);
+    g_CurrentSequence=seq;
 
-    for(int i=0;i<(*seq)->ubNumTracks;i++){
-     (*seq)->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
-     (*seq)->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
-     (*seq)->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
-     (*seq)->arTracks[i]->currentState.currentSeqPos=0L;
-     (*seq)->arTracks[i]->currentState.timeElapsedInt=0L;
-     (*seq)->arTracks[i]->currentState.bMute=FALSE;
-     (*seq)->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
+    for(int i=0;i<seq->ubNumTracks;i++){
+     seq->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
+     seq->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
+     seq->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
+     seq->arTracks[i]->currentState.currentSeqPos=0L;
+     seq->arTracks[i]->currentState.timeElapsedInt=0L;
+     seq->arTracks[i]->currentState.bMute=FALSE;
+     seq->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
        
-     (*seq)->arTracks[i]->currentState.playState=PS_STOPPED;
-     (*seq)->arTracks[i]->currentState.playMode=S_PLAY_LOOP;
+     seq->arTracks[i]->currentState.playState = getGlobalConfig()->playState;
+     seq->arTracks[i]->currentState.playMode = getGlobalConfig()->playMode;
    
     } 
   
-    (*seq)->timeElapsedFrac=0L;
-    (*seq)->timeStep=0L;
+    seq->timeElapsedFrac=0L;
+    seq->timeStep=0L;
     
-    (*seq)->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+    seq->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
  
 #ifndef PORTABLE
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
     #ifdef DEBUG_BUILD
-    amTrace("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,(*seq)->timeStep);
+    amTrace("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,seq->timeStep);
     amTrace("calculated mode: %d, data: %d\n",mode,data);
     #endif  
     
@@ -63,6 +63,44 @@ void initSeq(sSequence_t **seq){
   }
   
  return;
+}
+
+
+void initSeqManual(sSequence_t *seq){
+ 
+ if(seq!=0){
+    U8 activeTrack=seq->ubActiveTrack;
+    U8 mode=0,data=0;
+    g_CurrentSequence=0;
+    g_CurrentSequence=seq;
+
+    for(int i=0;i<seq->ubNumTracks;i++){
+     seq->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
+     seq->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
+     seq->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
+     seq->arTracks[i]->currentState.currentSeqPos=0L;
+     seq->arTracks[i]->currentState.timeElapsedInt=0L;
+     seq->arTracks[i]->currentState.bMute=FALSE;
+     seq->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
+       
+     seq->arTracks[i]->currentState.playState = getGlobalConfig()->playState;
+     seq->arTracks[i]->currentState.playMode = getGlobalConfig()->playMode;
+   
+    } 
+  
+    seq->timeElapsedFrac=0L;
+    seq->timeStep=0L;
+    
+    seq->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+
+  }
+  
+ return;
+}
+
+void updateStep2(){
+  printf("updateStep");
+  
 }
 
 BOOL isEOT(sEventList *pPtr){

@@ -26,8 +26,8 @@ typedef enum{
 /** current track state */
 typedef enum{
   PS_STOPPED=0x00,
-  PS_PLAYING=0x02,
-  PS_PAUSED=0x04
+  PS_PLAYING=0x02,   
+  PS_PAUSED=0x04 
 } ePlayState;
 
 typedef struct EventList{

@@ -6,6 +6,14 @@
 #define SC_CONTROL 0x1d
 #define SC_SPACEBAR 0x39
 #define SC_BACKSPACE 0x0e
+#define SC_ENTER 0x1c
+#define SC_LALT 0x38
+#define SC_CAPSLOCK 0x3a
+#define SC_LSHIFT 0x2a
+#define SC_RSHIFT 0x36
+#define SC_HELP 0x62
+#define SC_UNDO 0x61
+
 
 #define SC_Q 0x10
 #define SC_A 0x1e
@@ -30,8 +38,6 @@
 #define SC_ARROW_DOWN 0x50
 #define SC_ARROW_LEFT 0x4b
 #define SC_ARROW_RIGHT 0x4d
-#define SC_HELP 0x62
-#define SC_UNDO 0x61
 
 
 #define SC_Z 0x2c

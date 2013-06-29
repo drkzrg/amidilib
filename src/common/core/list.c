@@ -90,35 +90,41 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 #endif
     
     if((*dest)==NULL){
-	amTrace((const U8 *)"copyEvent() out of memory [event block]\n");
-	linearBufferPrintInfo(&eventBuffer);
+		amTrace((const U8 *)"copyEvent() out of memory [event block]\n");
+		#ifdef EVENT_LINEAR_BUFFER
+			linearBufferPrintInfo(&eventBuffer);
+		#endif
 	return -1;
     }else{
-	(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
-	(*dest)->eventBlock.type = src->type;
-	(*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
-	(*dest)->eventBlock.sendEventCb.func=src->sendEventCb.func;
-	(*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
-	(*dest)->eventBlock.copyEventCb.func=src->copyEventCb.func;
-	(*dest)->eventBlock.dataPtr=NULL;
+		(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
+		(*dest)->eventBlock.type = src->type;
+		(*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
+		(*dest)->eventBlock.sendEventCb.func=src->sendEventCb.func;
+		(*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
+		(*dest)->eventBlock.copyEventCb.func=src->copyEventCb.func;
+		(*dest)->eventBlock.dataPtr=NULL;
 		
-	/* allocate memory for event data and copy them to the new destination */
-	#ifdef EVENT_LINEAR_BUFFER
-	(*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
-	#else
-	(*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
-	#endif
+		/* allocate memory for event data and copy them to the new destination */
+		#ifdef EVENT_LINEAR_BUFFER
+			(*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
+		#else
+			(*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
+		#endif
     
 	if((*dest)->eventBlock.dataPtr==NULL){
 	    amTrace((const U8 *)"copyEvent() out of memory [callback block]\n");
-	    linearBufferPrintInfo(&eventBuffer);
-	    return -1;
+	    
+		#ifdef EVENT_LINEAR_BUFFER
+			linearBufferPrintInfo(&eventBuffer);
+		#endif
+
+		return -1;
 	}else{
 	    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8))); 
 	    return 1;
 	}
-    }
-    return -1;
+   }
+   return -1;
 }
 
 U32 destroyList(sEventList **listPtr){

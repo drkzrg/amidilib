@@ -98,6 +98,8 @@
     <None Include="..\..\..\gendoc.sh" />
     <None Include="..\..\..\include\common_m68k.inc" />
     <None Include="..\..\..\src\do.sh" />
+    <None Include="..\..\..\src\SConscript" />
+    <None Include="..\..\..\src\SConstruct" />
     <None Include="..\..\..\src\tos\amidi.s" />
     <None Include="..\..\..\src\tos\common.s" />
     <None Include="..\..\..\src\tos\ikbd.s" />

@@ -45,6 +45,9 @@
     <Filter Include="Demo\midiOutput">
       <UniqueIdentifier>{85660dd2-0f9b-4f30-9b50-f8069451f14f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scons">
+      <UniqueIdentifier>{4b370d23-a06e-409c-93a4-42f51f8efc70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\amidilib.h">
@@ -138,6 +141,12 @@
     </None>
     <None Include="..\..\..\gendoc.sh">
       <Filter>Docs</Filter>
+    </None>
+    <None Include="..\..\..\src\SConscript">
+      <Filter>scons</Filter>
+    </None>
+    <None Include="..\..\..\src\SConstruct">
+      <Filter>scons</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

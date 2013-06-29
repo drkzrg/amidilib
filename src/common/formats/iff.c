@@ -5,7 +5,7 @@
     See license.txt for licensing information.
 */
 
-#include "include/iff.h"
+#include "iff.h"
 
 /*
 ID GetChunkHeader();

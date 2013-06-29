@@ -1,12 +1,12 @@
 
-#include "include/timing/miditim.h"
 
 #ifndef PORTABLE
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 #endif
 
-#include "include/amlog.h"
+#include "timing/miditim.h"
+#include "amlog.h"
 
 #ifdef TIME_CHECK_PORTABLE	
  clock_t begin;

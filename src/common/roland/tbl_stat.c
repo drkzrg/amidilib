@@ -5,7 +5,7 @@
     See license.txt for licensing information.
 */
 
-#include "include/c_vars.h"
+#include "c_vars.h"
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 

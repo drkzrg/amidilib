@@ -6,7 +6,7 @@
 */
 
 /* Roland CM-500 static tables */
-#include	"include/c_vars.h"
+#include	"c_vars.h"
 
 /* SFX set, program number 57 */
 extern const U8 *g_arCM500sfx[];

@@ -4,7 +4,7 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-#include "include/fmio.h"
+#include "fmio.h"
 
 
 S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){

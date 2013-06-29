@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{43679BCB-DE4F-4F0F-B30D-E3101561835A}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>scons --help</NMakeBuildCommandLine>
+    <NMakeOutput>amidilib.tos</NMakeOutput>
+    <NMakeCleanCommandLine>clean cmd</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>rebuild cmd</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <LibraryWPath />
+    <IncludePath>C:\cygwin\opt\cross-mint\m68k-atari-mint\include\c++\4.6.4;C:\cygwin\opt\cross-mint\m68k-atari-mint\include;$(SolutionDir)../../include</IncludePath>
+    <ReferencePath />
+    <LibraryPath />
+    <SourcePath />
+    <ExcludePath />
+    <ExecutablePath>C:\cygwin\bin;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(MSBuildToolsPath32);$(VSInstallDir);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
+    <NMakeIncludeSearchPath>C:\cygwin\opt\cross-mint\m68k-atari-mint\include;$(SolutionDir)../../include</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>scons bla bla</NMakeBuildCommandLine>
+    <NMakeOutput>amidilib_VS2012.tos</NMakeOutput>
+    <NMakeCleanCommandLine>clean cmd</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>rebuild cmd</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>C:\cygwin\opt\cross-mint\m68k-atari-mint\include;$(SolutionDir)../../include</NMakeIncludeSearchPath>
+    <IncludePath>C:\cygwin\opt\cross-mint\m68k-atari-mint\include\c++\4.6.4;C:\cygwin\opt\cross-mint\m68k-atari-mint\include;$(SolutionDir)../../include</IncludePath>
+    <ReferencePath />
+    <LibraryPath />
+    <LibraryWPath />
+    <SourcePath />
+    <ExcludePath />
+    <ExecutablePath>C:\cygwin\bin;$(VCInstallDir)bin;$(WindowsSDK_ExecutablePath_x86);$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(MSBuildToolsPath32);$(VSInstallDir);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\demo\timings\sampleSequence.h" />
+    <ClInclude Include="..\..\..\include\amidilib.h" />
+    <ClInclude Include="..\..\..\include\amidiseq.h" />
+    <ClInclude Include="..\..\..\include\amlog.h" />
+    <ClInclude Include="..\..\..\include\config.h" />
+    <ClInclude Include="..\..\..\include\c_vars.h" />
+    <ClInclude Include="..\..\..\include\events.h" />
+    <ClInclude Include="..\..\..\include\evtdefs.h" />
+    <ClInclude Include="..\..\..\include\fmio.h" />
+    <ClInclude Include="..\..\..\include\iff.h" />
+    <ClInclude Include="..\..\..\include\midi.h" />
+    <ClInclude Include="..\..\..\include\midiseq.h" />
+    <ClInclude Include="..\..\..\include\midi_cmd.h" />
+    <ClInclude Include="..\..\..\include\midi_rep.h" />
+    <ClInclude Include="..\..\..\include\midi_send.h" />
+    <ClInclude Include="..\..\..\include\mt32togm.h" />
+    <ClInclude Include="..\..\..\include\roland.h" />
+    <ClInclude Include="..\..\..\include\vendors.h" />
+    <ClInclude Include="..\..\..\include\xmidi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Doxyfile.unix" />
+    <None Include="..\..\..\Doxyfile.win32" />
+    <None Include="..\..\..\GENDOC.BAT" />
+    <None Include="..\..\..\gendoc.sh" />
+    <None Include="..\..\..\include\common_m68k.inc" />
+    <None Include="..\..\..\src\do.sh" />
+    <None Include="..\..\..\src\tos\amidi.s" />
+    <None Include="..\..\..\src\tos\common.s" />
+    <None Include="..\..\..\src\tos\ikbd.s" />
+    <None Include="..\..\..\src\tos\midiReplay.s" />
+    <None Include="..\..\..\src\tos\testReplay.s" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\demo\midi_output\midiTest.c" />
+    <ClCompile Include="..\..\..\demo\midi_rep\main.c" />
+    <ClCompile Include="..\..\..\demo\timings\timTest.c" />
+    <ClCompile Include="..\..\..\demo\ymOutput\ymTest.c" />
+    <ClCompile Include="..\..\..\src\common\core\amidilib.c" />
+    <ClCompile Include="..\..\..\src\common\core\amlog.c" />
+    <ClCompile Include="..\..\..\src\common\core\config.c" />
+    <ClCompile Include="..\..\..\src\common\core\c_vars.c" />
+    <ClCompile Include="..\..\..\src\common\core\list.c" />
+    <ClCompile Include="..\..\..\src\common\formats\iff.c" />
+    <ClCompile Include="..\..\..\src\common\lzo\minilzo.c" />
+    <ClCompile Include="..\..\..\src\common\memory\linalloc.c" />
+    <ClCompile Include="..\..\..\src\common\memory\stack.c" />
+    <ClCompile Include="..\..\..\src\common\midi\midiseq.c" />
+    <ClCompile Include="..\..\..\src\common\roland\cm_32l.c" />
+    <ClCompile Include="..\..\..\src\common\roland\cm_500.c" />
+    <ClCompile Include="..\..\..\src\common\roland\mt32.c" />
+    <ClCompile Include="..\..\..\src\common\roland\tbl_stat.c" />
+    <ClCompile Include="..\..\..\src\common\timing\miditim.c" />
+    <ClCompile Include="..\..\..\src\common\twisterm.c" />
+    <ClCompile Include="..\..\..\src\common\ym2149.c" />
+    <ClCompile Include="..\..\..\src\memory\linalloc.c" />
+    <ClCompile Include="..\..\..\src\memory\memory.c" />
+    <ClCompile Include="..\..\..\src\memory\stack.c" />
+    <ClCompile Include="..\..\..\src\portable\discio\fmio.c" />
+    <ClCompile Include="..\..\..\src\portable\memory\memory.c" />
+    <ClCompile Include="..\..\..\src\portable\midi\midi_rep.c" />
+    <ClCompile Include="..\..\..\src\tos\discio\fmio.c" />
+    <ClCompile Include="..\..\..\src\tos\memory\memory.c" />
+    <ClCompile Include="..\..\..\src\tos\midi\midi_rep.c" />
+    <ClCompile Include="..\..\..\src\tos\timing\mfp.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -10,15 +10,11 @@
 #include "midi_cmd.h"
 #include "midi_rep.h"
 
-#ifdef PORTABLE
-//here is stored current sequence
-extern sSequence_t *g_CurrentSequence;
-BOOL bTempoChanged;
-BOOL bTimeSignatureChanged;
-#else
-//here is stored current sequence
 extern sSequence_t *g_CurrentSequence;
 
+#ifdef PORTABLE
+BOOL bTempoChanged;
+#else
 extern BOOL bTempoChanged;
 #endif
 

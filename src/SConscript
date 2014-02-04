@@ -187,7 +187,7 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_32l.c","common/roland/tbl_stat.c"]
-midiformats_src = ["common/formats/iff.c"]
+midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"]
 
 if int(portable==1): 
   timing_src = ["common/timing/miditim.c"]

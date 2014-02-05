@@ -293,7 +293,60 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	case T_SMF:{return(-1);}break;
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
-	case T_MUS:{return(-1);}break;
+	case T_MUS:{
+	  amTrace("Converting MUS to MIDI\n");
+	  //Mus2Midi();
+	  return -1; //as things will work
+	  amTrace("Processing converted data..\n");
+	  //the rest is like in MIDI type 0
+	  /* handle MIDI type 0 */
+            iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI0);
+
+            if(iNumTracks!=1){
+	      return(-1);
+	    } /* invalid number of tracks, there can be only one! */
+            else{
+		 /* init sequence table */
+		 for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+		 
+		   /* we will allocate needed track tables when appropriate */
+		  (*pSequence)->arTracks[iLoop]=NULL;
+		 }
+
+                 /* prepare our structure */
+		 (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
+		 
+		 /* OK! valid number of tracks */
+                 /* get time division for timing */
+                 iTimeDivision = am_getTimeDivision(pMidiPtr);
+
+		 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
+                 startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+
+		 /* create one track list only */
+		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+		  amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
+		  /* Store time division for sequence, TODO: SMPTE handling */
+		  
+		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+		 
+		    
+		  /* init event list */
+		  (*pSequence)->arTracks[0]->pTrkEventList=0;
+		  
+		   while (startPtr!=0){
+		  /* Pointer to midi data, 
+		     type of midi to preprocess, 
+		     number of tracks, 
+		     pointer to the structure in which track data will be dumped (or not).  
+		  */
+		   startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
+		   if(iError<0)return iError;
+                 }
+          }
+	  return(0);
+	  
+	}break;
 	
 	default:{
 	  /* unknown error, do nothing */

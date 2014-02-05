@@ -1,6 +1,5 @@
 /*
 ===========================================================================
-
 Doom 3 BFG Edition GPL Source Code
 Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
 
@@ -22,10 +21,9 @@ along with Doom 3 BFG Edition Source Code.  If not, see <http://www.gnu.org/lice
 In addition, the Doom 3 BFG Edition Source Code is also subject to certain additional terms. You should have received a copy of these additional terms immediately following the terms and conditions of the GNU General Public License which accompanied the Doom 3 BFG Edition Source Code.  If not, please request a copy in writing from id Software at the address below.
 
 If you have questions concerning this license or the applicable additional terms, you may contact in writing id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
-
 ===========================================================================
 
-m68k customisation: Pawel Goralski
+m68k/ atari/ cleanup/ customisation: Pawel Goralski
 
 */
 
@@ -33,10 +31,11 @@ m68k customisation: Pawel Goralski
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <c_vars.h>
+#include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
 
+#include <amidilib.h>
 
 #define MUSEVENT_KEYOFF	0
 #define MUSEVENT_KEYON	1
@@ -47,38 +46,24 @@ m68k customisation: Pawel Goralski
 #define MIDI_MAXCHANNELS	16
 #define MIDIHEADERSIZE 14
 
-
 #define WORD U16
 #define byte U8
 
-// mus header
-typedef struct tagMUSheader_t {
-  char    ID[4];          // identifier "MUS" 0x1A
-  WORD    scoreLen;
-  WORD    scoreStart;
-  WORD    channels;	// count of primary channels
-  WORD    sec_channels;	// count of secondary channels
-  WORD    instrCnt;
-  WORD    dummy;
-  //// variable-length part starts here
-} MUSheader_t ;
-
-
 //we are making format 0, nb of tracks==1, div=0xe250(?)
 
-
 // reads a variable length integer
-unsigned long ReadVarLen( char* buffer ) {
-	unsigned long value;
-	byte c;
+//TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
+unsigned long ReadVarLen(char* buffer){
+unsigned long value;
+byte c;
 
-	if ((value = *buffer++) & 0x80) {
-		value &= 0x7f;
-		do  {
-			value = (value << 7) + ((c = *buffer++) & 0x7f);
-		}  while (c & 0x80);
-	}
-	return value;
+if ((value = *buffer++) & 0x80) {
+  value &= 0x7f;
+  do  {
+    value = (value << 7) + ((c = *buffer++) & 0x7f);
+  } while (c & 0x80);
+ }
+ return value;
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
@@ -100,39 +85,35 @@ int WriteVarLen( long value, byte* out ){
 			buffer >>= 8;
 		else
 			break;
-	}
-	return count;
+ }
+ return count;
 }
 
 // writes a byte, and returns the buffer
-unsigned char* WriteByte(void* buf, byte b)
-{
+unsigned char* WriteByte(void* buf, byte b){
 	unsigned char* buffer = (unsigned char*)buf;
 	*buffer++ = b;
 	return buffer;
 }
 
-unsigned char* WriteShort(void* b, unsigned short s)
-{
+unsigned char* WriteShort(void* b, unsigned short s){
 	unsigned char* buffer = (unsigned char*)b;
 	*buffer++ = (s >> 8);
 	*buffer++ = (s & 0x00FF);
 	return buffer;
 }
 
-unsigned char* WriteInt(void* b, unsigned int i)
-{
-	unsigned char* buffer = (unsigned char*)b;
-	*buffer++ = (i & 0xff000000) >> 24;
-	*buffer++ = (i & 0x00ff0000) >> 16;
-	*buffer++ = (i & 0x0000ff00) >> 8;
-	*buffer++ = (i & 0x000000ff);
-	return buffer;
+unsigned char* WriteInt(void* b, unsigned int i){
+ unsigned char* buffer = (unsigned char*)b;
+ *buffer++ = (i & 0xff000000) >> 24;
+ *buffer++ = (i & 0x00ff0000) >> 16;
+ *buffer++ = (i & 0x0000ff00) >> 8;
+ *buffer++ = (i & 0x000000ff);
+ return buffer;
 }
 
 // Format - 0(1 track only), 1(1 or more tracks, each play same time), 2(1 or more, each play seperatly)
-void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division)
-{
+void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
 	WriteInt(&header->id,ID_MTHD);
 	WriteInt(&header->headLenght, 6);
 	WriteShort(&header->format, format);
@@ -140,8 +121,7 @@ void Midi_CreateHeader(sMThd* header, short format, short track_count,  short di
 	WriteShort(&header->division, division);
 }
 
-unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo)
-{
+unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
 	buffer = WriteByte(buffer, 0x00);	// delta time
 	buffer = WriteByte(buffer, 0xff);	// sys command
 	buffer = WriteShort(buffer, 0x5103); // command - set tempo
@@ -153,14 +133,13 @@ unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo)
 	return buffer;
 }
 
-int Midi_UpdateBytesWritten(int* bytes_written, int to_add, int max)
-{
-	*bytes_written += to_add;
-	if (max && *bytes_written > max){
-	 assert(0);
-	 return 0;
-	}
-	return 1;
+int Midi_UpdateBytesWritten(int* bytes_written, int to_add, int max){
+*bytes_written += to_add;
+ if (max && *bytes_written > max){
+  assert(0);
+    return 0;
+  }
+  return 1;
 }
 
 unsigned char MidiMap[] = {
@@ -178,13 +157,13 @@ unsigned char MidiMap[] = {
 	0x7B,	//11		// all notes off
 	0x7E,	//12		// mono(use numchannels + 1)
 	0x7F,	//13		// poly
-	0x79,	//14	// reset all controllers
+	0x79,	//14		// reset all controllers
 };
 
 // The MUS data is stored in little-endian, m68k is big endian
-unsigned short LittleToNative( const unsigned short value ) {
-  unsigned short int val=value;
-  unsigned short int result;
+unsigned short LittleToNative(const unsigned short value){
+unsigned short int val=value;
+unsigned short int result;
   
   result=value<<16;
   val=val>>16;
@@ -193,30 +172,30 @@ unsigned short LittleToNative( const unsigned short value ) {
 }
 
 int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
-	// mus header and instruments
-	MUSheader_t header;
+// mus header and instruments
+MUSheader_t header;
 
-	// current position in read buffer
-	unsigned char* cur = bytes,* end;
+// current position in read buffer
+unsigned char* cur = bytes,* end;
 
-	// Midi header(format 0)
-	sMThd midiHeader;
-	// Midi track header, only 1 needed(format 0)
-	sChunkHeader midiTrackHeader;
-	// Stores the position of the midi track header(to change the size)
-	byte* midiTrackHeaderOut;
+// Midi header(format 0)
+sMThd midiHeader;
+// Midi track header, only 1 needed(format 0)
+sChunkHeader midiTrackHeader;
+// Stores the position of the midi track header(to change the size)
+byte* midiTrackHeaderOut;
 
-	// Delta time for midi event
-	int delta_time = 0;
-	int temp;
-	int channel_volume[MIDI_MAXCHANNELS] = {0};
-	int bytes_written = 0;
-	int channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
-	byte last_status = 0;
+// Delta time for midi event
+int delta_time = 0;
+int temp;
+int channel_volume[MIDI_MAXCHANNELS] = {0};
+int bytes_written = 0;
+int channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
+byte last_status = 0;
 
-	// read the mus header
-	amMemCpy(&header, cur, sizeof(header));
-	cur += sizeof(header);
+// read the mus header
+amMemCpy(&header, cur, sizeof(header));
+cur += sizeof(header);
 
 	header.scoreLen = LittleToNative( header.scoreLen );
 	header.scoreStart = LittleToNative( header.scoreStart );
@@ -226,8 +205,7 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 	header.dummy = LittleToNative( header.dummy );
 
 	// only 15 supported
-	if (header.channels > MIDI_MAXCHANNELS - 1)
-		return 0;
+	if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
 	// Map channel 15 to 9(percussions)
 	for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
@@ -250,7 +228,6 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 	Midi_UpdateBytesWritten(&bytes_written, sizeof(midiTrackHeader), *len);
 	midiTrackHeaderOut = out;
 	out += sizeof(midiTrackHeader);
-
 
 	// microseconds per quarter note(yikes)
 	Midi_UpdateBytesWritten(&bytes_written, 7, *len);
@@ -293,8 +270,7 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 		status = channelMap[channel];
 
 		// Handle ::g->events
-		switch ((event & 122) >> 4)
-		{
+		switch ((event & 122) >> 4){
 		default:
 			assert(0);
 			break;
@@ -356,8 +332,7 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 
 
 		// Write out temp stuff
-		if (out_local != temp_buffer)
-		{
+		if (out_local != temp_buffer){
 			Midi_UpdateBytesWritten(&bytes_written, out_local - temp_buffer, *len);
 			memcpy(out, temp_buffer, out_local - temp_buffer);
 			out += out_local - temp_buffer;
@@ -382,9 +357,9 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 	// Store length written
 	*len = bytes_written;
 	/*{
-		FILE* file = f o pen("d:\\test.midi", "wb");
+		FILE* file = f open("d:\\test.midi", "wb");
 		fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
 		fclose(file);
 	}*/
-	return 1;
+ return 1;
 }

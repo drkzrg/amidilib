@@ -12,8 +12,12 @@
 #include "timing/mfp.h"
 #endif
 
+// formats
 #include "fmio.h"
 #include "xmidi.h"
+#include "dmus.h"
+//
+
 #include "roland.h"
 #include "timing/miditim.h"
 
@@ -77,9 +81,8 @@ S16 am_getHeaderInfo(void *pMidiPtr){
     amTrace((const U8 *)"Checking header info... ");
     pMidiInfo=(sMThd *)pMidiPtr;
   
-    /* check midi header */
-    if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
-
+/* check midi header */
+if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
         switch(pMidiInfo->format){
 	 case T_MIDI0:
 	  /* Midi Format 0 detected */
@@ -103,20 +106,22 @@ S16 am_getHeaderInfo(void *pMidiPtr){
 	default:
 	/*Error: Unsupported MIDI format */
 	amTrace((const U8*)"Unsupported MIDI file format\n");
-    
 	return(-2);
 	break;
-    }
-
-   }
-   else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
+   };
+}else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
       /* possible XMIDI*/
       amTrace((const U8*)"XMIDI file possibly..\n");
-    
-    return(3);
-   }
-    
-return(-1);
+      return(T_XMIDI);
+}else{
+     MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
+     if(pMusHeader->ID==MUS_ID){
+      amTrace((const U8*)"Doom MUS found.\n");
+      return(T_MUS);  
+     }
+}
+//unsupported format  
+ return(-1);
 }
 
 S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
@@ -130,7 +135,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     (*pSequence)=(sSequence_t *)amMallocEx(sizeof(sSequence_t),PREFER_TT);
     
     if((*pSequence)==0){
-      amTrace((const U8*)"It's not valid MIDI file...\n");
+      amTrace((const U8*)"Error: Cannot allocate memory for sequence.\n");
       fprintf(stderr, "Error: Cannot allocate memory for sequence.\n");
       return -1;
     }

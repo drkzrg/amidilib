@@ -256,6 +256,3 @@ void midiParserTest(sSequence_t *pSequence){
 }
 #endif
 
-
-
-

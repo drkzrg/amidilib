@@ -34,7 +34,7 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
-
+#include <amlog.h>
 #include <amidilib.h>
 
 #define MUSEVENT_KEYOFF	0
@@ -153,11 +153,11 @@ unsigned char MidiMap[] = {
 	0x5D,	//7		// chorus depth
 	0x40,	//8		// sustain pedal
 	0x43,	//9		// soft pedal
-	0x78,	//10		// all sounds off
-	0x7B,	//11		// all notes off
-	0x7E,	//12		// mono(use numchannels + 1)
-	0x7F,	//13		// poly
-	0x79,	//14		// reset all controllers
+    0x78,	//10	// all sounds off
+    0x7B,	//11	// all notes off
+    0x7E,	//12	// mono(use numchannels + 1)
+    0x7F,	//13	// poly
+    0x79,	//14	// reset all controllers
 };
 
 // The MUS data is stored in little-endian, m68k is big endian
@@ -165,9 +165,11 @@ unsigned short LittleToNative(const unsigned short value){
 unsigned short int val=value;
 unsigned short int result;
   
-  result=value<<16;
-  val=val>>16;
+  result=value<<8;
+  val=val>>8;
+
   result=result|val;
+
   return result;
 }
 
@@ -183,32 +185,43 @@ sMThd midiHeader;
 // Midi track header, only 1 needed(format 0)
 sChunkHeader midiTrackHeader;
 // Stores the position of the midi track header(to change the size)
-byte* midiTrackHeaderOut;
+byte* midiTrackHeaderOut=0;
+
+//zero mem
+amMemSet(&midiHeader,0,sizeof(sMThd));
+amMemSet(&midiTrackHeader,0,sizeof(sChunkHeader));
+amMemSet(&header,0,sizeof(MUSheader_t));
 
 // Delta time for midi event
 int delta_time = 0;
-int temp;
+int temp=0;
 int channel_volume[MIDI_MAXCHANNELS] = {0};
 int bytes_written = 0;
 int channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
 byte last_status = 0;
 
 // read the mus header
-amMemCpy(&header, cur, sizeof(header));
-cur += sizeof(header);
+amMemCpy(&header, cur, sizeof(MUSheader_t));
+cur += sizeof(MUSheader_t);
 
-	header.scoreLen = LittleToNative( header.scoreLen );
-	header.scoreStart = LittleToNative( header.scoreStart );
-	header.channels = LittleToNative( header.channels );
-	header.sec_channels = LittleToNative( header.sec_channels );
-	header.instrCnt = LittleToNative( header.instrCnt );
-	header.dummy = LittleToNative( header.dummy );
+header.scoreLen = LittleToNative( header.scoreLen );
+header.scoreStart = LittleToNative( header.scoreStart );
+header.channels = LittleToNative( header.channels );
+header.sec_channels = LittleToNative( header.sec_channels );
+header.instrCnt = LittleToNative( header.instrCnt );
+header.dummy = LittleToNative( header.dummy );
 
-	// only 15 supported
-	if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
+// only 15 supported
+if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
+
+ amTrace("ScoreLen 0x%x\n",header.scoreLen);
+ amTrace("ScoreStart 0x%x\n",header.scoreStart);
+ amTrace("channels 0x%x\n",header.channels);
+ amTrace("sec_channels 0x%x\n",header.sec_channels);
+ amTrace("instrCnt 0x%x\n",header.instrCnt);
 
 	// Map channel 15 to 9(percussions)
-	for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
+  for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
 		channelMap[temp] = -1;
 		channel_volume[temp] = 0x40;
 	}
@@ -243,7 +256,7 @@ cur += sizeof(header);
 	// Main Loop
 	while (cur < end) {
 		byte channel; 
-		byte event;
+        byte event;
 		byte temp_buffer[32];	// temp buffer for current iterator
 		byte *out_local = temp_buffer;
 		byte status, bit1, bit2, bitc = 2;
@@ -327,14 +340,12 @@ cur += sizeof(header);
 		// Write it out
 		out_local = WriteByte(out_local, status);
 		out_local = WriteByte(out_local, bit1);
-		if (bitc == 2) 
-			out_local = WriteByte(out_local, bit2);
-
+        if (bitc == 2) out_local = WriteByte(out_local, bit2);
 
 		// Write out temp stuff
 		if (out_local != temp_buffer){
 			Midi_UpdateBytesWritten(&bytes_written, out_local - temp_buffer, *len);
-			memcpy(out, temp_buffer, out_local - temp_buffer);
+            amMemCpy(out, temp_buffer, out_local - temp_buffer);
 			out += out_local - temp_buffer;
 		}
 

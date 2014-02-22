@@ -290,12 +290,16 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	case T_SNG:{return(-1);}break;
 	case T_MUS:{
 	  amTrace("Converting MUS to MIDI\n");
-	  //Mus2Midi();
-	  return -1; //as things will work
-	  amTrace("Processing converted data..\n");
-	  //the rest is like in MIDI type 0
+      U8 *pOut=0;
+      U32 len=0;
+      amTrace("Processing converted data..\n");
+
+      Mus2Midi(pMidiPtr,pOut,&len);
+
+      amTrace("Processing midi data..\n");
+      //the rest is like in MIDI type 0
 	  /* handle MIDI type 0 */
-            iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI0);
+            iNumTracks=am_getNbOfTracks(pOut,T_MIDI0);
 
             if(iNumTracks!=1){
 	      return(-1);

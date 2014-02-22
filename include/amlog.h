@@ -13,8 +13,6 @@
 
 #include "c_vars.h"
 
-
-
 /* small trick to get rid of logs/debug info in final build :D haxx0r! let the compiler do dirty work */
 #if DEBUG_BUILD
 #define amTrace am_log

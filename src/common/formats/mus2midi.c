@@ -90,30 +90,29 @@ static int WriteVarLen( long value, byte* out ){
 }
 
 // writes a byte, and returns the buffer
-static unsigned char* WriteByte(void* buf, byte b){
+unsigned char* WriteByte(void* buf, byte b){
 	unsigned char* buffer = (unsigned char*)buf;
-	*buffer++ = b;
+    *buffer = b;
+    buffer++;
 	return buffer;
 }
 
-static unsigned char* WriteShort(void* b, unsigned short s){
-	unsigned char* buffer = (unsigned char*)b;
-	*buffer++ = (s >> 8);
-	*buffer++ = (s & 0x00FF);
-	return buffer;
+unsigned char* WriteShort(void* b, unsigned short s){
+    unsigned short* buffer = (unsigned short*)b;
+    *buffer = s;
+    buffer++;
+    return (unsigned char *)buffer;
 }
 
-static unsigned char* WriteInt(void* b, unsigned int i){
- unsigned char* buffer = (unsigned char*)b;
- *buffer++ = (i & 0xff000000) >> 24;
- *buffer++ = (i & 0x00ff0000) >> 16;
- *buffer++ = (i & 0x0000ff00) >> 8;
- *buffer++ = (i & 0x000000ff);
- return buffer;
+unsigned char* WriteInt(void* b, unsigned int i){
+ unsigned int* buffer = (unsigned int*)b;
+ *buffer = i;
+ buffer++;
+ return (unsigned char *)buffer;
 }
 
 // Format - 0(1 track only), 1(1 or more tracks, each play same time), 2(1 or more, each play seperatly)
-static void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
+void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
 	WriteInt(&header->id,ID_MTHD);
 	WriteInt(&header->headLenght, 6);
 	WriteShort(&header->format, format);
@@ -121,7 +120,7 @@ static void Midi_CreateHeader(sMThd* header, short format, short track_count,  s
 	WriteShort(&header->division, division);
 }
 
-static unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
+unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
 	buffer = WriteByte(buffer, 0x00);	// delta time
 	buffer = WriteByte(buffer, 0xff);	// sys command
 	buffer = WriteShort(buffer, 0x5103); // command - set tempo
@@ -134,11 +133,12 @@ static unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
 }
 
 int Midi_UpdateBytesWritten(int* bytes_written, int to_add, int max){
-*bytes_written += to_add;
- if (max && *bytes_written > max){
-  assert(0);
-    return 0;
-  }
+    *bytes_written += to_add;
+
+    if (max && *bytes_written > max){
+        assert(0);
+        return 0;
+    }
   return 1;
 }
 
@@ -167,9 +167,7 @@ unsigned short int result;
   
   result=value<<8;
   val=val>>8;
-
   result=result|val;
-
   return result;
 }
 
@@ -178,7 +176,7 @@ int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
 MUSheader_t header;
 
 // current position in read buffer
-unsigned char* cur = bytes,* end;
+unsigned char* cur = bytes,*end;
 
 // Midi header(format 0)
 sMThd midiHeader;
@@ -220,12 +218,13 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
  amTrace("sec_channels 0x%x\n",header.sec_channels);
  amTrace("instrCnt 0x%x\n",header.instrCnt);
 
-	// Map channel 15 to 9(percussions)
+  // Map channel 15 to 9(percussions)
   for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
 		channelMap[temp] = -1;
 		channel_volume[temp] = 0x40;
-	}
-	channelMap[15] = 9;
+   }
+
+    channelMap[15] = 9;
 
 	// Get current position, and end of position
 	cur = bytes + header.scoreStart;
@@ -234,13 +233,13 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	// Write out midi header
 	Midi_CreateHeader(&midiHeader, 0, 1, 0x0059);
 	Midi_UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
-	amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
+    amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
 	out += MIDIHEADERSIZE;
 
 	// Store this position, for later filling in the midiTrackHeader
-	Midi_UpdateBytesWritten(&bytes_written, sizeof(midiTrackHeader), *len);
+    Midi_UpdateBytesWritten(&bytes_written, sizeof(sChunkHeader), *len);
 	midiTrackHeaderOut = out;
-	out += sizeof(midiTrackHeader);
+    out += sizeof(sChunkHeader);
 
 	// microseconds per quarter note(yikes)
 	Midi_UpdateBytesWritten(&bytes_written, 7, *len);
@@ -254,12 +253,15 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	out = WriteByte(out, 127);
 
 	// Main Loop
+    byte channel;
+    byte event;
+    byte temp_buffer[32];	// temp buffer for current iterator
+    byte *out_local=0;
+    byte status=0, bit1=0, bit2=0, bitc = 2;
+
 	while (cur < end) {
-		byte channel; 
-        byte event;
-		byte temp_buffer[32];	// temp buffer for current iterator
-		byte *out_local = temp_buffer;
-		byte status, bit1, bit2, bitc = 2;
+    bitc = 2;
+    out_local = temp_buffer;
 
 		// Read in current bit
 		event		= *cur++;
@@ -361,16 +363,20 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
 	// Write out track header
 	WriteInt(&midiTrackHeader.id, ID_MTRK);
-	WriteInt(&midiTrackHeader.headLenght, out - midiTrackHeaderOut - sizeof(midiTrackHeader));
+    WriteInt(&midiTrackHeader.headLenght, out - midiTrackHeaderOut - sizeof(sChunkHeader));
 	
-	amMemCpy(midiTrackHeaderOut, &midiTrackHeader, sizeof(midiTrackHeader));
+    amMemCpy(midiTrackHeaderOut, &midiTrackHeader, sizeof(sChunkHeader));
 
 	// Store length written
 	*len = bytes_written;
-	/*{
-		FILE* file = f open("d:\\test.midi", "wb");
+
+    amTrace("bytes written %d\n",*len);
+    {
+        amTrace("Writing MIDI output to file\n");
+        FILE* file = fopen("dmus.mid", "wb");
 		fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
 		fclose(file);
-	}*/
+        amTrace("Done.\n");
+    }
  return 1;
 }

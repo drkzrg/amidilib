@@ -279,11 +279,11 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
          iTimeDivision = am_getTimeDivision(pMidiPtr);
 
          /* processing (X)MIDI file */
-	/* TODO: handle + process */
+         /* TODO: handle + process */
 
          return(-1); /*xmidi isn't handled yet*/
-        }
-	break;
+    } break;
+
 	case T_RMID:{return(-1);}break; 
 	case T_SMF:{return(-1);}break;
 	case T_XMF:{return(-1);}break;
@@ -294,55 +294,54 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
       U32 len=0;
       amTrace("Processing converted data..\n");
 
-      Mus2Midi(pMidiPtr,pOut,&len);
+      // allocate 64kb working buffer for midi output
+      pOut=amMallocEx(64*1024,PREFER_TT);
+
+      Mus2Midi(pMidiPtr,(unsigned char *)pOut,(int *)&len);
 
       amTrace("Processing midi data..\n");
-      //the rest is like in MIDI type 0
-	  /* handle MIDI type 0 */
+        // the rest is like in MIDI type 0
+        /* handle MIDI type 0 */
             iNumTracks=am_getNbOfTracks(pOut,T_MIDI0);
 
             if(iNumTracks!=1){
-	      return(-1);
-	    } /* invalid number of tracks, there can be only one! */
-            else{
-		 /* init sequence table */
-		 for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
-		 
-		   /* we will allocate needed track tables when appropriate */
-		  (*pSequence)->arTracks[iLoop]=NULL;
-		 }
+                /* invalid number of tracks, there can be only one! */
+                return(-1);
+            }else{
 
-                 /* prepare our structure */
-		 (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
-		 
-		 /* OK! valid number of tracks */
-                 /* get time division for timing */
-                 iTimeDivision = am_getTimeDivision(pMidiPtr);
+            /* init sequence table */
+            for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+                /* we will allocate needed track tables when appropriate */
+                (*pSequence)->arTracks[iLoop]=NULL;
+            }
 
-		 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-                 startPtr=(void *)((U32)startPtr+sizeof(sMThd));
-
-		 /* create one track list only */
-		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-		  amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
-		  /* Store time division for sequence, TODO: SMPTE handling */
-		  
-		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+            /* prepare our structure */
+            (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
 		 
-		    
-		  /* init event list */
-		  (*pSequence)->arTracks[0]->pTrkEventList=0;
+            /* OK! valid number of tracks */
+            /* get time division for timing */
+            iTimeDivision = am_getTimeDivision(pOut);
+
+            /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
+            startPtr=(void *)((U32)pOut+sizeof(sMThd));
+
+           /* create one track list only */
+            (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
+            /* Store time division for sequence, TODO: SMPTE handling */
+            (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+            /* init event list */
+            (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  
 		   while (startPtr!=0){
-		  /* Pointer to midi data, 
-		     type of midi to preprocess, 
-		     number of tracks, 
-		     pointer to the structure in which track data will be dumped (or not).  
-		  */
-		   startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
-		   if(iError<0)return iError;
-                 }
+            startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
+            if(iError<0) return iError;
+           }
           }
+          // free up working buffer
+          if(pOut) amFree((void **)&pOut);pOut=0;
+          amTrace((const U8*)"MUS processing ok.\n");
+
 	  return(0);
 	  
 	}break;

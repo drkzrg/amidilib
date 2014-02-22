@@ -10,7 +10,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #include "config.h"
 
 //internal configuration
@@ -40,7 +39,7 @@ static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
 static const U8 silenceThresholdTag[]={"silenceThreshold"};
 
 //default values
-static const U32 DEFAULT_EVENT_POOL_SIZE =  6000UL; //nb of events
+static const U32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
 static const U32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
 static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_BUFFER_SIZE; 	    	    //default operation mode (not used yet)
 

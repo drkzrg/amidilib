@@ -53,7 +53,7 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 
 // reads a variable length integer
 //TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
-unsigned long ReadVarLen(char* buffer){
+static unsigned long ReadVarLen(char* buffer){
 unsigned long value;
 byte c;
 
@@ -67,7 +67,7 @@ if ((value = *buffer++) & 0x80) {
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
-int WriteVarLen( long value, byte* out ){
+static int WriteVarLen( long value, byte* out ){
 	long buffer, count = 0;
 
 	buffer = value & 0x7f;
@@ -90,20 +90,20 @@ int WriteVarLen( long value, byte* out ){
 }
 
 // writes a byte, and returns the buffer
-unsigned char* WriteByte(void* buf, byte b){
+static unsigned char* WriteByte(void* buf, byte b){
 	unsigned char* buffer = (unsigned char*)buf;
 	*buffer++ = b;
 	return buffer;
 }
 
-unsigned char* WriteShort(void* b, unsigned short s){
+static unsigned char* WriteShort(void* b, unsigned short s){
 	unsigned char* buffer = (unsigned char*)b;
 	*buffer++ = (s >> 8);
 	*buffer++ = (s & 0x00FF);
 	return buffer;
 }
 
-unsigned char* WriteInt(void* b, unsigned int i){
+static unsigned char* WriteInt(void* b, unsigned int i){
  unsigned char* buffer = (unsigned char*)b;
  *buffer++ = (i & 0xff000000) >> 24;
  *buffer++ = (i & 0x00ff0000) >> 16;
@@ -113,7 +113,7 @@ unsigned char* WriteInt(void* b, unsigned int i){
 }
 
 // Format - 0(1 track only), 1(1 or more tracks, each play same time), 2(1 or more, each play seperatly)
-void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
+static void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
 	WriteInt(&header->id,ID_MTHD);
 	WriteInt(&header->headLenght, 6);
 	WriteShort(&header->format, format);
@@ -121,7 +121,7 @@ void Midi_CreateHeader(sMThd* header, short format, short track_count,  short di
 	WriteShort(&header->division, division);
 }
 
-unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
+static unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
 	buffer = WriteByte(buffer, 0x00);	// delta time
 	buffer = WriteByte(buffer, 0xff);	// sys command
 	buffer = WriteShort(buffer, 0x5103); // command - set tempo
@@ -221,7 +221,7 @@ cur += sizeof(header);
 	// Write out midi header
 	Midi_CreateHeader(&midiHeader, 0, 1, 0x0059);
 	Midi_UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
-	memcpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
+	amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
 	out += MIDIHEADERSIZE;
 
 	// Store this position, for later filling in the midiTrackHeader

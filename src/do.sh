@@ -7,7 +7,7 @@
 #    See license.txt for licensing information.
 
 tools_prefix='/usr/'
-install_dir='/home/saulot/Pulpit/HD/AMIDIDEV'
+install_dir='/home/saulot/Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 emu_dir='/home/saulot/Pulpit/HD/'
 stack_size=128k

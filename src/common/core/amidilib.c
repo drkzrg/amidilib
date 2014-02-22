@@ -97,16 +97,10 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
 	 return(T_MIDI1);
 	 break;
 
-        case T_MIDI2:
+    case T_MIDI2:
 	/* Midi Format 2 detected */
 	amTrace((const U8*)"MIDI type 2 found\n");
 	  return(T_MIDI2);
-	break;
-
-	default:
-	/*Error: Unsupported MIDI format */
-	amTrace((const U8*)"Unsupported MIDI file format\n");
-	return(-2);
 	break;
    };
 }else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
@@ -115,7 +109,8 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
       return(T_XMIDI);
 }else{
      MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
-     if(pMusHeader->ID==MUS_ID){
+
+     if(((pMusHeader->ID)>>8)==MUS_ID){
       amTrace((const U8*)"Doom MUS found.\n");
       return(T_MUS);  
      }

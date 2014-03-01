@@ -171,7 +171,7 @@ unsigned short int result;
   return result;
 }
 
-int Mus2Midi(unsigned char* bytes, unsigned char* out, int* len){
+int Mus2Midi(unsigned char* bytes, unsigned char* out, const char *pOutMidName,int* len){
 // mus header and instruments
 MUSheader_t header;
 
@@ -260,7 +260,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
     byte status=0, bit1=0, bit2=0, bitc = 2;
 
 	while (cur < end) {
-    bitc = 2;
+    status=0, bit1=0, bit2=0, bitc = 2;
     out_local = temp_buffer;
 
 		// Read in current bit
@@ -371,12 +371,15 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	*len = bytes_written;
 
     amTrace("bytes written %d\n",*len);
-    {
-        amTrace("Writing MIDI output to file\n");
-        FILE* file = fopen("dmus.mid", "wb");
-		fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
-		fclose(file);
-        amTrace("Done.\n");
-    }
+
+     if(pOutMidName){
+        amTrace("Writing MIDI output to file: %s\n",pOutMidName);
+        FILE* file = fopen(pOutMidName, "wb");
+        fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
+        fclose(file);
+        amTrace("Written %d bytes\n",bytes_written);
+      }
+
+ amTrace("Done. OK\n");
  return 1;
 }

@@ -496,6 +496,4 @@ static INLINE void copy_poly(U8 channel, U8 numberOfPoly){
 	MIDIsendBuffer[MIDIbytesToSend++]=numberOfPoly;
 }
 
-
-
 #endif

@@ -31,14 +31,14 @@ then
    rm ../bin/timings.tos
 fi
 
-build_options="cross=y target=atarist debug=1 prefix=$tools_prefix ikbd_direct=yes"
+build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
 
 #clean all stuff
 scons $build_options -c
 
 #launch build
 echo "############################# Starting build ... "   
-scons $build_options --tree=prune
+scons $build_options
 
 if [ "$tools_prefix" != "" ]; 
 then 

@@ -17,15 +17,22 @@ extern const U8 *g_arMT32rhythm[];
 
 
 /* module default settings table */
-
-const U8 *getMT32InstrName(U8 ubInstrNb)
-{
-
+const U8 *getMT32InstrName(U8 ubInstrNb){
  return(g_arMT32instruments[ubInstrNb]);
 }
 
-const U8 *getMT32RhythmName(U8 ubNoteNb)
-{
-
+const U8 *getMT32RhythmName(U8 ubNoteNb){
  return(g_arMT32rhythm[ubNoteNb]);
+}
+
+U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end){
+U8 total = 0 ;
+U8 mask  = 0x7F ;
+
+while ( buf_start <= buf_end ){
+  total += *buf_start ;
+  buf_start++ ;
+}
+
+ return (0x80 - (total & mask)) & mask ;
 }

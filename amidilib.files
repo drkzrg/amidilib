@@ -75,3 +75,7 @@ src/tos/testReplay.s
 src/SConscript
 src/do.sh
 src/SConstruct
+src/common/midi/mparser.c
+include/mparser.h
+include/mformats.h
+include/mdevtype.h

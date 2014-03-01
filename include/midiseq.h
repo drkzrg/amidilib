@@ -134,7 +134,6 @@ typedef struct SysEx_t{
 } PACK sSysEx_t;
 
 
-
 /****************** event function prototypes */
 /* string table with all event names */
 

@@ -68,5 +68,7 @@ void  allPartsOff(void);
 
 /* GS native */
 
+// calculate Roland checksum for SysEX messages
+U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 
 #endif

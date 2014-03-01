@@ -11,6 +11,7 @@
 #define __CONFIG_H__
 
 #include "c_vars.h"
+#include "mdevtype.h"
 
 typedef struct _amidiConfig{
   U16 version;			//config version

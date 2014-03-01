@@ -1,3 +1,6 @@
+/**
+    sending midi events to external midi module
+*/
 
 /**  Copyright 2007-2012 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl

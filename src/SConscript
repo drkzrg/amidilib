@@ -67,7 +67,7 @@ if (target == "unix"):
 elif ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
     portable=0;
-    ST_CFLAGS='-std=c99 -m68030 -m68882 --ffast-math -fomit-frame-pointer'
+    ST_CFLAGS='-std=c99 -m68030 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
@@ -188,6 +188,7 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_32l.c","common/roland/tbl_stat.c"]
 midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"]
+midiparser_src = ["common/midi/mparser.c"]
 
 if int(portable==1): 
   timing_src = ["common/timing/miditim.c"]
@@ -209,9 +210,9 @@ lzo_src = ["common/lzo/minilzo.c"]
  
 # main library 
 if int(portable==1):
-  amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src 
+  amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src
 else:
-  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src + ["tos/midiReplay.s"]
+  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src + ["tos/midiReplay.s"]
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)

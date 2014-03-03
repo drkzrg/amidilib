@@ -1,2 +1,2 @@
-SConscript('SConscript', variant_dir='../bin', duplicate=0, exports={'MODE':'release'})
+SConscript('SConscript', variant_dir='../bin', duplicate=0, exports={'MODE':'debug'})
 

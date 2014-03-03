@@ -101,8 +101,8 @@ else:
 OUTPUT_DIR='../bin/'
 AMIDI_TEST_EXE='midiplay' + EXE_EXT_2
 YM2149_TEST_EXE='ym2149' + EXE_EXT_1
-MIDI_SEQ_TEST_EXE='midiseq' + EXE_EXT_1
-TIMINGS_TEST_EXE='timings' + EXE_EXT_1
+MIDI_SEQ_TEST_EXE='midiout' + EXE_EXT_1
+TIMINGS_TEST_EXE='midiseq' + EXE_EXT_1
 
 env["CC"] = CROSS_PREFIX + 'gcc'
 env["CXX"] = CROSS_PREFIX + 'g++'

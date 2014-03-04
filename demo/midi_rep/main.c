@@ -15,6 +15,9 @@
 #include "fmio.h"	//disc i/o
 #include "timing/miditim.h" 
 
+#ifdef MIDI_PARSER_TEST
+#include "list/list.h"
+#endif
 #ifndef PORTABLE
 #include "input/ikbd.h"
 #endif
@@ -235,7 +238,7 @@ void midiParserTest(sSequence_t *pSequence){
 	  
 	  //output data loaded in each track
   for (int i=0;i<pSequence->ubNumTracks;i++){
-    sTrack_t *p=pMidiTune->arTracks[i];
+    sTrack_t *p=pSequence->arTracks[i];
     
     if(p!=0){
 	amTrace((const U8*)"Track #[%d] \t",i+1);

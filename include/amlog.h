@@ -1,35 +1,26 @@
+#ifndef _DEBUG_H_
+#define _DEBUG_H_
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**
+    Copyright 2010-2013 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
-    This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#ifndef __AMLOG_H__
-#define __AMLOG_H__
-
-#include <stdarg.h>
-#include <unistd.h>
-
 #include "c_vars.h"
 
-/* small trick to get rid of logs/debug info in final build :D haxx0r! let the compiler do dirty work */
-#if DEBUG_BUILD
-#define amTrace am_log
+#if defined(DEBUG_SERIAL_OUTPUT)
+#define amTrace(...) (serialLog(__VA_ARGS__))
+void serialLog(const char *mes,...);
+#elif (defined(DEBUG) && !defined(DEBUG_SERIAL_OUTPUT))||defined(DEBUG_FILE_OUTPUT)
+#define amTrace(...) (logd(__VA_ARGS__))
+void logd(const char *mes,...);
 #else
-#define amTrace sizeof
+#define amTrace(...) ((void)0)
 #endif
 
-//inits logs
-void am_initLog();
-void am_deinitLog();
 
-/** Utility function sends text buffer to console and text log.
-*   @param mes - null terminated string. Accepts additional formatting variables like sprintf/printf.
-*/
-void am_log(const U8 *mes,...);
-
-
-
+void initDebug(const char *pFilename);
+void deinitDebug();
 
 #endif

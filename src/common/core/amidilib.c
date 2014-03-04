@@ -154,119 +154,117 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
             iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI0);
 
             if(iNumTracks!=1){
-	      return(-1);
-	    } /* invalid number of tracks, there can be only one! */
+                return(-1);
+            } /* invalid number of tracks, there can be only one! */
             else{
-		 /* init sequence table */
-		 for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+               /* init sequence table */
+                for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
 		 
-		   /* we will allocate needed track tables when appropriate */
-		  (*pSequence)->arTracks[iLoop]=NULL;
-		 }
+                /* we will allocate needed track tables when appropriate */
+                (*pSequence)->arTracks[iLoop]=NULL;
+            }
 
-                 /* prepare our structure */
-		 (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
+            /* prepare our structure */
+            (*pSequence)->ubNumTracks=iNumTracks;	/* one by default */
 		 
-		 /* OK! valid number of tracks */
-                 /* get time division for timing */
-                 iTimeDivision = am_getTimeDivision(pMidiPtr);
+            /* OK! valid number of tracks */
+            /* get time division for timing */
+            iTimeDivision = am_getTimeDivision(pMidiPtr);
 
-		 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-                 startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+            /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
+            startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 
-		 /* create one track list only */
-		  (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-		  amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
-		  /* Store time division for sequence, TODO: SMPTE handling */
+            /* create one track list only */
+            (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
+            /* Store time division for sequence, TODO: SMPTE handling */
 		  
-		  (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-		 
-		    
-		  /* init event list */
-		  (*pSequence)->arTracks[0]->pTrkEventList=0;
+            (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+		 		    
+            /* init event list */
+            (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  
 		   while (startPtr!=0){
-		  /* Pointer to midi data, 
-		     type of midi to preprocess, 
-		     number of tracks, 
-		     pointer to the structure in which track data will be dumped (or not).  
-		  */
-		   startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
-		   if(iError<0)return iError;
-                 }
+                /* Pointer to midi data,
+                 type of midi to preprocess,
+                 number of tracks,
+                 pointer to the structure in which track data will be dumped (or not).
+                */
+                startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
+                if(iError<0)return iError;
             }
+         }
          return(0);
         }
         break;
 
         case T_MIDI1:{
          /* handle MIDI type 1 */
-	 /* several tracks, one sequence */
-	 /* prepare our structure */
-	  iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI1);
+        /* several tracks, one sequence */
+        /* prepare our structure */
+        iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI1);
 	  
-	  /* init sequence table */
-	  for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
-	    /* we will allocate needed track tables when appropriate */
-	    (*pSequence)->arTracks[iLoop]=NULL;
-	  }
+        /* init sequence table */
+        for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+            /* we will allocate needed track tables when appropriate */
+            (*pSequence)->arTracks[iLoop]=NULL;
+        }
 	  
-	  iTimeDivision = am_getTimeDivision(pMidiPtr);
-          startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+        iTimeDivision = am_getTimeDivision(pMidiPtr);
+        startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
-	  /* Store time division for sequence, TODO: SMPTE handling */
-	  (*pSequence)->ubNumTracks=iNumTracks;
+        /* Store time division for sequence, TODO: SMPTE handling */
+        (*pSequence)->ubNumTracks=iNumTracks;
 	  
-	  /* create one track list only */
-	  for(int i=0;i<iNumTracks;i++){
-	  (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	  amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
-	   /* init event list */
-	   (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-	  }
+        /* create one track list only */
+        for(int i=0;i<iNumTracks;i++){
+            (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
+            /* init event list */
+            (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+        }
 	  
           while (startPtr!=0){
-	    startPtr=processMidiTrackData(startPtr,T_MIDI1, iNumTracks, pSequence,&iError);
-	    if(iError<0)return iError;
+            startPtr=processMidiTrackData(startPtr,T_MIDI1, iNumTracks, pSequence,&iError);
+            if(iError<0)return iError;
           }
-	  return(0);
+         return(0);
         }
         break;
 
         case T_MIDI2:{
-	  /* handle MIDI type 2 */
-	  /* several tracks not tied to each others tracks */
-	  /* init sequence table */
-	  for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
-	    /* we will allocate needed track tables when appropriate */
-	    (*pSequence)->arTracks[iLoop]=NULL;
-	  }
+            /* handle MIDI type 2 */
+            /* several tracks not tied to each others tracks */
+            /* init sequence table */
+            for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
+                /* we will allocate needed track tables when appropriate */
+                (*pSequence)->arTracks[iLoop]=NULL;
+        }
 	  
-	  iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
-	  iTimeDivision = am_getTimeDivision(pMidiPtr);
-	  startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+        iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
+        iTimeDivision = am_getTimeDivision(pMidiPtr);
+        startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		
-	  /* Store time division for sequence, TODO: SMPTE handling */
-	  (*pSequence)->ubNumTracks=iNumTracks;
+        /* Store time division for sequence, TODO: SMPTE handling */
+        (*pSequence)->ubNumTracks=iNumTracks;
 	  
-	  /* create one track list only */
-	  for(int i=0;i<iNumTracks;i++){
+        /* create one track list only */
+        for(int i=0;i<iNumTracks;i++){
 	    (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-	    amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
-	    /* init event list */
+        amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
+
+        /* init event list */
 	    (*pSequence)->arTracks[i]->pTrkEventList=0;
 	    (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 	  
 	  }
            
-           while (startPtr!=0){
-             startPtr=processMidiTrackData(startPtr,T_MIDI2,iNumTracks,pSequence,&iError);
-	     if(iError<0)return iError;
-           }
-           
+       while (startPtr!=0){
+         startPtr=processMidiTrackData(startPtr,T_MIDI2,iNumTracks,pSequence,&iError);
+         if(iError<0)return iError;
+        }
              return(0);
-            }
-        break;
+        }break;
 	case T_XMIDI:{
          /* handle XMIDI */
          iNumTracks=am_getNbOfTracks(pMidiPtr,T_XMIDI);
@@ -415,7 +413,7 @@ S16 am_init(){
     
 #ifdef DEBUG_BUILD
  // init logger
- am_initLog(outputFilename);
+ initDebug(outputFilename);
 #endif 
   
   loadConfig(configFilename);
@@ -536,7 +534,7 @@ void am_deinit(){
 #endif  
 
 #ifdef DEBUG_BUILD
-  am_deinitLog();
+  deinitDebug();
 #endif  
  /* end sequence */
 }
@@ -692,7 +690,6 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
 
 void am_dumpMidiBuffer(){
 #ifndef PORTABLE
-
   if(g_arMidiBuffer[0]!=0){
   amTrace((const U8*)"MIDI buffer dump:\n %s",g_arMidiBuffer);
  }

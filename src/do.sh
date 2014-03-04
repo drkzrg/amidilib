@@ -42,7 +42,7 @@ then
    rm ../bin/$MIDISEQ_BIN
 fi
 
-build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
+build_options="cross=y target=f030 debug=2 prefix=$tools_prefix ikbd_direct=yes"
 
 #clean all stuff
 scons $build_options -c

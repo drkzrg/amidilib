@@ -1,12 +1,15 @@
 
 #include "mparser.h"
 #include "timing/miditim.h"
-#include "list/list.h"
 #include "mformats.h"
 #include "config.h"
+#include "list/list.h"
 
 #include "string.h"
 
+#ifdef MIDI_PARSER_TEST
+#include "amidilib.h"
+#endif
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
 

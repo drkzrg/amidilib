@@ -113,7 +113,7 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
  return(-1);
 }
 
-S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
+S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
     S16 iNumTracks=0;
     S16 iError=0;
     U16 iTimeDivision=0;
@@ -281,15 +281,28 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
 	case T_MUS:{
-	  amTrace("Converting MUS to MIDI\n");
+
+      amTrace("Converting MUS to MIDI\n");
+
       U8 *pOut=0;
+      char tempName[128]={0};
       U32 len=0;
+
+      char *pTempPtr=0;
       amTrace("Processing converted data..\n");
 
-      // allocate 64kb working buffer for midi output
+        // allocate 64kb working buffer for midi output
       pOut=amMallocEx(64*1024,PREFER_TT);
 
-      Mus2Midi(pMidiPtr,(unsigned char *)pOut,"dmus.mid",(int *)&len);
+     //set midi output name
+     if(pFileName){
+         strncpy(tempName,pFileName,strlen(pFileName));
+         pTempPtr=strrchr(tempName,'.');
+
+         memcpy(pTempPtr+1,"mid",4);
+     }
+
+     Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,(int *)&len);
 
       amTrace("Processing midi data..\n");
         // the rest is like in MIDI type 0
@@ -298,6 +311,7 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
 
             if(iNumTracks!=1){
                 /* invalid number of tracks, there can be only one! */
+                amTrace("Invalid number of tracks\n");
                 return(-1);
             }else{
 
@@ -332,7 +346,6 @@ S16 am_handleMIDIfile(void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
           }
           // free up working buffer
           if(pOut) amFree((void **)&pOut);pOut=0;
-          amTrace((const U8*)"MUS processing ok.\n");
 
 	  return(0);
 	  

@@ -1,7 +1,7 @@
 #!/bin/bash
 # build helper script
 
-#    Copyright 2007-2013 Pawel Goralski
+#    Copyright 2007-2014 Pawel Goralski
 #    e-mail: pawel.goralski@nokturnal.pl
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
@@ -12,12 +12,13 @@ tools_prefix='/usr'
 install_dir='/home/saulot/Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 emu_dir='/home/saulot/Pulpit/HD/'
-stack_size=128k
+stack_size=16k
 
 # remote machine settings
 REMOTE_MACHINE='192.168.0.5'
 REMOTE_PATH='/c/amidilib/'
 
+# output binaries
 MIDIREP_BIN='midiplay.ttp'
 YM2149_TEST_BIN='ym2149.tos'
 MIDIOUT_BIN='midiout.tos'
@@ -31,7 +32,7 @@ then
 fi
 if [ -f ../bin/$YM2149_TEST_BIN ];
 then 
-   rm ../bin/YM2149_TEST_BIN
+   rm ../bin/$YM2149_TEST_BIN
 fi
 if [ -f ../bin/$MIDIOUT_BIN ];
 then 
@@ -42,7 +43,7 @@ then
    rm ../bin/$MIDISEQ_BIN
 fi
 
-build_options="cross=y target=f030 debug=2 prefix=$tools_prefix ikbd_direct=yes"
+build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
 
 #clean all stuff
 scons $build_options -c

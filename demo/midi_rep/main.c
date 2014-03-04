@@ -66,7 +66,7 @@ int main(int argc, char *argv[]){
 
       float time=0,delta=0;
       time = getTimeStamp();
-      iError=am_handleMIDIfile(pMidi, ulFileLenght,&pMidiTune);
+      iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();
       
       /* free up buffer with loaded midi file, we don't need it anymore */

@@ -2,7 +2,6 @@
 #include "memory/linalloc.h"
 
 S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType){
-  
   return 0;
 }
 

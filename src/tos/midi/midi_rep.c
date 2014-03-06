@@ -9,7 +9,7 @@
 #include "config.h"
 #include "timing/miditim.h"
 
-extern void midiSeqReplay(void);
+void midiSeqReplay(void);
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
@@ -20,7 +20,8 @@ extern U16 MIDIbufferReady; //flag indicating buffer ready for sending data
 
 volatile BOOL handleTempoChange;
 static BOOL bTempoChanged=FALSE;
-static sSequence_t *g_CurrentSequence;
+
+volatile sSequence_t *g_CurrentSequence;
 
 void initSeq(sSequence_t *seq){
  
@@ -30,7 +31,7 @@ void initSeq(sSequence_t *seq){
     g_CurrentSequence=0;
     g_CurrentSequence=seq;
 
-    for(int i=0;i<seq->ubNumTracks;i++){
+    for(int i=0;i<seq->ubNumTracks;++i){
      seq->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
      seq->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
      seq->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
@@ -41,7 +42,6 @@ void initSeq(sSequence_t *seq){
        
      seq->arTracks[i]->currentState.playState = getGlobalConfig()->playState;
      seq->arTracks[i]->currentState.playMode = getGlobalConfig()->playMode;
-   
     } 
   
     seq->timeElapsedFrac=0L;
@@ -212,7 +212,6 @@ void updateStep(){
 	     evntFuncPtr myFunc=NULL;
 #ifdef IKBD_MIDI_SEND_DIRECT
 	     //execute callback which copies data to midi buffer (_MIDIsendBuffer)
-	  
 	     myFunc=pEvent->eventBlock.copyEventCb.func;
 	     (*myFunc)((void *)pEvent->eventBlock.dataPtr);
 #else

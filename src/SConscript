@@ -200,7 +200,7 @@ else:
   input_src =  ["tos/ikbd.s"]
   discio_src = ["tos/discio/fmio.c"]
   timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
-  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c"]
+  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/midiReplay.s"]
   memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
@@ -212,7 +212,7 @@ lzo_src = ["common/lzo/minilzo.c"]
 if int(portable==1):
   amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src
 else:
-  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src + ["tos/midiReplay.s"]
+  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)

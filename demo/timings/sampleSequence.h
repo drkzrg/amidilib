@@ -36,8 +36,7 @@ typedef struct{
   sTrack tracks[3];	//one per ym channel
   ePlayState state;	//current state playing/paused/stopped 
   ePlayMode playMode;  //play in loop, play once etc..
-  
-} sCurrentSequenceState;
+}sCurrentSequenceState;
 
 //sample sequence data
 // output, test sequence for channel 1 

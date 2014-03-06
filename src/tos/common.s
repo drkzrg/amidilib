@@ -140,6 +140,7 @@ _redirectToSerial:
 	
 	
 	  BSS
+          align 4
 old_ssp:		ds.l	1
 update:			ds.l	1
 oldTB:			ds.l	1

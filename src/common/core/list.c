@@ -16,9 +16,7 @@
 #include "amlog.h"
 #include "list/list.h"
 
-#ifndef PORTABLE
 #include "timing/mfp.h"
-#endif
 
 #ifdef EVENT_LINEAR_BUFFER
 #include "memory/linalloc.h" 	/* custom memory allocator */

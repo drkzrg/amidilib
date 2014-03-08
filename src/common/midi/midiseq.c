@@ -13,14 +13,7 @@
 #include "midi_cmd.h"
 #include "midi_rep.h"
 
-extern volatile sSequence_t *g_CurrentSequence;
-
-#ifdef PORTABLE
-BOOL bTempoChanged;
-#else
 extern BOOL bTempoChanged;
-#endif
-
 
 /****************** event function prototypes */
 /* string table with all event names */
@@ -140,11 +133,6 @@ static void fHandleSignatureChange(const void *pEvent){
 #ifdef DEBUG_BUILD
   amTrace((const U8*)"Time Signature change nn: %d, dd: %d, cc: %d, bb %d.\r\n",pPtr->timeSignature.nn,pPtr->timeSignature.dd,pPtr->timeSignature.cc,pPtr->timeSignature.bb);
 #endif
- 
-  /*if(g_CurrentSequence!=0){
-    U8 activeTrack=g_CurrentSequence->ubActiveTrack;
-    g_CurrentSequence->arTracks[activeTrack]->currentState.timeSignature=pPtr->timeSignature;
-  }*/
   
 }
 

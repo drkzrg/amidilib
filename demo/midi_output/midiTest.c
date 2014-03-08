@@ -12,15 +12,10 @@
 #include "c_vars.h"
 #include "amidilib.h"
 #include "config.h"
+#include "roland.h"
 
-#ifndef PORTABLE
 #include "input/scancode.h"	// scancode definitions
 #include "input/ikbd.h"
-#endif
-
-extern const char *g_arMIDI2key[];	//midi note to musical tone table 
-extern const char *g_arCM32Linstruments[]; //MT32 instruments on 2-9 channel
-extern const char *g_arCM32Lrhythm[]; //MT32 rhytm part
 
 void printHelpScreen(){
   printf("===============================================\n");
@@ -59,8 +54,7 @@ void printHelpScreen(){
 }
 
 
-void changeCurrentInstrument(U8 channel,U8 bank,U8 pn){
-  
+void changeCurrentInstrument(U8 channel,U8 bank,U8 pn){  
     
   switch(getGlobalConfig()->connectedDeviceType){
     case DT_LA_SOUND_SOURCE:     
@@ -114,26 +108,21 @@ int main(void) {
   U8 currentPN=1;
   U8 currentBankSelect=0;
 
-#ifndef PORTABLE  
   turnOffKeyclick();
-#endif  
 
   /* init library */
   U32 iError=am_init();
  
   if(iError!=1) return -1;
   
-#ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
     amMidiSendIKBD();	
 #endif
-#endif   
   
   currentChannel=getGlobalConfig()->midiChannel;  
     
   printHelpScreen();
 
-#ifndef PORTABLE
   amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
@@ -431,13 +420,12 @@ int main(void) {
 				  // send chosen program number
 				  case SC_SQ_LEFT_BRACE:
 				  case SC_SQ_RIGHT_BRACE:{
-				    
-				    
-				     switch(getGlobalConfig()->connectedDeviceType){
+
+                      switch(getGlobalConfig()->connectedDeviceType){
 				      case DT_LA_SOUND_SOURCE:     
 				      case DT_LA_SOUND_SOURCE_EXT:{
-					printf("ch: [%d] [%s] (#PC %d)\n",currentChannel,g_arCM32Linstruments[currentPN], currentPN);
-					program_change(currentChannel, currentPN);
+                        printf("ch: [%d] [%s] (#PC %d)\n",currentChannel,getCM32LInstrName(currentPN), currentPN);
+                        program_change(currentChannel, currentPN);
 				      }break;
     
 				      case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
@@ -445,7 +433,7 @@ int main(void) {
 				      case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
 				      case DT_XG_GM_YAMAHA:
 				      default:{
-					printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, g_arCM32Linstruments[currentPN], currentPN);
+                    printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, getCM32LInstrName(currentPN), currentPN);
 				    
 					control_change(C_BANK_SELECT, currentChannel,currentBankSelect,0x00);
 					program_change(currentChannel, currentPN);
@@ -473,9 +461,7 @@ int main(void) {
 
       /* Uninstall our asm handler */
 	Supexec(IkbdUninstall);
-#else
-#warning Mainloop not implemented!!! TODO!!! or not..
-#endif
+
 /* clean up, free internal library buffers etc..*/
 am_deinit();
  return 0;

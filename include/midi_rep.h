@@ -10,16 +10,6 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
-// main AMIDILIB sequence replay interface
-#ifdef PORTABLE
-/** installs sequence replay routine (portable version) */
-void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
-
-/** deinstalls sequence replay routine (portable version) */
-void deinstallReplayRout(void);
-void updateMidiFunc(void);
-#else
-
 #define DIVIDER 100000
 
 /** installs sequence replay routine (hooked to timer B atm) */
@@ -28,8 +18,6 @@ extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRout(void);
 extern void updateMidiFunc(void);
-
-#endif
 
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
@@ -48,13 +36,6 @@ void playSeq(void);
 /** setups sequence for replay. Sequence is stopped by default */
 void initSeq(sSequence_t *seq);
 
-//### REMOVE
-/** setups sequence for replay. Sequence is stopped by default */
-void initSeqManual(sSequence_t *seq);
-void updateStep2();
-
-//###
-
 /** mutes selected track or first one if there is only one */
 void muteTrack(U16 trackNb,BOOL bMute);
 
@@ -67,7 +48,7 @@ void toggleReplayMode(void);
  * @return pointer to currently active sequence 
  */
  
-void getCurrentSeq (sSequence_t **pPtr);
+sSequence_t **getCurrentSeq();
 
 
 #endif

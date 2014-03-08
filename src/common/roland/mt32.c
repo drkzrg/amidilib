@@ -17,11 +17,11 @@ extern const U8 *g_arMT32rhythm[];
 
 
 /* module default settings table */
-const U8 *getMT32InstrName(U8 ubInstrNb){
+const U8 *getMT32InstrName(const U8 ubInstrNb){
  return(g_arMT32instruments[ubInstrNb]);
 }
 
-const U8 *getMT32RhythmName(U8 ubNoteNb){
+const U8 *getMT32RhythmName(const U8 ubNoteNb){
  return(g_arMT32rhythm[ubNoteNb]);
 }
 

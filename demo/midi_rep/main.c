@@ -18,9 +18,8 @@
 #ifdef MIDI_PARSER_TEST
 #include "list/list.h"
 #endif
-#ifndef PORTABLE
+
 #include "input/ikbd.h"
-#endif
 
 // display info screen
 void printInfoScreen(); 
@@ -115,7 +114,6 @@ void mainLoop(sSequence_t *pSequence){
 	  //install replay rout 
 	  initSeq(pSequence);
 	  
-#ifndef PORTABLE
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 	   
@@ -176,11 +174,6 @@ void mainLoop(sSequence_t *pSequence){
 	  }
 	/* Uninstall our ikbd handler */
 	Supexec(IkbdUninstall);
-	
-#else
-#warning Portable main loop unimplemented
-#endif	
-	
 }
 
 

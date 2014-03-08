@@ -8,6 +8,8 @@
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 
+#include "memory/memory.h"
+
 #include "fmio.h"
 
 S16 g_lastGDOSerror=0;

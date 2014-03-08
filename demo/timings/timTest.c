@@ -20,15 +20,6 @@
 
 #define TEMPO_STEP 10000UL
 
-#ifdef PORTABLE
-volatile BOOL midiOutputEnabled;
-volatile BOOL ymOutputEnabled;
-volatile BOOL handleTempoChange;
-
-void turnOffKeyclick(void){}
-void customSeqReplay(void){};
-#else
-
 #include <osbind.h>
 #include "input/ikbd.h"
 #include "timing/mfp.h"
@@ -40,7 +31,6 @@ extern void amMidiSendIKBD();
 volatile BOOL handleTempoChange;
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
-#endif
 
 
 // functions
@@ -70,19 +60,19 @@ int main(void){
   //set up ym2149 sound
   /////////////////////////////////////
   ch[CH_A].amp=16;
-  ch[CH_A].oscFreq=envelopeArray[0];
+  ch[CH_A].oscFreq=getEnvelopeId(0);
   ch[CH_A].oscStepSize=15;  
   ch[CH_A].toneEnable=1;
   ch[CH_A].noiseEnable=0;
   
   ch[CH_B].amp=16;
-  ch[CH_B].oscFreq=envelopeArray[0];
+  ch[CH_B].oscFreq=getEnvelopeId(0);
   ch[CH_B].oscStepSize=8;
   ch[CH_B].toneEnable=1;
   ch[CH_B].noiseEnable=0;
   
   ch[CH_C].amp=16;
-  ch[CH_C].oscFreq=envelopeArray[0];
+  ch[CH_C].oscFreq=getEnvelopeId(0);
   ch[CH_C].oscStepSize=6;
   ch[CH_C].toneEnable=1;
   ch[CH_C].noiseEnable=0;
@@ -98,9 +88,7 @@ int main(void){
 
   //prepare sequence
   initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
- 
   
-#ifndef PORTABLE
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
 
@@ -162,9 +150,7 @@ int main(void){
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);
-#else  
-#warning Mainloop not implemented!! TODO!  
-#endif
+
   /* clean up, free internal library buffers etc..*/
   am_deinit();
    
@@ -325,9 +311,6 @@ void INLINE printHelpScreen(){
   printf("[Esc] - quit\n");
   printf("(c) Nokturnal 2013\n");
   printf("================================================\n");
-  
-  
-  
 }
 
 // plays sample sequence 
@@ -366,14 +349,10 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
       g_CurrentState.playMode=S_PLAY_LOOP; 
     }
   
-#ifndef PORTABLE
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
   //install replay routine 
   installReplayRout(mode, data, replayRout);
-#else
-#warning Not implemented!  
-#endif
 
   return 0;
 }

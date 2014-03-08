@@ -23,19 +23,13 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type);
  * @return number of tracks in loaded MIDI file, -1 if error occured
  */
 
-U16 am_getTimeDivision (void *pMidiPtr);
+U16 am_getTimeDivision (const void *pMidiPtr);
 
 /**
 * Reads Variable lenght value used in MIDI files. Returns value in Variable lenght format
 * @param none
 **/
 extern U32 am_readVarLen();
-
-/** Calculates checksum of Roland SysEx messages
-*	@param buf_start pointer to the start of SysEx message buffer
-*	@param buf_end pointer to an end of SysEx message buffer
-*	@return calculated checksum */
-U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 
 /**
  * Gets MIDI file info type(0,1,2), number of tracks, track lenghts..

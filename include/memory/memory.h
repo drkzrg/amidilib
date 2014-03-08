@@ -12,24 +12,10 @@
 
 #include <alloca.h>
 
-#ifdef PORTABLE
-/* memory allocation preference */
-// compatible with Mxalloc
-typedef enum {
-  ST_RAM=0,
-  TT_RAM=0,
-  PREFER_ST=0,
-  PREFER_TT=0,
-  PREFER_DSP = 0,	 
-  PREFER_SUPERVIDEL = 0, 
-  PREFER_RADEON = 0	 
-} eMemoryFlag;
-
-#else
 #include <mint/osbind.h>
 #include <mint/ostruct.h>
+
 /* memory allocation preference */
-// compatible with Mxalloc
 
 typedef enum{
   ST_RAM = MX_STRAM,
@@ -40,8 +26,6 @@ typedef enum{
   PREFER_SUPERVIDEL = PREFER_TT+2, //f030 only, not used atm
   PREFER_RADEON = PREFER_TT+3	   //f030 only, not used atm
 } eMemoryFlag;
-
-#endif
 
 void *amMallocEx (tMEMSIZE amount, U16 flag);
 void *amMalloc (tMEMSIZE amount);

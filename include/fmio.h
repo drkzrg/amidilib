@@ -9,9 +9,7 @@
 #define __FMIO_H__
 
 #include "c_vars.h"
-#include "memory/memory.h"
 
-#ifndef PORTABLE
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */
 #define XB_DEV_KBD 1    /* Keyboard port */
@@ -66,9 +64,6 @@
  * @return pointer to const char * array with error description
  */
 const U8 *getLastGemdosError(void);
-
-#endif
-
 
 /**
  * loads file to specific type of memory(ST/TT RAM).

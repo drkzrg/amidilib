@@ -8,7 +8,6 @@
 #ifndef __MFP_H__
 #define __MFP_H__
 
-#ifndef PORTABLE
 #include "c_vars.h"
 
 #define MFP_STOP	0b00000000  /* Timer stop */
@@ -38,6 +37,5 @@ void getMFPTimerSettings(U32 freq,U8 *mode,U8 *data);
 extern void installMIDIreplay(U8 mode,U8 data);
 extern void deinstallMIDIreplay(void);
 
-#endif
 
 #endif

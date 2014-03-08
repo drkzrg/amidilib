@@ -15,14 +15,12 @@ where name of 'target' can be: \n \
  'f030' - for Atari Falcon030/TT build\n \
  'atarist' - for Atari ST build \n \
  'ct60' - for Atari Falcon CT60/63\n \
- 'unix' - for platform independent version (dummy)\n \
  'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
-portable = ARGUMENTS.get('portable', 0)
 cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
@@ -57,16 +55,8 @@ LIB_POSTFIX=''
 
 print "Cross tools path: " + prefix
 
-if (target == "unix"):
-    print "Building Generic/Unix target..."
-    portable=1;
-    ST_CFLAGS='-std=c99 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -lm'
-    ST_VASM_FLAGS = ''
-    ST_CCFLAGS =''
-elif ((target == "f030") or (target == "ataritt")):
+if ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
-    portable=0;
     ST_CFLAGS='-std=c99 -m68030 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
@@ -76,7 +66,6 @@ elif ((target == "f030") or (target == "ataritt")):
     LIB_POSTFIX='030'
 elif (target == "atarist"):
     print "Building Atari ST/Ste target..."
-    portable=0;  
     ST_CFLAGS='-std=c99 -m68000 -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
@@ -86,7 +75,6 @@ elif (target == "atarist"):
     LIB_POSTFIX='000'
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target..."
-    portable=0;
     ST_CFLAGS='-std=c99 -m68060 --ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
@@ -106,30 +94,25 @@ TIMINGS_TEST_EXE='midiseq' + EXE_EXT_1
 
 env["CC"] = CROSS_PREFIX + 'gcc'
 env["CXX"] = CROSS_PREFIX + 'g++'
-if(portable==0):
-  env["AS"] = 'vasmm68k_mot'
+env["AS"] = 'vasmm68k_mot'
 env['AR'] = CROSS_PREFIX + 'ar'
 env['RANLIB'] = CROSS_PREFIX + 'ranlib'
 env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
 env['STRIP'] = CROSS_PREFIX + 'strip -s'
 env['STACK'] = CROSS_PREFIX + 'stack'
   
-if(portable==1):  
-  env["CPPPATH"] = ["../","../include","../include/lzo","../include/ym2149","../include/input"]
-  env["LIBPATH"] = ['../bin/']
-else:
-  include_path=''
-  lib_path=''
+include_path=''
+lib_path=''
   
-  if(CROSS==1):
-	include_path = prefix + "/m68k-atari-mint/include"
-	lib_path = prefix + "/m68k-atari-mint/lib"
-  else:
-	include_path = prefix + "/include"
-	lib_path = prefix + "/lib"
+if(CROSS==1):
+    include_path = prefix + "/m68k-atari-mint/include"
+    lib_path = prefix + "/m68k-atari-mint/lib"
+else:
+    include_path = prefix + "/include"
+    lib_path = prefix + "/lib"
 	
-  env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
-  env["LIBPATH"] = [lib_path,'../bin/']
+env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
+env["LIBPATH"] = [lib_path,'../bin/']
   
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
@@ -140,10 +123,9 @@ env['VASM'] = 'vasmm68k_mot'
 # DEBUG_BUILD - enables debug build
 # DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
 # DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
+# DEBUG_SERIAL_OUTPUT debug enables output to serial port (works only if DEBUG_BUILD is defined)
 # DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # FORCE_MALLOC forces use of libc malloc() for memory allocation, not native functions
-# TIME_CHECK_PORTABLE if set time measuring is based on stdlib functions
-# PORTABLE build portable,platform independent version 
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
@@ -155,11 +137,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_SERIAL_OUTPUT  -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_SERIAL_OUTPUT -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER -DSTRUCT_PACK'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_SERIAL_OUTPUT -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DUSE_INLINE -DDEBUG_SERIAL_OUTPUT -DEVENT_LINEAR_BUFFER -DSTRUCT_PACK'
   
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS  
@@ -167,14 +149,11 @@ else:
     print "Release build... Code optimisation is turned on."
     ST_CFLAGS= ST_CFLAGS + '-DEVENT_LINEAR_BUFFER'   
     
-if (int(portable)):
-  ST_CFLAGS=ST_CFLAGS +' -DPORTABLE -DTIME_CHECK_PORTABLE'
-else:
-  if(ikbd_direct=="yes"):
+if(ikbd_direct=="yes"):
     print "Sending data directly via IKBD ENABLED"
     ST_CFLAGS=ST_CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
     ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
-  elif(((ikbd_direct=='') or (ikbd_direct=='no') or (ikbd_direct=='n') or (ikbd_direct == None))):  
+elif(((ikbd_direct=='') or (ikbd_direct=='no') or (ikbd_direct=='n') or (ikbd_direct == None))):
     print "Sending data directly via IKBD DISABLED"
     ST_CFLAGS=ST_CFLAGS +' '
     ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
@@ -190,18 +169,12 @@ roland_src = ["common/roland/mt32.c","common/roland/cm_500.c","common/roland/cm_
 midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"]
 midiparser_src = ["common/midi/mparser.c"]
 
-if int(portable==1): 
-  timing_src = ["common/timing/miditim.c"]
-  discio_src = ["portable/discio/fmio.c"]
-  midi_src = ["portable/midi/midi_rep.c","common/midi/midiseq.c"]
-  memory_src = ["portable/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
-else: 
-  m68kasm_common_src = ["tos/common.s"]
-  input_src =  ["tos/ikbd.s"]
-  discio_src = ["tos/discio/fmio.c"]
-  timing_src = ["tos/timing/mfp.c","common/timing/miditim.c"]
-  midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/midiReplay.s"]
-  memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+m68kasm_common_src=["tos/common.s"]
+input_src =  ["tos/ikbd.s"]
+discio_src = ["tos/discio/fmio.c"]
+timing_src = ["tos/timing/mfp.c","common/timing/miditim.c","tos/common.s"]
+midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","tos/midiReplay.s"]
+memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
@@ -209,38 +182,24 @@ rand_src = ["common/twisterm.c"]
 lzo_src = ["common/lzo/minilzo.c"]
  
 # main library 
-if int(portable==1):
-  amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src
-else:
-  amidilib_src = core_src + discio_src + memory_src  + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + rand_src + lzo_src + m68kasm_common_src
+amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src # + rand_src + lzo_src
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
 
 #################### test programs entry points
 amidi_test_src = ["../demo/midi_rep/main.c"] 
-midiOut_test_src = ["../demo/midi_output/midiTest.c"] 
-if int(portable==1):
-  timings_test_src = ["../demo/timings/timTest.c"] 
-else:  
-  timings_test_src = ["../demo/timings/timTest.c","tos/testReplay.s"] 
-  
-ym2149_test_src = ["../demo/ymOutput/ymTest.c"] 
+midiOut_test_src = ["../demo/midi_output/midiTest.c"]
+timings_test_src = ["../demo/timings/timTest.c","tos/testReplay.s"]
+ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
   
 # build test programs and link them with amidilib
-if(portable==1):
-  env.Program(AMIDI_TEST_EXE, [amidi_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(TIMINGS_TEST_EXE, [timings_test_src+ env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-else:
-  env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-  env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 
-  
-# TODO if release strip symbols, pack with executable packer 
+# TODO if release strip symbols, pack with executable packer
 if(debug=='none' or (int(debug)==0)):
     print "Stripping symbols"
     print "Packing executable"

@@ -8,6 +8,7 @@
 
 #general
 tools_prefix='/usr'
+base_dir='/home/saulot/'
 cyg_tools_prefix='/opt/m68k-atari-tools' #not used atm
 copy_to_shared_dir=0
 
@@ -15,9 +16,9 @@ copy_to_shared_dir=0
 # if copy_to_emu_dir=1 copy binaries to emulator directory
 copy_to_emu_dir=1
 run_emu=0
-install_dir='~/Pulpit/HD/AMIDIDEV/'
+install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
-emu_dir='~/Pulpit/HD/'
+emu_dir=$base_dir'Pulpit/HD/'
 stack_size=16k
 
 # output binaries
@@ -34,8 +35,6 @@ remote_exec=$MIDIOUT_BIN
 remote_parm=''
 REMOTE_MACHINE='192.168.0.5'
 REMOTE_PATH='/c/amidilib/'
-
-
 
 # delete binaries if they exist
 echo "############################# Cleaning build .. "

@@ -8,15 +8,10 @@
 #include <ctype.h>
 
 #include "c_vars.h"
+#include "input/ikbd.h"
 #include "ym2149/ym2149.h"
 
-
-#ifdef PORTABLE
-void turnOffKeyclick(void){}
-#else
 #include <osbind.h>
-#include "input/ikbd.h"
-#endif
 
 void printHelpScreen(){
   printf("===============================================\n");
@@ -69,16 +64,13 @@ int main(void) {
   ymRegisters[CH_C].toneEnable=1;
   
   U8 noteBase=noteBaseArray[currentBaseIdx];
-  U8 currentEnvelope=envelopeArray[currentEnvIdx];
+  U8 currentEnvelope=getEnvelopeId(currentEnvIdx);
   
   while(bQuitFlag!=TRUE){
     
-#ifdef PORTABLE
-    input=getchar();
-#else
       input=(U16)Crawcin();
-#endif
-    if(input!=0){
+
+      if(input!=0){
     
       switch(toupper((U8)input)){
     

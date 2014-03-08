@@ -1,9 +1,7 @@
 
 
-#ifndef PORTABLE
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
-#endif
 
 #include "timing/miditim.h"
 #include "amlog.h"

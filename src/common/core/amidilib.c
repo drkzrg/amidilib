@@ -11,10 +11,7 @@
 #include "list/list.h"
 #include "mformats.h"
 
-#ifndef PORTABLE
 #include <mint/ostruct.h>
-//#include "timing/mfp.h"
-#endif
 
 #include "fmio.h"
 
@@ -411,13 +408,11 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
 return -1;
 }
 
-#ifndef PORTABLE
 static U8 g_arMidiBuffer[MIDI_BUFFER_SIZE];
 
 /* Midi buffers system info */
 static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
-#endif
 
 extern BOOL CON_LOG;
 extern FILE *ofp;
@@ -439,8 +434,8 @@ S16 am_init(){
     return -1;
   }
   
-#ifndef PORTABLE 
- /* clear our new buffer */
+
+  /* clear our new buffer */
  U32 usp=0L;
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
 
@@ -463,14 +458,10 @@ S16 am_init(){
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
  (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
  SuperToUser(usp);
-#endif
 
-  
-#ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
    MIDIbytesToSend=0;
 #endif
-#endif   
   
    
 #ifdef EVENT_LINEAR_BUFFER
@@ -499,11 +490,9 @@ S16 am_init(){
     
    }
 
-#ifndef PORTABLE 
 #ifdef IKBD_MIDI_SEND_DIRECT
     amMidiSendIKBD();	
 #endif
-#endif   
 
 #ifdef EVENT_LINEAR_BUFFER    
     if(initEventBuffer()<0){
@@ -533,7 +522,6 @@ void am_deinit(){
     destroyEventBuffer();
 #endif  
   
-#ifndef PORTABLE
   U32 usp=Super(0L);
  
   /* restore standard MIDI buffer */
@@ -544,7 +532,6 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
   SuperToUser(usp);
-#endif  
 
 #ifdef DEBUG_BUILD
   deinitDebug();
@@ -702,11 +689,9 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
 }
 
 void am_dumpMidiBuffer(){
-#ifndef PORTABLE
   if(g_arMidiBuffer[0]!=0){
   amTrace((const U8*)"MIDI buffer dump:\n %s",g_arMidiBuffer);
  }
-#endif
 }
 
 

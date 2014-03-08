@@ -29,21 +29,15 @@ static const U8 g_arMT32toGM[]={
 
 static const U8 g_arMT32emptyBank[]={
 0x00
-
 };
 
 
 /* module default settings table */
-
-const U8 *getCM32LInstrName(U8 ubInstrNb)
-{
-
+const U8 *getCM32LInstrName(U8 ubInstrNb){
  return(g_arCM32Linstruments[ubInstrNb]);
 }
 
-const U8 *getCM32LRhythmName(U8 ubNoteNb)
-{
-
+const U8 *getCM32LRhythmName(U8 ubNoteNb){
  return(g_arCM32Lrhythm[ubNoteNb]);
 }
 

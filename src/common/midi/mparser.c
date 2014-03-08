@@ -13,12 +13,11 @@
 /* static table with MIDI controller names */
 extern const U8 *g_arMIDIcontrollers[];
 
-
 /* for saving last running status */
 static U8 g_runningStatus;
 
 //////////////////////////////////////////////////////
-U16 am_getTimeDivision (void *pMidiPtr){
+U16 am_getTimeDivision (const void *pMidiPtr){
 sMThd *pMidiInfo=(sMThd *)pMidiPtr;
 
 /* check midi header */

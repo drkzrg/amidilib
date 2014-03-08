@@ -8,7 +8,6 @@
 */
 #include <c_vars.h>
 
-
 // mus header
 typedef struct tagMUSheader_t {
   U32    ID;          	// identifier "MUS" 0x1A, 0x4D5553

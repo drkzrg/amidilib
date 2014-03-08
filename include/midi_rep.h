@@ -44,11 +44,11 @@ void muteTrack(U16 trackNb,BOOL bMute);
  * (replay restarts from beginning) */
 void toggleReplayMode(void);
 
-/** Returns currently active sequence. 
- * @return pointer to currently active sequence 
+/** Returns currently active sequence.
+ * @return pointer to currently active sequence
  */
- 
-sSequence_t **getCurrentSeq();
+
+void getCurrentSeq(sSequence_t **);
 
 
 #endif

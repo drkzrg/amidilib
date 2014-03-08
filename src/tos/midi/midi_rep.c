@@ -22,8 +22,8 @@ static BOOL bTempoChanged=FALSE;
 
 static sSequence_t *g_CurrentSequence;
 
-sSequence_t **getCurrentSeq(){
-  return &g_CurrentSequence;
+void getCurrentSeq(sSequence_t **pSeq){
+  *pSeq=g_CurrentSequence;
 }
 
 void initSeq(sSequence_t *seq){

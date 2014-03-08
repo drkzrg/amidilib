@@ -9,7 +9,6 @@
 #general
 tools_prefix='/usr'
 base_dir='/home/saulot/'
-cyg_tools_prefix='/opt/m68k-atari-tools' #not used atm
 copy_to_shared_dir=0
 
 # hatari
@@ -130,8 +129,6 @@ then
         cp -v ../bin/$MIDISEQ_BIN $install_dir
    fi
 fi
-
-
 
 #copy binaries to shared dir
 if [ $copy_to_shared_dir -eq 1 ]

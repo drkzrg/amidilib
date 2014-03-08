@@ -199,7 +199,8 @@ void printInfoScreen(){
 } 
 
 void displayTuneInfo(){
-  sSequence_t *pPtr=0;
+
+  sSequence_t *pPtr;
   getCurrentSeq(&pPtr);
   
   U32 td=pPtr->arTracks[0]->currentState.currentPPQN;

@@ -6,14 +6,9 @@
 #include "timing/miditim.h"
 #include "amlog.h"
 
-#ifdef TIME_CHECK_PORTABLE	
- clock_t begin;
- clock_t end;
-#else
- unsigned long begin;
- unsigned long end;
- long usp;
-#endif
+unsigned long begin;
+unsigned long end;
+long usp;
 
 
 /* function for calculating tempo */
@@ -85,16 +80,13 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision){
 
 
 float getTimeStamp(){
-#ifdef TIME_CHECK_PORTABLE	 
-	begin=clock();
-#else
-	 // get Atari native system 200hz counter
+
+// get Atari native system 200hz counter
 	 usp=Super(0);
 	 begin=*((long *)0x4ba);
 	 SuperToUser(usp);
 	
-#endif	 
-	  return (float)begin;
+ return (float)begin;
 }
 
 float getTimeDelta(){

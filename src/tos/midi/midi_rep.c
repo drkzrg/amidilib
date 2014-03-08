@@ -54,7 +54,6 @@ void initSeq(sSequence_t *seq){
     
     seq->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
  
-#ifndef PORTABLE
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
     #ifdef DEBUG_BUILD
@@ -64,8 +63,7 @@ void initSeq(sSequence_t *seq){
     
     //install replay routine 
     installReplayRout(mode, data, midiSeqReplay);
-#endif    
-  }
+}
   
  return;
 }

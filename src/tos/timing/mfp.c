@@ -2,7 +2,6 @@
 
 #include "timing/mfp.h"
 
-#ifndef PORTABLE
 /* calculates settings for MFP timers for given frequency of tick */
 static const U8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
 
@@ -94,5 +93,3 @@ if( freq<96&&freq>=48) {
  }
 return;
 }
-
-#endif

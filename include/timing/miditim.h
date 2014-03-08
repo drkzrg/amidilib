@@ -3,10 +3,6 @@
 
 #include "c_vars.h"
 
-#ifdef TIME_CHECK_PORTABLE
-#include <time.h>
-#endif
-
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)
 *   PPU=QPM * PPQ *(1/UPS)*(1 minute /60 seconds)
@@ -34,13 +30,6 @@ float am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups);
 U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 
 /******************** time measuring functions */
-#ifdef TIME_CHECK_PORTABLE
-/** utility for measuring function execution time (end-begin timestamp in ms) 
-*   @param end - end timestamp
-*   @param begin - begin timestamp
-*/
-double am_diffclock(clock_t end, clock_t begin);
-#endif
 
 /** get current time signature  
 * @return returns current time signature in ms

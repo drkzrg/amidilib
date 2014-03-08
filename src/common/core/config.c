@@ -129,11 +129,7 @@ void setDefaultConfig(){
   configuration.playState = DEFAULT_PLAY_STATE;				//default play state: STOPPED or playing
   configuration.eventPoolSize=DEFAULT_EVENT_POOL_SIZE;
   configuration.eventDataAllocatorSize=DEFAULT_EVENT_ALLOC_SIZE;
-  
-  #ifndef PORTABLE
-  configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE; //it's atari specific
-  #endif
-  
+  configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
   configuration.midiConnectionTimeOut=DEFAULT_MIDI_CONNECTION_TIMEOUT;	//5s by default
   configuration.midiSilenceThreshold=DEFAULT_MIDI_SILENCE_THRESHOLD;	
   configuration.handshakeModeEnabled=DEFAULT_HANDSHAKEMODE_ENABLED;
@@ -153,11 +149,7 @@ void setGlobalConfig(tAmidiConfig *newConfig){
   configuration.playState=newConfig->playState;		
   configuration.eventPoolSize=newConfig->eventPoolSize;
   configuration.eventDataAllocatorSize=newConfig->eventDataAllocatorSize;
-  
-  #ifndef PORTABLE
-  configuration.midiBufferSize=newConfig->midiBufferSize; 
-  #endif
-  
+  configuration.midiBufferSize=newConfig->midiBufferSize;
   configuration.midiConnectionTimeOut=newConfig->midiConnectionTimeOut;
   configuration.midiSilenceThreshold=newConfig->midiSilenceThreshold;
   configuration.handshakeModeEnabled=newConfig->handshakeModeEnabled;
@@ -234,13 +226,11 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
      configuration.midiSilenceThreshold=DEFAULT_MIDI_SILENCE_THRESHOLD;
   }
   
-  #ifndef PORTABLE
      iError=getIntVal(midiBufferSizeTag,pData,bufferLenght,&configuration.midiBufferSize);
       if(iError<0){
-	configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
+        configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
       }
-  #endif
-  
+
   iError=getBoolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled); 
   if(iError<0){
     configuration.handshakeModeEnabled=DEFAULT_HANDSHAKEMODE_ENABLED;

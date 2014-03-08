@@ -23,10 +23,6 @@
 #include "roland.h"
 #include "config.h"
 
-#ifdef TIME_CHECK_PORTABLE
-#include <time.h>
-#endif
-
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
 #ifdef DEBUG_BUILD
@@ -36,14 +32,9 @@ static const U8 outputFilename[] = "amidi.log";
 //default configuration filename
 static const U8 configFilename[] = "amidi.cfg";
 
-#ifdef TIME_CHECK_PORTABLE	
- clock_t begin;
- clock_t end;
-#else
- unsigned long begin;
- unsigned long end;
- long usp;
-#endif
+unsigned long begin;
+unsigned long end;
+long usp;
 
 /* */ 
 static const U8 *g_arMidiDeviceTypeName[]={
@@ -604,14 +595,6 @@ U16 iCounter;
   all_notes_off(iCounter);
  }
 }        
-#ifdef TIME_CHECK_PORTABLE	
-/* utility for measuring function time execution in ms */
-double am_diffclock(clock_t end,clock_t begin){
- double diffticks=end-begin;
- double diffms=(diffticks)/(CLOCKS_PER_SEC/1000.0f);
-return diffms;
-}
-#endif
 
 const U8 *am_getMIDInoteName(U8 ubNoteNb){
 if((ubNoteNb>=0&&ubNoteNb<=127)) /* 0-127 range check */
@@ -627,7 +610,7 @@ const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
       return(g_arCM32Lrhythm[noteNumber]);
     }
     else{
-	return(g_arMIDI2key[noteNumber]);
+        return(g_arMIDI2key[noteNumber]);
     }
 }else 
   return NULL;

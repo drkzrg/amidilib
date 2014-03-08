@@ -19,43 +19,19 @@ static U32 g_memDealloc=0;
  * @return 0L - if no memory available, 0L< otherwise
  */
 U32 getFreeMem(eMemoryFlag memFlag){
-void *pMem=0;
-#ifdef PORTABLE
-  //TODO:
-   pMem=(void *)~0L;
-#else
+  void *pMem=0;
   pMem=(void *)Mxalloc( -1L, memFlag);
-#endif  
-    return((U32)pMem);
+  return((U32)pMem);
 }
 
 
 
 void *amMemMove (void *pDest,void *pSrc,tMEMSIZE iSize){
-#ifdef PORTABLE
-  return memmove(pDest,pSrc,iSize);
-#else
  return memmove(pDest,pSrc,iSize);
-#endif
 }
 
 
-   void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
-#ifdef PORTABLE
-  U8 *pbDest=(U8 *)pDest;
-  U8 *pbSrc=(U8 *)pSrc;
- 
-  if( (pbSrc<pbDest && (pbSrc + iSize)>pbDest ) || (pbDest<pbSrc && (pbDest +iSize) >pbSrc)){
- 
-     #ifdef DEBUG_BUILD
-      amTrace((const U8 *)"\tamMemCpy() overlaps. Using amMemMove()\n");
-     #endif
- 
-    return amMemMove(pDest,pSrc,iSize);
-  }
-  
-  return memcpy(pDest,pSrc,iSize);
-#else
+void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
   
@@ -67,17 +43,12 @@ void *amMemMove (void *pDest,void *pSrc,tMEMSIZE iSize){
   }
   
   return memcpy(pDest,pSrc,iSize);
-#endif
 }
 
 void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
-  void *pPtr=0;
+void *pPtr=0;
   
-#ifdef PORTABLE
-  pPtr = memset(pSrc,iCharacter,iNum);
-#else
   pPtr= memset(pSrc,iCharacter,iNum);
-#endif
   
   #ifdef DEBUG_MEM
     if(pPtr!=pSrc) amTrace((const U8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
@@ -90,25 +61,17 @@ void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
 }
 
 int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum){
-#ifdef PORTABLE
   return memcmp(pSrc1,pSrc2,iNum);
-#else
-  return memcmp(pSrc1,pSrc2,iNum);
-#endif
 }
 
 void *amMemChr ( void *pSrc, S32 iCharacter, tMEMSIZE iNum){
-#ifdef PORTABLE
   return memchr(pSrc,iCharacter,iNum);
-#else
-  return memchr(pSrc,iCharacter,iNum);
-#endif
 }
 
 void *amMallocEx(tMEMSIZE amount, U16 flag){
 void *pMem=0;
 
-#if (defined (PORTABLE) || defined (FORCE_MALLOC))
+#if defined (FORCE_MALLOC)
   pMem = malloc(amount);
 #else
   //TODO: check gemdos version and use Malloc() if needed for plain ST/e compatibility
@@ -136,7 +99,7 @@ void *pMem=0;
 
 //TODO: add memory alignment build option on word, long boundary
 
-#if (defined (PORTABLE) || defined (FORCE_MALLOC))
+#if defined (FORCE_MALLOC)
   pMem= malloc(amount); 
 #else
   pMem=(void *)Malloc(amount);
@@ -166,42 +129,24 @@ void amFree(void **pPtr){
     }
   #endif
   
-  #if (defined (PORTABLE) || defined (FORCE_MALLOC))
+ #if defined (FORCE_MALLOC)
   free(*pPtr); *pPtr=0;
-  #else
+ #else
     Mfree(*pPtr); *pPtr=0;
-  #endif
+ #endif
 }
 
 void *amCalloc(tMEMSIZE nelements, tMEMSIZE elementSize){
-#ifdef PORTABLE
   return calloc(nelements,elementSize);
-#else
-  return calloc(nelements,elementSize);
-#endif
 }
 
 
 void *amRealloc( void *pPtr, tMEMSIZE newSize){
-#ifdef PORTABLE
  return realloc(pPtr,newSize);
-#else
- return realloc(pPtr,newSize);
-#endif
 }
 
 #ifdef DEBUG_BUILD
-
 void memoryCheck(void){
-#ifdef PORTABLE
-#warning memoryCheck() not implemented!
-    U32 mem=0;
-    amTrace((const U8*)"System memory check:\n");
-    amTrace((const U8*)"Free ram: %u\n",(U32)mem);
-	
-amTrace((const U8*)"memory: %u\n",(U32)mem);
-
-#else
     U32 mem=0;
     amTrace((const U8*)"System memory check:\n");
 	
@@ -217,6 +162,6 @@ amTrace((const U8*)"memory: %u\n",(U32)mem);
 	
     mem=getFreeMem(PREFER_TT);
     amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
-#endif
 }
 #endif
+

@@ -32,7 +32,6 @@ volatile BOOL handleTempoChange;
 BOOL midiOutputEnabled;
 BOOL ymOutputEnabled;
 
-
 // functions
 void onTogglePlayMode(sCurrentSequenceState *pSeqPtr);
 void onTempoUp(sCurrentSequenceState *pSeqPtr);

@@ -10,14 +10,11 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
-#define DIVIDER 100000
-
 /** installs sequence replay routine (hooked to timer B atm) */
 extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRout(void);
-extern void updateMidiFunc(void);
 
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.

@@ -43,7 +43,7 @@ extern U32 am_readVarLen();
  * (-2) - not recognized MIDI file type format
  */
 
-S16 am_getHeaderInfo(void *pMidiPtr);
+S16 am_getHeaderInfo(const void *pMidiPtr);
 
 /** processes the MIDI track data
 *	@param startPtr pointer to the start of Track MIDI chunk

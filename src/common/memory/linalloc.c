@@ -1,15 +1,16 @@
 
 #include "memory/linalloc.h"
-#include "mint/mintbind.h"
+#include "mintbind.h"
 
 #include "memory.h"
 #include "amlog.h"
 
-void linearBufferPrintInfo(tLinearBuffer *buf){
-  amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);  
+void linearBufferPrintInfo(const tLinearBuffer *buf){
+  if(buf==NULL) return;
+  amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);
 }
 
-S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType){
+S32 createLinearBuffer(tLinearBuffer *buf, const U32 bufferSize,const eMemoryFlag memType){
   
   buf->pMemPtr = amMallocEx(bufferSize,memType);
   
@@ -58,10 +59,11 @@ void destroyLinearBuffer(tLinearBuffer *buf){
   buf->pMemPtr=0;
   buf->totalSize=0L;	
   buf->offset=0L;
+  buf=0;
 }
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(tLinearBuffer *buf, U32 size){
+void *linearBufferAlloc(tLinearBuffer *buf, const U32 size){
   if(!buf||!size) return NULL;
   
   U32 newOffset=buf->offset+size;
@@ -76,7 +78,7 @@ void *linearBufferAlloc(tLinearBuffer *buf, U32 size){
 }
 
 // non aligned allocation from linear buffer (TODO)
-void *linearBufferAllocAlign(tLinearBuffer *buf, U32 size,U32 alignFlag){
+void *linearBufferAllocAlign(tLinearBuffer *buf, const U32 size,const U32 alignFlag){
   if(!buf||!size) return NULL;
   
   U32 newOffset=buf->offset+size;
@@ -111,5 +113,6 @@ void linearBufferFree(tLinearBuffer *buf){
   }
   
   buf->offset=0L;
+  buf=0;
 }
 

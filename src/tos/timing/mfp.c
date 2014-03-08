@@ -5,7 +5,7 @@
 /* calculates settings for MFP timers for given frequency of tick */
 static const U8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
 
-void getMFPTimerSettings(U32 freq,U8 *mode,U8 *data){
+void getMFPTimerSettings(const U16 freq,U8 *mode,U8 *data){
 U8 cntrl,count;
 cntrl=0;
 

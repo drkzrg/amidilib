@@ -19,17 +19,17 @@ typedef struct _LinearBuffer{
   eMemoryFlag memType;  // memory type
 } tLinearBuffer;
 
-S32 createLinearBuffer(tLinearBuffer *buf, U32 bufferSize, eMemoryFlag memType);
+S32 createLinearBuffer(tLinearBuffer *buf,const U32 bufferSize,const eMemoryFlag memType);
 void destroyLinearBuffer (tLinearBuffer *buf);
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(tLinearBuffer *buf, U32 size);
+void *linearBufferAlloc(tLinearBuffer *buf, const U32 size);
 void linearBufferFree(tLinearBuffer *buf); //clears all linear buffer
 
-void *linearBufferAllocAlign(tLinearBuffer *buf, U32 size,U32 alignFlag);
+void *linearBufferAllocAlign(tLinearBuffer *buf, const U32 size,const U32 alignFlag);
 
 
-void linearBufferPrintInfo(tLinearBuffer *buf);
+void linearBufferPrintInfo(const tLinearBuffer *buf);
 
 
 #endif

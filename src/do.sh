@@ -18,7 +18,7 @@ run_emu=0
 install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 emu_dir=$base_dir'Pulpit/HD/'
-stack_size=16k
+stack_size=64k
 
 # output binaries
 MIDIREP_BIN='midiplay.ttp'

@@ -127,4 +127,11 @@ typedef struct __attribute__((packed)) Tempo_t{
  U32 tempoVal;
 } sTempo_t;
 
+
+const U8 *getMidiNoteName(const U8 NoteNb);
+const U8 *getMidiControllerName(const U8 NoteNb);
+
+//returns note name or rhytm part name if current channel is 9
+const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNumber);
+
 #endif

@@ -13,6 +13,7 @@
 #include "amidilib.h"
 #include "config.h"
 #include "roland.h"
+#include "midi.h"
 
 #include "input/scancode.h"	// scancode definitions
 #include "input/ikbd.h"

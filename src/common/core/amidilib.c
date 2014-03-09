@@ -13,6 +13,7 @@
 #include "fmio.h"
 
 // formats
+#include "midi.h"
 #include "xmidi.h"
 #include "dmus.h"
 //
@@ -44,14 +45,6 @@ static const U8 *g_arMidiDeviceTypeName[]={
   "MT-32 GM emulation",
   "Yamaha XG GM mode"
 };
-
-
-/* static table with MIDI notes to ASA ISO */
-extern const char *g_arMIDI2key[];
-
-/* static table with CM32 rhytm part */
-extern const char *g_arCM32Lrhythm[];
-
 
 const sAMIDI_version *am_getVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
@@ -594,26 +587,6 @@ U16 iCounter;
   all_notes_off(iCounter);
  }
 }        
-
-const U8 *am_getMIDInoteName(U8 ubNoteNb){
-if((ubNoteNb>=0&&ubNoteNb<=127)) /* 0-127 range check */
- return((const U8*)g_arMIDI2key[ubNoteNb]);
-else 
-  return NULL;
-}
-
-const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber){
-  /* 0-127 range check */
-  if((noteNumber>=0&&noteNumber<=127)) {  
-    if((currentChannel==9&&currentPN==128)){
-      return(g_arCM32Lrhythm[noteNumber]);
-    }
-    else{
-        return(g_arMIDI2key[noteNumber]);
-    }
-}else 
-  return NULL;
-}
 
 #ifdef DEBUG_BUILD
 /* variable quantity reading test */

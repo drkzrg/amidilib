@@ -53,16 +53,13 @@ src/common/midi/midiseq.c
 src/common/roland/cm_32l.c
 src/common/roland/cm_500.c
 src/common/roland/mt32.c
-src/common/roland/tbl_stat.c
+src/common/roland/roland.c
 src/common/timing/miditim.c
 src/common/twisterm.c
 src/common/ym2149.c
 src/memory/linalloc.c
 src/memory/memory.c
 src/memory/stack.c
-src/portable/discio/fmio.c
-src/portable/memory/memory.c
-src/portable/midi/midi_rep.c
 src/tos/discio/fmio.c
 src/tos/memory/memory.c
 src/tos/midi/midi_rep.c
@@ -79,3 +76,4 @@ src/common/midi/mparser.c
 include/mparser.h
 include/mformats.h
 include/mdevtype.h
+src/common/midi/midi.c

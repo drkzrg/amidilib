@@ -5,151 +5,19 @@
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "roland.h"
+#include "midi_send.h"
+#include "midi_cmd.h"
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 
-const char *g_arMIDIcontrollers[]=
-{
-"Bank Select",
-"Modulation",
-"Breath Controller",
-"3 [undefined]",
-"Foot Controller",
-"Portamento Time",
-"Data Entry (MSB)",
-"Main Volume",
-"Balance",
-"9 [undefined]",
-"Pan",
-"Expression",
-"Effect control 1",
-"Effect control 2",
-"14 [undefined]",
-"15 [undefined]",
-"Gen Purpose Controller 1",
-"Gen Purpose Controller 2",
-"Gen Purpose Controller 3",
-"Gen Purpose Controller 4",
-"20 [undefined]",
-"21 [undefined]",
-"22 [undefined]",
-"23 [undefined]",
-"24 [undefined]",
-"25 [undefined]",
-"26 [undefined]",
-"27 [undefined]",
-"28 [undefined]",
-"29 [undefined]",
-"30 [undefined]",
-"31 [undefined]",
-/*High resolution continuous controllers (LSB)*/
-"Bank Select",
-"Modulation Wheel",
-"Breath Controller",
-"35 [undefined]",
-"Foot Controller",
-"Portamento Time",
-"Data Entry",
-"Channel Volume",
-"Pan",
-"41 [undefined]",
-"Pan",
-"Expression Controller",
-"Effect Control 1",
-"Effect Control 2",
-"46 [undefined]",
-"47 [undefined]",
-"General Purpose Controller 1",
-"General Purpose Controller 2",
-"General Purpose Controller 3",
-"General Purpose Controller 4",
-"52 [undefined]",
-"53 [undefined]",
-"54 [undefined]",
-"55 [undefined]",
-"56 [undefined]",
-"57 [undefined]",
-"58 [undefined]",
-"59 [undefined]",
-"60 [undefined]",
-"61 [undefined]",
-"62 [undefined]",
-"63 [undefined]",
-"Sustain On/Off",
-"Portamento On/Off",
-"Sostenuto On/Off",
-"Soft Pedal On/Off",
-"Legato On/Off",
-"Hold 2 On/Off",
-"Sound Controller 1   (TG: Sound Variation;   FX: Exciter On/Off)",
-"Sound Controller 2   (TG: Harmonic Content;   FX: Compressor On/Off)",
-"Sound Controller 3   (TG: Release Time;   FX: Distortion On/Off)",
-"Sound Controller 4   (TG: Attack Time;   FX: EQ On/Off)",
-"Sound Controller 5   (TG: Brightness;   FX: Expander On/Off)",
-"Sound Controller 6   (TG: Undefined;   FX: Reverb On/Off)",
-"Sound Controller 7   (TG: Undefined;   FX: Delay On/Off)",
-"Sound Controller 8   (TG: Undefined;   FX: Pitch Transpose On/Off)",
-"Sound Controller 9   (TG: Undefined;   FX: Flange/Chorus On/Off)",
-"Sound Controller 10   (TG: Undefined;   FX: Special Effects On/Off)",
-"General Purpose Controller 5",
-"General Purpose Controller 6",
-"General Purpose Controller 7",
-"General Purpose Controller 8",
-"Portamento Control (PTC)   (0vvvvvvv is the source Note number)",
-"85 [undefined]",
-"86 [undefined]",
-"87 [undefined]",
-"88 [undefined]",
-"89 [undefined]",
-"90 [undefined]",
-"Effects 1 (Ext. Effects Depth)",
-"Effects 2 (Tremelo Depth)",
-"Effects 3 (Chorus Depth)",
-"Effects 4 (Celeste Depth)",
-"Effects 5 (Phaser Depth)",
-"Data Increment   (0vvvvvvv is n/a; use 0)",
-"Data Decrement   (0vvvvvvv is n/a; use 0)",
-"Non Registered Parameter Number (LSB)",
-"Non Registered Parameter Number (MSB)",
-"Registered Parameter Number (LSB)",
-"Registered Parameter Number (MSB)",
-"102 [undefined]",
-"103 [undefined]",
-"104 [undefined]",
-"105 [undefined]",
-"106 [undefined]",
-"107 [undefined]",
-"108 [undefined]",
-"109 [undefined]",
-"[XMIDI] Channel Lock",
-"[XMIDI] Channel Lock Protect",
-"[XMIDI] Voice Protect",
-"[XMIDI] Timbre Protect",
-"[XMIDI] Patch Bank Select",
-"[XMIDI] Indirect Controller Prefix",
-"[XMIDI] For Loop Controller",
-"[XMIDI] Next/Break Loop Controller",
-"[XMIDI] Clear Beat/Bar Count",
-"[XMIDI] Callback Trigger",
-
-/* we have specs conflict here between MIDI and XMIDI :// */
-
-"All Sounds off/[XMIDI] Sequence Branch Index",
-"Reset all controllers",
-"Local Control On/Off",
-"All Notes Off",
-"Omni Mode Off (also causes ANO)",
-"Omni Mode On (also causes ANO)",
-"Mono Mode On (Poly Off; also causes ANO)",
-"Poly Mode On (Mono Off; also causes ANO)"
-};
+U8 const arReset[8]={0xf0,0x41,0x10,0x16,0x12,0x7f,0x01,0xf7};
 
 /**
 * instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)
 */
-const char *g_arCM32Linstruments[]=
-{
+
+const U8 *arCM32Linstruments[]={
 "AcouPiano 1",
 "AcouPiano 2",
 "AcouPiano 3",
@@ -285,8 +153,7 @@ const char *g_arCM32Linstruments[]=
 * the mapping is key note -> sound, program number 128 
 */
 
-const char *g_arCM32Lrhythm[]=
-{
+const U8 *arCM32Lrhythm[]={
 "00 [no sound]",
 "01 [no sound]",
 "02 [no sound]",
@@ -419,8 +286,7 @@ const char *g_arCM32Lrhythm[]=
 
 
 // program number #57
-const char *g_arCM500sfx[]=
-{
+const U8 *arCM500sfx[]={
 "0 [no sound]",
 "1 [no sound]",
 "2 [no sound]",
@@ -552,8 +418,7 @@ const char *g_arCM500sfx[]=
 "128 [no sound]"
 };
 
-const char *g_arMT32instruments[]=
-{
+const U8 *arMT32instruments[]={
 "AcouPiano 1",
 "AcouPiano 2",
 "AcouPiano 3",
@@ -684,8 +549,7 @@ const char *g_arMT32instruments[]=
 "JungleTune"
 };
 
-const char *g_arMT32rhythm[]=
-{
+const U8 *arMT32rhythm[]={
 "00 [no sound]",
 "01 [no sound]",
 "02 [no sound]",
@@ -816,137 +680,54 @@ const char *g_arMT32rhythm[]=
 "7F [no sound]"
 };
 
-/* MIDI notes to international note mapping */
-/* notes are mapped from 21 to 108 */
 
-const char *g_arMIDI2key[]={
-/*0 */ "C-1",
-/*1 */ "C-1#",
-/*2 */ "D-1",
-/*3 */ "D-1#",
-/*4 */ "E-1",
-/*5 */ "F-1",
-/*6 */ "F-1#",
-/*7 */ "G-1",
-/*8 */ "G-1#",
-/*9*/ "A-1",
-/*10 */ "A-1#",
-/*11 */ "B-1#",
-/*12 */ "C",
-/*13 */ "C#",
-/*14 */ "D",
-/*15 */ "D#",
-/*16 */ "E",
-/*17 */ "F",
-/*18 */ "F#",
-/*19 */ "G",
-/*20 */ "G#",
-/*21*/ "A0",
-/*22*/ "A0#",
-/*23*/ "B0",
-/*24*/ "C1",
-/*25*/ "C1#",
-/*26*/ "D1",
-/*27*/ "D1#",
-/*28*/ "E1",
-/*29*/ "F1",
-/*30*/ "F1#",
-/*31*/ "G1",
-/*32*/ "G1#",
-/*33*/ "A1",
-/*34*/ "A1#",
-/*35*/ "B1",
-/*36*/ "C2",
-/*37*/ "C2#",
-/*38*/ "D2",
-/*39*/ "D2#",
-/*40*/ "E2",
-/*41*/ "F2",
-/*42*/ "F2#",
-/*43*/ "G2",
-/*44*/ "G2#",
-/*45*/ "A2",
-/*46*/ "A2#",
-/*47*/ "B2",
-/*48*/ "C3",
-/*49*/ "C3#",
-/*50*/ "D3",
-/*51*/ "D3#",
-/*52*/ "E3",
-/*53*/ "F3",
-/*54*/ "F3#",
-/*55*/ "G3",
-/*56*/ "G3#",
-/*57*/ "A3",
-/*58*/ "A3#",
-/*59*/ "B3",
-/*60*/ "C4", /*  */
-/*61*/ "C4#",
-/*62*/ "D4",
-/*63*/ "D4#",
-/*64*/ "E4",
-/*65*/ "F4",
-/*66*/ "F4#",
-/*67*/ "G4",
-/*68*/ "G4#",
-/*69*/ "A4",
-/*70*/ "A4#",
-/*71*/ "B4",
-/*72*/ "C5",
-/*73*/ "C5#",
-/*74*/ "D5",
-/*75*/ "D5#",
-/*76*/ "E5",
-/*77*/ "F5",
-/*78*/ "F5#",
-/*79*/ "G5",
-/*80*/ "G5#",
-/*81*/ "A5",
-/*82*/ "A5#",
-/*83*/ "B5",
-/*84*/ "C6",
-/*85*/ "C6#",
-/*86*/ "D6",
-/*87*/ "D6#",
-/*88*/ "E6",
-/*89*/ "F6",
-/*90*/ "F6#",
-/*91*/ "G6",
-/*92*/ "G6#",
-/*93*/ "A6",
-/*94*/ "A6#",
-/*95*/ "B6",
-/*96*/ "C7",
-/*97*/ "C7#",
-/*98*/ "D7",
-/*99*/ "D7#",
-/*100*/ "E7",
-/*101*/ "F7",
-/*102*/ "F7#",
-/*103*/ "G7",
-/*104*/ "G7#",
-/*105*/ "A7",
-/*106*/ "A7#",
-/*107*/ "B7",
-/*108*/ "C8",
-/*109*/ "C8",
-/*110*/ "C8",
-/*111*/ "C8",
-/*112*/ "C8",
-/*113*/ "C8",
-/*114*/ "C8",
-/*115*/ "C8",
-/*116*/ "C8",
-/*117*/ "C8",
-/*118*/ "C8",
-/*119*/ "C8",
-/* 120 */ "C8",
-/* 121 */ "C8",
-/* 122 */ "C8",
-/* 123 */ "C8",
-/* 124 */ "C8",
-/* 125 */ "C8",
-/* 126 */ "C8",
-/* 127 */ "C8"
-};
+
+/* module default settings table */
+// CM-32L specific
+const U8 *getCM32LInstrName(U8 ubInstrNb){
+ return(arCM32Linstruments[ubInstrNb]);
+}
+
+const U8 *getCM32LRhythmName(U8 ubNoteNb){
+ return(arCM32Lrhythm[ubNoteNb]);
+}
+
+// cm-500 specific
+const U8 *getCM500SFXName(U8 ubNoteNb){
+ return(arCM500sfx[ubNoteNb]);
+}
+
+void  allPartsOnCm500(void){
+ /* TODO: */
+}
+
+void  allPartsOffCm500(void)
+{
+ /* TODO: */
+}
+
+// all
+U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end){
+U8 total = 0 ;
+U8 mask  = 0x7F ;
+
+while ( buf_start <= buf_end ){
+  total += *buf_start ;
+  buf_start++ ;
+}
+
+ return (0x80 - (total & mask)) & mask ;
+}
+
+void MT32Reset(void){
+#ifdef IKBD_MIDI_SEND_DIRECT
+  for(int i=0;i<7;i++){
+    MIDIsendBuffer[MIDIbytesToSend++]=arReset[i];
+  }
+  amMidiSendIKBD();
+#else
+    MIDI_SEND_DATA(8,g_arReset);
+#endif
+}
+
 

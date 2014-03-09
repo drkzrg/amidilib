@@ -4,14 +4,13 @@
 #include "mformats.h"
 #include "config.h"
 #include "list/list.h"
+#include "midi.h"
 
 #include "string.h"
 
 #ifdef MIDI_PARSER_TEST
 #include "amidilib.h"
 #endif
-/* static table with MIDI controller names */
-extern const U8 *g_arMIDIcontrollers[];
 
 /* for saving last running status */
 static U8 g_runningStatus;
@@ -25,15 +24,8 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
   return (pMidiInfo->division);
 }
     /* (X)Midi has timing data inside midi eventlist */
-
  return (0);
 }
-
-/* returns name of MIDI controller */
-const U8 *getMIDIcontrollerName(U8 iNb){
- return(g_arMIDIcontrollers[iNb]);
-}
-
 
 /* reads Variable Lenght Quantity */
 U32 readVLQ(U8 *pChar,U8 *ubSize){

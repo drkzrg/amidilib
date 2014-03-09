@@ -33,6 +33,8 @@
 #define DEV_ID15 	0x0e
 #define DEV_ID16	0x0f
 
+#include "c_vars.h"
+
 /* TODO:
  * functions for maintaining current device state, initial settings etc..   */
 /* blocking/unblocking functions on certain devices
@@ -72,6 +74,7 @@ void  allPartsOff(void);
 *	@param buf_start pointer to the start of SysEx message buffer
 *	@param buf_end pointer to an end of SysEx message buffer
 *	@return calculated checksum */
+
 U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 
 

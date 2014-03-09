@@ -99,8 +99,6 @@ const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
 void getDeviceInfoResponse(U8 channel);
 
-const char *getNoteName(U8 currentChannel,U8 currentPN, U8 noteNumber);
-
 /** destroys loaded Sequence. 
 *   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
 *   if operation was completed succesfully. */

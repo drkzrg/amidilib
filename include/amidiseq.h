@@ -13,9 +13,7 @@
 
 #define AMIDI_MAX_TRACKS 65536
 #define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
-					/* sequence is considered finished and ready to STOP or LOOP */
-#define DEFAULT_TIME_SIG 0x0404	
-	
+                                    /* sequence is considered finished and ready to STOP or LOOP */
 /** sequence replay mode */
 typedef enum{
   S_PLAY_ONCE=0x06,
@@ -39,19 +37,19 @@ typedef struct TrackState_t{
  sTimeSignature timeSignature;	      //time signature
  U32 currentTempo;		      //quaternote duration in ms, 500ms default
  U32 currentPPQN;		      //pulses per quater note
- U32 currentBPM;	              //beats per minute (60 000000 / currentTempo)
+ U32 currentBPM;	          //beats per minute (60 000000 / currentTempo)
  U32 currentSeqPos;		      //index of current event in list
- U32 timeElapsedInt;		      //track elapsed time
- ePlayState playState;		      // STOP, PLAY, PAUSED	
- ePlayMode playMode;	      	      // current play mode (loop, play_once, random) 
-				      // sets the active track, by default 0 
+ U32 timeElapsedInt;		  //track elapsed time
+ ePlayState playState;		  // STOP, PLAY, PAUSED
+ ePlayMode playMode;	      // current play mode (loop, play_once, random)
+                              // sets the active track, by default 0
  BOOL bMute;			      // if TRUE track events aren't sent to external module
 }PACK sTrackState_t;
 
  typedef struct Track_t{
-  sTrackState_t currentState;        /* current sequence state */
+  sTrackState_t currentState;       /* current sequence state */
   sEventList *pTrkEventList;  		/* track event list */
-  U8 *pTrackName;			/* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
+  U8 *pTrackName;                   /* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
 }PACK sTrack_t;
 
 typedef struct Sequence_t{
@@ -64,5 +62,6 @@ typedef struct Sequence_t{
    U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
 } PACK sSequence_t;
+
 
 #endif

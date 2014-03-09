@@ -9,7 +9,7 @@
 #include "config.h"
 #include "timing/miditim.h"
 
-void midiSeqReplay(void);
+extern void midiSeqReplay(void);
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
@@ -20,7 +20,7 @@ extern U16 MIDIbytesToSend;
 volatile BOOL handleTempoChange;
 static BOOL bTempoChanged=FALSE;
 
-static sSequence_t *g_CurrentSequence;
+static sSequence_t *g_CurrentSequence=0;
 
 void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
@@ -128,7 +128,7 @@ if(g_CurrentSequence){
         g_CurrentSequence->timeElapsedFrac=0L;
         g_CurrentSequence->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
 
-        for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (int i=0;i<g_CurrentSequence->ubNumTracks;i++){
           g_CurrentSequence->arTracks[i]->currentState.currentSeqPos=0L;
           g_CurrentSequence->arTracks[i]->currentState.timeElapsedInt=0L;
           g_CurrentSequence->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
@@ -315,11 +315,16 @@ void pauseSeq(){
 }//pauseSeq
 
 void playSeq(void){
-  if(g_CurrentSequence!=0){
+
+ if(g_CurrentSequence!=0){
     //set state
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
-    if(g_CurrentSequence->arTracks[activeTrack]->currentState.playState==PS_STOPPED)
-      g_CurrentSequence->arTracks[activeTrack]->currentState.playState=PS_PLAYING;
+    sTrack_t *pTrack=g_CurrentSequence->arTracks[activeTrack];
+
+    if(pTrack){
+        if(pTrack->currentState.playState==PS_STOPPED) pTrack->currentState.playState=PS_PLAYING;
+    }
+
   }
 }
 
@@ -350,4 +355,65 @@ void toggleReplayMode(void){
   }
 }
 
+void printSequenceState(){
+if(g_CurrentSequence){
 
+    printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
+    printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
+    printf("Time step: %d\n",g_CurrentSequence->timeStep);
+    printf("Time elapsedFrac: %d\n",g_CurrentSequence->timeElapsedFrac);
+    printf("EOT threshold: %d\n",g_CurrentSequence->eotThreshold);
+
+    sTrack_t *pTrack=0;
+    for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        pTrack=g_CurrentSequence->arTracks[i];
+        sTrackState_t *pTrackState=0;
+
+        if(pTrack){
+            printf("Track[%d]\n",i);
+            pTrackState=&(pTrack->currentState);
+            printf("Time elapsed: %d\n",pTrackState->timeElapsedInt);
+            printf("Cur BPM: %d\n",pTrackState->currentBPM);
+            printf("Cur PPQN: %d\n",pTrackState->currentPPQN);
+            printf("Cur SeqPos: %d\n",pTrackState->currentSeqPos);
+            printf("Cur Tempo: %d\n",pTrackState->currentTempo);
+            printf("Time signature: %d\n",pTrackState->timeSignature);
+            printf("Play mode: %s\n",getPlayModeStr(pTrackState->playMode));
+            printf("Play state: %s\n",getPlayStateStr(pTrackState->playState));
+            printf("Mute: %d\n",pTrackState->bMute);
+        }
+    }
+ }
+}
+const U8 *getPlayStateStr(const ePlayState state){
+
+    switch(state){
+        case PS_STOPPED:
+            return "Stopped";
+        break;
+        case PS_PLAYING:
+            return "Playing";
+        break;
+        case PS_PAUSED:
+            return "Paused";
+        break;
+        default:
+            return NULL;
+    }
+}
+
+const U8 *getPlayModeStr(const ePlayMode mode){
+    switch(mode){
+        case S_PLAY_ONCE:
+            return "Play once";
+        break;
+        case S_PLAY_LOOP:
+            return "Loop";
+        break;
+        case S_PLAY_RANDOM:
+            return "Random";
+        break;
+        default:
+            return NULL;
+    }
+}

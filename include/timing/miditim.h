@@ -19,7 +19,7 @@ U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups);
 *   @param PPQ - parts per quaternote
 *   @param qpm QPM - quaternotes per minute
 */
-float am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups);
+float am_calculateTimeStepFlt(const U16 qpm,const U16 ppq,const U16 ups);
 
 /** Simple time division to console function
 *   with example of handling timeDivision data

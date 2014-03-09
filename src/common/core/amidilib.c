@@ -10,8 +10,6 @@
 #include "timing/miditim.h"
 #include "list/list.h"
 #include "mformats.h"
-
-
 #include "fmio.h"
 
 // formats

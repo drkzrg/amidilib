@@ -9,7 +9,6 @@ unsigned long begin;
 unsigned long end;
 long usp;
 
-
 /* function for calculating tempo */
 /* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
 
@@ -19,7 +18,7 @@ long usp;
 /* PPQ - pulses per quaternote - music resolution */
 /* music resolution are in PPQ */
 
-U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
+U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups){
     U32 ppu;
     U32 temp;
     temp=(U32)qpm*(U32)ppq;
@@ -39,7 +38,7 @@ U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups){
 /* UPS - update interval (updates per second) */
 /* music resolution are in PPQ */
 
-float  am_calculateTimeStepFlt(U16 qpm, U16 ppq, U16 ups){
+float  am_calculateTimeStepFlt(const U16 qpm,const U16 ppq,const U16 ups){
     float ppu=0;
     float temp=0;
     ppu=(float)qpm*(float)ppq;

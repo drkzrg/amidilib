@@ -21,6 +21,12 @@
 
 #include "input/ikbd.h"
 
+#define MANUAL_STEP 1
+
+#ifdef MANUAL_STEP
+extern void updateStep();
+#endif
+
 // display info screen
 void printInfoScreen(); 
 void displayTuneInfo();
@@ -111,9 +117,13 @@ int main(int argc, char *argv[]){
 
 
 void mainLoop(sSequence_t *pSequence){
-	  //install replay rout 
-	  initSeq(pSequence);
-	  
+      //install replay rout
+#ifdef MANUAL_STEP
+    initSeqManual(pSequence);
+#else
+    initSeq(pSequence);
+#endif
+
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
 	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 	   
@@ -122,7 +132,7 @@ void mainLoop(sSequence_t *pSequence){
 	  BOOL bQuit=FALSE;
 	  
 	  //####
-	  while(bQuit!=TRUE){
+      while(bQuit==FALSE){
 
 	    //check keyboard input  
 	    for (int i=0; i<128; i++) {
@@ -160,6 +170,13 @@ void mainLoop(sSequence_t *pSequence){
 		 case SC_SPACEBAR:{
 		  stopSeq();
 		 }break;
+          #ifdef MANUAL_STEP
+          case SC_ENTER:{
+            printf("Sequence step\n");
+            printSequenceState();
+            updateStep();
+          }break;
+          #endif
 	      };
 	      //end of switch
 	    }

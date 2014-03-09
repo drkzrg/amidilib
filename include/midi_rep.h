@@ -33,6 +33,10 @@ void playSeq(void);
 /** setups sequence for replay. Sequence is stopped by default */
 void initSeq(sSequence_t *seq);
 
+/** setups sequence for replay. Sequence is stopped by default */
+/** for debug purposes, step not on timer */
+void initSeqManual(sSequence_t *seq);
+
 /** mutes selected track or first one if there is only one */
 void muteTrack(U16 trackNb,BOOL bMute);
 
@@ -47,5 +51,9 @@ void toggleReplayMode(void);
 
 void getCurrentSeq(sSequence_t **);
 
+/** Outputs current sequence state. */
+void printSequenceState();
+const U8 *getPlayModeStr(const ePlayMode mode);
+const U8 *getPlayStateStr(const ePlayState state);
 
 #endif

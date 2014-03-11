@@ -72,12 +72,12 @@ S32 saveConfig(const U8 *configFileName){
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiChannelTag,configuration.midiChannel);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playModeTag,configuration.playMode);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playStateTag,configuration.playState);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", eventPoolSizeTag,configuration.eventPoolSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiBufferSizeTag,configuration.midiBufferSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", eventPoolSizeTag,configuration.eventPoolSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", midiBufferSizeTag,configuration.midiBufferSize);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", lzoCompressionTag,configuration.useLZO?TRUE_TAG:FALSE_TAG);
   

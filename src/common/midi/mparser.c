@@ -385,10 +385,14 @@ if((*recallRS)==0){
 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
+  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
   tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
   pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -412,10 +416,14 @@ if((*recallRS)==0){
   /* get last note info */
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
+  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
   tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
 
@@ -432,7 +440,7 @@ if((*recallRS)==0){
 }
 
 #ifdef MIDI_PARSER_DEBUG
-  amTrace((const U8*)"delta: %u\t",(unsigned long)delta);
+  amTrace((const U8*)"delta: %lu\t",delta);
   amTrace((const U8*)"event: Note off ");
   amTrace((const U8*)"ch: %d\t",(pEvntBlock->ubChannelNb)+1);
   amTrace((const U8*)"note: %d(%s)\t",pNoteOff->noteNb,am_getMIDInoteName(pNoteOff->noteNb));
@@ -459,10 +467,14 @@ sEventBlock_t tempEvent;
 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEON;
-  getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
-  getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+  getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
+  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+  getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
   tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
   /*assert(tempEvent.dataPtr>0);*/
   pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -488,12 +500,14 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEON;
-    getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
+#ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
-
+#endif
     pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
-
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
     note=*(*pPtr);
@@ -507,7 +521,7 @@ sEventBlock_t tempEvent;
  }
 
  #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %u\t",(unsigned long)delta);
+    amTrace((const U8*)"delta: %lu\t",delta);
     amTrace((const U8*)"event: Note on ");
     amTrace((const U8*)"ch: %d\t",channel);
     amTrace((const U8*)"note: %d(%s)\t",note,am_getMIDInoteName(note));
@@ -531,9 +545,14 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEAFT;
-    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -553,14 +572,18 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
         /* get parameters */
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEAFT;
-    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
+#ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
-
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
-        noteNb=*(*pPtr);
+    noteNb=*(*pPtr);
     pEvntBlock->eventData.noteNb=*(*pPtr);
         (*pPtr)++;
         pressure=*(*pPtr);
@@ -592,13 +615,19 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_CONTROL;
-    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
+
     pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
-        channelNb=g_runningStatus&0x0F;
+    channelNb=g_runningStatus&0x0F;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
         (*pPtr)++;
         /* get controller nb */
@@ -612,16 +641,21 @@ sEventBlock_t tempEvent;
         channelNb=g_runningStatus&0x0F;
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_CONTROL;
-    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
     /*assert(tempEvent.dataPtr>0);*/
     pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
     /* get program controller nb */
-        controllerNb=(*(*pPtr));
+    controllerNb=(*(*pPtr));
     pEvntBlock->eventData.controllerNb=(*(*pPtr));
         (*pPtr)++;
         value=*((*pPtr));
@@ -629,7 +663,7 @@ sEventBlock_t tempEvent;
         (*pPtr)++;
     }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %u\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",(unsigned long)delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
+    amTrace((const U8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
 #endif
 
     /* add event to list */
@@ -655,10 +689,14 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_PRG_CH;
-    getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -668,26 +706,30 @@ sEventBlock_t tempEvent;
     pEvntBlock->eventData.programNb=*(*pPtr);
     (*pPtr)++;
     }else{
-         /* get last PC status */
-          channel=(g_runningStatus&0x0F)+1;
+      /* get last PC status */
+      channel=(g_runningStatus&0x0F)+1;
       tempEvent.uiDeltaTime=delta;
       tempEvent.type=T_PRG_CH;
-      getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-      getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+      getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
+      tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+      getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
       tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
       pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
       pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
-          PN=*(*pPtr);
+      PN=*(*pPtr);
       pEvntBlock->eventData.programNb=*(*pPtr);
 
      /* get parameters */
       (*pPtr)++;
     }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %u\t",(unsigned long)delta);
+    amTrace((const U8*)"delta: %lu\t",delta);
     amTrace((const U8*)"event: Program change ");
     amTrace((const U8*)"ch: %d\t",channel);
     amTrace((const U8*)"program nb: %d\n",PN);
@@ -701,7 +743,7 @@ S16 am_ChannelAft(U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
 {
 sEventBlock_t tempEvent;
 
-  U8 channel=0;
+U8 channel=0;
 U8 param=0;
 sChannelAft_EventBlock_t *pEvntBlock=NULL;
 tempEvent.dataPtr=0;
@@ -714,10 +756,14 @@ if((*recallRS)==0){
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_CHAN_AFT;
-    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -730,10 +776,15 @@ if((*recallRS)==0){
     }else{
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_CHAN_AFT;
-    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
     pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
@@ -743,7 +794,7 @@ if((*recallRS)==0){
         (*pPtr)++;
     }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %u\tevent: Channel aftertouch pressure: %d\n",(unsigned long)delta, param);
+    amTrace((const U8*)"delta: %lu\tevent: Channel aftertouch pressure: %d\n",delta, param);
 #endif
     /* add event to list */
     return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
@@ -770,15 +821,19 @@ tempEvent.dataPtr=0;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_PITCH_BEND;
-    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
-        (*pPtr)++;
+    (*pPtr)++;
     pPitchBend=(sPitchBend_t *)(*pPtr);
 
     /* get parameters */
@@ -788,10 +843,15 @@ tempEvent.dataPtr=0;
     }else{
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_PITCH_BEND;
-    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
@@ -821,9 +881,14 @@ S16 am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_SYSEX;
-  getEventFuncInfo(T_SYSEX,&tempEvent.sendEventCb);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
   getEventFuncCopyInfo(T_SYSEX,&tempEvent.copyEventCb);
+  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+  getEventFuncInfo(T_SYSEX,&tempEvent.sendEventCb);
   tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
   pEvntBlock=(sSysEX_EventBlock_t *)tempEvent.dataPtr;
 
@@ -847,7 +912,7 @@ S16 am_Sysex(U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
     amMemCpy(pEvntBlock->pBuffer,pTmpPtr,ulCount*sizeof(U8));
 
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)" EOX, size: %ld\n",ulCount);
+    amTrace((const U8*)" EOX, size: %lu\n",ulCount);
 #endif
 
  /* add event to list */
@@ -995,9 +1060,14 @@ sEventBlock_t tempEvent;
         (*pPtr)++;
         tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_MARKER;
-    getEventFuncInfo(T_META_MARKER,&tempEvent.sendEventCb);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_MARKER,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_META_MARKER,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pMarkerName=amMallocEx(ubLenght+1,PREFER_TT);
@@ -1029,10 +1099,14 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_CUEPOINT;
-    getEventFuncInfo(T_META_CUEPOINT,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_META_CUEPOINT,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_META_CUEPOINT,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_META_CUEPOINT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pCuePointName=0;
@@ -1141,10 +1215,14 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_EOT;
-    getEventFuncInfo(T_META_EOT,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_META_EOT,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_META_EOT,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_META_EOT,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sEot_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->dummy=0L;		//dummy value
@@ -1180,17 +1258,20 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_SET_TEMPO;
-    getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_META_SET_TEMPO,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_META_SET_TEMPO,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
 
     pEvntBlock=(sTempo_EventBlock_t *)tempEvent.dataPtr;
-
-        pEvntBlock->eventData.tempoVal=	val1;
+    pEvntBlock->eventData.tempoVal=	val1;
 
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"%u ms per quarter-note\n", (unsigned int)val1);
+    amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 #endif
     /* add event to list */
     return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
@@ -1199,7 +1280,7 @@ sEventBlock_t tempEvent;
     case MT_SMPTE_OFFSET:{
        sSMPTEoffset SMPTEinfo;
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const U8*)"delta: %u\tMeta event: SMPTE offset:\n",(unsigned long)delta);
+      amTrace((const U8*)"delta: %lu\tMeta event: SMPTE offset:\n",delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1223,7 +1304,7 @@ sEventBlock_t tempEvent;
      sTimeSignature_EventBlock_t *pEvntBlock=NULL;
 
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const U8*)"delta: %u\tMeta event: Time signature: ",(unsigned long)delta);
+        amTrace((const U8*)"delta: %lu\tMeta event: Time signature: ",delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1235,12 +1316,18 @@ sEventBlock_t tempEvent;
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type = T_META_SET_SIGNATURE;
-    getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
-    getEventFuncCopyInfo(T_META_SET_SIGNATURE,&tempEvent.copyEventCb);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+    getEventFuncCopyInfo(T_META_SET_SIGNATURE,&tempEvent.copyEventCb);
+    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+#else
+    getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+#endif
+
+
     pEvntBlock=(sTimeSignature_EventBlock_t *)tempEvent.dataPtr;
-        pEvntBlock->timeSignature=timeSign;
+    pEvntBlock->timeSignature=timeSign;
 
         /* print out info */
 #ifdef MIDI_PARSER_DEBUG
@@ -1254,7 +1341,7 @@ sEventBlock_t tempEvent;
         U8 param1=0,param2=0;
 
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const U8*)"delta: %u\tMeta event: Key signature: ",(unsigned long)delta);
+        amTrace((const U8*)"delta: %lu\tMeta event: Key signature: ",delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1285,7 +1372,7 @@ sEventBlock_t tempEvent;
     }break;
     case MT_SEQ_SPEC:{
     #ifdef MIDI_PARSER_DEBUG
-      amTrace((const U8*)"delta: %u\tMeta event: Sequencer specific data.\n",(unsigned long)delta);
+      amTrace((const U8*)"delta: %lu\tMeta event: Sequencer specific data.\n",delta);
     #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1296,7 +1383,7 @@ sEventBlock_t tempEvent;
     }break;
     default:{
     #ifdef MIDI_PARSER_DEBUG
-       amTrace((const U8*)"delta: %u\tUnknown meta event.\n",(unsigned long)delta);
+       amTrace((const U8*)"delta: %lu\tUnknown meta event.\n",delta);
     #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));

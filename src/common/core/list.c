@@ -94,18 +94,33 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
     }else{
 		(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
 		(*dest)->eventBlock.type = src->type;
-		(*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
-		(*dest)->eventBlock.sendEventCb.func=src->sendEventCb.func;
-		(*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+        (*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
 		(*dest)->eventBlock.copyEventCb.func=src->copyEventCb.func;
-		(*dest)->eventBlock.dataPtr=NULL;
+#else
+        (*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
+        (*dest)->eventBlock.sendEventCb.func=src->sendEventCb.func;
+#endif
+        (*dest)->eventBlock.dataPtr=NULL;
 		
 		/* allocate memory for event data and copy them to the new destination */
-		#ifdef EVENT_LINEAR_BUFFER
-			(*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
-		#else
-			(*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
-		#endif
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+#ifdef EVENT_LINEAR_BUFFER
+        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->copyEventCb.size * sizeof(U8)));
+#else
+        (*dest)->eventBlock.dataPtr = amMallocEx((src->copyEventCb.size * sizeof(U8)),PREFER_TT);
+#endif
+#else
+#ifdef EVENT_LINEAR_BUFFER
+        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
+#else
+        (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
+#endif
+
+#endif
+
     
 	if((*dest)->eventBlock.dataPtr==NULL){
 	    amTrace((const U8 *)"copyEvent() out of memory [callback block]\n");
@@ -116,7 +131,11 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 
 		return -1;
 	}else{
-	    amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8))); 
+#ifdef IKBD_MIDI_SEND_DIRECT
+        amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->copyEventCb.size * sizeof(U8)));
+#else
+        amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(U8)));
+#endif
 	    return 1;
 	}
    }
@@ -210,20 +229,31 @@ void printEventBlock(const sEventBlockPtr_t pPtr){
    int x=0;
 
    amTrace((const U8*)"*********** event info: \n");
-   amTrace((const U8*)"delta: %d\t",(unsigned int)pPtr->uiDeltaTime);
+   amTrace((const U8*)"delta: %lu\t",pPtr->uiDeltaTime);
    amTrace((const U8*)"event type: %d\t",pPtr->type);
-   amTrace((const U8*)"send event callback: %p\t",pPtr->sendEventCb.func);
-   amTrace((const U8*)"send data size: %u\t",pPtr->sendEventCb.size);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
    amTrace((const U8*)"copy event callback: %p\t",pPtr->copyEventCb.func);
-   amTrace((const U8*)"copy data size: %u\t",pPtr->copyEventCb.size);
+   amTrace((const U8*)"copy data size: %lu\t",pPtr->copyEventCb.size);
+#else
+   amTrace((const U8*)"send event callback: %p\t",pPtr->sendEventCb.func);
+   amTrace((const U8*)"send data size: %lu\t",pPtr->sendEventCb.size);
+#endif
+
    amTrace((const U8*)"data pointer: %p\n",pPtr->dataPtr);
    amTrace((const U8*)"data: \t");
    
    pbuf=(U8 *)pPtr->dataPtr;
    
+#ifdef IKBD_MIDI_SEND_DIRECT
+   for(x=0;x<pPtr->copyEventCb.size;x++){
+    amTrace((const U8*)"0x%x ",pbuf[x]);
+   }
+#else
    for(x=0;x<pPtr->sendEventCb.size;x++){
     amTrace((const U8*)"0x%x ",pbuf[x]);
    }
+#endif
 
    amTrace((const U8*)"\n");
     switch((U16)(pPtr->type)){

@@ -59,11 +59,11 @@ void destroyLinearBuffer(tLinearBuffer *buf){
   buf->pMemPtr=0;
   buf->totalSize=0L;	
   buf->offset=0L;
-  buf=0;
 }
 
 // non aligned allocation from linear buffer
 void *linearBufferAlloc(tLinearBuffer *buf, const U32 size){
+
   if(!buf||!size) return NULL;
   
   U32 newOffset=buf->offset+size;
@@ -113,6 +113,5 @@ void linearBufferFree(tLinearBuffer *buf){
   }
   
   buf->offset=0L;
-  buf=0;
 }
 

@@ -423,9 +423,9 @@ void printSequenceState(){
 if(g_CurrentSequence){
     printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
     printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
-    printf("Time step: %d\n",g_CurrentSequence->timeStep);
-    printf("Time elapsedFrac: %d\n",g_CurrentSequence->timeElapsedFrac);
-    printf("EOT threshold: %d\n",g_CurrentSequence->eotThreshold);
+    printf("Time step: %lu\n",g_CurrentSequence->timeStep);
+    printf("Time elapsedFrac: %lu\n",g_CurrentSequence->timeElapsedFrac);
+    printf("EOT threshold: %lu\n",g_CurrentSequence->eotThreshold);
 
     sTrack_t *pTrack=0;
     for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
@@ -437,10 +437,10 @@ if(g_CurrentSequence){
             pTrackState=&(pTrack->currentState);
             printf("Time elapsed: %d\n",pTrackState->timeElapsedInt);
             printf("Cur BPM: %d\n",pTrackState->currentBPM);
-            printf("Cur PPQN: %d\n",pTrackState->currentPPQN);
-            printf("Cur SeqPos: %d\n",pTrackState->currentSeqPos);
-            printf("Cur Tempo: %d\n",pTrackState->currentTempo);
-            printf("Time signature: %d\n",pTrackState->timeSignature);
+            printf("Cur PPQN: %lu\n",pTrackState->currentPPQN);
+            printf("Cur SeqPos: %lu\n",pTrackState->currentSeqPos);
+            printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
+            printf("Time signature: nn: %d\tdd: %d\tcc: %d\tbb: %d\r\n",pTrackState->timeSignature.nn,pTrackState->timeSignature.dd,pTrackState->timeSignature.cc,pTrackState->timeSignature.bb);
             printf("Play mode: %s\n",getPlayModeStr(pTrackState->playMode));
             printf("Play state: %s\n",getPlayStateStr(pTrackState->playState));
             printf("Mute: %d\n",pTrackState->bMute);

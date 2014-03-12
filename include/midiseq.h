@@ -121,8 +121,11 @@ typedef struct EventBlock_t{
  U8 type;						/* event type */
  U8 pad0;
  U16 pad1; 
- sEventInfoBlock_t sendEventCb;		/* send event function callback info block */
+#ifdef IKBD_MIDI_SEND_DIRECT
  sEventInfoBlock_t copyEventCb;		/* copy to internal buffer function callback info block */
+#else
+ sEventInfoBlock_t sendEventCb;		/* send event function callback info block */
+#endif
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (U8) */
 } sEventBlock_t, *sEventBlockPtr_t;
 
@@ -135,12 +138,15 @@ typedef struct SysEx_t{
 //inline functions for sending data to external module
   const U8 *getEventName(U32 id);
 
-/* returns the info struct about event: size and pointer to the handler  */
- void getEventFuncInfo (const U8 eventType, sEventInfoBlock_t *infoBlk);
-
+#ifdef IKBD_MIDI_SEND_DIRECT
  /* returns the info struct about event: size and pointer to the handler  */
  void getEventFuncCopyInfo(const U8 eventType, sEventInfoBlock_t *infoBlk);
- 
+#else
+ /* returns the info struct about event: size and pointer to the handler  */
+  void getEventFuncInfo (const U8 eventType, sEventInfoBlock_t *infoBlk);
+
+#endif
+
 /* returns channel number from info block (max 16 channels) or 127 if no channel info is available */
  U8 getChannelNbFromEventBlock (const sEventBlock_t *pBlock);
 

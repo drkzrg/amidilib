@@ -14,15 +14,19 @@
 #include <ctype.h> 
 
 #include "amidilib.h"
+
 #include "ym2149/ym2149.h"
 #include "timing/miditim.h"
+
 #include "sampleSequence.h"
+
 
 #define TEMPO_STEP 10000UL
 
-#include <osbind.h>
 #include "input/ikbd.h"
 #include "timing/mfp.h"
+
+#include <mint/osbind.h>
 
 extern void customSeqReplay(void);
 extern void playNote(U8 channel,U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
@@ -86,7 +90,11 @@ int main(void){
   turnOffKeyclick();
 
   //prepare sequence
-  initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
+  sEvent *ch1=getTestSequenceChannel(0);
+  sEvent *ch2=getTestSequenceChannel(1);
+  sEvent *ch3=getTestSequenceChannel(2);
+
+  initSequence(ch1,ch2,ch3,&g_CurrentState);
   
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
@@ -129,7 +137,11 @@ int main(void){
 	  }break;
 	  case SC_SPACEBAR:{
 	    onStopSequence(&g_CurrentState);
-	    initSequence(&testSequenceChannel1[0],&testSequenceChannel2[1],&testSequenceChannel3[2],&g_CurrentState);
+        sEvent *ch1=getTestSequenceChannel(0);
+        sEvent *ch2=getTestSequenceChannel(1);
+        sEvent *ch3=getTestSequenceChannel(2);
+
+        initSequence(ch1,ch2,ch3,&g_CurrentState);
 	  }break;
 	  
 	} //end switch
@@ -205,7 +217,7 @@ U32 iCurrentTempo=0L;
       pSeqPtr->currentTempo=iCurrentTempo;
   }
 
-  printf("Current tempo: %d [ms]\n",iCurrentTempo);
+  printf("qn duration: %lu [ms]\n",iCurrentTempo);
   handleTempoChange=TRUE;    
 }
 
@@ -228,7 +240,7 @@ iCurrentTempo=pSeqPtr->currentTempo;
   iCurrentTempo=iCurrentTempo+iCurrentStep;
   pSeqPtr->currentTempo=iCurrentTempo;
   
-  printf("qn duration: %d [ms]\n",iCurrentTempo);
+  printf("qn duration: %lu [ms]\n",iCurrentTempo);
 
   handleTempoChange=TRUE;
 }
@@ -463,8 +475,8 @@ void onEndSeq(){
       g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
   
       for (int i=0;i<3;i++){
-	g_CurrentState.tracks[i].seqPosIdx=0UL;
-	g_CurrentState.tracks[i].timeElapsedInt=0UL;
+        g_CurrentState.tracks[i].seqPosIdx=0UL;
+        g_CurrentState.tracks[i].timeElapsedInt=0UL;
        }
        
        if(midiOutputEnabled==TRUE) am_allNotesOff(16);

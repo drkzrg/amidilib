@@ -293,17 +293,17 @@ int main(void) {
 				      am_allNotesOff(16);
 				      currentChannel--;
 				      program_change(currentChannel, currentPN);
-       				      printf("active channel: %d \n",currentChannel);
+                      printf("active channel: %d \n",currentChannel);
 				    }
 				    
 				  }break;
 				 
 				  case SC_GT:{
 				    if(currentChannel!=15){
-					am_allNotesOff(16);
-					currentChannel++;
+                        am_allNotesOff(16);
+                        currentChannel++;
 				        program_change(currentChannel, currentPN);
-					printf("Current channel: %d \n",currentChannel);
+                        printf("Current channel: %d \n",currentChannel);
 				    }
 				  }break;
 				  case SC_ARROW_UP:{
@@ -337,8 +337,8 @@ int main(void) {
 				    switch(getGlobalConfig()->connectedDeviceType){
 				      case DT_LA_SOUND_SOURCE:     
 				      case DT_LA_SOUND_SOURCE_EXT:{
-					setConnectedDeviceType(DT_GS_SOUND_SOURCE);
-					printf("Set MT32 mode.\n");
+                            setConnectedDeviceType(DT_GS_SOUND_SOURCE);
+                            printf("Set MT32 mode.\n");
 				      }break;
     
 				      case DT_GS_SOUND_SOURCE:       
@@ -434,10 +434,10 @@ int main(void) {
 				      case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
 				      case DT_XG_GM_YAMAHA:
 				      default:{
-                    printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, getCM32LInstrName(currentPN), currentPN);
+                        printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, getCM32LInstrName(currentPN), currentPN);
 				    
-					control_change(C_BANK_SELECT, currentChannel,currentBankSelect,0x00);
-					program_change(currentChannel, currentPN);
+                        control_change(C_BANK_SELECT, currentChannel,currentBankSelect,0x00);
+                        program_change(currentChannel, currentPN);
 				      }break;
 				    }
 				    

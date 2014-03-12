@@ -8,45 +8,58 @@
 #include "midi_send.h"
 #include "config.h"
 #include "timing/miditim.h"
+#include "list/list.h"
 
 extern void midiSeqReplay(void);
+
+
+//extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
+//extern U16 MIDIbytesToSend;
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
 
-extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
-extern U16 MIDIbytesToSend; 
+volatile static BOOL handleTempoChange=FALSE;
+volatile static BOOL bTempoChanged=FALSE;
 
-volatile BOOL handleTempoChange;
-static BOOL bTempoChanged=FALSE;
-
-static sSequence_t *g_CurrentSequence=0;
+sSequence_t *g_CurrentSequence=0;
 
 void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
 }
 
 void initSeq(sSequence_t *seq){
- 
- if(seq!=0){
-    U8 activeTrack=seq->ubActiveTrack;
-    U8 mode=0,data=0;
     g_CurrentSequence=0;
+
+
+ if(seq!=0){
+
+    U8 mode=0,data=0;
+    sTrack_t *pTrack=0;
+    sTrackState_t *pTrackState=0;
+    U8 activeTrack=seq->ubActiveTrack;
+
     g_CurrentSequence=seq;
+
     MIDIbytesToSend=0;
     //MIDIbufferReady=0;
 
     for(int i=0;i<seq->ubNumTracks;++i){
-     seq->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
-     seq->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
-     seq->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
-     seq->arTracks[i]->currentState.currentSeqPos=0L;
-     seq->arTracks[i]->currentState.timeElapsedInt=0L;
-     seq->arTracks[i]->currentState.bMute=FALSE;
-     seq->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
-       
-     seq->arTracks[i]->currentState.playState = getGlobalConfig()->playState;
-     seq->arTracks[i]->currentState.playMode = getGlobalConfig()->playMode;
+        pTrack=seq->arTracks[i];
+
+        if(pTrack){
+            pTrackState=&(pTrack->currentState);
+            pTrackState->currentPPQN=DEFAULT_PPQN;
+            pTrackState->currentTempo=DEFAULT_MPQN;
+            pTrackState->currentBPM=DEFAULT_BPM;
+            pTrackState->currentSeqPos=0L;
+            pTrackState->timeElapsedInt=0L;
+            pTrackState->bMute=FALSE;
+            pTrackState->currentBPM=60000000/DEFAULT_MPQN;
+            pTrackState->playState = getGlobalConfig()->playState;
+            pTrackState->playMode = getGlobalConfig()->playMode;
+        }
+
     } 
   
     seq->timeElapsedFrac=0L;
@@ -70,25 +83,31 @@ void initSeq(sSequence_t *seq){
 
 
 void initSeqManual(sSequence_t *seq){
- 
+sTrack_t *pTrack=0;
+sTrackState_t *pTrackState=0;
+U8 mode=0,data=0;
+
  if(seq!=0){
     U8 activeTrack=seq->ubActiveTrack;
-    U8 mode=0,data=0;
+
     g_CurrentSequence=0;
     g_CurrentSequence=seq;
 
-    for(int i=0;i<seq->ubNumTracks;i++){
-     seq->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
-     seq->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
-     seq->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
-     seq->arTracks[i]->currentState.currentSeqPos=0L;
-     seq->arTracks[i]->currentState.timeElapsedInt=0L;
-     seq->arTracks[i]->currentState.bMute=FALSE;
-     seq->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
-       
-     seq->arTracks[i]->currentState.playState = getGlobalConfig()->playState;
-     seq->arTracks[i]->currentState.playMode = getGlobalConfig()->playMode;
-   
+    for(int i=0;i<seq->ubNumTracks;++i){
+     pTrack=seq->arTracks[i];
+
+     if(pTrack){
+         pTrackState=&(pTrack->currentState);
+         pTrackState->currentPPQN=DEFAULT_PPQN;
+         pTrackState->currentTempo=DEFAULT_MPQN;
+         pTrackState->currentBPM=DEFAULT_BPM;
+         pTrackState->currentSeqPos=0L;
+         pTrackState->timeElapsedInt=0L;
+         pTrackState->bMute=FALSE;
+         pTrackState->currentBPM=60000000/DEFAULT_MPQN;
+         pTrackState->playState = getGlobalConfig()->playState;
+         pTrackState->playMode = getGlobalConfig()->playMode;
+     }
     } 
   
     seq->timeElapsedFrac=0L;
@@ -110,6 +129,8 @@ void onEndSequence(){
 U8 activeTrack=0;
 sTrackState_t *pTrackState=0;
 
+sTrack_t *pTrack=0;
+
 if(g_CurrentSequence){
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrackState=&(g_CurrentSequence->arTracks[activeTrack]->currentState);
@@ -128,13 +149,19 @@ if(g_CurrentSequence){
         g_CurrentSequence->timeElapsedFrac=0L;
         g_CurrentSequence->timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
 
-        for (int i=0;i<g_CurrentSequence->ubNumTracks;i++){
-          g_CurrentSequence->arTracks[i]->currentState.currentSeqPos=0L;
-          g_CurrentSequence->arTracks[i]->currentState.timeElapsedInt=0L;
-          g_CurrentSequence->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
-          g_CurrentSequence->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
-          g_CurrentSequence->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
-          g_CurrentSequence->arTracks[i]->currentState.currentBPM=60000000/DEFAULT_MPQN;
+        for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+
+          pTrack=g_CurrentSequence->arTracks[i];
+
+          if(pTrack){
+              pTrack->currentState.currentSeqPos=0L;
+              pTrack->currentState.timeElapsedInt=0L;
+              pTrack->currentState.currentPPQN=DEFAULT_PPQN;
+              pTrack->currentState.currentTempo=DEFAULT_MPQN;
+              pTrack->currentState.currentBPM=DEFAULT_BPM;
+              pTrack->currentState.currentBPM=60000000/DEFAULT_MPQN;
+          }
+
         }
     }
 
@@ -157,7 +184,7 @@ void updateStep(){
   
  //check sequence state if paused do nothing
   if(pActiveTrackState->playState==PS_PAUSED) {
-    if(midiOutEnabled==TRUE) am_allNotesOff(16);
+    if(midiOutEnabled!=FALSE) am_allNotesOff(16);
     return;
   }
   
@@ -171,13 +198,22 @@ void updateStep(){
 
       if(bStopped==FALSE){
           bStopped=TRUE;
+          pActiveTrackState=0;
+          pTrack=0;
+
           //reset each track
           for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
-            g_CurrentSequence->arTracks[i]->currentState.currentPPQN=DEFAULT_PPQN;
-            g_CurrentSequence->arTracks[i]->currentState.currentTempo=DEFAULT_MPQN;
-            g_CurrentSequence->arTracks[i]->currentState.currentBPM=DEFAULT_BPM;
-            g_CurrentSequence->arTracks[i]->currentState.currentSeqPos=0L;
-            g_CurrentSequence->arTracks[i]->currentState.timeElapsedInt=0L;
+            pTrack=g_CurrentSequence->arTracks[i];
+
+            if(pTrack){
+                pActiveTrackState=&(pTrack->currentState);
+                pActiveTrackState->currentPPQN=DEFAULT_PPQN;
+                pActiveTrackState->currentTempo=DEFAULT_MPQN;
+                pActiveTrackState->currentBPM=DEFAULT_BPM;
+                pActiveTrackState->currentSeqPos=0L;
+                pActiveTrackState->timeElapsedInt=0L;
+            }
+
           }
 
           g_CurrentSequence->timeElapsedFrac=0L;
@@ -199,6 +235,8 @@ void updateStep(){
   if(handleTempoChange!=FALSE){
     pActiveTrackState->currentBPM=60000000/pActiveTrackState->currentTempo;
     g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM, pActiveTrackState->currentPPQN, SEQUENCER_UPDATE_HZ);
+    printf("Handle tempo change new qn: %d timestep:%d\n",pActiveTrackState->currentTempo,g_CurrentSequence->timeStep);
+
     handleTempoChange=FALSE;
   }
   
@@ -228,8 +266,18 @@ void updateStep(){
                 evntFuncPtr myFunc=NULL;
 #ifdef IKBD_MIDI_SEND_DIRECT
                 //execute callback which copies data to midi buffer (_MIDIsendBuffer)
+
                 myFunc=pEvent->eventBlock.copyEventCb.func;
-                (*myFunc)((void *)pEvent->eventBlock.dataPtr);
+                if(myFunc){
+                    printEventBlock(&pEvent->eventBlock);
+                    (*myFunc)((void *)pEvent->eventBlock.dataPtr);
+                }else{
+                    printf("ERROR:function pointer NULL\n");
+                }
+
+
+                //TODO log midi out buffer state
+
 #else
                //execute callback which sends data directly to midi out
                 myFunc= pEvent->eventBlock.sendEventCb.func;
@@ -270,23 +318,39 @@ void updateStep(){
 
 //replay control
 BOOL isSeqPlaying(void){
+  sTrack_t *pTrack=0;
+
   if(g_CurrentSequence!=0){
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
-    if((g_CurrentSequence->arTracks[activeTrack]->currentState.playState==PS_PLAYING)) 
-      return TRUE;
-    else 
-      return FALSE;
+    pTrack=g_CurrentSequence->arTracks[activeTrack];
+
+    if(pTrack){
+        if(pTrack->currentState.playState==PS_PLAYING)
+          return TRUE;
+        else
+          return FALSE;
+    }
+
+
   }
   return FALSE;
 }
 
 
 void stopSeq(void){
+  sTrack_t *pTrack=0;
+
   if(g_CurrentSequence!=0){
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
-    if(g_CurrentSequence->arTracks[activeTrack]->currentState.playState!=PS_STOPPED){
-      g_CurrentSequence->arTracks[activeTrack]->currentState.playState=PS_STOPPED;
+    pTrack=g_CurrentSequence->arTracks[activeTrack];
+
+    if(pTrack){
+        if(pTrack->currentState.playState!=PS_STOPPED){
+          pTrack->currentState.playState=PS_STOPPED;
+        }
     }
+
+
   }
 }
 
@@ -357,7 +421,6 @@ void toggleReplayMode(void){
 
 void printSequenceState(){
 if(g_CurrentSequence){
-
     printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
     printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
     printf("Time step: %d\n",g_CurrentSequence->timeStep);
@@ -384,7 +447,15 @@ if(g_CurrentSequence){
         }
     }
  }
+
+ printMidiSendBufferState();
 }
+
+void printMidiSendBufferState(){
+
+    printf("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
+}
+
 const U8 *getPlayStateStr(const ePlayState state){
 
     switch(state){

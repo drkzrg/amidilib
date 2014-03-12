@@ -8,6 +8,8 @@
 #ifndef __SAMPLE_SEQ_H__
 #define __SAMPLE_SEQ_H__
 
+#include "c_vars.h"
+
 typedef struct{
   U32 delta;
   U8 note;	// 0-127 range
@@ -34,70 +36,10 @@ typedef struct{
   U32 timeElapsedFrac; //sequence elapsed time
   U32 timeStep; 	//sequence elapsed time
   sTrack tracks[3];	//one per ym channel
-  ePlayState state;	//current state playing/paused/stopped 
-  ePlayMode playMode;  //play in loop, play once etc..
+  U16 state;	//current state playing/paused/stopped
+  U16 playMode;  //play in loop, play once etc..
 }sCurrentSequenceState;
 
-//sample sequence data
-// output, test sequence for channel 1 
-  static sEvent testSequenceChannel1[]={
-  {0L,24,0xAD},
-  {16L,25,0xAD},
-  {32L,26,0xAD},
-  {64L,27,0xAD},
-  {96L,28,0xAD},
-  {128L,29,0xAD},
-  {16L,31,0xAD},
-  {32L,32,0xAD},
-  {64L,33,0xAD},
-  {96L,34,0xAD},
-  {128L,35,0xAD},
-  {16L,37,0xAD},
-  {32L,38,0xAD},
-  {64L,39,0xAD},
-  {96L,40,0xAD},
-  {0L,0,0xAD}
-};
-
-// output test sequence for channel 2
- static sEvent testSequenceChannel2[]={
-  {0L,24,0xAD},
-  {16L,25,0xAD},
-  {32L,26,0xAD},
-  {64L,27,0xAD},
-  {96L,28,0xAD},
-  {128L,29,0xAD},
-  {16L,31,0xAD},
-  {32L,32,0xAD},
-  {64L,33,0xAD},
-  {96L,34,0xAD},
-  {128L,35,0xAD},
-  {16L,37,0xAD},
-  {32L,38,0xAD},
-  {64L,39,0xAD},
-  {96L,40,0xAD},
-  {0L,0,0xAD}
-};
-
-// output test sequence for channel 2
- static sEvent testSequenceChannel3[]={
-  {0L,24,0xAD},
-  {16L,25,0xAD},
-  {32L,26,0xAD},
-  {64L,27,0xAD},
-  {96L,28,0xAD},
-  {128L,29,0xAD},
-  {16L,31,0xAD},
-  {32L,32,0xAD},
-  {64L,33,0xAD},
-  {96L,34,0xAD},
-  {128L,35,0xAD},
-  {0L,36,0xAD},
-  {16L,37,0xAD},
-  {32L,38,0xAD},
-  {64L,39,0xAD},
-  {96L,40,0xAD},
-  {0L,0,0xAD}
-};
+sEvent *getTestSequenceChannel(U8 chNb);
 
 #endif

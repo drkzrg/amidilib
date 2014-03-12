@@ -17,8 +17,6 @@
 #endif
 
 
-#include "midi_send.h"
-
 //midi data sending, platform specific
 static INLINE U16 amMidiDataReady(U8 deviceNo){
   return Bconstat(deviceNo);

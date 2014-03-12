@@ -18,7 +18,7 @@ extern BOOL bTempoChanged;
 /****************** event function prototypes */
 /* string table with all event names */
 
-static const char *g_arEventNames[T_EVT_COUNT]={
+const U8 *arEventNames[T_EVT_COUNT]={
     "Note On",
     "Note Off",
     "Note Aftertouch",
@@ -148,7 +148,7 @@ static void fHandleSignatureChange(const void *pEvent){
 /* id is enumerated value from eEventType */
 const U8 *getEventName(U32 id){
   if(id<T_EVT_COUNT)
-	return ((const U8 *)g_arEventNames[id]);
+    return ((const U8 *)arEventNames[id]);
   else return 0;
 }
 

@@ -24,7 +24,6 @@ static U8 g_midi_cmd_buffer[4];
 extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
 extern U16 MIDIbytesToSend; 
 
-
 /* common, channel voice messages */
 /**
  * sends NOTE OFF MIDI message (key depressed)

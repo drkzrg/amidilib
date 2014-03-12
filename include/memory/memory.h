@@ -27,18 +27,18 @@ typedef enum{
   PREFER_RADEON = PREFER_TT+3	   //f030 only, not used atm
 } eMemoryFlag;
 
-void *amMallocEx (tMEMSIZE amount, U16 flag);
-void *amMalloc (tMEMSIZE amount);
+void *amMallocEx (const tMEMSIZE amount,const U16 flag);
+void *amMalloc (const tMEMSIZE amount);
 
 void amFree (void **pPtr);
-int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum);
-void *amMemCpy ( void *pDest, void *pSrc,tMEMSIZE iSize);
-void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum);
-void *amMemChr ( void *pSrc, S32 iCharacter, tMEMSIZE iNum);
-void *amMemMove ( void *pDest, void *pSrc,tMEMSIZE iSize);
-void *amCalloc (tMEMSIZE nelements, tMEMSIZE elementSize);
-void *amRealloc(void *pPtr, tMEMSIZE newSize);
-U32 getFreeMem(eMemoryFlag memFlag);
+int amMemCmp ( void *pSrc1, void *pSrc2, const tMEMSIZE iNum);
+void *amMemCpy ( void *pDest, void *pSrc,const tMEMSIZE iSize);
+void *amMemSet ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum);
+void *amMemChr ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum);
+void *amMemMove ( void *pDest, void *pSrc,const tMEMSIZE iSize);
+void *amCalloc (const tMEMSIZE nelements,const tMEMSIZE elementSize);
+void *amRealloc(void *pPtr,const tMEMSIZE newSize);
+U32 getFreeMem(const eMemoryFlag memFlag);
 
 #ifdef DEBUG_BUILD
 /** function logs amount of all types of memory present in the system   

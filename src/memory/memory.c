@@ -18,7 +18,7 @@ static U32 g_memDealloc=0;
  * @param memFlag memory allocation preference flag
  * @return 0L - if no memory available, 0L< otherwise
  */
-U32 getFreeMem(eMemoryFlag memFlag){
+U32 getFreeMem(const eMemoryFlag memFlag){
   void *pMem=0;
   pMem=(void *)Mxalloc( -1L, memFlag);
   return((U32)pMem);
@@ -26,12 +26,12 @@ U32 getFreeMem(eMemoryFlag memFlag){
 
 
 
-void *amMemMove (void *pDest,void *pSrc,tMEMSIZE iSize){
+void *amMemMove (void *pDest,void *pSrc,const tMEMSIZE iSize){
  return memmove(pDest,pSrc,iSize);
 }
 
 
-void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
+void *amMemCpy (void *pDest, void *pSrc,const tMEMSIZE iSize){
   U8 *pbDest=(U8 *)pDest;
   U8 *pbSrc=(U8 *)pSrc;
   
@@ -45,7 +45,7 @@ void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
   return memcpy(pDest,pSrc,iSize);
 }
 
-void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
+void *amMemSet ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
 void *pPtr=0;
   
   pPtr= memset(pSrc,iCharacter,iNum);
@@ -60,15 +60,15 @@ void *pPtr=0;
   return pPtr;
 }
 
-int amMemCmp ( void *pSrc1, void *pSrc2, tMEMSIZE iNum){
+int amMemCmp ( void *pSrc1, void *pSrc2, const tMEMSIZE iNum){
   return memcmp(pSrc1,pSrc2,iNum);
 }
 
-void *amMemChr ( void *pSrc, S32 iCharacter, tMEMSIZE iNum){
+void *amMemChr ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
   return memchr(pSrc,iCharacter,iNum);
 }
 
-void *amMallocEx(tMEMSIZE amount, U16 flag){
+void *amMallocEx(const tMEMSIZE amount,const  U16 flag){
 void *pMem=0;
 
 #if defined (FORCE_MALLOC)
@@ -94,7 +94,7 @@ void *pMem=0;
   return (void *)pMem;
 }
 
-void *amMalloc(tMEMSIZE amount){
+void *amMalloc(const tMEMSIZE amount){
 void *pMem=0;
 
 //TODO: add memory alignment build option on word, long boundary
@@ -136,12 +136,12 @@ void amFree(void **pPtr){
  #endif
 }
 
-void *amCalloc(tMEMSIZE nelements, tMEMSIZE elementSize){
+void *amCalloc(const tMEMSIZE nelements,const tMEMSIZE elementSize){
   return calloc(nelements,elementSize);
 }
 
 
-void *amRealloc( void *pPtr, tMEMSIZE newSize){
+void *amRealloc( void *pPtr, const tMEMSIZE newSize){
  return realloc(pPtr,newSize);
 }
 

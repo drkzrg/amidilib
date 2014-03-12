@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 	
 	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-	  fprintf(stderr,"PPQN: %d\n",pMidiTune->arTracks[0]->currentState.currentPPQN);
+      fprintf(stderr,"PPQN: %lu\n",pMidiTune->arTracks[0]->currentState.currentPPQN);
 	  
 	  #ifdef MIDI_PARSER_TEST
 	  //output loaded midi file to screen/log 
@@ -172,9 +172,14 @@ void mainLoop(sSequence_t *pSequence){
 		 }break;
           #ifdef MANUAL_STEP
           case SC_ENTER:{
-            printf("Sequence step\n");
+
+            for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
+                updateStep();
+            }
+
             printSequenceState();
-            updateStep();
+
+
           }break;
           #endif
 	      };
@@ -225,8 +230,8 @@ void displayTuneInfo(){
   U16 numTrk=pPtr->ubNumTracks;
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN: %d\t",td);
-  printf("Tempo: %d [ms]\n",tempo);
+  printf("PPQN: %lu\t",td);
+  printf("Tempo: %lu [ms]\n",tempo);
   
   printf("Number of tracks: %d\n",numTrk);
   U8 *pTrkName=0;

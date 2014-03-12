@@ -30,7 +30,7 @@ typedef signed long 		S32;
 typedef	float 			F32;
 typedef float 			FP32;
 typedef double 			FP64;
-typedef unsigned int 		BOOL;
+typedef unsigned short int  BOOL;
 typedef signed long long	S64; //non-standard!
 typedef unsigned long long 	U64; //non-standard!
 
@@ -54,16 +54,11 @@ void compilerSanityCheck(void);
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 BOOL checkEndianess();
 
-#ifdef _MSC_VER
-  #define INLINE __forceinline /* use __forceinline (VC++ specific) */
-#else
 #ifdef USE_INLINE
   #define INLINE inline        /* use standard inline */
 #else
   #define INLINE              /* no inline */
 #endif
-#endif
-
 
 //TODO: make it more cross-compiler friendly
 // atm it's gcc specific

@@ -28,7 +28,9 @@ U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups){
     }else{
         ppu=((temp/60)*0x10000)/(U32)ups;
     }
-    
+
+    amTrace("calculateTimeStep %lu\n",ppu);
+
  return ppu;
 }
 
@@ -66,12 +68,11 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision){
     /* SMPTE */
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
-    amTrace((const U8*)"Timing (SMPTE): %x, %d\n", subframe,(timeDivision&0x00FF));
+    amTrace((const U8*)"Timing (SMPTE): %x, %u\n", subframe,(timeDivision&0x00FF));
     return 0;		//todo:
-  }
-   else{
+  }else{
     /* PPQN */
-    amTrace((const U8*)"Timing (PPQN): %d (0x%x)\n", timeDivision,timeDivision);
+    amTrace((const U8*)"Timing (PPQN): %u\n", timeDivision);
     return timeDivision;
    }
 }

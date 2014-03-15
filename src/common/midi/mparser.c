@@ -1,14 +1,14 @@
 
-#include "mparser.h"
 #include "timing/miditim.h"
 #include "mformats.h"
 #include "config.h"
 #include "list/list.h"
 #include "midi.h"
+#include "mparser.h"
 
 #include "string.h"
 
-#ifdef MIDI_PARSER_TEST
+#ifdef MIDI_PARSER_DEBUG
 #include "amidilib.h"
 #endif
 
@@ -443,7 +443,7 @@ if((*recallRS)==0){
   amTrace((const U8*)"delta: %lu\t",delta);
   amTrace((const U8*)"event: Note off ");
   amTrace((const U8*)"ch: %d\t",(pEvntBlock->ubChannelNb)+1);
-  amTrace((const U8*)"note: %d(%s)\t",pNoteOff->noteNb,am_getMIDInoteName(pNoteOff->noteNb));
+  amTrace((const U8*)"note: %d(%s)\t",pNoteOff->noteNb,getMidiNoteName(pNoteOff->noteNb));
   amTrace((const U8*)"vel: %d\n",pNoteOff->velocity);
 #endif
 
@@ -524,7 +524,7 @@ sEventBlock_t tempEvent;
     amTrace((const U8*)"delta: %lu\t",delta);
     amTrace((const U8*)"event: Note on ");
     amTrace((const U8*)"ch: %d\t",channel);
-    amTrace((const U8*)"note: %d(%s)\t",note,am_getMIDInoteName(note));
+    amTrace((const U8*)"note: %d(%s)\t",note,getMidiNoteName(note));
     amTrace((const U8*)"vel: %d \n",velocity);
  #endif
 
@@ -663,7 +663,7 @@ sEventBlock_t tempEvent;
         (*pPtr)++;
     }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",delta, channelNb+1, controllerNb,getMIDIcontrollerName(controllerNb), value);
+    amTrace((const U8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",delta, channelNb+1, controllerNb,getMidiControllerName(controllerNb), value);
 #endif
 
     /* add event to list */
@@ -1324,7 +1324,6 @@ sEventBlock_t tempEvent;
     getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
     tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
 #endif
-
 
     pEvntBlock=(sTimeSignature_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->timeSignature=timeSign;

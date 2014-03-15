@@ -17,8 +17,8 @@
 _midiSeqReplay:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	
-	clr.b     $fffffa1b
-	eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
+        clr.b     $fffffa1b
+        ;eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 	
 	jsr 	_updateStep		;updates
 
@@ -73,3 +73,5 @@ _midiSeqReplay:
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer
+
+        BSS

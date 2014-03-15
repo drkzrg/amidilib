@@ -82,7 +82,6 @@ static void fHandleSignatureChange(const void *pEvent){
 
 }
 
-
 /*returns pointer to NULL terminated string with event name */
 /* id is enumerated value from eEventType */
 const U8 *getEventName(U32 id){

@@ -233,6 +233,7 @@ void updateStep(){
   bStopped=FALSE; //we replaying, so we have to reset this flag
   
   if(handleTempoChange!=FALSE){
+
     pActiveTrackState->currentBPM=60000000/pActiveTrackState->currentTempo;
     g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM, pActiveTrackState->currentPPQN, SEQUENCER_UPDATE_HZ);
     printf("Handle tempo change new qn: %d timestep:%d\n",pActiveTrackState->currentTempo,g_CurrentSequence->timeStep);
@@ -274,7 +275,6 @@ void updateStep(){
                 }else{
                     printf("ERROR:function pointer NULL\n");
                 }
-
 
                 //TODO log midi out buffer state
 
@@ -349,8 +349,6 @@ void stopSeq(void){
           pTrack->currentState.playState=PS_STOPPED;
         }
     }
-
-
   }
 }
 
@@ -420,6 +418,7 @@ void toggleReplayMode(void){
 }
 
 void printSequenceState(){
+
 if(g_CurrentSequence){
     printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
     printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
@@ -452,8 +451,8 @@ if(g_CurrentSequence){
 }
 
 void printMidiSendBufferState(){
-
     printf("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
+
 }
 
 const U8 *getPlayStateStr(const ePlayState state){

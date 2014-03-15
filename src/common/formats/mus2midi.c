@@ -30,11 +30,11 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <amlog.h>
 
 #include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
-#include <amlog.h>
 #include <amidilib.h>
 
 #define MUSEVENT_KEYOFF	0
@@ -71,7 +71,8 @@ static int WriteVarLen( long value, byte* out ){
 	long buffer, count = 0;
 
 	buffer = value & 0x7f;
-	while ((value >>= 7) > 0) {
+
+    while ((value >>= 7) > 0) {
 		buffer <<= 8;
 		buffer += 0x80;
 		buffer += (value & 0x7f);
@@ -120,14 +121,19 @@ void Midi_CreateHeader(sMThd* header, short format, short track_count,  short di
 	WriteShort(&header->division, division);
 }
 
-unsigned char* Midi_WriteTempo(unsigned char* buffer, int tempo){
+unsigned char* Midi_WriteTempo(unsigned char* buffer){
 	buffer = WriteByte(buffer, 0x00);	// delta time
-	buffer = WriteByte(buffer, 0xff);	// sys command
-	buffer = WriteShort(buffer, 0x5103); // command - set tempo
+    buffer = WriteByte(buffer, EV_META);	// meta event
+    buffer = WriteByte(buffer, MT_SET_TEMPO);   // set tempo
+    buffer = WriteByte(buffer, 0x3);   // set tempo
 
-	buffer = WriteByte(buffer, tempo & 0x000000ff);
-	buffer = WriteByte(buffer, (tempo & 0x0000ff00) >> 8);
-	buffer = WriteByte(buffer, (tempo & 0x00ff0000) >> 16);
+    //0x001aa309
+    //->09a31a
+    buffer = WriteByte(buffer, 0x09);
+    buffer = WriteByte(buffer, 0xa3);
+    buffer = WriteByte(buffer, 0x1a);
+
+    amTrace("Midi_WriteTempo() Mus2Midi: 0x%lx\n",0x00FFFFFF&*((U32 *)(buffer-4)));
 
 	return buffer;
 }
@@ -243,13 +249,13 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
 	// microseconds per quarter note(yikes)
 	Midi_UpdateBytesWritten(&bytes_written, 7, *len);
-	out = Midi_WriteTempo(out, 0x001aa309);
+    out = Midi_WriteTempo(out);
 
 	// Percussions channel starts out at full volume
 	Midi_UpdateBytesWritten(&bytes_written, 4, *len);
-	out = WriteByte(out, 0x00);
-	out = WriteByte(out, 0xB9);
-	out = WriteByte(out, 0x07);
+    out = WriteByte(out, 0x00); //delta
+    out = WriteByte(out, 0xB9); //channel 9
+    out = WriteByte(out, 0x07);
 	out = WriteByte(out, 127);
 
 	// Main Loop

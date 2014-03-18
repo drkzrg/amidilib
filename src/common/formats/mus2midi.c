@@ -118,7 +118,7 @@ void Midi_CreateHeader(sMThd* header){
 	WriteInt(&header->headLenght, 6);
     WriteShort(&header->format, 0);
     WriteShort(&header->nTracks, 1);
-    WriteShort(&header->division, 0x5900);
+    WriteShort(&header->division, 0x0059);
 }
 
 unsigned char* Midi_WriteTempo(unsigned char* buffer){

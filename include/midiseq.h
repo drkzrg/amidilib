@@ -144,7 +144,6 @@ typedef struct SysEx_t{
 #else
  /* returns the info struct about event: size and pointer to the handler  */
   void getEventFuncInfo (const U8 eventType, sEventInfoBlock_t *infoBlk);
-
 #endif
 
 /* returns channel number from info block (max 16 channels) or 127 if no channel info is available */

@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 	
 	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-      fprintf(stderr,"PPQN: %lu\n",pMidiTune->arTracks[0]->currentState.currentPPQN);
+      fprintf(stderr,"PPQN: %u\n",pMidiTune->timeDivision);
 	  
 	  #ifdef MIDI_PARSER_TEST
 	  //output loaded midi file to screen/log 
@@ -225,12 +225,12 @@ void displayTuneInfo(){
   sSequence_t *pPtr;
   getCurrentSeq(&pPtr);
   
-  U32 td=pPtr->arTracks[0]->currentState.currentPPQN;
   U32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
+  U16 td=pPtr->timeDivision;
   U16 numTrk=pPtr->ubNumTracks;
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN: %lu\t",td);
+  printf("PPQN: %u\t",td);
   printf("Tempo: %lu [ms]\n",tempo);
   
   printf("Number of tracks: %d\n",numTrk);
@@ -249,7 +249,7 @@ void midiParserTest(sSequence_t *pSequence){
    amTrace((const U8*)"Parsed MIDI read test\n");
    amTrace((const U8*)"Sequence name: %s\n",pSequence->pSequenceName);
    amTrace((const U8*)"Nb of tracks: %d\n",pSequence->ubNumTracks);
-   amTrace((const U8*)"PPQN: %d\n",pSequence->arTracks[0]->currentState.currentPPQN);
+   amTrace((const U8*)"Td/PPQN: %u\n",pSequence->timeDivision);
    amTrace((const U8*)"Active track: %d\n",pSequence->ubActiveTrack);
 	  
 	  //output data loaded in each track

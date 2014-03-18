@@ -422,31 +422,33 @@ static BOOL bStopped=FALSE;
    
   //repeat for each track
   for (int i=0;i<3;i++){
-    //for each active track
+
+     //for each active track
       U32 count=g_CurrentState.tracks[i].seqPosIdx;
       sEvent *pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while((isEndSeq(pEvent)==FALSE)&&pEvent->delta <= g_CurrentState.tracks[i].timeElapsedInt ){
-	  endOfSequence=FALSE;
-	  g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;
+      while( ((isEndSeq(pEvent)==FALSE) && pEvent->delta<=g_CurrentState.tracks[i].timeElapsedInt))
+      {
+        endOfSequence=FALSE;
+        g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;
 	  
-	  if(g_CurrentState.tracks[i].state.bIsActive==TRUE){
-	    playNote(i+1,pEvent->note,midiOutputEnabled,ymOutputEnabled);
-	  }
-	  ++count;
-	  pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
+        if(g_CurrentState.tracks[i].state.bIsActive==TRUE){
+            playNote(i+1,pEvent->note,midiOutputEnabled,ymOutputEnabled);
+        }
+
+        ++count;
+        pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
       }
       
       //check for end of sequence
       if(isEndSeq(pEvent)){
-	endOfSequence=TRUE;
-	 playNote(i+1,0,midiOutputEnabled,ymOutputEnabled);
-      }
-     else{
-      g_CurrentState.tracks[i].seqPosIdx=count;
-    }
+        endOfSequence=TRUE;
+        playNote(i+1,0,midiOutputEnabled,ymOutputEnabled);
+      }else{
+        g_CurrentState.tracks[i].seqPosIdx=count;
+     }
     
   }
   

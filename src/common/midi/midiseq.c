@@ -43,11 +43,15 @@ static void fSetTempo(const void *pEvent){
  getCurrentSeq(&seq);
 
  if(seq!=0){
-   //set new tempo value and indicate that tempo has changed
-   //it will be handled in interrupt routine
+   // set new tempo value and indicate that tempo has changed
+   // it will be handled in interrupt routine
    U8 activeTrack=seq->ubActiveTrack;
-   seq->arTracks[activeTrack]->currentState.currentPPQN=pPtr->eventData.tempoVal;
+   amTrace("fSetTempo %lu\n",pPtr->eventData.tempoVal);
+   seq->arTracks[activeTrack]->currentState.currentTempo=pPtr->eventData.tempoVal;
    bTempoChanged=TRUE;
+ }else{
+     amTrace("fSetTempo failed\n");
+
  }
 }
 

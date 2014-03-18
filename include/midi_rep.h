@@ -38,7 +38,7 @@ void initSeq(sSequence_t *seq);
 void initSeqManual(sSequence_t *seq);
 
 /** mutes selected track or first one if there is only one */
-void muteTrack(U16 trackNb,BOOL bMute);
+void muteTrack(const U16 trackNb,const BOOL bMute);
 
 /** toggles between replay modes. 
  * "play once"(replay stops after end of tracks) and "play in loop" 

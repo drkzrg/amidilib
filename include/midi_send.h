@@ -12,7 +12,8 @@
 #define MIDI_BUFFER_SIZE 32767  /*default MIDI buffer size 32k */
 
 #ifdef IKBD_MIDI_SEND_DIRECT  
-  //bypass of Atari XBIOS, writes directly to IKBD to send data 
+#define MIDI_SENDBUFFER_SIZE (32*1024) //see common_m68k.inc
+  //bypass of Atari XBIOS, writes directly to IKBD to send data
   extern void amMidiSendIKBD();  
 #endif
 

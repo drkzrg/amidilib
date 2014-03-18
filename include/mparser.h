@@ -52,7 +52,7 @@ S16 am_getHeaderInfo(const void *pMidiPtr);
 *	@param pCurSequence pointer to AMIDI sequence structure
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
-void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence, S16 *iError);
+void *processMidiTrackData(void *startPtr, const U32 fileTypeFlag,const U32 numTracks, sSequence_t **pCurSequence, S16 *iError);
 
 /** processes the MIDI track events
 *	@param startPtr TODO
@@ -156,9 +156,5 @@ U8 am_isMidiRTorSysex(U8 byteEvent);
 
 /* combine bytes function (14 bit values) for pitch bend */
 U16 combineBytes(U8 bFirst, U8 bSecond);
-
-/* gets MIDI controller name */
-const U8 *getMIDIcontrollerName(U8 iNb);
-
 
 #endif // MPARSER_H

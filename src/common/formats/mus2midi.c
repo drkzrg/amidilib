@@ -94,31 +94,31 @@ static int WriteVarLen( long value, byte* out ){
 unsigned char* WriteByte(void* buf, byte b){
 	unsigned char* buffer = (unsigned char*)buf;
     *buffer = b;
-    buffer++;
+    ++buffer;
 	return buffer;
 }
 
 unsigned char* WriteShort(void* b, unsigned short s){
     unsigned short* buffer = (unsigned short*)b;
     *buffer = s;
-    buffer++;
+    ++buffer;
     return (unsigned char *)buffer;
 }
 
 unsigned char* WriteInt(void* b, unsigned int i){
  unsigned int* buffer = (unsigned int*)b;
  *buffer = i;
- buffer++;
+ ++buffer;
  return (unsigned char *)buffer;
 }
 
-// Format - 0(1 track only), 1(1 or more tracks, each play same time), 2(1 or more, each play seperatly)
-void Midi_CreateHeader(sMThd* header, short format, short track_count,  short division){
+// Format - 0 (1 track only)
+void Midi_CreateHeader(sMThd* header){
 	WriteInt(&header->id,ID_MTHD);
 	WriteInt(&header->headLenght, 6);
-	WriteShort(&header->format, format);
-	WriteShort(&header->nTracks, track_count);
-	WriteShort(&header->division, division);
+    WriteShort(&header->format, 0);
+    WriteShort(&header->nTracks, 1);
+    WriteShort(&header->division, 0x5900);
 }
 
 unsigned char* Midi_WriteTempo(unsigned char* buffer){
@@ -236,8 +236,8 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	cur = bytes + header.scoreStart;
 	end = cur + header.scoreLen;
 
-	// Write out midi header
-	Midi_CreateHeader(&midiHeader, 0, 1, 0x0059);
+    // Write out midi header format 0
+    Midi_CreateHeader(&midiHeader);
 	Midi_UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
     amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
 	out += MIDIHEADERSIZE;

@@ -149,7 +149,10 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 		 
             /* OK! valid number of tracks */
             /* get time division for timing */
+
+            /* Store time division for sequence, TODO: SMPTE handling */
             iTimeDivision = am_getTimeDivision(pMidiPtr);
+            (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
             startPtr=(void *)((U32)startPtr+sizeof(sMThd));
@@ -157,9 +160,6 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             /* create one track list only */
             (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
             amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
-            /* Store time division for sequence, TODO: SMPTE handling */
-		  
-            (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 		 		    
             /* init event list */
             (*pSequence)->arTracks[0]->pTrkEventList=0;
@@ -191,6 +191,8 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
         }
 	  
         iTimeDivision = am_getTimeDivision(pMidiPtr);
+        (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+
         startPtr=(void *)((U32)startPtr+sizeof(sMThd));
                 	
         /* Store time division for sequence, TODO: SMPTE handling */
@@ -200,8 +202,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
         for(int i=0;i<iNumTracks;i++){
             (*pSequence)->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
             amMemSet((*pSequence)->arTracks[i],0,sizeof(sTrack_t));
-            /* init event list */
-            (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+            /* init event list */            
         }
 	  
           while (startPtr!=0){
@@ -223,6 +224,8 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	  
         iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
         iTimeDivision = am_getTimeDivision(pMidiPtr);
+        (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+
         startPtr=(void *)((U32)startPtr+sizeof(sMThd));
 		
         /* Store time division for sequence, TODO: SMPTE handling */
@@ -235,8 +238,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 
         /* init event list */
 	    (*pSequence)->arTracks[i]->pTrkEventList=0;
-	    (*pSequence)->arTracks[i]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-	  
+
 	  }
            
        while (startPtr!=0){
@@ -307,15 +309,16 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             /* OK! valid number of tracks */
             /* get time division for timing */
             iTimeDivision = am_getTimeDivision(pOut);
+            (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
             startPtr=(void *)((U32)pOut+sizeof(sMThd));
 
            /* create one track list only */
             (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            
             amMemSet((*pSequence)->arTracks[0],0,sizeof(sTrack_t));
-            /* Store time division for sequence, TODO: SMPTE handling */
-            (*pSequence)->arTracks[0]->currentState.currentPPQN=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+
             /* init event list */
             (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  

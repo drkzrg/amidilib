@@ -64,12 +64,13 @@ because we have to know if we have to dump event data to one eventlist or severa
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
 
-void *processMidiTrackData(void *startPtr, U32 fileTypeFlag,U32 numTracks, sSequence_t **pCurSequence, S16 *iError )
+void *processMidiTrackData(void *startPtr, const U32 fileTypeFlag,const U32 numTracks, sSequence_t **pCurSequence, S16 *iError )
 {
 U32 trackCounter=0;
 U32 endAddr=0L;
 U32 ulChunkSize=0;
 
+sMThd *pMidiHeader=(sMThd *)startPtr;
 sChunkHeader *pHeader=0;
 sTrack_t **ppTrack=0;
 void *end=0;
@@ -86,12 +87,13 @@ switch(fileTypeFlag){
     case T_MIDI0:{
       /* we have only one track data to process */
       /* add all of them to given track */
+      (*pCurSequence)->seqType=ST_SINGLE;
+
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
 
       pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
       pTempTrack->currentState.playState = getGlobalConfig()->playState;
 
-      pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -109,6 +111,7 @@ switch(fileTypeFlag){
     }
     break;
      case T_MIDI1:{
+      (*pCurSequence)->seqType=ST_MULTI;
 
       while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
       /* we have got track data :)) */
@@ -117,7 +120,6 @@ switch(fileTypeFlag){
 
       pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
       pTempTrack->currentState.playState = getGlobalConfig()->playState;
-      pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -157,6 +159,7 @@ switch(fileTypeFlag){
     case T_MIDI2:{
     /* handle MIDI 2, multitrack type */
     /* create several track lists according to numTracks */
+    (*pCurSequence)->seqType=ST_MULTI_SUB;
 
     /* tracks inited, now insert track data */
     while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
@@ -166,7 +169,6 @@ switch(fileTypeFlag){
 
       pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
       pTempTrack->currentState.playState = getGlobalConfig()->playState;
-      pTempTrack->currentState.currentPPQN=DEFAULT_PPQN;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -202,29 +204,16 @@ switch(fileTypeFlag){
       }
     }
     }break;
-     case T_XMIDI:{
-        /*TODO: ! not implemented */
-    return NULL;
-     }
-     case T_RMID:{
-     return NULL;/*TODO: ! not implemented */
-     }break;
-     case T_SMF:{
-      return NULL;/*TODO: ! not implemented */
-     }break;
-     case T_XMF:{
-      return NULL;/*TODO: ! not implemented */
-     } break;
+     case T_XMIDI:
+     case T_RMID:
+     case T_SMF:
+     case T_XMF:
 
-     case T_SNG:{
-      return NULL;;/*TODO: ! not implemented */
-    }break;
-     case T_MUS:
-       return NULL;;/*TODO: ! not implemented */
-     break;
-    default:{
-      return NULL;
-    }
+     default:
+    /*TODO: unimplemented
+      except T_MUS, it is converted to Midi 0 format
+    */
+     return NULL;
   };
 
  amTrace((const U8*)"Finished processing...\n");

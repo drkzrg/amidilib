@@ -21,6 +21,13 @@ typedef enum{
   S_PLAY_RANDOM=0x10
 } ePlayMode;
 
+/** sequence type*/
+typedef enum{
+    ST_SINGLE=0,
+    ST_MULTI,
+    ST_MULTI_SUB
+} eSequenceType;
+
 /** current track state */
 typedef enum{
   PS_STOPPED=0x00,
@@ -34,9 +41,7 @@ typedef struct EventList{
 }PACK sEventList;
 
 typedef struct TrackState_t{
- sTimeSignature timeSignature;	      //time signature
  U32 currentTempo;		      //quaternote duration in ms, 500ms default
- U32 currentPPQN;		      //pulses per quater note
  U32 currentBPM;	          //beats per minute (60 000000 / currentTempo)
  U32 currentSeqPos;		      //index of current event in list
  U32 timeElapsedInt;		  //track elapsed time
@@ -58,10 +63,13 @@ typedef struct Sequence_t{
    U32 timeElapsedFrac; 			// sequence elapsed time
    U32 timeStep;                    // sequence time step
    U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
+   U16 timeDivision;                // pulses per quater note /PPQN /pulses per quaternote
    U16 ubNumTracks;            	    /* number of tracks 1-65536 */
    U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
+   eSequenceType seqType;           // sequence: single, multitrack, separate
 } PACK sSequence_t;
 
 
 #endif
+

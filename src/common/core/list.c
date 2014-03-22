@@ -16,7 +16,7 @@
 
 #include "timing/mfp.h"
 
-#ifdef EVENT_LINEAR_BUFFER
+#if defined (EVENT_LINEAR_BUFFER)
 #include "memory/linalloc.h" 	/* custom memory allocator */
 #include "config.h"
 
@@ -35,7 +35,7 @@ void destroyEventBuffer(){
 #endif
 
 /* adds event to linked list, list has to be inintialised with null */
-//event list, temp event
+// event list, temp event
 
 S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){
  sEventList *pTempPtr=NULL;

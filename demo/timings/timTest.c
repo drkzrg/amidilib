@@ -429,7 +429,7 @@ static BOOL bStopped=FALSE;
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while( ((isEndSeq(pEvent)==FALSE) && pEvent->delta<=g_CurrentState.tracks[i].timeElapsedInt))
+      while( ((isEndSeq(pEvent)==FALSE)&&pEvent->delta<=g_CurrentState.tracks[i].timeElapsedInt))
       {
         endOfSequence=FALSE;
         g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;

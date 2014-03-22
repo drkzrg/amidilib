@@ -9,6 +9,7 @@
 #general
 tools_prefix='/usr'
 base_dir='/home/saulot/'
+build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=no"
 copy_to_shared_dir=0
 
 # hatari
@@ -53,8 +54,6 @@ if [ -f ../bin/$MIDISEQ_BIN ];
 then 
    rm ../bin/$MIDISEQ_BIN
 fi
-
-build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
 
 #clean all stuff
 scons $build_options -c

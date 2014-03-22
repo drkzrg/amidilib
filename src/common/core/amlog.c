@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+
 #include <mint/osbind.h>
 
 #include "amlog.h"
@@ -23,14 +24,14 @@ static FILE *ofp=0;
 
 #define SERIAL_OUTPUT_CHANNEL	7
 
-#if defined (DEBUG)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT)
+#if (defined(DEBUG)||defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
 static char buffer[OUTPUT_BUFFER_SIZE];
 #endif
 
-#if defined(DEBUG)||defined(DEBUG_FILE_OUTPUT)
+#if (defined(DEBUG)||defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
 void logd(const char *mes,...){
 
-#if defined(SERIAL_LOG)||defined(CON_LOG)
+#if (defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_CONSOLE_OUTPUT))
     int bBytesNotSent=1;
     int bytesSent=0;
     int len=0;
@@ -41,25 +42,25 @@ void logd(const char *mes,...){
     vsprintf(buffer,(const char *)mes,va);
     va_end(va);
 
-#if defined(SERIAL_LOG)||defined(CON_LOG)
+#if (defined(DEBUG_CONSOLE_OUTPUT)||defined(DEBUG_SERIAL_OUTPUT))
     len=strlen(buffer);
 #endif
 
-#if defined(CON_LOG)
+#ifdef DEBUG_CONSOLE_OUTPUT
     fprintf(stderr,buffer);
 #endif
 
-#if defined(SERIAL_LOG)
+#ifdef DEBUG_SERIAL_OUTPUT
     while(bBytesNotSent){
       if( Bcostat(SERIAL_OUTPUT_CHANNEL) == -1 ){
-    Bconout(SERIAL_OUTPUT_CHANNEL,(short int)buffer[bytesSent] );
-    ++bytesSent;
+        Bconout(SERIAL_OUTPUT_CHANNEL,(short int)buffer[bytesSent] );
+        ++bytesSent;
       }
      if((len)==bytesSent)bBytesNotSent=0;
     }
 #endif
 
-#if defined(DEBUG_FILE_OUTPUT)
+#ifdef DEBUG_FILE_OUTPUT
     fprintf(ofp,buffer);
      fflush(ofp);
 #endif
@@ -67,7 +68,7 @@ void logd(const char *mes,...){
 }
 #endif
 
-#if defined(DEBUG_SERIAL_OUTPUT)
+#ifdef DEBUG_SERIAL_OUTPUT_ONLY
 void serialLog(const char *mes,...){
   int bSerialNotSent=1;
   int bytesSent=0;
@@ -81,8 +82,8 @@ void serialLog(const char *mes,...){
 
   while(bSerialNotSent){
       if( Bcostat(SERIAL_OUTPUT_CHANNEL) == -1 ){
-    Bconout(SERIAL_OUTPUT_CHANNEL,(short int) buffer[bytesSent] );
-    ++bytesSent;
+        Bconout(SERIAL_OUTPUT_CHANNEL,(short int) buffer[bytesSent] );
+        ++bytesSent;
       }
 
      if((len)==bytesSent) bSerialNotSent=0;
@@ -92,7 +93,7 @@ void serialLog(const char *mes,...){
 
 void initDebug(const char *pFilename){
 
-#if defined(DEBUG_FILE_OUTPUT)
+#ifdef DEBUG_FILE_OUTPUT
     ofp=NULL;
     ofp=fopen(pFilename,"w");
 
@@ -101,7 +102,7 @@ void initDebug(const char *pFilename){
     }
 #endif
 
-#if defined(SERIAL_LOG) || defined(DEBUG_SERIAL_OUTPUT)
+#ifdef DEBUG_SERIAL_OUTPUT
     Bconmap(SERIAL_OUTPUT_CHANNEL);
 #endif
  return;

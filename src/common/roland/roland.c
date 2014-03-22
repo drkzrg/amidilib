@@ -726,7 +726,7 @@ void MT32Reset(void){
   }
   amMidiSendIKBD();
 #else
-    MIDI_SEND_DATA(8,g_arReset);
+    MIDI_SEND_DATA(8,arReset);
 #endif
 }
 

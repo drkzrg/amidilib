@@ -45,9 +45,11 @@ typedef struct TrackState_t{
  U32 currentBPM;	          //beats per minute (60 000000 / currentTempo)
  U32 currentSeqPos;		      //index of current event in list
  U32 timeElapsedInt;		  //track elapsed time
+ sEventList *currEventPtr;
  ePlayState playState;		  // STOP, PLAY, PAUSED
  ePlayMode playMode;	      // current play mode (loop, play_once, random)
                               // sets the active track, by default 0
+ BOOL bTempoChanged;          // changed tempo flag
  BOOL bMute;			      // if TRUE track events aren't sent to external module
 }PACK sTrackState_t;
 

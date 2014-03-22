@@ -18,7 +18,7 @@ _midiSeqReplay:
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 	
         clr.b     $fffffa1b
-        ;eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
+        eor.w	  #$0f0,$ffff8240	;change 1st color in palette (TODO: remove it in the final version)
 	
 	jsr 	_updateStep		;updates
 
@@ -29,6 +29,8 @@ _midiSeqReplay:
 	move.l 	#_MIDIsendBuffer,a0
 	move.w	_MIDIbytesToSend,d1
 
+        cmpi.w   #0,d1
+        beq.s   .done       ;if 0 bytes do nothing
 .send:      
       ;slap data to d0
       move.w	(a0),d0	;get word
@@ -74,4 +76,3 @@ _midiSeqReplay:
 	bclr.b	  #0,$fffffa0f  	; finished!
 	rte                 		; return from timer
 
-        BSS

@@ -56,6 +56,7 @@ void printSequenceState();
 void printMidiSendBufferState();
 
 const U8 *getPlayModeStr(const ePlayMode mode);
+
 const U8 *getPlayStateStr(const ePlayState state);
 
 #endif

@@ -137,6 +137,7 @@ _redirectToSerial:
 	trap #1
 	addq.l #6,sp
 	RTS
+
 	
 	
 	  BSS

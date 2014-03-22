@@ -21,7 +21,7 @@
 
 #include "input/ikbd.h"
 
-#define MANUAL_STEP 1
+//#define MANUAL_STEP 1
 
 #ifdef MANUAL_STEP
 extern void updateStep();
@@ -38,7 +38,6 @@ void midiParserTest(sSequence_t *pSequence);
 /**
  * main program entry
  */
-
 
 int main(int argc, char *argv[]){
   
@@ -171,6 +170,7 @@ void mainLoop(sSequence_t *pSequence){
 		  stopSeq();
 		 }break;
           #ifdef MANUAL_STEP
+
           case SC_ENTER:{
 
             for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
@@ -179,6 +179,9 @@ void mainLoop(sSequence_t *pSequence){
 
             printSequenceState();
 
+            // clear buffer after each update step
+            MIDIbytesToSend=0;
+            amMemSet(MIDIsendBuffer,0,32*1024);
 
           }break;
           #endif

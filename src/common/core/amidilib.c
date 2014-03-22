@@ -546,7 +546,6 @@ void getDeviceInfoResponse(U8 channel){
 #else
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
-   // am_dumpMidiBuffer(); 
 #endif    
     begin=getTimeStamp(); // get current timestamp
 	
@@ -579,16 +578,15 @@ const S8 *getConnectedDeviceInfo(void){
   for(channel=0;channel<0x7f;channel++){
     getDeviceInfoResponse(channel);
    }
- 
- am_dumpMidiBuffer();
+
  return NULL;
 }
 
 void am_allNotesOff(U16 numChannels){
 U16 iCounter;
-  for(iCounter=0;iCounter<numChannels;iCounter++){
-  all_notes_off(iCounter);
- }
+  for(iCounter=0;iCounter<numChannels;++iCounter){
+    all_notes_off(iCounter);
+  }
 }        
 
 #ifdef DEBUG_BUILD
@@ -646,10 +644,6 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  else return NULL;
 }
 
-void am_dumpMidiBuffer(){
-  if(g_arMidiBuffer[0]!=0){
-  amTrace((const U8*)"MIDI buffer dump:\n %s",g_arMidiBuffer);
- }
-}
+
 
 

@@ -9,7 +9,7 @@
 #include "timing/miditim.h"
 #include "list/list.h"
 
-extern void midiSeqReplay(void);
+extern void midiSeqReplayTB(void);
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
@@ -75,7 +75,7 @@ if(seq!=0){
 #endif
     
     //install replay routine 
-    installReplayRout(mode, data, midiSeqReplay);
+    installReplayRout(mode, data, midiSeqReplayTB);
 }
   
  return;

@@ -2,6 +2,7 @@
 #define __MIDITIM_H__
 
 #include "c_vars.h"
+#include "amlog.h"
 
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)

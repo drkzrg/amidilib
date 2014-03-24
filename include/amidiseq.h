@@ -72,6 +72,12 @@ typedef struct Sequence_t{
    eSequenceType seqType;           // sequence: single, multitrack, separate
 } PACK sSequence_t;
 
+// timer type on which update will be executed
+typedef enum{
+  MFP_TiA=0,
+  MFP_TiB,
+  MFP_TiC
+} eTimerType;
 
 #endif
 

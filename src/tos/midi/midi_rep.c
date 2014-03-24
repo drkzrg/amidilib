@@ -10,11 +10,12 @@
 #include "list/list.h"
 
 extern void midiSeqReplayTB(void);
+extern void midiSeqReplayTC(void);
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
 
-sSequence_t *g_CurrentSequence=0;
+static sSequence_t *g_CurrentSequence=0;
 
 void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
@@ -28,7 +29,7 @@ void clearMidiOutputBuffer(){
 }
 #endif
 
-void initSeq(sSequence_t *seq){
+void initSeq(sSequence_t *seq, eTimerType timerType){
  g_CurrentSequence=0;
 
 if(seq!=0){
@@ -75,6 +76,15 @@ if(seq!=0){
 #endif
     
     //install replay routine 
+    switch(timerType){
+    case MFP_TiC:
+        installReplayRout(mode, data, midiSeqReplayTC);
+    case MFP_TiB:
+    default:
+         installReplayRout(mode, data, midiSeqReplayTB);
+     break;
+    };
+
     installReplayRout(mode, data, midiSeqReplayTB);
 }
   

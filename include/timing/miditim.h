@@ -10,7 +10,22 @@
 *   @param PPQ - parts per quaternote
 *   @param qpm QPM - quaternotes per minute
 */
-U32 am_calculateTimeStep(U16 qpm, U16 ppq, U16 ups);
+
+static inline U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups){
+    U32 ppu;
+    U32 temp;
+    temp=(U32)qpm*(U32)ppq;
+
+    if(temp<0x10000){
+        ppu=((temp*0x10000)/60)/(U32)ups;
+    }else{
+        ppu=((temp/60)*0x10000)/(U32)ups;
+    }
+
+    amTrace("calculateTimeStep %lu\n",ppu);
+
+ return ppu;
+}
 
 /** Calculate timestep function (float version)
 *   BPM - beats per minute (tempo)

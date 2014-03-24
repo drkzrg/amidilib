@@ -12,8 +12,7 @@
 #include "amidiseq.h"
 #include "midi_cmd.h"
 #include "midi_rep.h"
-
-extern BOOL bTempoChanged;
+#include "timing/miditim.h"
 
 /****************** event function prototypes */
 /* string table with all event names */
@@ -36,7 +35,6 @@ const U8 *arEventNames[T_EVT_COUNT]={
 
 
 //common
-
 static void fSetTempo(const void *pEvent){
  sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
  sSequence_t *seq=0;
@@ -46,12 +44,12 @@ static void fSetTempo(const void *pEvent){
    // set new tempo value and indicate that tempo has changed
    // it will be handled in interrupt routine
    U8 activeTrack=seq->ubActiveTrack;
-   amTrace("fSetTempo %lu\n",pPtr->eventData.tempoVal);
-   seq->arTracks[activeTrack]->currentState.currentTempo=pPtr->eventData.tempoVal;
-   bTempoChanged=TRUE;
- }else{
-     amTrace("fSetTempo failed\n");
+   sTrackState_t *pCurTrackState=&(seq->arTracks[activeTrack]->currentState);
 
+   pCurTrackState->currentTempo=pPtr->eventData.tempoVal;
+   amTrace("fSetTempo %lu\n",pCurTrackState->currentTempo);
+   pCurTrackState->currentBPM=60000000/pCurTrackState->currentTempo;
+   seq->timeStep=am_calculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
  }
 }
 

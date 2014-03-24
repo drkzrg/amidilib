@@ -12,28 +12,6 @@ long usp;
 /* function for calculating tempo */
 /* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
 
-/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
-/* BPM - beats per minute (tempo of music) */
-/* UPS - update interval (updates per second) */
-/* PPQ - pulses per quaternote - music resolution */
-/* music resolution are in PPQ */
-
-U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups){
-    U32 ppu;
-    U32 temp;
-    temp=(U32)qpm*(U32)ppq;
-    
-    if(temp<0x10000){
-        ppu=((temp*0x10000)/60)/(U32)ups;
-    }else{
-        ppu=((temp/60)*0x10000)/(U32)ups;
-    }
-
-    amTrace("calculateTimeStep %lu\n",ppu);
-
- return ppu;
-}
-
 /* function for calculating tempo (float version) */
 /* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
 /* BPM - beats per minute (tempo of music) */

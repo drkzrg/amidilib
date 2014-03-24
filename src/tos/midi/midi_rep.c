@@ -187,7 +187,6 @@ volatile static sTrack_t *pTrack=0;
 
 #define MIDI_DELTA_MARGIN 1
 
-
 // single track handler
 void updateStep(){
  bStopped=FALSE;
@@ -237,6 +236,11 @@ void updateStep(){
 #ifdef IKBD_MIDI_SEND_DIRECT
         clearMidiOutputBuffer();
 #endif
+          //rewind to the first event
+          while(pActiveTrackState->currEventPtr->pPrev!=0){
+              pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pPrev;
+          }
+
           return;
       }else{
           //do nothing
@@ -247,14 +251,6 @@ void updateStep(){
   };
 
   bStopped=FALSE; //we replaying, so we have to reset this flag
-
-  if(pActiveTrackState->bTempoChanged!=FALSE){
-    pActiveTrackState->currentBPM=60000000/pActiveTrackState->currentTempo;
-    g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM, g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
-    pActiveTrackState->bTempoChanged=FALSE;
-
-    amTrace("Handle tempo change new qn: %lu timestep:%lu\n",pActiveTrackState->currentTempo,g_CurrentSequence->timeStep);
-  }
 
    g_CurrentSequence->timeElapsedFrac += g_CurrentSequence->timeStep;
    TimeAdd = g_CurrentSequence->timeElapsedFrac >> 16;
@@ -319,7 +315,6 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
         //go to next event
         pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pNext;
         pCurrentEvent=pActiveTrackState->currEventPtr;
-        //++pActiveTrackState->currentSeqPos;
 
         if(pCurrentEvent) bEOTflag=isEOT(pCurrentEvent);
     }
@@ -339,7 +334,6 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
      pActiveTrackState->timeElapsedInt=pActiveTrackState->timeElapsedInt+TimeAdd;
    }
 
-
   //check if we have end of sequence
   //on all tracks
   if(endOfSequence!=FALSE){
@@ -353,151 +347,153 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 // multitrack with subsong versions
 // multitrack
 void updateStepMulti(){
- BOOL endOfSequence=FALSE;
- static BOOL bStopped=FALSE;
- sTrackState_t *pActiveTrackState=0;
- sTrack_t *pTrack=0;
+    bStopped=FALSE;
 
- if(g_CurrentSequence==0) return;
+    if(g_CurrentSequence==0) return;
 
- U8 activeTrack=g_CurrentSequence->ubActiveTrack;
- pTrack=g_CurrentSequence->arTracks[activeTrack];
+    //get track, there is only one active
+    pTrack=g_CurrentSequence->arTracks[0];
+    pActiveTrackState=&(pTrack->currentState);
 
- if(pTrack==0) return; //add assert ?
+    //check sequence state if paused do nothing
+     if(pActiveTrackState->playState==PS_PAUSED) {
+       am_allNotesOff(16);
+       return;
+     }
 
- pActiveTrackState=&(pTrack->currentState);
-  
- //check sequence state if paused do nothing
-  if(pActiveTrackState->playState==PS_PAUSED) {
-    if(midiOutEnabled!=FALSE) am_allNotesOff(16);
-    return;
-  }
-  
-  switch(pActiveTrackState->playState){
-    case PS_PLAYING:{
-      bStopped=FALSE;
-    }break;
-    case PS_STOPPED:{
-      //check sequence state if stopped reset position on all tracks
-      //and reset tempo to default, but only once
+     switch(pActiveTrackState->playState){
+       case PS_PLAYING:{
+         bStopped=FALSE;
+       }break;
+       case PS_STOPPED:{
+         //check sequence state if stopped reset position on all tracks
+         //and reset tempo to default, but only once
 
-      if(bStopped==FALSE){
-          bStopped=TRUE;
-          pActiveTrackState=0;
-          pTrack=0;
+         if(bStopped==FALSE){
+             bStopped=TRUE;
+             pActiveTrackState=0;
+             pTrack=0;
 
-          //reset each track
-          for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
-            pTrack=g_CurrentSequence->arTracks[i];
+             //reset track
+             pTrack=g_CurrentSequence->arTracks[0];
 
-            if(pTrack){
-                pActiveTrackState=&(pTrack->currentState);
-                pActiveTrackState->currentTempo=DEFAULT_MPQN;
-                pActiveTrackState->currentBPM=DEFAULT_BPM;
-                pActiveTrackState->currentSeqPos=0L;
-                pActiveTrackState->timeElapsedInt=0L;
-                pActiveTrackState->currentSeqPos=0;
-            }
+             if(pTrack){
+                   pActiveTrackState=&(pTrack->currentState);
+                   pActiveTrackState->currentTempo=DEFAULT_MPQN;
+                   pActiveTrackState->currentBPM=DEFAULT_BPM;
+                   pActiveTrackState->currentSeqPos=0L;
+                   pActiveTrackState->timeElapsedInt=0L;
+                   pActiveTrackState->currentSeqPos=0;
+              }
 
-          }
+             g_CurrentSequence->timeElapsedFrac=0L;
+             g_CurrentSequence->timeStep=0L;
 
-          g_CurrentSequence->timeElapsedFrac=0L;
-          g_CurrentSequence->timeStep=0L;
+             //reset tempo to initial valueas taken during start(get them from main sequence?)
+             g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+   #ifdef IKBD_MIDI_SEND_DIRECT
+           clearMidiOutputBuffer();
+   #endif
+             return;
+         }else{
+             //do nothing
+             return;
+         }
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-        clearMidiOutputBuffer();
-#endif
+       }break;
+     };
 
-          //reset tempo to initial valueas taken during start(get them from main sequence?)
-          g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
-          return;
-      }else{
-          //do nothing
-          return;
+     bStopped=FALSE; //we replaying, so we have to reset this flag
+
+     g_CurrentSequence->timeElapsedFrac += g_CurrentSequence->timeStep;
+     TimeAdd = g_CurrentSequence->timeElapsedFrac >> 16;
+     g_CurrentSequence->timeElapsedFrac &= 0xffff;
+
+     pCurrentEvent=pActiveTrackState->currEventPtr;
+
+      bEOTflag=isEOT(pActiveTrackState->currEventPtr);
+      timeElapsed=pActiveTrackState->timeElapsedInt;
+   //reset
+      myFunc=NULL;
+      bEventSent=FALSE;
+      bSend=FALSE;
+
+      currentDelta=pCurrentEvent->eventBlock.uiDeltaTime;
+
+      if(currentDelta==timeElapsed){
+           bSend=TRUE;
+      }else if(currentDelta==timeElapsed-MIDI_DELTA_MARGIN){
+           bSend=TRUE;
       }
 
-    }break;
-  };
+   if(bEOTflag==FALSE&&bSend!=FALSE){
+       endOfSequence=FALSE;
 
-  bStopped=FALSE; //we replaying, so we have to reset this flag
-  
-  if(pActiveTrackState->bTempoChanged!=FALSE){
+   #ifdef IKBD_MIDI_SEND_DIRECT
+       //execute callback which copies data to midi buffer (_MIDIsendBuffer)
+       myFunc=pCurrentEvent->eventBlock.copyEventCb.func;
+       //printEventBlock(&pCurrentEvent->eventBlock);
+       (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
+   #else
+       //execute callback which sends data directly to midi out (XBIOS)
+       myFunc= pCurrentEvent->eventBlock.sendEventCb.func;
+       //printEventBlock(&pActiveTrackState->currEventPtr->eventBlock);
+       (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
+   #endif
 
-    pActiveTrackState->currentBPM=60000000/pActiveTrackState->currentTempo;
-    g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM, g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+      //go to next event
+      pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pNext;
+      pCurrentEvent=pActiveTrackState->currEventPtr;
 
-    amTrace("Handle tempo change new qn: %lu timestep:%lu\n",pActiveTrackState->currentTempo,g_CurrentSequence->timeStep);
-    pActiveTrackState->bTempoChanged=FALSE;
-  }
-  
-   g_CurrentSequence->timeElapsedFrac += g_CurrentSequence->timeStep;
-   U32 TimeAdd = g_CurrentSequence->timeElapsedFrac >> 16;
-   g_CurrentSequence->timeElapsedFrac &= 0xffff;
-   
+      //check end of track
+      if(pCurrentEvent!=0){
 
-  // repeat for each track
-  for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
-    //for each active track
-      U32 count=0;
-      sEventList *pEvent=0;
-      sTrack_t *pTrack=g_CurrentSequence->arTracks[i];
+         bEOTflag=isEOT(pCurrentEvent);
 
-      count=pTrack->currentState.currentSeqPos;
-      pEvent=&(pTrack->pTrkEventList[count]);
-      pTrack->currentState.timeElapsedInt+=TimeAdd;
+       //check if next events are null and pack buffer until first next non zero delta
+       while(bEOTflag!=FALSE&&pCurrentEvent->eventBlock.uiDeltaTime==0){
+           //handle event
+   #ifdef IKBD_MIDI_SEND_DIRECT
+       //execute callback which copies data to midi buffer (_MIDIsendBuffer)
+       myFunc=pCurrentEvent->eventBlock.copyEventCb.func;
+       //printEventBlock(&pActiveTrackState->currEventPtr->eventBlock);
+       (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
+   #else
+       //execute callback which sends data directly to midi out (XBIOS)
+       myFunc= pCurrentEvent->eventBlock.sendEventCb.func;
+       //printEventBlock(&pActiveTrackState->currEventPtr->eventBlock);
+       (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
+   #endif
+        //go to next event
+        pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pNext;
+        pCurrentEvent=pActiveTrackState->currEventPtr;
+        //++pActiveTrackState->currentSeqPos;
 
-        while((isEOT(pEvent)==FALSE)&&((pEvent->eventBlock.uiDeltaTime <= pTrack->currentState.timeElapsedInt)||pEvent->eventBlock.uiDeltaTime==0)){
-             endOfSequence=FALSE;
-             pTrack->currentState.timeElapsedInt -= pEvent->eventBlock.uiDeltaTime;
+        if(pCurrentEvent) bEOTflag=isEOT(pCurrentEvent);
+       }
 
-             if(pTrack->currentState.bMute==FALSE){
-               //play note
-                evntFuncPtr myFunc=NULL;
-#ifdef IKBD_MIDI_SEND_DIRECT
-                //execute callback which copies data to midi buffer (_MIDIsendBuffer)
-                amTrace("Send..\n");
-                myFunc=pEvent->eventBlock.copyEventCb.func;
+       if(bEOTflag!=FALSE){
+         endOfSequence=TRUE;
+       }
 
-                 printEventBlock(&pEvent->eventBlock);
-                 (*myFunc)((void *)pEvent->eventBlock.dataPtr);
-#else
-                amTrace("Send..\n");
+       bEventSent=TRUE;
+      }
+     } //endif
 
-                //execute callback which sends data directly to midi out
-                myFunc= pEvent->eventBlock.sendEventCb.func;
-                printEventBlock(&pEvent->eventBlock);
-               (*myFunc)((void *)pEvent->eventBlock.dataPtr);
-#endif
+      //add time elapsed
+      if(bEventSent!=FALSE){
+        pActiveTrackState->timeElapsedInt=0;
+      }else{
+        pActiveTrackState->timeElapsedInt=pActiveTrackState->timeElapsedInt+TimeAdd;
+      }
 
-               ++count;
-               pEvent=&(pTrack->pTrkEventList[count]);
-             }else{
-               //silence whole channel / MUTE channel
-               U8 ch = getChannelNbFromEventBlock(&pEvent->eventBlock);
-               if(ch!=127)  all_notes_off(ch);
-
-                if(isEOT(pEvent)==FALSE){
-                 ++count;
-                 pEvent=&(pTrack->pTrkEventList[count]);
-               }
-             } //end mute
-         }
-
-         //check for end of sequence
-         if(isEOT(pEvent)){
-           endOfSequence=TRUE;
-         }
-
-      g_CurrentSequence->arTracks[i]->currentState.currentSeqPos=count;
-  } // end track processing
-  
-  //check if we have end of sequence
-  //on all tracks
-  if(endOfSequence!=FALSE){
-    onEndSequence();
-    endOfSequence=FALSE;
-    amTrace("End of Sequence\n");
-  }
+     //check if we have end of sequence
+     //on all tracks
+     if(endOfSequence!=FALSE){
+       onEndSequence();
+       endOfSequence=FALSE;
+       amTrace("End of Sequence\n");
+     }
 }
 
 //replay control

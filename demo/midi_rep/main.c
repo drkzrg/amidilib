@@ -120,7 +120,7 @@ void mainLoop(sSequence_t *pSequence){
 #ifdef MANUAL_STEP
     initSeqManual(pSequence);
 #else
-    initSeq(pSequence,MFP_TiB);
+    initSeq(pSequence,MFP_TiC);
 #endif
 
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));

@@ -9,8 +9,11 @@
 #include "timing/miditim.h"
 #include "list/list.h"
 
-extern void midiSeqReplayTB(void);
-extern void midiSeqReplayTC(void);
+//external replay routine callbacks
+extern void replaySingleTB(void);
+extern void replaySingleTC(void);
+extern void replayMultiTB(void);
+extern void replayMultiTC(void);
 
 extern volatile BOOL midiOutEnabled;
 extern volatile BOOL ymOutEnabled;
@@ -75,22 +78,30 @@ if(seq!=0){
     amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif
     
-    //install replay routine 
-    switch(timerType){
-    case MFP_TiC:
-        installReplayRout(mode, data, midiSeqReplayTC);
-    case MFP_TiB:
-    default:
-         installReplayRout(mode, data, midiSeqReplayTB);
-     break;
+    if(seq->seqType==ST_SINGLE){
+        //install replay routine
+        switch(timerType){
+            case MFP_TiC:
+                installReplayRout(mode, data, replaySingleTC);
+            case MFP_TiB:
+            default:
+                installReplayRout(mode, data, replaySingleTB);
+            break;
+        };
+    }else if(seq->seqType==ST_MULTI){
+        //install replay routine
+        switch(timerType){
+            case MFP_TiC:
+                installReplayRout(mode, data, replayMultiTC);
+            case MFP_TiB:
+            default:
+                installReplayRout(mode, data, replayMultiTB);
+            break;
+        };
     };
-
-    installReplayRout(mode, data, midiSeqReplayTB);
-}
-  
+  } //endif
  return;
 }
-
 
 void initSeqManual(sSequence_t *seq){
 sTrack_t *pTrack=0;
@@ -195,10 +206,8 @@ volatile static U32 timeElapsed=0;
 volatile static sTrackState_t *pActiveTrackState=0;
 volatile static sTrack_t *pTrack=0;
 
-#define MIDI_DELTA_MARGIN 1
-
 // single track handler
-void updateStep(){
+void updateStepSingle(){
  bStopped=FALSE;
 
  if(g_CurrentSequence==0) return;
@@ -274,14 +283,11 @@ void updateStep(){
    myFunc=NULL;
    bEventSent=FALSE;
    bSend=FALSE;
-
    currentDelta=pCurrentEvent->eventBlock.uiDeltaTime;
 
-   if(currentDelta==timeElapsed){
-        bSend=TRUE;
-   }else if(currentDelta==timeElapsed-MIDI_DELTA_MARGIN){
-        bSend=TRUE;
-   }
+   if(TimeAdd>1)TimeAdd=1;
+   if(currentDelta==timeElapsed) bSend=TRUE;
+
 
 if(bEOTflag==FALSE&&bSend!=FALSE){
     endOfSequence=FALSE;
@@ -430,11 +436,8 @@ void updateStepMulti(){
 
       currentDelta=pCurrentEvent->eventBlock.uiDeltaTime;
 
-      if(currentDelta==timeElapsed){
-           bSend=TRUE;
-      }else if(currentDelta==timeElapsed-MIDI_DELTA_MARGIN){
-           bSend=TRUE;
-      }
+      if(TimeAdd>1)TimeAdd=1;
+      if((currentDelta-1)==timeElapsed) bSend=TRUE;
 
    if(bEOTflag==FALSE&&bSend!=FALSE){
        endOfSequence=FALSE;
@@ -541,7 +544,7 @@ void stopSeq(void){
   }
 
   //all notes off
-  am_allNotesOff(15);
+  am_allNotesOff(16);
 }
 
 void pauseSeq(){

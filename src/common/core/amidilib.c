@@ -264,14 +264,14 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	case T_SNG:{return(-1);}break;
 	case T_MUS:{
 
-      amTrace("Converting MUS to MIDI\n");
+      printf("Converting MUS to MIDI\n");
 
       U8 *pOut=0;
       char tempName[128]={0};
       U32 len=0;
 
       char *pTempPtr=0;
-      amTrace("Processing converted data..\n");
+      printf("Processing converted data..\n");
 
         // allocate 64kb working buffer for midi output
       pOut=amMallocEx(64*1024,PREFER_TT);

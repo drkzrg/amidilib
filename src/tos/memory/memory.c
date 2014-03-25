@@ -172,3 +172,37 @@ void memoryCheck(void){
     amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
 }
 #endif
+
+
+// writes a byte, and returns the buffer
+U8* WriteByte(void* buf, S8 b){
+    unsigned char* buffer = (unsigned char*)buf;
+    *buffer = b;
+    ++buffer;
+    return buffer;
+}
+
+U8* WriteShort(void* b, U16 s){
+    unsigned short* buffer = (unsigned short*)b;
+    *buffer = s;
+    ++buffer;
+    return (unsigned char *)buffer;
+}
+
+U8* WriteInt(void* b, U32 i){
+ unsigned int* buffer = (unsigned int*)b;
+ *buffer = i;
+ ++buffer;
+ return (unsigned char *)buffer;
+}
+
+S32 UpdateBytesWritten(S32* bytes_written, S32 to_add, S32 max){
+    *bytes_written += to_add;
+
+    if(max==-1) return 1;
+
+    if (max && *bytes_written > max){
+        return 0;
+    }
+  return 1;
+}

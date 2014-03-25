@@ -146,7 +146,7 @@ if ( (debug != 'none') and (int(debug)>0)):
   ST_CFLAGS= ST_CFLAGS  
 else:
     print "Release build... Code optimisation is turned on."
-    ST_CFLAGS= ST_CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2'
+    ST_CFLAGS= ST_CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
     
 if(ikbd_direct=="yes"):
     print "Sending data directly via IKBD ENABLED"
@@ -165,7 +165,7 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/roland.c"]
-midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"]
+midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c","common/formats/seq2nok.c"]
 midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src=["tos/common.s"]

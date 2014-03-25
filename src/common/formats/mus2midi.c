@@ -46,16 +46,13 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #define MIDI_MAXCHANNELS	16
 #define MIDIHEADERSIZE 14
 
-#define WORD U16
-#define byte U8
-
-//we are making format 0, nb of tracks==1, div=0xe250(?)
+// we are making format 0, nb of tracks==1, div=0xe250(?)
 
 // reads a variable length integer
-//TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
-static unsigned long ReadVarLen(char* buffer){
-unsigned long value;
-byte c;
+// TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
+static U32 ReadVarLen(S8* buffer){
+U32 value;
+U8 c;
 
 if ((value = *buffer++) & 0x80) {
   value &= 0x7f;
@@ -67,8 +64,8 @@ if ((value = *buffer++) & 0x80) {
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
-static int WriteVarLen( long value, byte* out ){
-	long buffer, count = 0;
+static S32 WriteVarLen( S32 value, U8* out ){
+    S32 buffer, count = 0;
 
 	buffer = value & 0x7f;
 
@@ -80,7 +77,7 @@ static int WriteVarLen( long value, byte* out ){
 
 	while (1) {
 		++count;
-		*out = (byte)buffer;
+        *out = (U8)buffer;
 		++out;
 		if (buffer & 0x80)
 			buffer >>= 8;
@@ -88,28 +85,6 @@ static int WriteVarLen( long value, byte* out ){
 			break;
  }
  return count;
-}
-
-// writes a byte, and returns the buffer
-unsigned char* WriteByte(void* buf, byte b){
-	unsigned char* buffer = (unsigned char*)buf;
-    *buffer = b;
-    ++buffer;
-	return buffer;
-}
-
-unsigned char* WriteShort(void* b, unsigned short s){
-    unsigned short* buffer = (unsigned short*)b;
-    *buffer = s;
-    ++buffer;
-    return (unsigned char *)buffer;
-}
-
-unsigned char* WriteInt(void* b, unsigned int i){
- unsigned int* buffer = (unsigned int*)b;
- *buffer = i;
- ++buffer;
- return (unsigned char *)buffer;
 }
 
 // Format - 0 (1 track only)
@@ -122,10 +97,10 @@ void Midi_CreateHeader(sMThd* header){
 }
 
 unsigned char* Midi_WriteTempo(unsigned char* buffer){
-	buffer = WriteByte(buffer, 0x00);	// delta time
-    buffer = WriteByte(buffer, EV_META);	// meta event
+    buffer = WriteByte(buffer, 0x00);           // delta time
+    buffer = WriteByte(buffer, EV_META);        // meta event
     buffer = WriteByte(buffer, MT_SET_TEMPO);   // set tempo
-    buffer = WriteByte(buffer, 0x3);   // set tempo
+    buffer = WriteByte(buffer, 0x3);            // set tempo
 
     //0x001aa309
     //->09a31a
@@ -138,20 +113,11 @@ unsigned char* Midi_WriteTempo(unsigned char* buffer){
 	return buffer;
 }
 
-int Midi_UpdateBytesWritten(int* bytes_written, int to_add, int max){
-    *bytes_written += to_add;
 
-    if (max && *bytes_written > max){
-        assert(0);
-        return 0;
-    }
-  return 1;
-}
-
-unsigned char MidiMap[] = {
-	0,			// prog change
-	0,			// bank sel
-	1,	//2		// mod pot
+U8 MidiMap[] = {
+    0,		//      prog change
+    0,		//      bank sel
+    1,      //2		// mod pot
 	0x07,	//3		// volume
 	0x0A,	//4		// pan pot
 	0x0B,	//5		// expression pot
@@ -167,9 +133,9 @@ unsigned char MidiMap[] = {
 };
 
 // The MUS data is stored in little-endian, m68k is big endian
-unsigned short LittleToNative(const unsigned short value){
-unsigned short int val=value;
-unsigned short int result;
+U16 LittleToNative(const U16 value){
+U16 val=value;
+U16 result;
   
   result=value<<8;
   val=val>>8;
@@ -177,7 +143,7 @@ unsigned short int result;
   return result;
 }
 
-int Mus2Midi(unsigned char* bytes, unsigned char* out, const char *pOutMidName,int* len){
+S32 Mus2Midi(U8* bytes, U8* out, const S8 *pOutMidName,U32* len){
 // mus header and instruments
 MUSheader_t header;
 
@@ -189,7 +155,7 @@ sMThd midiHeader;
 // Midi track header, only 1 needed(format 0)
 sChunkHeader midiTrackHeader;
 // Stores the position of the midi track header(to change the size)
-byte* midiTrackHeaderOut=0;
+U8* midiTrackHeaderOut=0;
 
 //zero mem
 amMemSet(&midiHeader,0,sizeof(sMThd));
@@ -197,12 +163,12 @@ amMemSet(&midiTrackHeader,0,sizeof(sChunkHeader));
 amMemSet(&header,0,sizeof(MUSheader_t));
 
 // Delta time for midi event
-int delta_time = 0;
-int temp=0;
-int channel_volume[MIDI_MAXCHANNELS] = {0};
-int bytes_written = 0;
-int channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
-byte last_status = 0;
+S32 delta_time = 0;
+S32 temp=0;
+S32 channel_volume[MIDI_MAXCHANNELS] = {0};
+S32 bytes_written = 0;
+S32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
+U8 last_status = 0;
 
 // read the mus header
 amMemCpy(&header, cur, sizeof(MUSheader_t));
@@ -238,32 +204,32 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
     // Write out midi header format 0
     Midi_CreateHeader(&midiHeader);
-	Midi_UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
+    UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
     amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
 	out += MIDIHEADERSIZE;
 
 	// Store this position, for later filling in the midiTrackHeader
-    Midi_UpdateBytesWritten(&bytes_written, sizeof(sChunkHeader), *len);
+    UpdateBytesWritten(&bytes_written, sizeof(sChunkHeader), *len);
 	midiTrackHeaderOut = out;
     out += sizeof(sChunkHeader);
 
-	// microseconds per quarter note(yikes)
-	Midi_UpdateBytesWritten(&bytes_written, 7, *len);
+    // microseconds per quarter note (yikes)
+    UpdateBytesWritten(&bytes_written, 7, *len);
     out = Midi_WriteTempo(out);
 
 	// Percussions channel starts out at full volume
-	Midi_UpdateBytesWritten(&bytes_written, 4, *len);
+    UpdateBytesWritten(&bytes_written, 4, *len);
     out = WriteByte(out, 0x00); //delta
     out = WriteByte(out, 0xB9); //channel 9
     out = WriteByte(out, 0x07);
 	out = WriteByte(out, 127);
 
 	// Main Loop
-    byte channel;
-    byte event;
-    byte temp_buffer[32];	// temp buffer for current iterator
-    byte *out_local=0;
-    byte status=0, bit1=0, bit2=0, bitc = 2;
+    U8 channel;
+    U8 event;
+    U8 temp_buffer[32];	// temp buffer for current iterator
+    U8 *out_local=0;
+    U8 status=0, bit1=0, bit2=0, bitc = 2;
 
 	while (cur < end) {
     status=0, bit1=0, bit2=0, bitc = 2;
@@ -290,7 +256,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
 		status = channelMap[channel];
 
-		// Handle ::g->events
+        // Handle events
 		switch ((event & 122) >> 4){
 		default:
 			assert(0);
@@ -352,7 +318,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
 		// Write out temp stuff
 		if (out_local != temp_buffer){
-			Midi_UpdateBytesWritten(&bytes_written, out_local - temp_buffer, *len);
+            UpdateBytesWritten(&bytes_written, out_local - temp_buffer, *len);
             amMemCpy(out, temp_buffer, out_local - temp_buffer);
 			out += out_local - temp_buffer;
 		}

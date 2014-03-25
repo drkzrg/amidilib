@@ -7,8 +7,13 @@
 #    See license.txt for licensing information.
 
 #general
-tools_prefix='/usr'
+#cygwin
+tools_prefix='/opt/cross-mint'
 base_dir='/home/saulot/'
+
+#linux
+#tools_prefix='/usr'
+#base_dir='/home/saulot/'
 build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=no"
 copy_to_shared_dir=0
 
@@ -16,9 +21,12 @@ copy_to_shared_dir=0
 # if copy_to_emu_dir=1 copy binaries to emulator directory
 copy_to_emu_dir=1
 run_emu=0
-install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
+#install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
-emu_dir=$base_dir'Pulpit/HD/'
+#emu_dir=$base_dir'Pulpit/HD/'
+emu_dir='/cygdrive/h/atari/HATARI/HD/'
+install_dir=$emu_dir'AMIDIDEV/'
+
 stack_size=64k
 
 # output binaries

@@ -77,3 +77,5 @@ include/mparser.h
 include/mformats.h
 include/mdevtype.h
 src/common/midi/midi.c
+src/common/formats/seq2nok.c
+include/nok.h

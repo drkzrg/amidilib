@@ -95,11 +95,11 @@ int main(int argc, char *argv[]){
 	  am_destroySequence(&pMidiTune);
 	  //END of MAINLOOP	
       }else{
-	amTrace((const U8*)"Error while parsing. Exiting... \n");
-	//unload sequence
-	am_destroySequence(&pMidiTune);
-	am_deinit(); //deinit our stuff
-	return(-1);
+        amTrace((const U8*)"Error while parsing. Exiting... \n");
+        //unload sequence
+        am_destroySequence(&pMidiTune);
+        am_deinit(); //deinit our stuff
+        return(-1);
       }
      
     }else{ /* MIDI loading failed */

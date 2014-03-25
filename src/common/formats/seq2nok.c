@@ -21,44 +21,68 @@ static U8 *processSeqEvent(sEventList *pCurEvent,U8 *in, sNokBlock_t *nokBlock){
 
     switch(pCurEvent->eventBlock.type){
         case T_NOTEON:{
-        // dump data
+            // dump data
+            sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)&(pCurEvent->eventBlock);
+
+            pEventBlk->ubChannelNb;
+            pEventBlk->eventData.velocity;
+            pEventBlk->eventData.noteNb;
+
         } break;
         case T_NOTEOFF:{
-        // dump data
+            // dump data
+            sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)&(pCurEvent->eventBlock);
+
         } break;
         case T_NOTEAFT:{
-        // dump data
+            // dump data
+            sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)&(pCurEvent->eventBlock);
+
         } break;
         case T_CONTROL:{
-        // program change (dynamic according to connected device)
+            // program change (dynamic according to connected device)
+            sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)&(pCurEvent->eventBlock);
+            pEventBlk->ubChannelNb;
+            pEventBlk->eventData.controllerNb;
+            pEventBlk->eventData.value;
         } break;
         case T_PRG_CH:{
         // program change (dynamic according to connected device)
+            sProgramChange_t *pEventBlk=&(pCurEvent->eventBlock);
+            pEventBlk->programNb;
         } break;
         case T_CHAN_AFT:{
-        // dump data
+            // dump data
+            sChannelAft_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_PITCH_BEND:{
-        // dump data
+            // dump data
+            sPitchBend_EventBlock_t  *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_META_SET_TEMPO:{
-        //set tempo
+            //set tempo
+            sTempo_EventBlock_t  *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_META_EOT:{
-        //write EOT
+            //write EOT
+            sEot_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_META_CUEPOINT:{
-        //skip
+            //skip
+            sCuePoint_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_META_MARKER:{
-        //skip
+            //skip
+            sMarker_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_META_SET_SIGNATURE:{
         //skip
+            sTimeSignature_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
         case T_SYSEX:{
         // copy data
         // format depends on connected device
+         sSysEX_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
         } break;
     default:
         //error not handled
@@ -78,12 +102,11 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
     U32 currDelta=0;
 
     while(eventPtr!=NULL){
-
         // dump midi event block
 
 
-        // dump data
 
+        // dump data
         if(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==currDelta){
             // store curent delta
             tempBlock.delta=currDelta;

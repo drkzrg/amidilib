@@ -6,10 +6,11 @@
 
 // custom binary midi replay format
 typedef enum{
-  NOK_DATA=0,
+  NOK_MIDIDATA=0,
   NOK_TEMPO_CHANGE,
-  NOK_JUMP,
+  NOK_JUMP,  //not used atm
   NOK_TRIGGER,
+  NOK_END,
   NOK_MAX_EVENT
 } eNokMsgType;
 

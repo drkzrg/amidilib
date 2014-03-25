@@ -2,6 +2,7 @@
 // converts sequence to custom nok, binary format
 
 #include "nok.h"
+#include "midi_cmd.h"
 
 #define NOKHEADERSIZE 10
 
@@ -23,74 +24,76 @@ static U8 *processSeqEvent(sEventList *pCurEvent,U8 *in, sNokBlock_t *nokBlock){
         case T_NOTEON:{
             // dump data
             sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)&(pCurEvent->eventBlock);
-
-            pEventBlk->ubChannelNb;
-            pEventBlk->eventData.velocity;
-            pEventBlk->eventData.noteNb;
-
+            //write to output buffer
+            note_on(pEventBlk->ubChannelNb,pEventBlk->eventData.noteNb,pEventBlk->eventData.velocity);
         } break;
         case T_NOTEOFF:{
             // dump data
             sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)&(pCurEvent->eventBlock);
-
+            note_off(pEventBlk->ubChannelNb,pEventBlk->eventData.noteNb,pEventBlk->eventData.velocity);
         } break;
         case T_NOTEAFT:{
             // dump data
             sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)&(pCurEvent->eventBlock);
-
+            copy_polyphonic_key_press(pEventBlk->ubChannelNb,pEventBlk->eventData.noteNb,pEventBlk->eventData.pressure);
         } break;
         case T_CONTROL:{
             // program change (dynamic according to connected device)
             sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)&(pCurEvent->eventBlock);
-            pEventBlk->ubChannelNb;
-            pEventBlk->eventData.controllerNb;
-            pEventBlk->eventData.value;
+            copy_control_change(pEventBlk->eventData.controllerNb, pEventBlk->ubChannelNb, pEventBlk->eventData.value,0x00);
         } break;
         case T_PRG_CH:{
         // program change (dynamic according to connected device)
-            sProgramChange_t *pEventBlk=&(pCurEvent->eventBlock);
-            pEventBlk->programNb;
+            sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)&(pCurEvent->eventBlock);
+            copy_program_change(pEventBlk->ubChannelNb,pEventBlk->eventData.programNb);
         } break;
         case T_CHAN_AFT:{
             // dump data
-            sChannelAft_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+            sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)&(pCurEvent->eventBlock);
+            copy_channel_pressure(pEventBlk->ubChannelNb,pEventBlk->eventData.pressure);
         } break;
         case T_PITCH_BEND:{
             // dump data
-            sPitchBend_EventBlock_t  *pEventBlk=&(pCurEvent->eventBlock);
+            sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)&(pCurEvent->eventBlock);
+            copy_pitch_bend_2(pEventBlk->ubChannelNb,pEventBlk->eventData.LSB,pEventBlk->eventData.MSB);
         } break;
         case T_META_SET_TEMPO:{
             //set tempo
-            sTempo_EventBlock_t  *pEventBlk=&(pCurEvent->eventBlock);
+            sTempo_EventBlock_t  *pEventBlk=(sTempo_EventBlock_t  *)&(pCurEvent->eventBlock);
+            //TODO create / add tempo block
         } break;
         case T_META_EOT:{
-            //write EOT
-            sEot_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+             //TODO create / add EOT block
+            sEot_EventBlock_t *pEventBlk=(sEot_EventBlock_t *)&(pCurEvent->eventBlock);
         } break;
         case T_META_CUEPOINT:{
             //skip
-            sCuePoint_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+            sCuePoint_EventBlock_t *pEventBlk=(sCuePoint_EventBlock_t *)&(pCurEvent->eventBlock);
         } break;
         case T_META_MARKER:{
             //skip
-            sMarker_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+            sMarker_EventBlock_t *pEventBlk=(sMarker_EventBlock_t *)&(pCurEvent->eventBlock);
         } break;
         case T_META_SET_SIGNATURE:{
         //skip
-            sTimeSignature_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+            sTimeSignature_EventBlock_t *pEventBlk=(sTimeSignature_EventBlock_t *)&(pCurEvent->eventBlock);
         } break;
         case T_SYSEX:{
         // copy data
         // format depends on connected device
-         sSysEX_EventBlock_t *pEventBlk=&(pCurEvent->eventBlock);
+         sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)&(pCurEvent->eventBlock);
+          #ifdef DEBUG_BUILD
+            amTrace((const U8*)"Copy SysEX Message.\n");
+          #endif
+         //TODO: check buffer overflow
+          amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pEventBlk->pBuffer,pEventBlk->bufferSize);
+          MIDIbytesToSend+=pEventBlk->bufferSize;
         } break;
     default:
         //error not handled
         return -1;
         break;
   };
-
-
 };
 
 static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompress){
@@ -103,8 +106,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
 
     while(eventPtr!=NULL){
         // dump midi event block
-
-
 
         // dump data
         if(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==currDelta){

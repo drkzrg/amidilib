@@ -262,6 +262,9 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	case T_SMF:{return(-1);}break;
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
+    case T_NOK:{
+
+    }break;
 	case T_MUS:{
 
       printf("Converting MUS to MIDI\n");

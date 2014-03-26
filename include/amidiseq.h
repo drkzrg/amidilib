@@ -11,7 +11,7 @@
 
 #include "midiseq.h"
 
-#define AMIDI_MAX_TRACKS 65536
+#define AMIDI_MAX_TRACKS 64         // 64 should be enough
 #define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
                                     /* sequence is considered finished and ready to STOP or LOOP */
 /** sequence replay mode */
@@ -41,10 +41,9 @@ typedef struct EventList{
 }PACK sEventList;
 
 typedef struct TrackState_t{
- U32 currentTempo;		      //quaternote duration in ms, 500ms default
- U32 currentBPM;	          //beats per minute (60 000000 / currentTempo)
- U32 currentSeqPos;		      //index of current event in list
- U32 timeElapsedInt;		  //track elapsed time
+ U32 currentTempo;		      // quaternote duration in ms, 500ms default
+ U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
+ U32 timeElapsedInt;		  // track elapsed time
  sEventList *currEventPtr;
  ePlayState playState;		  // STOP, PLAY, PAUSED
  ePlayMode playMode;	      // current play mode (loop, play_once, random)
@@ -66,9 +65,9 @@ typedef struct Sequence_t{
    U32 timeStep;                    // sequence time step
    U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
    U16 timeDivision;                // pulses per quater note /PPQN /pulses per quaternote
-   U16 ubNumTracks;            	    /* number of tracks 1-65536 */
+   U16 ubNumTracks;            	    /* number of tracks 1->AMIDI_MAX_TRACKS */
    U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS (16) tracks available */
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS tracks available */
    eSequenceType seqType;           // sequence: single, multitrack, separate
 } PACK sSequence_t;
 

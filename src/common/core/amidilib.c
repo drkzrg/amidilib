@@ -267,29 +267,26 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
     }break;
 	case T_MUS:{
 
-      printf("Converting MUS to MIDI\n");
+      printf("\nConverting MUS to MIDI\n");
 
       U8 *pOut=0;
       char tempName[128]={0};
       U32 len=0;
 
       char *pTempPtr=0;
-      printf("Processing converted data..\n");
 
-        // allocate 64kb working buffer for midi output
+      // allocate 64kb working buffer for midi output
       pOut=amMallocEx(64*1024,PREFER_TT);
 
      //set midi output name
      if(pFileName){
          strncpy(tempName,pFileName,strlen(pFileName));
          pTempPtr=strrchr(tempName,'.');
-
          memcpy(pTempPtr+1,"mid",4);
      }
 
-     Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,(int *)&len);
-
-      amTrace("Processing midi data..\n");
+     Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,&len);
+      printf("Processing midi data..\n");
         // the rest is like in MIDI type 0
         /* handle MIDI type 0 */
             iNumTracks=am_getNbOfTracks(pOut,T_MIDI0);
@@ -326,8 +323,9 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  
 		   while (startPtr!=0){
-            startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
-            if(iError<0) return iError;
+                startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
+                if(iError<0)
+                    return iError;
            }
           }
           // free up working buffer
@@ -417,9 +415,9 @@ S16 am_init(){
 
   //save configuration
   if(saveConfig(configFilename)>=0L){
-    printf("Configuration saved sucessfully.");
+    printf("Configuration saved sucessfully.\n");
   }else{
-    printf("Error: Cannot save global configuration.");
+    printf("Error: Cannot save global configuration.\n");
     return -1;
   }
   
@@ -510,7 +508,12 @@ void am_deinit(){
 #ifdef EVENT_LINEAR_BUFFER
     destroyEventBuffer();
 #endif  
-  
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+    // send content of midi buffer to device
+    flushMidiSendBuffer();
+#endif
+
   U32 usp=Super(0L);
  
   /* restore standard MIDI buffer */

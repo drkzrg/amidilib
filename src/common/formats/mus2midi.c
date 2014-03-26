@@ -43,8 +43,7 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #define MUSEVENT_CHANNELMODE	3
 #define MUSEVENT_CONTROLLERCHANGE	4
 #define MUSEVENT_END	6
-#define MIDI_MAXCHANNELS	16
-#define MIDIHEADERSIZE 14
+
 
 // we are making format 0, nb of tracks==1, div=0xe250(?)
 
@@ -204,9 +203,9 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 
     // Write out midi header format 0
     Midi_CreateHeader(&midiHeader);
-    UpdateBytesWritten(&bytes_written, MIDIHEADERSIZE, *len);
-    amMemCpy(out, &midiHeader, MIDIHEADERSIZE);	// cannot use sizeof(packs it to 16 bytes)
-	out += MIDIHEADERSIZE;
+    UpdateBytesWritten(&bytes_written, sizeof(sMThd), *len);
+    amMemCpy(out, &midiHeader, sizeof(sMThd));
+    out += sizeof(sMThd);
 
 	// Store this position, for later filling in the midiTrackHeader
     UpdateBytesWritten(&bytes_written, sizeof(sChunkHeader), *len);
@@ -232,6 +231,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
     U8 status=0, bit1=0, bit2=0, bitc = 2;
 
 	while (cur < end) {
+
     status=0, bit1=0, bit2=0, bitc = 2;
     out_local = temp_buffer;
 

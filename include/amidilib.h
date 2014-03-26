@@ -111,7 +111,6 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test */
 void VLQtest(void);
-
 #endif
 
 

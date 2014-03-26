@@ -16,6 +16,8 @@
 #define ID_MTRK     0x4D54726BUL
 #define ID_MTRK_END 0x0054726BUL
 
+#define MIDI_MAXCHANNELS	16
+
 /**
  * Time Division
 */

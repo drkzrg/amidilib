@@ -1,11 +1,13 @@
 
-//tos version
+// MIDI replay core
+
 #include <math.h>
 
+#include "config.h"
 #include "timing/mfp.h"
 #include "amidilib.h"
 #include "midi_send.h"
-#include "config.h"
+
 #include "timing/miditim.h"
 #include "list/list.h"
 
@@ -52,7 +54,6 @@ if(seq!=0){
             pTrackState=&(pTrack->currentState);
             pTrackState->currentTempo=DEFAULT_MPQN;
             pTrackState->currentBPM=DEFAULT_BPM;
-            pTrackState->currentSeqPos=0L;
             pTrackState->timeElapsedInt=0L;
             pTrackState->bMute=FALSE;
             pTrackState->bTempoChanged=FALSE;
@@ -121,7 +122,6 @@ U8 mode=0,data=0;
          pTrackState=&(pTrack->currentState);
          pTrackState->currentTempo=DEFAULT_MPQN;
          pTrackState->currentBPM=DEFAULT_BPM;
-         pTrackState->currentSeqPos=0L;
          pTrackState->timeElapsedInt=0L;
          pTrackState->bMute=FALSE;
          pTrackState->bTempoChanged=FALSE;
@@ -132,7 +132,7 @@ U8 mode=0,data=0;
     } 
   
 #ifdef IKBD_MIDI_SEND_DIRECT
-        clearMidiOutputBuffer();
+        flushMidiSendBuffer();
 #endif
 
     seq->timeElapsedFrac=0L;
@@ -174,7 +174,6 @@ if(g_CurrentSequence){
           pTrack=g_CurrentSequence->arTracks[i];
 
           if(pTrack){
-              pTrack->currentState.currentSeqPos=0L;
               pTrack->currentState.timeElapsedInt=0L;
               pTrack->currentState.currentTempo=DEFAULT_MPQN;
               pTrack->currentState.currentBPM=DEFAULT_BPM;
@@ -184,7 +183,7 @@ if(g_CurrentSequence){
         }
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-        clearMidiOutputBuffer();
+        flushMidiSendBuffer();
 #endif
         // reset all tracks state
         g_CurrentSequence->timeElapsedFrac=0L;
@@ -219,6 +218,11 @@ void updateStepSingle(){
  //check sequence state if paused do nothing
   if(pActiveTrackState->playState==PS_PAUSED) {
     am_allNotesOff(16);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+  flushMidiSendBuffer();
+#endif
+
     return;
   }
 
@@ -242,9 +246,7 @@ void updateStepSingle(){
                 pActiveTrackState=&(pTrack->currentState);
                 pActiveTrackState->currentTempo=DEFAULT_MPQN;
                 pActiveTrackState->currentBPM=DEFAULT_BPM;
-                pActiveTrackState->currentSeqPos=0L;
                 pActiveTrackState->timeElapsedInt=0L;
-                pActiveTrackState->currentSeqPos=0;
            }
 
           g_CurrentSequence->timeElapsedFrac=0L;
@@ -252,8 +254,9 @@ void updateStepSingle(){
 
           //reset tempo to initial valueas taken during start(get them from main sequence?)
           g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+
 #ifdef IKBD_MIDI_SEND_DIRECT
-        clearMidiOutputBuffer();
+           flushMidiSendBuffer();
 #endif
           //rewind to the first event
           while(pActiveTrackState->currEventPtr->pPrev!=0){
@@ -376,6 +379,10 @@ void updateStepMulti(){
     //check sequence state if paused do nothing
      if(pActiveTrackState->playState==PS_PAUSED) {
        am_allNotesOff(16);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+  flushMidiSendBuffer();
+#endif
        return;
      }
 
@@ -400,10 +407,8 @@ void updateStepMulti(){
                    pActiveTrackState=&(pTrack->currentState);
                    pActiveTrackState->currentTempo=DEFAULT_MPQN;
                    pActiveTrackState->currentBPM=DEFAULT_BPM;
-                   pActiveTrackState->currentSeqPos=0L;
                    pActiveTrackState->timeElapsedInt=0L;
-                   pActiveTrackState->currentSeqPos=0;
-                }
+                 }
              }
 
              g_CurrentSequence->timeElapsedFrac=0L;
@@ -413,7 +418,7 @@ void updateStepMulti(){
              g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-           clearMidiOutputBuffer();
+            flushMidiSendBuffer();
 #endif
              return;
          }else{
@@ -558,6 +563,11 @@ void stopSeq(void){
 
   //all notes off
   am_allNotesOff(16);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+  flushMidiSendBuffer();
+#endif
+
 }
 
 void pauseSeq(){
@@ -567,7 +577,7 @@ void pauseSeq(){
   //printf("Pause/Resume.\n");
   if(g_CurrentSequence!=0){
     // TODO: handling individual tracks for MIDI 2 type
-    // for one sequence(single/multichannel) we will check state of the first track only
+    // for one sequence( single / multichannel) we will check state of the first track only
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
     
@@ -597,7 +607,16 @@ void playSeq(void){
     if(pTrack){
         if(pTrack->currentState.playState==PS_STOPPED) {
             pTrack->currentState.playState=PS_PLAYING;
-            printf("Play sequence\n");
+            printf("Play sequence\t");
+
+            switch(pTrack->currentState.playMode){
+                case  S_PLAY_ONCE: printf("[ ONCE ]\n"); break;
+                case  S_PLAY_LOOP: printf("[ LOOP ]\n"); break;
+                case  S_PLAY_RANDOM: printf("[ RANDOM ]\n"); break;
+
+                default: printf("\n"); break;
+
+            };
         }
     }
 
@@ -623,11 +642,11 @@ void toggleReplayMode(void){
         switch(pTrack->currentState.playMode){
           case S_PLAY_ONCE:{
                pTrack->currentState.playMode=S_PLAY_LOOP;
-               printf("Play once\n");
+               printf("Set replay mode: [ LOOP ]\n");
           }break;
           case S_PLAY_LOOP:{
                 pTrack->currentState.playMode=S_PLAY_ONCE;
-                printf("Play in loop\n");
+                printf("Set replay mode: [ ONCE ]\n");
           }break;
         }
     }
@@ -639,7 +658,6 @@ void printSequenceState(){
 if(g_CurrentSequence){
 
     printf("Td/PPQN: %u\n",g_CurrentSequence->timeDivision);
-
     printf("Time step: %lu\n",g_CurrentSequence->timeStep);
     printf("Time elapsedFrac: %lu\n",g_CurrentSequence->timeElapsedFrac);
     printf("EOT threshold: %lu\n",g_CurrentSequence->eotThreshold);
@@ -657,7 +675,6 @@ if(g_CurrentSequence){
          pTrackState=&(pTrack->currentState);
          printf("\tTime elapsed: %lu\n",pTrackState->timeElapsedInt);
          printf("\tCur BPM: %lu\n",pTrackState->currentBPM);
-         printf("\tCur SeqPos: %lu\n",pTrackState->currentSeqPos);
          printf("\tCur Tempo: %lu\n",pTrackState->currentTempo);
          printf("\tPlay mode: %s\n",getPlayModeStr(pTrackState->playMode));
          printf("\tPlay state: %s\n",getPlayStateStr(pTrackState->playState));
@@ -683,7 +700,6 @@ if(g_CurrentSequence){
                 printf("Track[%d]\t",i);
                 pTrackState=&(pTrack->currentState);
                 printf("\tTime elapsed: %lu\t",pTrackState->timeElapsedInt);
-                printf("\tCur SeqPos: %lu\t",pTrackState->currentSeqPos);
                 printf("\tMute: %d\n",pTrackState->bMute);
             }
         }
@@ -702,7 +718,6 @@ if(g_CurrentSequence){
                 pTrackState=&(pTrack->currentState);
                 printf("Time elapsed: %lu\n",pTrackState->timeElapsedInt);
                 printf("Cur BPM: %lu\n",pTrackState->currentBPM);
-                printf("Cur SeqPos: %lu\n",pTrackState->currentSeqPos);
                 printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
                 printf("Play mode: %s\n",getPlayModeStr(pTrackState->playMode));
                 printf("Play state: %s\n",getPlayStateStr(pTrackState->playState));
@@ -717,9 +732,12 @@ if(g_CurrentSequence){
 
  }
 
+#ifdef DEBUG_BUILD
  printMidiSendBufferState();
-}
+#endif
 
+}
+#ifdef DEBUG_BUILD
 void printMidiSendBufferState(){
     amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
 
@@ -730,8 +748,8 @@ void printMidiSendBufferState(){
 
         amTrace(".\n");
     }
-
 }
+#endif
 
 const U8 *getPlayStateStr(const ePlayState state){
 
@@ -765,3 +783,18 @@ const U8 *getPlayModeStr(const ePlayMode mode){
             return NULL;
     }
 }
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+// sends all pending data to output port
+
+void flushMidiSendBuffer(){
+
+    if(MIDIbytesToSend>0){
+        amMidiSendData(MIDIbytesToSend,MIDIsendBuffer);
+    }
+
+    clearMidiOutputBuffer();
+}
+
+#endif
+

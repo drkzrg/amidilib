@@ -11,8 +11,8 @@
 #include <limits.h>
 
 #include "amidilib.h"
-#include "amidiseq.h"	//sequence structs
-#include "fmio.h"	//disc i/o
+#include "amidiseq.h"	// sequence structs
+#include "fmio.h"       // disc i/o
 #include "timing/miditim.h" 
 
 #ifdef MIDI_PARSER_TEST
@@ -84,8 +84,8 @@ int main(int argc, char *argv[]){
       fprintf(stderr,"PPQN: %u\n",pMidiTune->timeDivision);
 	  
 	  #ifdef MIDI_PARSER_TEST
-	  //output loaded midi file to screen/log 
-	  midiParserTest(pMidiTune);
+        //output loaded midi file to screen/log
+        midiParserTest(pMidiTune);
 	  #endif
 	  
 	  printInfoScreen();    
@@ -169,8 +169,7 @@ void mainLoop(sSequence_t *pSequence){
 		 case SC_SPACEBAR:{
 		  stopSeq();
 		 }break;
-          #ifdef MANUAL_STEP
-
+#ifdef MANUAL_STEP
           case SC_ENTER:{
 
             for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
@@ -184,7 +183,7 @@ void mainLoop(sSequence_t *pSequence){
             amMemSet(MIDIsendBuffer,0,32*1024);
 
           }break;
-          #endif
+#endif
 	      };
 	      //end of switch
 	    }

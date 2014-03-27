@@ -31,6 +31,19 @@ typedef struct __attribute__((packed)) NktHd{
                        // TODO: add info / description block (?)
 } sNktHd;
 
+// Nkt structure in memory
+typedef struct NktSeq{
+    U32 NbOfBlocks;           // nb of event blocks
+    U16 version;
+    U16 timeDivision;
+    U32 currentTempo;		  // quaternote duration in ms, 500ms default
+    U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
+    U32 timeElapsedInt;		  // track elapsed time
+    ePlayState playState;	  // STOP, PLAY, PAUSED
+    ePlayMode playMode;	      // current play mode (loop, play_once, random)
+    sNktBlock_t *pEvents;
+}sNktSeq;
+
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
 
 S32 Seq2Nkt(const sSequence_t *pSeq, U8* out, const U8 *pOutFileName, const BOOL bCompress);

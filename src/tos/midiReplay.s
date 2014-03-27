@@ -87,7 +87,6 @@ _replaySingleTB:
 _replaySingleTC:
         or.w    #$2700,sr
         movem.l   d0-7/a0-6,-(a7)	;save registers
-; TODO: turn off all interrupts
 
 ;       jump to the old interrupt routine afterwards
 ;       send midi status byte once per 1ms

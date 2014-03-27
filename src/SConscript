@@ -165,7 +165,8 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/roland.c"]
-midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c","common/formats/seq2nkt.c"]
+nkt_format_src = ["common/formats/seq2nkt.c","common/formats/nkt_rep.c","common/formats/nkt_rep_m68k.s"]
+midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src=["tos/common.s"]

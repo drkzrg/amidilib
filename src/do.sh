@@ -41,7 +41,7 @@ send_to_native_machine=1
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
-REMOTE_MACHINE='192.168.0.8'
+REMOTE_MACHINE='192.168.0.5'
 REMOTE_PATH='/c/amidilib/'
 
 # delete binaries if they exist

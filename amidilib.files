@@ -81,3 +81,5 @@ src/common/formats/seq2nok.c
 demo/timings/sampleSequence.c
 include/nkt.h
 src/common/formats/seq2nkt.c
+src/common/formats/nkt_rep.c
+src/common/formats/nkt_rep_m68k.s

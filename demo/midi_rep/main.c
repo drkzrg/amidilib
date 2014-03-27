@@ -10,10 +10,17 @@
 #include <stdlib.h>
 #include <limits.h>
 
+//#define MANUAL_STEP 1
+#define NKT_CONVERT 1 //convert loaded sequence to custom binary format
+
 #include "amidilib.h"
 #include "amidiseq.h"	// sequence structs
 #include "fmio.h"       // disc i/o
 #include "timing/miditim.h" 
+
+#ifdef NKT_CONVERT
+#include "nok.h"
+#endif
 
 #ifdef MIDI_PARSER_TEST
 #include "list/list.h"
@@ -21,7 +28,6 @@
 
 #include "input/ikbd.h"
 
-//#define MANUAL_STEP 1
 
 #ifdef MANUAL_STEP
 extern void updateStep();
@@ -87,7 +93,36 @@ int main(int argc, char *argv[]){
         //output loaded midi file to screen/log
         midiParserTest(pMidiTune);
 	  #endif
-	  
+
+#ifdef NKT_CONVERT
+      printf("Convert sequence to NKT format...\n");
+
+      U8 *pOut=0;
+      char tempName[128]={0};
+      U32 len=0;
+
+      char *pTempPtr=0;
+
+      // allocate 64kb working buffer for nkt output
+      pOut=amMallocEx(64*1024,PREFER_TT);
+
+     //set midi output name
+     if(argv[1]){
+         strncpy(tempName,argv[1],strlen(argv[1]));
+         pTempPtr=strrchr(tempName,'.');
+         memcpy(pTempPtr+1,"nkt",4);
+     }
+
+      if(Seq2Nkt(pMidiTune, pOut, tempName, FALSE)<0){
+          printf("Error during NKT conversion..\n");
+      }else{
+          printf("NKT conversion OK..\n");
+      }
+
+      // free up working buffer
+      if(pOut) amFree((void **)&pOut);pOut=0;
+#endif
+
 	  printInfoScreen();    
 	  mainLoop(pMidiTune);
 	  

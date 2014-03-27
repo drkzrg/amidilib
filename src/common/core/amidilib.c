@@ -263,11 +263,12 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
     case T_NOK:{
-
+            //todo handle/setup replay
+        return(-1);
     }break;
 	case T_MUS:{
 
-      printf("\nConverting MUS to MIDI\n");
+      printf("Converting MUS to MIDI\n");
 
       U8 *pOut=0;
       char tempName[128]={0};
@@ -285,7 +286,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
          memcpy(pTempPtr+1,"mid",4);
      }
 
-     Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,&len);
+      Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,&len);
       printf("Processing midi data..\n");
         // the rest is like in MIDI type 0
         /* handle MIDI type 0 */

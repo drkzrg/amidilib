@@ -45,7 +45,7 @@ typedef struct NktSeq{
     ePlayState playState;	  // STOP, PLAY, PAUSED
     ePlayMode playMode;	      // current play mode (loop, play_once, random)
     U32 NbOfBlocks;           // nb of event blocks
-    U32 currentBlock;         // currently replayed block id 0-xxxx
+    U32 currentBlockId;         // currently replayed block id 0-xxxx
     sNktBlock_t *pEvents;     // eventStart
 }sNktSeq;
 

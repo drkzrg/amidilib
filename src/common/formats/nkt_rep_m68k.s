@@ -10,6 +10,7 @@
 
         xdef    _replayNktTC
         xref    update
+        xref    _updateStepNkt
 
 _replayNktTC:
         or.w    #$2700,sr

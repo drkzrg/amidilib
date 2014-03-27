@@ -164,8 +164,41 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
-                printf("Write Set Tempo: %lu event\n",((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal);
-                 eventPtr=eventPtr->pNext;
+                U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+
+                printf("Write Set Tempo: %lu event\n",tempo);
+
+                sNktBlock_t stBlock;
+                stBlock.delta=currDelta;
+                stBlock.blockSize=sizeof(U32);
+                stBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+
+                stBlock.pData=amMallocEx(stBlock.blockSize,PREFER_TT);
+
+                if(stBlock.pData!=NULL){
+                    amMemCpy(stBlock.pData,&tempo,stBlock.blockSize);
+
+                    // copy data to our internal buffer
+                    out=WriteInt(out,stBlock.delta);
+                    out=WriteShort(out,(U16)stBlock.msgType);
+                    out=WriteInt(out,stBlock.blockSize);
+                    amMemCpy(out,stBlock.pData,stBlock.blockSize);
+                    out=out+stBlock.blockSize*sizeof(U8);  //adjust pointer
+
+                    //write block to file
+                    if(file!=NULL){
+                        fwrite(&stBlock.delta,sizeof(stBlock.delta),1,*file);
+                        fwrite(&stBlock.msgType,sizeof(stBlock.msgType),1,*file);
+                        fwrite(&stBlock.blockSize,sizeof(stBlock.blockSize),1,*file);
+                        fwrite(&stBlock.pData,sizeof(stBlock.blockSize),1,*file);
+                    }
+                    ++(*blocksWritten);
+
+                    printf("delta [%lu] type:[%d] size:[%lu] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+                    amFree((void **)&tempBlock.pData);
+                }
+
+                eventPtr=eventPtr->pNext;
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){

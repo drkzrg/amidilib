@@ -16,7 +16,43 @@ void getCurrentNktSeq(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
+BOOL isEOT(volatile const sNktBlock_t *pPtr){
+  if(pPtr->msgType==NKT_END) return TRUE;
 
+  return FALSE;
+}
+
+void onEndSequence(){
+
+
+if(g_CurrentNktSequence){
+
+      if(g_CurrentNktSequence->playMode==S_PLAY_ONCE){
+          //reset set state to stopped
+          //reset song position on all tracks
+          g_CurrentNktSequence->playState=PS_STOPPED;
+        }else if(g_CurrentNktSequence->playMode==S_PLAY_LOOP){
+          g_CurrentNktSequence->playState=PS_PLAYING;
+        }
+
+        am_allNotesOff(16);
+        g_CurrentNktSequence->timeElapsedInt=0L;
+        g_CurrentNktSequence->currentTempo=DEFAULT_MPQN;
+        g_CurrentNktSequence->currentBPM=DEFAULT_BPM;
+        g_CurrentNktSequence->currentBlock=0;
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+        flushMidiSendBuffer();
+#endif
+        // reset all tracks state
+        g_CurrentNktSequence->timeElapsedFrac=0L;
+        g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+    }
+
+}
+
+
+// init sequence
 void initNktSeq(sNktSeq *seq){
  g_CurrentNktSequence=0;
 
@@ -34,7 +70,7 @@ if(seq!=0){
     seq->timeStep=am_calculateTimeStep(seq->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-    clearMidiOutputBuffer();
+    flushMidiSendBuffer();
 #endif
 
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);

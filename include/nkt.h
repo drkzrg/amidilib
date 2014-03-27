@@ -53,5 +53,8 @@ typedef struct NktSeq{
 
 S32 Seq2Nkt(const sSequence_t *pSeq, U8* out, const U8 *pOutFileName, const BOOL bCompress);
 
+void getCurrentNktSeq(sNktSeq **pSeq);
+void initNktSeq(sNktSeq *seq);
+
 
 #endif // NKT_H

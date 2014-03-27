@@ -233,7 +233,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
                 tempBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
                 out=processSeqEvent(eventPtr,out, &tempBlock);
 
-
                 // next event
                 eventPtr=eventPtr->pNext;
 
@@ -299,7 +298,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
 
                 amFree((void **)&tempBlock.pData);
             }
-
 
         }
 

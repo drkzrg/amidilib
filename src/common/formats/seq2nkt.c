@@ -170,6 +170,28 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
                 printf("Write End of Track \n");
+                sNktBlock_t eotBlock;
+                eotBlock.delta=currDelta;
+                eotBlock.blockSize=0;
+                eotBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+                eotBlock.pData=0;
+
+                // copy data to our internal buffer
+                out=WriteInt(out,eotBlock.delta);
+                out=WriteShort(out,(U16)eotBlock.msgType);
+                out=WriteInt(out,0);
+
+                //write block to file
+                if(file!=NULL){
+                    fwrite(&eotBlock.delta,sizeof(eotBlock.delta),1,*file);
+                    fwrite(&eotBlock.msgType,sizeof(eotBlock.msgType),1,*file);
+                    fwrite(&eotBlock.blockSize,sizeof(eotBlock.blockSize),1,*file);
+                    //no data to write
+                }
+                ++(*blocksWritten);
+
+                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",eotBlock.delta, eotBlock.msgType, eotBlock.blockSize );
+
                 eventPtr=eventPtr->pNext;
             }
 
@@ -219,31 +241,36 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
 
             if(tempBlock.pData!=NULL){
                 amMemCpy(tempBlock.pData,MIDIsendBuffer,MIDIbytesToSend);
+
+                // copy data to our internal buffer
+                out=WriteInt(out,tempBlock.delta);
+                out=WriteShort(out,(U16)tempBlock.msgType);
+                out=WriteInt(out,tempBlock.blockSize);
+                amMemCpy(out,tempBlock.pData,tempBlock.blockSize*sizeof(U8));
+                out=out+tempBlock.blockSize*sizeof(U8);  //adjust pointer
+
+                //write block to file
+                if(file!=NULL){
+                    fwrite(&tempBlock.delta,sizeof(tempBlock.delta),1,*file);
+                    fwrite(&tempBlock.msgType,sizeof(tempBlock.msgType),1,*file);
+                    fwrite(&tempBlock.blockSize,sizeof(tempBlock.blockSize),1,*file);
+                    fwrite(&tempBlock.pData,sizeof(tempBlock.blockSize*sizeof(U8)),1,*file);
+                }
+                ++(*blocksWritten);
+
+                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
+
+                //clear buffer
+                amMemSet(MIDIsendBuffer,0,MIDI_BUFFER_SIZE);
+                MIDIbytesToSend=0;
+
+                amFree((void **)&tempBlock.pData);
             }
 
-            // copy data to our internal buffer
-            out=WriteInt(out,tempBlock.delta);
-            out=WriteShort(out,(U16)tempBlock.msgType);
-            out=WriteInt(out,tempBlock.blockSize);
-            amMemCpy(out,tempBlock.pData,tempBlock.blockSize*sizeof(U8));
 
-            //write block to file
-            if(file!=NULL){
-                fwrite(&tempBlock.delta,sizeof(tempBlock.delta),1,*file);
-                fwrite(&tempBlock.msgType,sizeof(tempBlock.msgType),1,*file);
-                fwrite(&tempBlock.blockSize,sizeof(tempBlock.blockSize),1,*file);
-                fwrite(&tempBlock.pData,sizeof(tempBlock.blockSize*sizeof(U8)),1,*file);
-            }
-            ++(*blocksWritten);
-
-            printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
-
-            //clear buffer
-            amMemSet(MIDIsendBuffer,0,MIDI_BUFFER_SIZE);
-            MIDIbytesToSend=0;
         }
 
-    };
+    }; //end while end of sequence
 
     printf("Event blocks written: %lu\n",*blocksWritten);
  return 0;
@@ -254,9 +281,6 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompres
  return 0;
 }
 
-S32 writeNktBlockToFile(){
-
-}
 
 //converts sequence to nkt file, optionally writes file named out
 S32 Seq2Nkt(const sSequence_t *pSeq, U8* out, const U8 *pOutFileName, const BOOL bCompress){

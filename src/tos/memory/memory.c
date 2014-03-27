@@ -123,7 +123,7 @@ void *pMem=0;
  return pMem;
 }
 
-void amFree(void **pPtr){
+void amFree(void **pPtr){   //TODO: make it as a macro
 
   #ifdef DEBUG_MEM
     if(*pPtr==0) {

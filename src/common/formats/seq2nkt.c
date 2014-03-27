@@ -1,7 +1,7 @@
 
 // converts sequence to custom nok, binary format
 
-#include "nok.h"
+#include "nkt.h"
 #include "midi_cmd.h"
 
 void Nkt_CreateHeader(sNktHd* header, const sSequence_t *pSeqData, const BOOL bCompress){

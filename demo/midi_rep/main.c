@@ -19,7 +19,7 @@
 #include "timing/miditim.h" 
 
 #ifdef NKT_CONVERT
-#include "nok.h"
+#include "nkt.h"
 #endif
 
 #ifdef MIDI_PARSER_TEST
@@ -95,6 +95,7 @@ int main(int argc, char *argv[]){
 	  #endif
 
 #ifdef NKT_CONVERT
+{
       printf("Convert sequence to NKT format...\n");
 
       U8 *pOut=0;
@@ -114,13 +115,14 @@ int main(int argc, char *argv[]){
      }
 
       if(Seq2Nkt(pMidiTune, pOut, tempName, FALSE)<0){
-          printf("Error during NKT conversion..\n");
+          printf("Error during NKT format conversion..\n");
       }else{
-          printf("NKT conversion OK..\n");
+          printf("Written: %s OK\n",tempName);
       }
 
       // free up working buffer
       if(pOut) amFree((void **)&pOut);pOut=0;
+}
 #endif
 
 	  printInfoScreen();    

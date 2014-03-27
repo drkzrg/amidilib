@@ -28,7 +28,7 @@ typedef struct __attribute__((packed)) NktHd{
     BOOL bPacked;      // blocks, are data blocks LZO packed?
     U16 division;      // timeDivision
     U16 version;       // format version
-                       // TODO: add info/description block (?)
+                       // TODO: add info / description block (?)
 } sNktHd;
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/

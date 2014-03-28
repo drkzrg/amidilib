@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
      if(argv[1]){
          strncpy(tempName,argv[1],strlen(argv[1]));
          pTempPtr=strrchr(tempName,'.');
-         memcpy(pTempPtr+1,"nkt",4);
+         memcpy(pTempPtr+1,"NKT",4);
      }
 
       if(Seq2NktFile(pMidiTune, tempName, FALSE)<0){

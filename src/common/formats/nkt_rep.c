@@ -245,7 +245,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     // create header
     sNktSeq *pNewSeq=amMallocEx(sizeof(sNktSeq),PREFER_TT);
 
-    if(pNewSeq==0) return NULL;
+    if(pNewSeq==0){
+      printf("Error: Couldn't allocate memory for sequence header.\n");
+      return NULL;
+    }
 
     pNewSeq->playMode=NKT_PLAY_ONCE;
     pNewSeq->playState=NKT_PS_STOPPED;
@@ -285,7 +288,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     if(tempHd.id!=ID_NKT){
          printf("Error: File %s isn't valid!\n",pFilePath);
-         fclose(fp);
+         fclose(fp); fp=0;
 
          amFree((void **)&pNewSeq);
          return NULL;
@@ -295,16 +298,27 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
    if(pNewSeq->NbOfBlocks==0){
     printf("Error: File %s has no event blocks!\n",pFilePath);
-    fclose(fp);
-    amFree(&pNewSeq);
+    fclose(fp);fp=0;
+    amFree((void **)&pNewSeq);
     return NULL;
-   }
+   }else{
+    printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
 
-    // allocate contigous/linear memory for 65k events or less (might require tweaking)
+    // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
     if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
       printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
+      fclose(fp); fp=0;
+      amFree((void **)&pNewSeq);
+
       return NULL;
     }
+    // alloc memory
+    pNewSeq->pEvents=(sNktBlock_t *)linearBufferAlloc(&(pNewSeq->eventBuffer), pNewSeq->NbOfBlocks*sizeof(sNktBlock_t));
+   }
+
+    fclose(fp);fp=0;
+
+    return pNewSeq;
 }
 
 void destroySequence(sNktSeq *pSeq){
@@ -318,7 +332,7 @@ void destroySequence(sNktSeq *pSeq){
     }else{
 
         for(U32 i=0;i<pSeq->NbOfBlocks;++i){
-            amFree((void**)&(pSeq->pEvents[i].pData));
+            if(pSeq->pEvents!=0) amFree((void**)&(pSeq->pEvents[i].pData));
         }
 
         // release linear buffer
@@ -328,7 +342,6 @@ void destroySequence(sNktSeq *pSeq){
         amMemSet(pSeq,0,sizeof(sNktSeq));
         amFree((void**)&pSeq);
         return;
-
     }
 }
 

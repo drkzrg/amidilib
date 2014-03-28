@@ -181,8 +181,9 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                         *bytesWritten+=fwrite(&stBlock.pData,sizeof(stBlock.blockSize),1,*file);
                     }
                     ++(*blocksWritten);
-
+#ifdef DEBUG_BUILD
                     printf("delta [%lu] type:[%d] size:[%lu] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+#endif
                     amFree((void **)&stBlock.pData);
                 }
 
@@ -205,8 +206,9 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     //no data to write
                 }
                 ++(*blocksWritten);
-
+#ifdef DEBUG_BUILD
                 printf("delta [%lu] type:[%d] size:[%lu] bytes \n",eotBlock.delta, eotBlock.msgType, eotBlock.blockSize );
+#endif
                 eventPtr=eventPtr->pNext;
             }
 
@@ -268,9 +270,9 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     *bytesWritten+=fwrite(&tempBlock.pData,sizeof(tempBlock.blockSize*sizeof(U8)),1,*file);
                 }
                 ++(*blocksWritten);
-
+#ifdef DEBUG_BUILD
                 printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
-
+#endif
                 //clear buffer
                 amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE);
                 MIDIbytesToSend=0;
@@ -340,7 +342,7 @@ FILE* file=0;
        // update header
        fwrite(&nktHead, sizeof(sNktHd), 1, file);
 
-       fclose(file);
+       fclose(file); file=0;
        amTrace("Stored %d event blocks.\n",nktHead.NbOfBlocks);
      }
 

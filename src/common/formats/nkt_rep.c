@@ -267,7 +267,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     if(pFilePath){
          // create file header
          printf("Opening NKT file to: %s\n",pFilePath);
-         fp = fopen(pFilePath, "r"); //read only
+         fp = fopen(pFilePath, "rb"); //read only
 
          if(fp==NULL){
              printf("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
@@ -302,19 +302,61 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amFree((void **)&pNewSeq);
     return NULL;
    }else{
-    printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
+        printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
 
-    // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
-    if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
-      printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
-      fclose(fp); fp=0;
-      amFree((void **)&pNewSeq);
+        // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
+        if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
+            printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
+            fclose(fp); fp=0;
+            amFree((void **)&pNewSeq);
 
-      return NULL;
+            return NULL;
+         }
+         // alloc memory from linear buffer
+         pNewSeq->pEvents=(sNktBlock_t *)linearBufferAlloc(&(pNewSeq->eventBuffer), pNewSeq->NbOfBlocks*sizeof(sNktBlock_t));
+
+         if(pNewSeq->pEvents==0){
+             printf("Error: loadSequence() Linear buffer out of memory.\n");
+             fclose(fp); fp=0;
+             amFree((void **)&pNewSeq);
+             return NULL;
+         }
     }
-    // alloc memory
-    pNewSeq->pEvents=(sNktBlock_t *)linearBufferAlloc(&(pNewSeq->eventBuffer), pNewSeq->NbOfBlocks*sizeof(sNktBlock_t));
-   }
+
+    // process blocks, todo allocation on second linear buffer ?
+    sNktBlk blk;
+    BOOL bFinished=FALSE;
+    int i=0;
+
+    while( (!feof(fp))&&(i<pNewSeq->NbOfBlocks)){
+
+            fread(&blk,sizeof(sNktBlk),1,fp);
+
+            pNewSeq->pEvents[i].delta=blk.delta;
+            pNewSeq->pEvents[i].msgType=blk.msgType;
+            pNewSeq->pEvents[i].blockSize=blk.blockSize;
+
+#ifdef DEBUG_BUILD
+            printf("delta [%lu] type:[%d] size:[%u] bytes (0x%x)\n",blk.delta, blk.msgType, blk.blockSize, blk.blockSize );
+#endif
+
+            if(pNewSeq->pEvents[i].blockSize!=0){
+
+                // allocate memory for data blk.blockSize
+                pNewSeq->pEvents[i].pData=amMallocEx(blk.blockSize,PREFER_TT);
+
+                if( pNewSeq->pEvents[i].pData!=NULL){
+                    fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
+                }else{
+                    printf("Error: loadSequence() no memory for event block data allocation.\n");
+                    fclose(fp);fp=0;
+                    amFree((void **)&pNewSeq);
+                    return NULL;
+                }
+
+            }
+        ++i;
+    }
 
     fclose(fp);fp=0;
 

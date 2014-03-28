@@ -132,7 +132,7 @@ U8 seq2nktMap[]={
     NKT_MIDIDATA       //	T_SYSEX,
 };
 
-static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file, U32 *bytesWritten, U32 *blocksWritten){
+static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file,U32 *blocksWritten, U32 *bytesWritten){
 
     printf("Processing single track\n");
 
@@ -140,10 +140,11 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
     sEventList *eventPtr=pTrack->pTrkEventList;
     U32 currDelta=0;
 
+    sNktBlk stBlock;
+    sNktBlock_t tempBlock;
 
     while(eventPtr!=NULL){
-        sNktBlock_t tempBlock;
-        amMemSet(&tempBlock,0,sizeof(sNktBlock_t));
+         amMemSet(&tempBlock,0,sizeof(sNktBlock_t));
 
         // dump data
         if(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==currDelta){
@@ -160,54 +161,51 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
                 U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
-
+#ifdef DEBUG_BUILD
                 printf("Write Set Tempo: %lu event\n",tempo);
-
-                sNktBlock_t stBlock;
+#endif
                 stBlock.delta=currDelta;
                 stBlock.blockSize=sizeof(U32);
-                stBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                U8 *pData=0;
 
-                stBlock.pData=amMallocEx(stBlock.blockSize,PREFER_TT);
+                pData=amMallocEx(stBlock.blockSize,PREFER_TT);
 
-                if(stBlock.pData!=NULL){
-                    amMemCpy(stBlock.pData,&tempo,stBlock.blockSize);
+                if(pData!=NULL){
+                    amMemCpy(pData,&tempo,stBlock.blockSize);
 
                     //write block to file
                     if(file!=NULL){
-                        *bytesWritten+=fwrite(&stBlock.delta,sizeof(stBlock.delta),1,*file);
-                        *bytesWritten+=fwrite(&stBlock.msgType,sizeof(stBlock.msgType),1,*file);
-                        *bytesWritten+=fwrite(&stBlock.blockSize,sizeof(stBlock.blockSize),1,*file);
-                        *bytesWritten+=fwrite(&stBlock.pData,sizeof(stBlock.blockSize),1,*file);
+                        *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                        *bytesWritten+=fwrite(pData,sizeof(U32),1,*file);
                     }
                     ++(*blocksWritten);
 #ifdef DEBUG_BUILD
-                    printf("delta [%lu] type:[%d] size:[%lu] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+                    printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
 #endif
-                    amFree((void **)&stBlock.pData);
+                    amFree((void **)&pData);
                 }
 
                 eventPtr=eventPtr->pNext;
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
+#ifdef DEBUG_BUILD
                 printf("Write End of Track \n");
-                sNktBlock_t eotBlock;
-                eotBlock.delta=currDelta;
-                eotBlock.blockSize=0;
-                eotBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
-                eotBlock.pData=0;
+#endif
+
+                stBlock.delta=currDelta;
+                stBlock.blockSize=0;
+                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
                 if(file!=NULL){
-                    *bytesWritten+=fwrite(&eotBlock.delta,sizeof(eotBlock.delta),1,*file);
-                    *bytesWritten+=fwrite(&eotBlock.msgType,sizeof(eotBlock.msgType),1,*file);
-                    *bytesWritten+=fwrite(&eotBlock.blockSize,sizeof(eotBlock.blockSize),1,*file);
+                    *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
                     //no data to write
                 }
                 ++(*blocksWritten);
 #ifdef DEBUG_BUILD
-                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",eotBlock.delta, eotBlock.msgType, eotBlock.blockSize );
+                printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
 #endif
                 eventPtr=eventPtr->pNext;
             }
@@ -259,19 +257,21 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
         if(MIDIbytesToSend>0){
             tempBlock.pData=amMallocEx(MIDIbytesToSend,PREFER_TT);
 
+            stBlock.delta=tempBlock.delta;
+            stBlock.msgType=(U16)tempBlock.msgType;
+            stBlock.blockSize=MIDIbytesToSend;
+
             if(tempBlock.pData!=NULL){
                 amMemCpy(tempBlock.pData,MIDIsendBuffer,MIDIbytesToSend);
 
                 //write block to file
                 if(file!=NULL){
-                    *bytesWritten+=fwrite(&tempBlock.delta,sizeof(tempBlock.delta),1,*file);
-                    *bytesWritten+=fwrite(&tempBlock.msgType,sizeof(tempBlock.msgType),1,*file);
-                    *bytesWritten+=fwrite(&tempBlock.blockSize,sizeof(tempBlock.blockSize),1,*file);
-                    *bytesWritten+=fwrite(&tempBlock.pData,sizeof(tempBlock.blockSize*sizeof(U8)),1,*file);
+                    *bytesWritten+=fwrite(&stBlock,sizeof(sNktBlk),1,*file);
+                    *bytesWritten+=fwrite(tempBlock.pData,stBlock.blockSize,1,*file);
                 }
                 ++(*blocksWritten);
 #ifdef DEBUG_BUILD
-                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
+                printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize);
 #endif
                 //clear buffer
                 amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE);
@@ -288,7 +288,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 }
 
 static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file, U32 *bytesWritten, U32 *blocksWritten){
-//TOD
+//TODO
     printf("Processing multi track sequence\n");
 
 

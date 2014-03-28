@@ -27,25 +27,14 @@ typedef enum{
   NKT_MAX_EVENT
 } eNktMsgType;
 
-//
+// Nkt structure in memory
 typedef struct NktBlock_t{
   U32 delta;
-  eNktMsgType msgType;
-  U32 blockSize;
+  U16 msgType;
+  U16 blockSize;
   U8 *pData;
 } sNktBlock_t;
 
-// binary header, big endian
-typedef struct __attribute__((packed)) NktHd{
-    U32 id;            // always ID_NKT
-    U32 NbOfBlocks;    // nb of event blocks in file
-    BOOL bPacked;      // blocks, are data blocks LZO packed?
-    U16 division;      // timeDivision
-    U16 version;       // format version
-                       // TODO: add info / description block (?)
-} sNktHd;
-
-// Nkt structure in memory
 typedef struct NktSeq{
     U16 version;               // version
     U16 timeDivision;          // time division
@@ -64,7 +53,24 @@ typedef struct NktSeq{
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
 
+// stuff for file read
+// binary header, big endian
+typedef struct __attribute__((packed)) NktHd{
+    U32 id;            // always ID_NKT
+    U32 NbOfBlocks;    // nb of event blocks in file
+    BOOL bPacked;      // blocks, are data blocks LZO packed?
+    U16 division;      // timeDivision
+    U16 version;       // format version
+                       // TODO: add info / description block (?)
+} sNktHd;
 
+// binary header, big endian
+typedef struct __attribute__((packed)) NktBlk{
+    U32 delta;
+    U16 msgType;
+    U16 blockSize;
+} sNktBlk;
+/////////////////////////////////////////////
 
 void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq);

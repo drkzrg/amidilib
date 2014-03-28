@@ -16,7 +16,7 @@ void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
-BOOL isEOT(volatile const sNktBlock_t *pPtr){
+static BOOL isEOT(volatile const sNktBlock_t *pPtr){
   if(pPtr->msgType==NKT_END) return TRUE;
   return FALSE;
 }
@@ -240,7 +240,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 
 
-sNktSeq *loadSequence(const U8 *filepath){
+sNktSeq *loadSequence(const U8 *pFilePath){
 
     // create header
     sNktSeq *pNewSeq=amMallocEx(sizeof(sNktSeq),PREFER_TT);
@@ -258,17 +258,53 @@ sNktSeq *loadSequence(const U8 *filepath){
     pNewSeq->NbOfBlocks=0;
     pNewSeq->pEvents=0;
 
-
     //get nb of blocks from file
+    FILE *fp=0;
+
+    if(pFilePath){
+         // create file header
+         printf("Opening NKT file to: %s\n",pFilePath);
+         fp = fopen(pFilePath, "r"); //read only
+
+         if(fp==NULL){
+             printf("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
+             amFree((void **)&pNewSeq);
+             return NULL;
+         }
+      }else{
+        printf("Error: empty file path\n");
+        amFree((void **)&pNewSeq);
+        return NULL;
+      }
+
+    // read header
+    sNktHd tempHd;
+    amMemSet(&tempHd,0,sizeof(sNktHd));
+
+    fread(&tempHd,sizeof(sNktHd),1,fp);
+
+    if(tempHd.id!=ID_NKT){
+         printf("Error: File %s isn't valid!\n",pFilePath);
+         fclose(fp);
+
+         amFree((void **)&pNewSeq);
+         return NULL;
+    }
+
+    pNewSeq->NbOfBlocks=tempHd.NbOfBlocks;
+
+   if(pNewSeq->NbOfBlocks==0){
+    printf("Error: File %s has no event blocks!\n",pFilePath);
+    fclose(fp);
+    amFree(&pNewSeq);
+    return NULL;
+   }
 
     // allocate contigous/linear memory for 65k events or less (might require tweaking)
-    if(createLinearBuffer(&(pNewSeq->eventBuffer),2000*sizeof(sNktBlock_t),PREFER_TT)<0){
+    if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
       printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
       return NULL;
     }
-
-
-
 }
 
 void destroySequence(sNktSeq *pSeq){

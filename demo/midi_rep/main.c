@@ -100,6 +100,7 @@ int main(int argc, char *argv[]){
       printf("Convert sequence to NKT format...\n");
       char tempName[128]={0};
       char *pTempPtr=0;
+      sNktSeq *pNktSeq=0;
 
      //set midi output name
      if(argv[1]){
@@ -110,7 +111,25 @@ int main(int argc, char *argv[]){
 
       if(Seq2NktFile(pMidiTune, tempName, FALSE)<0){
           printf("Error during NKT format conversion..\n");
+      }else{
+          printf("Loading %s \n",tempName);
+          pNktSeq=loadSequence(tempName);
+
+          if(pNktSeq!=NULL){
+
+              //init replay
+
+
+              // destroy sequence
+              destroySequence(pNktSeq);
+              pNktSeq=0;
+          }else{
+               printf("Error: Loading %s failed.\n",tempName);
+          }
+
       }
+
+
 
 }
 #endif

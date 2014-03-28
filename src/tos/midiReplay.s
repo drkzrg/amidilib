@@ -17,7 +17,7 @@
     xref _updateStepSingle ; our sequence update routine (single track)
     xref _updateStepMulti  ; our sequence update routine (multi track)
 
-    xref update		     ; our installed interrupt routine
+    xref update		   ; our installed interrupt routine
 
 	TEXT
 ; ############## single track

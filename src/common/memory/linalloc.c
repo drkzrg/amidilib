@@ -14,7 +14,7 @@ S32 createLinearBuffer(tLinearBuffer *buf, const U32 bufferSize,const eMemoryFla
   
   buf->pMemPtr = amMallocEx(bufferSize,memType);
   
-  if(buf->pMemPtr!=0){
+  if(buf->pMemPtr!=0&&bufferSize>0){
     buf->memType=memType;
     buf->totalSize=bufferSize;
     buf->offset=0L;

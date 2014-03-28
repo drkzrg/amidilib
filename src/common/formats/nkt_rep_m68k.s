@@ -3,7 +3,7 @@
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
 
-;    midi sequence replay from custom structure
+;    midi sequence replay from custom NKT structure
 
     include "timing/mfp_m68k.inc"
     include "common_m68k.inc"
@@ -13,7 +13,7 @@
         xref    _updateStepNkt
 
 _replayNktTC:
-        or.w    #$2700,sr
+        or.w    #$2700,sr               ;disable interrupts
         movem.l   d0-7/a0-6,-(a7)	;save registers
 
 ;       jump to the old interrupt routine afterwards
@@ -24,7 +24,7 @@ _replayNktTC:
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
         if (IKBD_MIDI_SEND_DIRECT==1)
-        echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT ENABLED"
+        echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 
         move.w	#0,d1
         move.l 	#_MIDIsendBuffer,a0
@@ -64,7 +64,7 @@ _replayNktTC:
 .done:
         move.w	#0,_MIDIbytesToSend
         else
-        echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
+        echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 ; prepare next tick
         move.l    update,$114		;slap interrupt
@@ -79,5 +79,5 @@ _replayNktTC:
 .finish:
         movem.l   (a7)+,d0-7/a0-6	;restore registers
         bclr.b	  #0,$fffffa0f  	;clear IRQ in service Bit
-        move.w    #$2300,sr
+        move.w    #$2300,sr             ;enable interrupts
         rte

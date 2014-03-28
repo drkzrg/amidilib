@@ -226,9 +226,71 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 } //end UpdateStep()
 
-sNktSeq *loadSequence(const U8 *filepath){
+sNktSeq *loadSequence(const U8 *filepath){}
 
 
+////////////////////////////////////////////////// replay control
 
+BOOL isSequencePlaying(void){
+ if(g_CurrentNktSequence!=0){
+       if(g_CurrentNktSequence->playState==PS_PLAYING)
+        return TRUE;
+       else
+        return FALSE;
+ }
+return FALSE;
+}
+
+
+void stopSequence(void){
+        if(g_CurrentNktSequence!=0){
+            if(g_CurrentNktSequence->playState!=PS_STOPPED){
+              g_CurrentNktSequence->playState=PS_STOPPED;
+              printf("Stop sequence\n");
+            }
+        }
+
+      //all notes off
+      am_allNotesOff(16);
+
+    #ifdef IKBD_MIDI_SEND_DIRECT
+      flushMidiSendBuffer();
+    #endif
+
+    }
+
+void pauseSequence(){
+      //printf("Pause/Resume.\n");
+      if(g_CurrentNktSequence!=0){
+            switch(g_CurrentNktSequence->playState){
+                case PS_PLAYING:{
+                    g_CurrentNktSequence->playState=PS_PAUSED;
+                    printf("Pause sequence\n");
+                }break;
+                case PS_PAUSED:{
+                    g_CurrentNktSequence->playState=PS_PLAYING;
+                }break;
+            };
+      }
+      //all notes off
+      am_allNotesOff(16);
+    } //pauseSequence
+
+void playSequence(void){
+
+     if(g_CurrentNktSequence!=0){
+
+            if(g_CurrentNktSequence->playState==PS_STOPPED){
+                g_CurrentNktSequence->playState=PS_PLAYING;
+                printf("Play sequence\t");
+
+                switch(g_CurrentNktSequence->playMode){
+                    case  S_PLAY_ONCE: printf("[ ONCE ]\n"); break;
+                    case  S_PLAY_LOOP: printf("[ LOOP ]\n"); break;
+                    default: printf("\n"); break;
+
+                };
+            }
+      }
 }
 

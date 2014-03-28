@@ -2,7 +2,7 @@
 #define NKT_H
 
 #include <c_vars.h>
-#include <amidiseq.h>
+#include <amidiseq.h> //todo remove this dependency
 
 // custom binary midi replay format
 typedef enum{
@@ -57,5 +57,11 @@ void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq);
 
 sNktSeq *loadSequence(const U8 *filepath);
+
+// replay control
+BOOL isSequencePlaying(void);
+void stopSequence(void);
+void pauseSequence();
+void playSequence(void);
 
 #endif // NKT_H

@@ -12,7 +12,7 @@ typedef enum _midiFileTypes{
   T_XMF,
   T_SNG,
   T_MUS,	/* e.g Doom MIDI music format */
-  T_NOK,    /* custom binary format */
+  T_NKT,    /* NKT custom binary format */
   T_MIDIFTMAX
 } eMidiFileTypes;
 

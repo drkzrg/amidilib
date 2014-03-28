@@ -25,10 +25,7 @@ void destroyLinearBuffer (tLinearBuffer *buf);
 // non aligned allocation from linear buffer
 void *linearBufferAlloc(tLinearBuffer *buf, const U32 size);
 void linearBufferFree(tLinearBuffer *buf); //clears all linear buffer
-
 void *linearBufferAllocAlign(tLinearBuffer *buf, const U32 size,const U32 alignFlag);
-
-
 void linearBufferPrintInfo(const tLinearBuffer *buf);
 
 

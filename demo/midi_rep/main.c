@@ -20,6 +20,7 @@
 
 #ifdef NKT_CONVERT
 #include "nkt.h"
+#include "seq2nkt.h"
 #endif
 
 #ifdef MIDI_PARSER_TEST
@@ -97,15 +98,8 @@ int main(int argc, char *argv[]){
 #ifdef NKT_CONVERT
 {
       printf("Convert sequence to NKT format...\n");
-
-      U8 *pOut=0;
       char tempName[128]={0};
-      U32 len=0;
-
       char *pTempPtr=0;
-
-      // allocate 64kb working buffer for nkt output
-      pOut=amMallocEx(64*1024,PREFER_TT);
 
      //set midi output name
      if(argv[1]){
@@ -114,14 +108,10 @@ int main(int argc, char *argv[]){
          memcpy(pTempPtr+1,"nkt",4);
      }
 
-      if(Seq2Nkt(pMidiTune, pOut, tempName, FALSE)<0){
+      if(Seq2NktFile(pMidiTune, tempName, FALSE)<0){
           printf("Error during NKT format conversion..\n");
-      }else{
-          printf("Written: %s OK\n",tempName);
       }
 
-      // free up working buffer
-      if(pOut) amFree((void **)&pOut);pOut=0;
 }
 #endif
 

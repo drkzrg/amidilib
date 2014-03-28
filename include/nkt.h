@@ -2,6 +2,7 @@
 #define NKT_H
 
 #include <c_vars.h>
+#include "memory/linalloc.h"
 
 /** sequence replay mode */
 typedef enum{
@@ -46,18 +47,19 @@ typedef struct __attribute__((packed)) NktHd{
 
 // Nkt structure in memory
 typedef struct NktSeq{
-    U16 version;
-    U16 timeDivision;
-    U32 currentTempo;		  // quaternote duration in ms, 500ms default
-    U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
-    U32 timeElapsedFrac;	  // track elapsed time
-    U32 timeElapsedInt;		  // track elapsed time
-    U32 timeStep;             // current track's timestep
-    eNktPlayState playState;	  // STOP, PLAY, PAUSED
-    eNktPlayMode playMode;	      // current play mode (loop, play_once, random)
-    U32 NbOfBlocks;           // nb of event blocks
-    U32 currentBlockId;         // currently replayed block id 0-xxxx
-    sNktBlock_t *pEvents;     // eventStart
+    U16 version;               // version
+    U16 timeDivision;          // time division
+    U32 currentTempo;		   // quaternote duration in ms, 500ms default
+    U32 currentBPM;	           // beats per minute (60 000000 / currentTempo)
+    U32 timeElapsedFrac;	   // track elapsed time
+    U32 timeElapsedInt;		   // track elapsed time
+    U32 timeStep;              // current track's timestep
+    eNktPlayState playState;   // STOP, PLAY, PAUSED
+    eNktPlayMode playMode;	   // current play mode (loop, play_once, random)
+    U32 NbOfBlocks;            // nb of event blocks
+    U32 currentBlockId;        // currently replayed block id 0-xxxx
+    sNktBlock_t *pEvents;      // eventStart
+    tLinearBuffer eventBuffer; // custom event buffer info
 }sNktSeq;
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/

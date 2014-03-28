@@ -11,6 +11,7 @@ extern void replayNktTC(void);
 
 static sNktSeq *g_CurrentNktSequence=0;
 
+
 void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
@@ -237,7 +238,38 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 } //end UpdateStep()
 
-sNktSeq *loadSequence(const U8 *filepath){}
+
+
+sNktSeq *loadSequence(const U8 *filepath){
+
+    // create header
+    sNktSeq *pNewSeq=amMallocEx(sizeof(sNktSeq),PREFER_TT);
+
+    if(pNewSeq==0) return NULL;
+
+    pNewSeq->playMode=NKT_PLAY_ONCE;
+    pNewSeq->playState=NKT_PS_STOPPED;
+    pNewSeq->currentTempo=DEFAULT_MPQN;
+    pNewSeq->currentBPM=DEFAULT_BPM;
+    pNewSeq->timeDivision=DEFAULT_PPQN;
+    pNewSeq->timeElapsedFrac=0;
+    pNewSeq->timeElapsedInt=0;
+    pNewSeq->currentBlockId=0;
+    pNewSeq->NbOfBlocks=0;
+    pNewSeq->pEvents=0;
+
+
+    //get nb of blocks from file
+
+    // allocate contigous/linear memory for 65k events or less (might require tweaking)
+    if(createLinearBuffer(&(pNewSeq->eventBuffer),2000*sizeof(sNktBlock_t),PREFER_TT)<0){
+      printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
+      return NULL;
+    }
+
+
+
+}
 
 void destroySequence(sNktSeq *pSeq){
 
@@ -251,9 +283,12 @@ void destroySequence(sNktSeq *pSeq){
 
         for(U32 i=0;i<pSeq->NbOfBlocks;++i){
             amFree((void**)&(pSeq->pEvents[i].pData));
-            amMemSet(pSeq,0,sizeof(sNktSeq));
         }
 
+        // release linear buffer
+        linearBufferFree(&(pSeq->eventBuffer));
+
+        //clear struct
         amMemSet(pSeq,0,sizeof(sNktSeq));
         amFree((void**)&pSeq);
         return;

@@ -262,7 +262,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	case T_SMF:{return(-1);}break;
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
-    case T_NOK:{
+    case T_NKT:{
             //todo handle/setup replay
         return(-1);
     }break;
@@ -388,7 +388,9 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
     }break;
      case T_MUS:
        return -1;/*TODO: ! not implemented */
-     
+     case T_NKT:
+
+        return 1;
      break;
      default:
        return -1;/*TODO: ! not implemented */

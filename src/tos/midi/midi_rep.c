@@ -17,22 +17,11 @@ extern void replaySingleTC(void);
 extern void replayMultiTB(void);
 extern void replayMultiTC(void);
 
-extern volatile BOOL midiOutEnabled;
-extern volatile BOOL ymOutEnabled;
-
 static sSequence_t *g_CurrentSequence=0;
 
 void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
 }
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-//clears custom midi output buffer
-void clearMidiOutputBuffer(){
-    MIDIbytesToSend=0;
-    amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(U8));
-}
-#endif
 
 void initSeq(sSequence_t *seq, eTimerType timerType){
  g_CurrentSequence=0;
@@ -56,7 +45,6 @@ if(seq!=0){
             pTrackState->currentBPM=DEFAULT_BPM;
             pTrackState->timeElapsedInt=0L;
             pTrackState->bMute=FALSE;
-            pTrackState->bTempoChanged=FALSE;
             pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
             pTrackState->playState = getGlobalConfig()->playState;
             pTrackState->playMode = getGlobalConfig()->playMode;
@@ -124,7 +112,6 @@ U8 mode=0,data=0;
          pTrackState->currentBPM=DEFAULT_BPM;
          pTrackState->timeElapsedInt=0L;
          pTrackState->bMute=FALSE;
-         pTrackState->bTempoChanged=FALSE;
          pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
          pTrackState->playState = getGlobalConfig()->playState;
          pTrackState->playMode = getGlobalConfig()->playMode;
@@ -177,7 +164,6 @@ if(g_CurrentSequence){
               pTrack->currentState.timeElapsedInt=0L;
               pTrack->currentState.currentTempo=DEFAULT_MPQN;
               pTrack->currentState.currentBPM=DEFAULT_BPM;
-              pTrackState->bTempoChanged=FALSE;
               pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
           }
         }
@@ -737,19 +723,7 @@ if(g_CurrentSequence){
 #endif
 
 }
-#ifdef DEBUG_BUILD
-void printMidiSendBufferState(){
-    amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
 
-    if(MIDIbytesToSend>0){
-        for(int i=0;i<MIDIbytesToSend;++i){
-            amTrace("%x",MIDIsendBuffer[i]);
-        }
-
-        amTrace(".\n");
-    }
-}
-#endif
 
 const U8 *getPlayStateStr(const ePlayState state){
 
@@ -784,17 +758,4 @@ const U8 *getPlayModeStr(const ePlayMode mode){
     }
 }
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-// sends all pending data to output port
-
-void flushMidiSendBuffer(){
-
-    if(MIDIbytesToSend>0){
-        amMidiSendData(MIDIbytesToSend,MIDIsendBuffer);
-    }
-
-    clearMidiOutputBuffer();
-}
-
-#endif
 

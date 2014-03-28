@@ -293,7 +293,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
                 printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
 
                 //clear buffer
-                amMemSet(MIDIsendBuffer,0,MIDI_BUFFER_SIZE);
+                amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE);
                 MIDIbytesToSend=0;
 
                 amFree((void **)&tempBlock.pData);
@@ -308,7 +308,177 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompre
 }
 
 static S32 handleMultiTrack(const sSequence_t *pSeq, U8 *out,const BOOL bCompress, FILE **file, U32 *blocksWritten){
+//TOD
+    printf("Processing multi track sequence\n");
 
+    sTrack_t *pTrack=pSeq->arTracks[0];
+    sEventList *eventPtr=pTrack->pTrkEventList;
+    sNktBlock_t tempBlock;
+
+    amMemSet(&tempBlock,0,sizeof(sNktBlock_t));
+
+    U32 currDelta=0;
+
+    while(eventPtr!=NULL){
+
+        // dump data
+        if(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==currDelta){
+            // store curent delta
+            tempBlock.delta=currDelta; //save delta
+            tempBlock.blockSize=0;   //reset block size
+            tempBlock.msgType=0;
+            tempBlock.pData=0;
+
+            // if event is tempo related then create event with curent delta
+            // and go to next event
+
+            //skip uninteresting events
+            while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
+                printf("Skip event >> %d\n",eventPtr->eventBlock.type);
+                eventPtr=eventPtr->pNext;
+            }
+
+            if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
+                U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+
+                printf("Write Set Tempo: %lu event\n",tempo);
+
+                sNktBlock_t stBlock;
+                stBlock.delta=currDelta;
+                stBlock.blockSize=sizeof(U32);
+                stBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+
+                stBlock.pData=amMallocEx(stBlock.blockSize,PREFER_TT);
+
+                if(stBlock.pData!=NULL){
+                    amMemCpy(stBlock.pData,&tempo,stBlock.blockSize);
+
+                    // copy data to our internal buffer
+                    out=WriteInt(out,stBlock.delta);
+                    out=WriteShort(out,(U16)stBlock.msgType);
+                    out=WriteInt(out,stBlock.blockSize);
+                    amMemCpy(out,stBlock.pData,stBlock.blockSize);
+                    out=out+stBlock.blockSize*sizeof(U8);  //adjust pointer
+
+                    //write block to file
+                    if(file!=NULL){
+                        fwrite(&stBlock.delta,sizeof(stBlock.delta),1,*file);
+                        fwrite(&stBlock.msgType,sizeof(stBlock.msgType),1,*file);
+                        fwrite(&stBlock.blockSize,sizeof(stBlock.blockSize),1,*file);
+                        fwrite(&stBlock.pData,sizeof(stBlock.blockSize),1,*file);
+                    }
+                    ++(*blocksWritten);
+
+                    printf("delta [%lu] type:[%d] size:[%lu] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+                    amFree((void **)&tempBlock.pData);
+                }
+
+                eventPtr=eventPtr->pNext;
+            }
+
+            if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
+                printf("Write End of Track \n");
+                sNktBlock_t eotBlock;
+                eotBlock.delta=currDelta;
+                eotBlock.blockSize=0;
+                eotBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+                eotBlock.pData=0;
+
+                // copy data to our internal buffer
+                out=WriteInt(out,eotBlock.delta);
+                out=WriteShort(out,(U16)eotBlock.msgType);
+                out=WriteInt(out,0);
+
+                //write block to file
+                if(file!=NULL){
+                    fwrite(&eotBlock.delta,sizeof(eotBlock.delta),1,*file);
+                    fwrite(&eotBlock.msgType,sizeof(eotBlock.msgType),1,*file);
+                    fwrite(&eotBlock.blockSize,sizeof(eotBlock.blockSize),1,*file);
+                    //no data to write
+                }
+                ++(*blocksWritten);
+
+                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",eotBlock.delta, eotBlock.msgType, eotBlock.blockSize );
+
+                eventPtr=eventPtr->pNext;
+            }
+
+            if(eventPtr!=0){
+                //process events as normal
+                tempBlock.msgType=(eNktMsgType)seq2nktMap[eventPtr->eventBlock.type];
+                out=processSeqEvent(eventPtr,out, &tempBlock);
+
+                // next event
+                eventPtr=eventPtr->pNext;
+
+                //check next events, dump until delta != 0
+                while(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==0){
+
+                    //skip uninteresting events
+                    while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
+                        printf("Skip event >> %d delta 0\n",eventPtr->eventBlock.type);
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                    if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
+                        printf("Write Set Tempo: %lu, event delta 0\n",((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal);
+                         eventPtr=eventPtr->pNext;
+                    }
+
+                    if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
+                        printf("Write End of Track, event delta 0\n");
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                    if(eventPtr!=NULL) {out=processSeqEvent(eventPtr,out,&tempBlock);
+                        // next event
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                };
+
+                if(eventPtr) currDelta=eventPtr->eventBlock.uiDeltaTime; //get next delta
+
+            }//end null check
+        };
+
+        // dump midi event block to memory
+        if(MIDIbytesToSend>0){
+            tempBlock.pData=amMallocEx(MIDIbytesToSend,PREFER_TT);
+
+            if(tempBlock.pData!=NULL){
+                amMemCpy(tempBlock.pData,MIDIsendBuffer,MIDIbytesToSend);
+
+                // copy data to our internal buffer
+                out=WriteInt(out,tempBlock.delta);
+                out=WriteShort(out,(U16)tempBlock.msgType);
+                out=WriteInt(out,tempBlock.blockSize);
+                amMemCpy(out,tempBlock.pData,tempBlock.blockSize*sizeof(U8));
+                out=out+tempBlock.blockSize*sizeof(U8);  //adjust pointer
+
+                //write block to file
+                if(file!=NULL){
+                    fwrite(&tempBlock.delta,sizeof(tempBlock.delta),1,*file);
+                    fwrite(&tempBlock.msgType,sizeof(tempBlock.msgType),1,*file);
+                    fwrite(&tempBlock.blockSize,sizeof(tempBlock.blockSize),1,*file);
+                    fwrite(&tempBlock.pData,sizeof(tempBlock.blockSize*sizeof(U8)),1,*file);
+                }
+                ++(*blocksWritten);
+
+                printf("delta [%lu] type:[%d] size:[%lu] bytes \n",tempBlock.delta, tempBlock.msgType, tempBlock.blockSize );
+
+                //clear buffer
+                amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE);
+                MIDIbytesToSend=0;
+
+                amFree((void **)&tempBlock.pData);
+            }
+
+        }
+
+    }; //end while end of sequence
+
+    printf("Event blocks written: %lu\n",*blocksWritten);
  return 0;
 }
 

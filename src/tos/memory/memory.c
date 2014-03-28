@@ -51,7 +51,7 @@ void *amMemCpy (void *pDest, void *pSrc,tMEMSIZE iSize){
   return memcpy(pDest,pSrc,iSize);
 }
 
-void *amMemSet ( void *pSrc,S32 iCharacter,tMEMSIZE iNum){
+void *amMemSet ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
   void *pPtr=0;
   
   pPtr= memset(pSrc,iCharacter,iNum);

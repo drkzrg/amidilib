@@ -6,8 +6,8 @@
 */
 
 #include "roland.h"
-#include "midi_send.h"
 #include "midi_cmd.h"
+#include "midi_send.h"
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 

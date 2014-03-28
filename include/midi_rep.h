@@ -53,13 +53,9 @@ void getCurrentSeq(sSequence_t **);
 
 /** Outputs current sequence state. */
 void printSequenceState();
-void printMidiSendBufferState();
 
 const U8 *getPlayModeStr(const ePlayMode mode);
 const U8 *getPlayStateStr(const ePlayState state);
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-void flushMidiSendBuffer();
-#endif
 
 #endif

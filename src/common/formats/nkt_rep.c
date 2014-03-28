@@ -12,7 +12,7 @@ extern void replayNktTC(void);
 
 static sNktSeq *g_CurrentNktSequence=0;
 
-void getCurrentNktSeq(sNktSeq **pSeq){
+void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
@@ -21,7 +21,7 @@ BOOL isEOT(volatile const sNktBlock_t *pPtr){
   return FALSE;
 }
 
-void onEndSequence(){
+static void onEndSequence(){
 
 if(g_CurrentNktSequence){
 
@@ -50,7 +50,7 @@ if(g_CurrentNktSequence){
 
 
 // init sequence
-void initNktSeq(sNktSeq *seq){
+void initSequence(sNktSeq *seq){
  g_CurrentNktSequence=0;
 
 if(seq!=0){
@@ -226,5 +226,9 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 } //end UpdateStep()
 
+sNktSeq *loadSequence(const U8 *filepath){
 
+
+
+}
 

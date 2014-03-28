@@ -5,11 +5,12 @@
     See license.txt for licensing information.
 */
 
-#include <amidilib.h>
-#include <fmio.h>
+
 #include <string.h>
 #include <stdlib.h>
 
+#include <amidilib.h>
+#include <fmio.h>
 #include "config.h"
 
 //internal configuration
@@ -39,7 +40,7 @@ static const U8 silenceThresholdTag[]={"silenceThreshold"};
 //default values
 static const U32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
 static const U32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
-static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_BUFFER_SIZE; 	    	    //default operation mode (not used yet)
+static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    //default operation mode (not used yet)
 
 static const U16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    //default connected device
 static const U16 DEFAULT_MIDI_CHANNEL = 1; 	    //default midi channel

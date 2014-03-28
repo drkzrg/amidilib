@@ -396,11 +396,13 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
 return -1;
 }
 
-static U8 g_arMidiBuffer[MIDI_BUFFER_SIZE];
+#ifndef IKBD_MIDI_SEND_DIRECT
+static U8 g_arMidiBuffer[MIDI_SENDBUFFER_SIZE];
 
 /* Midi buffers system info */
 static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
+#endif
 
 extern BOOL CON_LOG;
 extern FILE *ofp;
@@ -422,8 +424,8 @@ S16 am_init(){
     return -1;
   }
   
-
-  /* clear our new buffer */
+#ifndef IKBD_MIDI_SEND_DIRECT
+  /* clear our new XBIOS buffer */
  U32 usp=0L;
  amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
 
@@ -446,15 +448,11 @@ S16 am_init(){
  (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
  (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
  SuperToUser(usp);
+#endif
 
 #ifdef IKBD_MIDI_SEND_DIRECT
    MIDIbytesToSend=0;
 #endif
-  
-   
-#ifdef EVENT_LINEAR_BUFFER
-
-#endif   
    // now depending on the connected device type and chosen operation mode
    // set appropriate channel
    //prepare device for receiving messages
@@ -479,7 +477,7 @@ S16 am_init(){
    }
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-    amMidiSendIKBD();	
+    flushMidiSendBuffer();	//
 #endif
 
 #ifdef EVENT_LINEAR_BUFFER    
@@ -515,6 +513,7 @@ void am_deinit(){
     flushMidiSendBuffer();
 #endif
 
+#ifndef IKBD_MIDI_SEND_DIRECT
   U32 usp=Super(0L);
  
   /* restore standard MIDI buffer */
@@ -525,6 +524,7 @@ void am_deinit(){
   (*g_psMidiBufferInfo).ibuflow=g_sOldMidiBufferInfo.ibuflow;
   (*g_psMidiBufferInfo).ibufhi=g_sOldMidiBufferInfo.ibufhi;
   SuperToUser(usp);
+#endif
 
 #ifdef DEBUG_BUILD
   deinitDebug();

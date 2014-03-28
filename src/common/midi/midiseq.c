@@ -291,9 +291,7 @@ static void  fNoteOn(const void *pEvent) {
     pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
 
-
-
- static void fHandleSysEX(const void *pEvent){
+static void fHandleSysEX(const void *pEvent){
   sSysEX_EventBlock_t *pPtr=(sSysEX_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
   amTrace((const U8*)"SysEX Message.\n");

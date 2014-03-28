@@ -10,11 +10,7 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
-/** installs sequence replay routine (hooked to timer B atm) */
-extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
 
-/** deinstalls sequence replay routine (hooked to timer B atm) */
-extern void deinstallReplayRout(void);
 
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.

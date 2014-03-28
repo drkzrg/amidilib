@@ -2,7 +2,19 @@
 #define NKT_H
 
 #include <c_vars.h>
-#include <amidiseq.h> //todo remove this dependency
+
+/** sequence replay mode */
+typedef enum{
+  NKT_PLAY_ONCE=0x06,
+  NKT_PLAY_LOOP=0x08
+} eNktPlayMode;
+
+/** current track state */
+typedef enum{
+  NKT_PS_STOPPED=0x00,
+  NKT_PS_PLAYING=0x02,
+  NKT_PS_PAUSED=0x04
+} eNktPlayState;
 
 // custom binary midi replay format
 typedef enum{
@@ -13,7 +25,6 @@ typedef enum{
   NKT_END,
   NKT_MAX_EVENT
 } eNktMsgType;
-
 
 //
 typedef struct NktBlock_t{
@@ -39,11 +50,11 @@ typedef struct NktSeq{
     U16 timeDivision;
     U32 currentTempo;		  // quaternote duration in ms, 500ms default
     U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
-    U32 timeElapsedFrac;		  // track elapsed time
+    U32 timeElapsedFrac;	  // track elapsed time
     U32 timeElapsedInt;		  // track elapsed time
     U32 timeStep;             // current track's timestep
-    ePlayState playState;	  // STOP, PLAY, PAUSED
-    ePlayMode playMode;	      // current play mode (loop, play_once, random)
+    eNktPlayState playState;	  // STOP, PLAY, PAUSED
+    eNktPlayMode playMode;	      // current play mode (loop, play_once, random)
     U32 NbOfBlocks;           // nb of event blocks
     U32 currentBlockId;         // currently replayed block id 0-xxxx
     sNktBlock_t *pEvents;     // eventStart
@@ -51,12 +62,13 @@ typedef struct NktSeq{
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
 
-S32 Seq2Nkt(const sSequence_t *pSeq, U8* out, const U8 *pOutFileName, const BOOL bCompress);
+
 
 void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq);
 
 sNktSeq *loadSequence(const U8 *filepath);
+void destroySequence(sNktSeq *pSeq);
 
 // replay control
 BOOL isSequencePlaying(void);

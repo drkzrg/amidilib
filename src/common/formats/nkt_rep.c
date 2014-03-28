@@ -1,11 +1,10 @@
 
 #include "config.h"
-#include "timing/mfp.h"
-#include "amidilib.h"
-#include "midi_send.h"
-
-#include "timing/miditim.h"
 #include "nkt.h"
+#include "timing/mfp.h"
+#include "memory.h"
+#include "midi_cmd.h"
+#include "timing/miditim.h"
 
 // nkt replay
 extern void replayNktTC(void);
@@ -25,12 +24,12 @@ static void onEndSequence(){
 
 if(g_CurrentNktSequence){
 
-      if(g_CurrentNktSequence->playMode==S_PLAY_ONCE){
+      if(g_CurrentNktSequence->playMode==NKT_PLAY_ONCE){
           //reset set state to stopped
           //reset song position on all tracks
-          g_CurrentNktSequence->playState=PS_STOPPED;
-        }else if(g_CurrentNktSequence->playMode==S_PLAY_LOOP){
-          g_CurrentNktSequence->playState=PS_PLAYING;
+          g_CurrentNktSequence->playState=NKT_PS_STOPPED;
+        }else if(g_CurrentNktSequence->playMode==NKT_PLAY_LOOP){
+          g_CurrentNktSequence->playState=NKT_PS_PLAYING;
         }
 
         am_allNotesOff(16);
@@ -91,7 +90,6 @@ volatile static BOOL bStopped=FALSE;
 volatile static BOOL endOfSequence=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 currentDelta=0;
-volatile static const sEventList *pCurrentEvent=0;
 volatile static U32 timeElapsed=0;
 volatile static sNktBlock_t *nktBlk=0;
 
@@ -102,7 +100,7 @@ void updateStepNkt(){
  if(g_CurrentNktSequence==0) return;
 
  //check sequence state if paused do nothing
-  if(g_CurrentNktSequence->playState==PS_PAUSED) {
+  if(g_CurrentNktSequence->playState==NKT_PS_PAUSED) {
     am_allNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
@@ -113,10 +111,10 @@ void updateStepNkt(){
   }
 
   switch(g_CurrentNktSequence->playState){
-    case PS_PLAYING:{
+    case NKT_PS_PLAYING:{
       bStopped=FALSE;
     }break;
-    case PS_STOPPED:{
+    case NKT_PS_STOPPED:{
       //check sequence state if stopped reset position on all tracks
       //and reset tempo to default, but only once
 
@@ -150,6 +148,19 @@ void updateStepNkt(){
    nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
 
    if(nktBlk) bEOTflag=isEOT(nktBlk);
+
+   if(nktBlk!=0&& nktBlk->msgType==NKT_TEMPO_CHANGE){
+       //set new tempo
+       g_CurrentNktSequence->currentTempo=(U32)*nktBlk->pData;
+
+       //calculate new timestep
+
+
+       //next event
+       ++g_CurrentNktSequence->currentBlockId;
+       nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+   }
+
    timeElapsed=g_CurrentNktSequence->timeElapsedInt;
 //reset
 
@@ -178,7 +189,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
    if(nktBlk) bEOTflag=isEOT(nktBlk);
 
    //check if next events are null and pack buffer until first next non zero delta
-   while(bEOTflag!=FALSE&&pCurrentEvent->eventBlock.uiDeltaTime==0){
+   while(bEOTflag!=FALSE&&nktBlk->delta==0){
         //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
        MIDIbytesToSend+=nktBlk->blockSize;
@@ -228,12 +239,34 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 sNktSeq *loadSequence(const U8 *filepath){}
 
+void destroySequence(sNktSeq *pSeq){
+
+    if(pSeq==0) return;
+
+    if(pSeq->NbOfBlocks==0){
+        amMemSet(pSeq,0,sizeof(sNktSeq));
+        amFree((void**)&pSeq);
+        return;
+    }else{
+
+        for(U32 i=0;i<pSeq->NbOfBlocks;++i){
+            amFree((void**)&(pSeq->pEvents[i].pData));
+            amMemSet(pSeq,0,sizeof(sNktSeq));
+        }
+
+        amMemSet(pSeq,0,sizeof(sNktSeq));
+        amFree((void**)&pSeq);
+        return;
+
+    }
+}
+
 
 ////////////////////////////////////////////////// replay control
 
 BOOL isSequencePlaying(void){
  if(g_CurrentNktSequence!=0){
-       if(g_CurrentNktSequence->playState==PS_PLAYING)
+       if(g_CurrentNktSequence->playState==NKT_PS_PLAYING)
         return TRUE;
        else
         return FALSE;
@@ -244,8 +277,8 @@ return FALSE;
 
 void stopSequence(void){
         if(g_CurrentNktSequence!=0){
-            if(g_CurrentNktSequence->playState!=PS_STOPPED){
-              g_CurrentNktSequence->playState=PS_STOPPED;
+            if(g_CurrentNktSequence->playState!=NKT_PS_STOPPED){
+              g_CurrentNktSequence->playState=NKT_PS_STOPPED;
               printf("Stop sequence\n");
             }
         }
@@ -263,12 +296,12 @@ void pauseSequence(){
       //printf("Pause/Resume.\n");
       if(g_CurrentNktSequence!=0){
             switch(g_CurrentNktSequence->playState){
-                case PS_PLAYING:{
-                    g_CurrentNktSequence->playState=PS_PAUSED;
+                case NKT_PS_PLAYING:{
+                    g_CurrentNktSequence->playState=NKT_PS_PAUSED;
                     printf("Pause sequence\n");
                 }break;
-                case PS_PAUSED:{
-                    g_CurrentNktSequence->playState=PS_PLAYING;
+                case NKT_PS_PAUSED:{
+                    g_CurrentNktSequence->playState=NKT_PS_PLAYING;
                 }break;
             };
       }
@@ -280,17 +313,19 @@ void playSequence(void){
 
      if(g_CurrentNktSequence!=0){
 
-            if(g_CurrentNktSequence->playState==PS_STOPPED){
-                g_CurrentNktSequence->playState=PS_PLAYING;
+            if(g_CurrentNktSequence->playState==NKT_PS_STOPPED){
+                g_CurrentNktSequence->playState=NKT_PS_PLAYING;
                 printf("Play sequence\t");
 
                 switch(g_CurrentNktSequence->playMode){
-                    case  S_PLAY_ONCE: printf("[ ONCE ]\n"); break;
-                    case  S_PLAY_LOOP: printf("[ LOOP ]\n"); break;
+                    case  NKT_PLAY_ONCE: printf("[ ONCE ]\n"); break;
+                    case  NKT_PLAY_LOOP: printf("[ LOOP ]\n"); break;
                     default: printf("\n"); break;
 
                 };
             }
       }
 }
+
+
 

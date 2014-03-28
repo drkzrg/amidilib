@@ -589,12 +589,6 @@ const S8 *getConnectedDeviceInfo(void){
  return NULL;
 }
 
-void am_allNotesOff(U16 numChannels){
-U16 iCounter;
-  for(iCounter=0;iCounter<numChannels;++iCounter){
-    all_notes_off(iCounter);
-  }
-}        
 
 #ifdef DEBUG_BUILD
 /* variable quantity reading test */

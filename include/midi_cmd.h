@@ -488,4 +488,15 @@ static INLINE void copy_poly(const U8 channel, const U8 numberOfPoly){
 	MIDIsendBuffer[MIDIbytesToSend++]=numberOfPoly;
 }
 
+/** Silents midi channels (n to n-1) - useful when we have for example hanging notes.
+*   @param numChannels - number of channel
+*/
+
+static INLINE void am_allNotesOff(U16 numChannels){
+U16 iCounter;
+  for(iCounter=0;iCounter<numChannels;++iCounter){
+    all_notes_off(iCounter);
+  }
+}
+
 #endif

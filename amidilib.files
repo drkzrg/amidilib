@@ -83,3 +83,4 @@ include/nkt.h
 src/common/formats/seq2nkt.c
 src/common/formats/nkt_rep.c
 src/common/formats/nkt_rep_m68k.s
+include/seq2nkt.h

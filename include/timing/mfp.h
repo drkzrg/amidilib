@@ -34,4 +34,10 @@
 */
 void getMFPTimerSettings(const U16 freq,U8 *mode,U8 *data);
 
+/** installs sequence replay routine (hooked to timer B atm) */
+extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
+
+/** deinstalls sequence replay routine (hooked to timer B atm) */
+extern void deinstallReplayRout(void);
+
 #endif

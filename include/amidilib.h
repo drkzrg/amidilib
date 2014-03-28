@@ -87,10 +87,6 @@ void am_deinit(void);
 /** returns info about connected devices  */
 const S8 *getConnectedDeviceInfo(void);
 
-/** Silents midi channels (n to n-1) - useful when we have for example hanging notes.
-*   @param numChannels - number of channel
-*/
-void am_allNotesOff(U16 numChannels);
 
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range

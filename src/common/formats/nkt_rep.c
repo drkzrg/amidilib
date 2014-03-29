@@ -57,12 +57,6 @@ if(seq!=0){
     U8 mode=0,data=0;
     g_CurrentNktSequence=seq;
 
-    seq->currentTempo=DEFAULT_MPQN;
-    seq->currentBPM=DEFAULT_BPM;
-    seq->timeElapsedInt=0L;
-
-    seq->timeElapsedFrac=0L;
-    seq->timeStep=0L;
     seq->timeStep=am_calculateTimeStep(seq->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
     seq->playState = getGlobalConfig()->playState;
     seq->playMode = getGlobalConfig()->playMode;
@@ -177,8 +171,9 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     //copy event data to custom buffer
-    MIDIbytesToSend+=nktBlk->blockSize;
+
     amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
+    MIDIbytesToSend+=nktBlk->blockSize;
 #else
         //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);
@@ -194,8 +189,8 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
    while(bEOTflag!=FALSE&&nktBlk->delta==0){
         //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
+       amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],nktBlk->pData, nktBlk->blockSize);
        MIDIbytesToSend+=nktBlk->blockSize;
-       amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
 #else
          //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);
@@ -251,16 +246,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
       return NULL;
     }
 
+    amMemSet(pNewSeq,0,sizeof(sNktSeq));
+
     pNewSeq->playMode=NKT_PLAY_ONCE;
     pNewSeq->playState=NKT_PS_STOPPED;
     pNewSeq->currentTempo=DEFAULT_MPQN;
     pNewSeq->currentBPM=DEFAULT_BPM;
     pNewSeq->timeDivision=DEFAULT_PPQN;
-    pNewSeq->timeElapsedFrac=0;
-    pNewSeq->timeElapsedInt=0;
-    pNewSeq->currentBlockId=0;
-    pNewSeq->NbOfBlocks=0;
-    pNewSeq->pEvents=0;
 
     //get nb of blocks from file
     FILE *fp=0;
@@ -455,5 +447,20 @@ void playSequence(void){
       }
 }
 
+void switchReplayMode(void){
+
+ if(g_CurrentNktSequence!=0){
+    switch(g_CurrentNktSequence->playMode){
+      case NKT_PLAY_ONCE:{
+               g_CurrentNktSequence->playMode=NKT_PLAY_LOOP;
+               printf("Set replay mode: [ LOOP ]\n");
+      }break;
+          case NKT_PLAY_LOOP:{
+                g_CurrentNktSequence->playMode=NKT_PLAY_ONCE;
+                printf("Set replay mode: [ ONCE ]\n");
+          }break;
+        }
+  }
+}
 
 

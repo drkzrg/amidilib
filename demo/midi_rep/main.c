@@ -111,25 +111,7 @@ int main(int argc, char *argv[]){
 
       if(Seq2NktFile(pMidiTune, tempName, FALSE)<0){
           printf("Error during NKT format conversion..\n");
-      }else{
-          printf("Loading %s \n",tempName);
-          pNktSeq=loadSequence(tempName);
-
-          if(pNktSeq!=NULL){
-
-              //init replay
-
-
-              // destroy sequence
-              destroySequence(pNktSeq);
-              pNktSeq=0;
-          }else{
-               printf("Error: Loading %s failed.\n",tempName);
-          }
-
       }
-
-
 
 }
 #endif

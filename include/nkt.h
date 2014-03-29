@@ -83,5 +83,5 @@ BOOL isSequencePlaying(void);
 void stopSequence(void);
 void pauseSequence();
 void playSequence(void);
-
+void switchReplayMode(void);
 #endif // NKT_H

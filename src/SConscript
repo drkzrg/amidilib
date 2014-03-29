@@ -91,6 +91,7 @@ AMIDI_TEST_EXE='midiplay' + EXE_EXT_2
 YM2149_TEST_EXE='ym2149' + EXE_EXT_1
 MIDI_SEQ_TEST_EXE='midiout' + EXE_EXT_1
 TIMINGS_TEST_EXE='midiseq' + EXE_EXT_1
+NKT_REPLAY_EXE = 'nktrep' + EXE_EXT_2
 
 env["CC"] = CROSS_PREFIX + 'gcc'
 env["CXX"] = CROSS_PREFIX + 'g++'
@@ -192,12 +193,14 @@ amidi_test_src = ["../demo/midi_rep/main.c"]
 midiOut_test_src = ["../demo/midi_output/midiTest.c"]
 timings_test_src = ["../demo/timings/timTest.c","../demo/timings/sampleSequence.c","tos/testReplay.s"]
 ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
-  
+nktReplay_src = ["../demo/nktReplay/nktReplay.c"]
+
 # build test programs and link them with amidilib
 env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
+env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m']);
 
 # TODO if release strip symbols, pack with executable packer
 if(debug=='none' or (int(debug)==0)):

@@ -34,6 +34,7 @@ MIDIREP_BIN='midiplay.ttp'
 YM2149_TEST_BIN='ym2149.tos'
 MIDIOUT_BIN='midiout.tos'
 MIDISEQ_BIN='midiseq.tos'
+NKTREP_BIN='nktrep.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
@@ -61,6 +62,10 @@ fi
 if [ -f ../bin/$MIDISEQ_BIN ];
 then 
    rm ../bin/$MIDISEQ_BIN
+fi
+if [ -f ../bin/$NKTREP_BIN ];
+then
+   rm ../bin/$NKTREP_BIN
 fi
 
 #clean all stuff
@@ -143,6 +148,24 @@ then
         cp -v ../bin/$MIDISEQ_BIN $install_dir
    fi
 fi
+
+if [ -f ../bin/$NKTREP_BIN ];
+then
+   $tools_prefix"m68k-atari-mint-stack" ../bin/$NKTREP_BIN --size=$stack_size
+   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$NKTREP_BIN
+
+    if [ $send_to_native_machine -eq 1 ]
+    then
+        echo Sending $NKTREP_BIN to $REMOTE_MACHINE
+        curl -H "Expect:" --request POST --data-binary "@../bin/$NKTREP_BIN" $REMOTE_MACHINE$REMOTE_PATH$NKTREP_BIN
+    fi
+
+   if [ $copy_to_emu_dir -eq 1 ]
+   then
+        cp -v ../bin/$MIDISEQ_BIN $install_dir
+   fi
+fi
+
 
 #copy binaries to shared dir
 if [ $copy_to_shared_dir -eq 1 ]

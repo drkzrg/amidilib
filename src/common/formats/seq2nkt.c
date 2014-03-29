@@ -283,7 +283,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
     }; //end while end of sequence
 
-    printf("Event blocks written: %lu, total bytes written %lu\n",*blocksWritten,*bytesWritten);
+    printf("Event blocks written: %lu, total bytes of data written %lu\n",*blocksWritten,*bytesWritten);
  return 0;
 }
 

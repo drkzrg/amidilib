@@ -155,7 +155,8 @@ void updateStepNkt(){
        g_CurrentNktSequence->currentTempo=(U32)*nktBlk->pData;
 
        //calculate new timestep
-
+       g_CurrentNktSequence->currentBPM=60000000/g_CurrentNktSequence->currentTempo;
+       g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
        //next event
        ++g_CurrentNktSequence->currentBlockId;
@@ -302,8 +303,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amFree((void **)&pNewSeq);
     return NULL;
    }else{
+#ifdef DEBUG_BUILD
         printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
-
+#endif
         // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
         if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
             printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");

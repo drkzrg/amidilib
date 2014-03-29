@@ -21,6 +21,7 @@ sNktSeq *pNktSeq=0;
       fprintf(stderr,"No specified midi filename! exiting\n");
       return 0;
     }
+
     am_init();
 
     pNktSeq=loadSequence(argv[1]);

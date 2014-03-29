@@ -87,19 +87,12 @@ void am_deinit(void);
 /** returns info about connected devices  */
 const S8 *getConnectedDeviceInfo(void);
 
-
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range
 */
 const U8 *am_getMIDInoteName(U8 ubNoteNb);
 
 void getDeviceInfoResponse(U8 channel);
-
-/** destroys loaded Sequence. 
-*   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
-*   if operation was completed succesfully. */
-
-void am_destroySequence(sSequence_t **pPtr);
 
 /** returns meaningful name for Midi Device type enumeration.  */
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);

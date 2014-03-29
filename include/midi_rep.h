@@ -47,6 +47,12 @@ void toggleReplayMode(void);
 
 void getCurrentSeq(sSequence_t **);
 
+/** destroys loaded Sequence.
+*   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
+*   if operation was completed succesfully. */
+
+void am_destroySequence (sSequence_t **pPtr);
+
 /** Outputs current sequence state. */
 void printSequenceState();
 

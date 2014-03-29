@@ -295,9 +295,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amFree((void **)&pNewSeq);
     return NULL;
    }else{
-#ifdef DEBUG_BUILD
+//#ifdef DEBUG_BUILD
         printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
-#endif
+//#endif
         // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
         if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
             printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
@@ -330,9 +330,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             pNewSeq->pEvents[i].msgType=blk.msgType;
             pNewSeq->pEvents[i].blockSize=blk.blockSize;
 
-#ifdef DEBUG_BUILD
-            printf("delta [%lu] type:[%d] size:[%u] bytes (0x%x)\n",blk.delta, blk.msgType, blk.blockSize, blk.blockSize );
-#endif
+//#ifdef DEBUG_BUILD
+            printf("delta [%lu] type:[%d] size:[%u] bytes\n",blk.delta, blk.msgType, blk.blockSize );
+//#endif
 
             if(pNewSeq->pEvents[i].blockSize!=0){
 

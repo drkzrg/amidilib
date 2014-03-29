@@ -429,7 +429,7 @@ S16 am_init(){
 #ifndef IKBD_MIDI_SEND_DIRECT
   /* clear our new XBIOS buffer */
  U32 usp=0L;
- amMemSet(g_arMidiBuffer,0,MIDI_BUFFER_SIZE);
+ amMemSet(g_arMidiBuffer,0,MIDI_SENDBUFFER_SIZE);
 
  usp=Super(0L);
  g_psMidiBufferInfo=(_IOREC*)Iorec(XB_DEV_MIDI);
@@ -616,31 +616,7 @@ void VLQtest(void){
 }
 #endif
 
-void am_destroySequence (sSequence_t **pPtr){
-  #ifdef DEBUG_BUILD
-    amTrace((const U8 *)"am_destroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
-  #endif
-    
-  //go to the end of sequence
-  if((*pPtr)->pSequenceName!=0){
-      amFree((void **)&((*pPtr)->pSequenceName));
-  }
-  
-  //destroy all tracks
-   for (int i=0;i<AMIDI_MAX_TRACKS;i++){
-     if((*pPtr)->arTracks[i]!=0){
-      if((*pPtr)->arTracks[i]->pTrackName!=0) amFree((void **)&((*pPtr)->arTracks[i]->pTrackName));
-      destroyList(&((*pPtr)->arTracks[i]->pTrkEventList));
-      amFree((void **)&((*pPtr)->arTracks[i]));
-     }
-   }   
-      
-  //destroy sequence and nullify it
-  amFree((void **)pPtr);      
-  #ifdef DEBUG_BUILD
-    amTrace((const U8 *)"am_destroySequence() done. \n");
-  #endif
-}
+
 
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];

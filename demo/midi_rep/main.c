@@ -93,10 +93,6 @@ int main(int argc, char *argv[]){
         midiParserTest(pMidiTune);
 	  #endif
 
-#ifdef NKT_CONVERT
-
-#endif
-
 	  printInfoScreen();    
       mainLoop(pMidiTune,argv[1]);
 	  

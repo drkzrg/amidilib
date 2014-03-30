@@ -11,17 +11,15 @@
 #include <limits.h>
 
 //#define MANUAL_STEP 1
-#define NKT_CONVERT 1 //convert loaded sequence to custom binary format
 
 #include "amidilib.h"
-#include "amidiseq.h"	// sequence structs
-#include "fmio.h"       // disc i/o
+#include "amidiseq.h"       // sequence structs
+#include "fmio.h"           // disc i/o
 #include "timing/miditim.h" 
 
-#ifdef NKT_CONVERT
+// nkt conversion
 #include "nkt.h"
 #include "seq2nkt.h"
-#endif
 
 #ifdef MIDI_PARSER_TEST
 #include "list/list.h"
@@ -37,7 +35,7 @@ extern void updateStep();
 // display info screen
 void printInfoScreen(); 
 void displayTuneInfo();
-void mainLoop(sSequence_t *pSequence);
+void mainLoop(sSequence_t *pSequence, const char *pFileName);
 
 #ifdef MIDI_PARSER_TEST
 void midiParserTest(sSequence_t *pSequence);
@@ -96,28 +94,11 @@ int main(int argc, char *argv[]){
 	  #endif
 
 #ifdef NKT_CONVERT
-{
-      printf("Convert sequence to NKT format...\n");
-      char tempName[128]={0};
-      char *pTempPtr=0;
-      sNktSeq *pNktSeq=0;
 
-     //set midi output name
-     if(argv[1]){
-         strncpy(tempName,argv[1],strlen(argv[1]));
-         pTempPtr=strrchr(tempName,'.');
-         memcpy(pTempPtr+1,"NKT",4);
-     }
-
-      if(Seq2NktFile(pMidiTune, tempName, FALSE)<0){
-          printf("Error during NKT format conversion..\n");
-      }
-
-}
 #endif
 
 	  printInfoScreen();    
-	  mainLoop(pMidiTune);
+      mainLoop(pMidiTune,argv[1]);
 	  
 	  //unload sequence
 	  am_destroySequence(&pMidiTune);
@@ -143,7 +124,7 @@ int main(int argc, char *argv[]){
 }
 
 
-void mainLoop(sSequence_t *pSequence){
+void mainLoop(sSequence_t *pSequence, const char *pFileName){
       //install replay rout
 #ifdef MANUAL_STEP
     initSeqManual(pSequence);
@@ -189,6 +170,28 @@ void mainLoop(sSequence_t *pSequence){
 		   //displays current track info
 		  displayTuneInfo();
 		 }break;
+
+        case SC_D:{
+          //dumps loaded sequence to NKT file
+          {
+            printf("Convert sequence to NKT format...\n");
+            char tempName[128]={0};
+            char *pTempPtr=0;
+            sNktSeq *pNktSeq=0;
+
+            //set midi output name
+             strncpy(tempName,pFileName,strlen(pFileName));
+             pTempPtr=strrchr(tempName,'.');
+             memcpy(pTempPtr+1,"NKT",4);
+
+            if(Seq2NktFile(pSequence, tempName, FALSE)<0){
+               printf("Error during NKT format conversion..\n");
+            }else{
+                printf("File saved.\n");
+            }
+
+          }
+        } break;
 		case SC_H:{
 		   //displays help/startup screen
 		  printInfoScreen();
@@ -238,11 +241,12 @@ void printInfoScreen(){
   printf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
   printf("date: %s %s\n",__DATE__,__TIME__);
   
+  printf("    [i] - display tune info\n");
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
-  printf("    [m] - toggle play once/loop mode\n");
-  printf("    [i] - display tune info\n");  
-  printf("    [h] - show this help screen\n");  
+  printf("    [m] - toggle play once / loop mode \n");
+  printf("    [d] - dump sequence to nkt format.\n");
+  printf("    [h] - show this help screen \n");
   printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");
   printf(AMIDI_INFO);

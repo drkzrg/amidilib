@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <includedir>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/include/"/>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/demo/ymOutput/"/>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/demo/timings/"/>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/demo/nktReplay/"/>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/demo/midi_rep/"/>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/demo/midi_output/"/>
+    </includedir>
+    <defines>
+        <define name="EVENT_LINEAR_BUFFER, USE_INLINE, IKBD_MIDI_SEND_DIRECT"/>
+    </defines>
+    <paths>
+        <dir name="M:/Cygwin/home/saulot/projekty/amidilib/src"/>
+    </paths>
+    <libraries>
+        <library>posix</library>
+        <library>posix</library>
+    </libraries>
+</project>

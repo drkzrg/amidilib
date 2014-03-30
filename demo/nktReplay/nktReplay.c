@@ -5,6 +5,7 @@
 
 #include "input/ikbd.h"
 #include "timing/mfp.h"
+#include "timing/miditim.h"
 
 void printInfoScreen();
 void mainLoop(sNktSeq *pSequence);
@@ -24,9 +25,21 @@ sNktSeq *pNktSeq=0;
 
     am_init();
 
+    if(argc>=1&&argv[1]!='\0'){
+      fprintf(stderr,"Trying to load %s\n",argv[1]);
+    }else{
+      fprintf(stderr,"No specified nkt filename! exiting\n");
+      am_deinit();
+      return 0;
+    }
+
+    float time=0,delta=0;
+    time = getTimeStamp();
     pNktSeq=loadSequence(argv[1]);
+    delta=getTimeDelta();
 
     if(pNktSeq!=NULL){
+        fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
 
         printInfoScreen();
         mainLoop(pNktSeq);
@@ -86,7 +99,7 @@ void displayTuneInfo(){
 void mainLoop(sNktSeq *pSequence){
       //install replay rout
 
-    initSequence(pSequence);
+      initSequence(pSequence);
 
       amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
       Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;

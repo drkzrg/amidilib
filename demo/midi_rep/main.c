@@ -187,7 +187,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
             if(Seq2NktFile(pSequence, tempName, FALSE)<0){
                printf("Error during NKT format conversion..\n");
             }else{
-                printf("File saved.\n");
+                printf("File saved: %s.\n",tempName);
             }
 
           }

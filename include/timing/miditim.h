@@ -23,7 +23,7 @@ static inline U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups
         ppu=((temp/60)*0x10000)/(U32)ups;
     }
 
-    amTrace("calculateTimeStep %lu\n",ppu);
+   // amTrace("calculateTimeStep %lu\n",ppu);
 
  return ppu;
 }

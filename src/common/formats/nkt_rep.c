@@ -105,8 +105,8 @@ void initSequenceManual(sNktSeq *pSeq){
   #endif
 
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
-  printf("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,pSeq->timeStep);
-  printf("calculated mode: %d, data: %d\n",mode,data);
+  amTrace("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,pSeq->timeStep);
+  amTrace("calculated mode: %d, data: %d\n",mode,data);
 
   printNktSequenceState();
 
@@ -177,23 +177,26 @@ void updateStepNkt(){
   };
 
    bStopped=FALSE; //we replaying, so we have to reset this flag
-   U32 addr = (U32)(g_CurrentNktSequence->pEvents) + ((U32)(g_CurrentNktSequence->currentBlockId*sizeof(sNktBlock_t)));
-   nktBlk=(sNktBlock_t *)addr;
+   nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+
 
    if(nktBlk) bEOTflag=isEOT(nktBlk);
 
    if(nktBlk!=0&& nktBlk->msgType==NKT_TEMPO_CHANGE){
        //set new tempo
-       g_CurrentNktSequence->currentTempo=(U32)*(nktBlk->pData);
-       printf("Set tempo: %lu\n",g_CurrentNktSequence->currentTempo);
+       U32 *tempo=(U32)nktBlk->pData;
+
+       g_CurrentNktSequence->currentTempo=*tempo;
+       amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->currentTempo);
+
        //calculate new timestep
        g_CurrentNktSequence->currentBPM=60000000/g_CurrentNktSequence->currentTempo;
        g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
        //next event
        ++g_CurrentNktSequence->currentBlockId;
-       U32 addr = (U32)(g_CurrentNktSequence->pEvents) + ((U32)(g_CurrentNktSequence->currentBlockId*sizeof(sNktBlock_t)));
-       nktBlk=(sNktBlock_t *)addr;
+       nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+
    }
 
    timeElapsed=g_CurrentNktSequence->timeElapsedInt;
@@ -236,8 +239,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
        //go to next event
        ++g_CurrentNktSequence->currentBlockId;
-        U32 addr = (U32)(g_CurrentNktSequence->pEvents) + ((U32)(g_CurrentNktSequence->currentBlockId*sizeof(sNktBlock_t)));
-        nktBlk=(sNktBlock_t *)addr;
+        nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
 
        if(nktBlk) bEOTflag=isEOT(nktBlk);
     }
@@ -299,6 +301,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     if(pFilePath){
          // create file header
          printf("Opening NKT file: %s\n",pFilePath);
+         amTrace("Opening NKT file: %s\n",pFilePath);
+
          fp = fopen(pFilePath, "rb"); //read only
 
          if(fp==NULL){
@@ -308,6 +312,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          }
       }else{
         printf("Error: empty file path\n");
+        amTrace("Error: empty file path\n");
         amFree((void **)&pNewSeq);
         return NULL;
       }
@@ -334,12 +339,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amFree((void **)&pNewSeq);
     return NULL;
    }else{
-#ifdef DEBUG_BUILD
-        printf("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
-#endif
+
+        amTrace("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
+
         // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
         if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
             printf("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
+            amTrace("Error: loadSequence() Couldn't allocate memory for temp buffer block buffer.\n");
+
             fclose(fp); fp=0;
             amFree((void **)&pNewSeq);
 
@@ -350,6 +357,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
          if(pNewSeq->pEvents==0){
              printf("Error: loadSequence() Linear buffer out of memory.\n");
+             amTrace("Error: loadSequence() Linear buffer out of memory.\n");
+
              fclose(fp); fp=0;
              amFree((void **)&pNewSeq);
              return NULL;
@@ -369,9 +378,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             pNewSeq->pEvents[i].msgType=blk.msgType;
             pNewSeq->pEvents[i].blockSize=blk.blockSize;
 
-#ifdef DEBUG_BUILD
-            printf("READ delta [%lu] type:[%d] size:[%u] bytes\n",blk.delta, blk.msgType, blk.blockSize );
-#endif
+            amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n",blk.delta, blk.msgType, blk.blockSize );
 
             if(pNewSeq->pEvents[i].blockSize!=0){
 
@@ -379,9 +386,17 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 pNewSeq->pEvents[i].pData=amMallocEx(blk.blockSize,PREFER_TT);
 
                 if( pNewSeq->pEvents[i].pData!=NULL){
-                    fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
+                    void *pData=pNewSeq->pEvents[i].pData;
+
+                    fread(pData,blk.blockSize,1,fp);
+
+                    if(blk.msgType==NKT_TEMPO_CHANGE){
+                        U32 *pTempo=(U32 *)pData;
+                        amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
+                    }
                 }else{
                     printf("Error: loadSequence() no memory for event block data allocation.\n");
+                    amTrace("Error: loadSequence() no memory for event block data allocation.\n");
                     fclose(fp);fp=0;
                     amFree((void **)&pNewSeq);
                     return NULL;

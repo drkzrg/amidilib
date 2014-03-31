@@ -14,7 +14,7 @@ base_dir='/home/saulot/'
 #linux
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
-build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=no"
+build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes"
 copy_to_shared_dir=0
 
 # hatari

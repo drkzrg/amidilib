@@ -152,38 +152,27 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
                 U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
-#ifdef DEBUG_BUILD
-                printf("Write Set Tempo: %lu event\n",tempo);
-#endif
+
+                amTrace("Write Set Tempo: %lu event\n",tempo);
+
                 stBlock.delta=currDelta;
                 stBlock.blockSize=sizeof(U32);
                 stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
-                U8 *pData=0;
 
-                pData=amMallocEx(stBlock.blockSize,PREFER_TT);
+                //write block to file
+                if(file!=NULL){
+                   *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                   *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                 }
+                ++(*blocksWritten);
 
-                if(pData!=NULL){
-                    amMemCpy(pData,&tempo,stBlock.blockSize);
-
-                    //write block to file
-                    if(file!=NULL){
-                        *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-                        *bytesWritten+=fwrite(pData,sizeof(U32),1,*file);
-                    }
-                    ++(*blocksWritten);
-#ifdef DEBUG_BUILD
-                    printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
-#endif
-                    amFree((void **)&pData);
-                }
-
+                amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
                 eventPtr=eventPtr->pNext;
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
-#ifdef DEBUG_BUILD
-                printf("Write End of Track \n");
-#endif
+
+                amTrace("Write End of Track \n");
 
                 stBlock.delta=currDelta;
                 stBlock.blockSize=0;
@@ -195,15 +184,13 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     //no data to write
                 }
                 ++(*blocksWritten);
-#ifdef DEBUG_BUILD
-                printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
-#endif
+
                 eventPtr=eventPtr->pNext;
             }
 
             if(eventPtr!=0){
-                //process events as normal
 
+                // process events as normal
                 processSeqEvent(eventPtr);
                 stBlock.delta = currDelta;
                 stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
@@ -257,9 +244,9 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                         *bytesWritten+=fwrite(pData,stBlock.blockSize,1,*file);
                     }
                     ++(*blocksWritten);
-    #ifdef DEBUG_BUILD
-                    printf("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize);
-    #endif
+
+                    amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize);
+
                     //clear buffer
                     amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE);
                     MIDIbytesToSend=0;

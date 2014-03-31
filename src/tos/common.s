@@ -60,7 +60,6 @@ _turnOffKeyclick:
       rts
 
 ;sends midi data directly to ikbd, plain m68k friendly
-
 _amMidiSendIKBD:
       movem.l	d0-d1/a0,-(sp)
       bsr.w	_super_on

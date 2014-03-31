@@ -11,6 +11,7 @@
 #include "list/list.h"
 #include "mformats.h"
 #include "fmio.h"
+#include "midi_send.h"
 
 // formats
 #include "midi.h"
@@ -452,9 +453,6 @@ S16 am_init(){
  SuperToUser(usp);
 #endif
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-   MIDIbytesToSend=0;
-#endif
    // now depending on the connected device type and chosen operation mode
    // set appropriate channel
    //prepare device for receiving messages

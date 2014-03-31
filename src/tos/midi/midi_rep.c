@@ -11,7 +11,7 @@
 #include "timing/miditim.h"
 #include "list/list.h"
 
-//external replay routine callbacks
+// external replay routine callbacks
 extern void replaySingleTB(void);
 extern void replaySingleTC(void);
 extern void replayMultiTB(void);

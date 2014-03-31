@@ -84,4 +84,10 @@ void stopSequence(void);
 void pauseSequence();
 void playSequence(void);
 void switchReplayMode(void);
+
+//debug helpers
+void initSequenceManual(sNktSeq *pSeq); //todo remove in final build
+void printNktSequenceState();
+
+
 #endif // NKT_H

@@ -6,11 +6,17 @@
 #include "input/ikbd.h"
 #include "timing/mfp.h"
 #include "timing/miditim.h"
+#include "amlog.h"
+
+#define MANUAL_STEP 1
+
+#ifdef MANUAL_STEP
+extern void updateStepNkt();
+#endif
 
 void printInfoScreen();
+
 void mainLoop(sNktSeq *pSequence);
-
-
 
 int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
@@ -87,26 +93,25 @@ void displayTuneInfo(){
   U32 tempo=pPtr->currentTempo;
   U16 td=pPtr->timeDivision;
 
-
   printf("PPQN: %u\t",td);
   printf("Tempo: %lu [ms]\n",tempo);
-
-
 
   printf("\nReady...\n");
 }
 
 void mainLoop(sNktSeq *pSequence){
-      //install replay rout
-
-      initSequence(pSequence);
-
+    BOOL bQuit=FALSE;
+#ifdef MANUAL_STEP
+    initSequenceManual(pSequence);
+#else
+    initSequence(pSequence);
+#endif
+    //install replay rout
       amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
       Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
 
       /* Install our asm ikbd handler */
       Supexec(IkbdInstall);
-      BOOL bQuit=FALSE;
 
       //####
       while(bQuit==FALSE){
@@ -143,7 +148,21 @@ void mainLoop(sNktSeq *pSequence){
            //displays help/startup screen
           printInfoScreen();
          }break;
+#ifdef MANUAL_STEP
+          case SC_ENTER:{
 
+            for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
+                updateStepNkt();
+            }
+
+            printNktSequenceState();
+
+            // clear buffer after each update step
+            MIDIbytesToSend=0;
+            amMemSet(MIDIsendBuffer,0,32*1024);
+
+          }break;
+#endif
          case SC_SPACEBAR:{
           stopSequence();
          }break;

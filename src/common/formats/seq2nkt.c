@@ -391,12 +391,13 @@ FILE* file=0;
         // handle single track sequence
         handleSingleTrack(pSeq, bCompress,&file,&blocks_written,&bytes_written);
         nktHead.NbOfBlocks=blocks_written;
-
+        nktHead.NbOfBytesData=bytes_written;
     break;
     case ST_MULTI:
         // handle multi track sequence
         handleMultiTrack(pSeq, bCompress,&file,&blocks_written,&bytes_written);
         nktHead.NbOfBlocks=blocks_written;
+        nktHead.NbOfBytesData=bytes_written;
     break;
 
     case ST_MULTI_SUB:
@@ -412,7 +413,7 @@ FILE* file=0;
        fwrite(&nktHead, sizeof(sNktHd), 1, file);
 
        fclose(file); file=0;
-       amTrace("Stored %d event blocks.\n",nktHead.NbOfBlocks);
+       amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
      }
 
  if(error!=FALSE) return -1;

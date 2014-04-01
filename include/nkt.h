@@ -45,11 +45,17 @@ typedef struct NktSeq{
     U32 timeStep;              // current track's timestep
     eNktPlayState playState;   // STOP, PLAY, PAUSED
     eNktPlayMode playMode;	   // current play mode (loop, play_once, random)
+
+    U32 dataBufferSize;        // nb of bytes used for data buffer
+    U8 *pEventDataBuffer;
+    tLinearBuffer dataBuffer;  // custom data buffer info
+
     U32 NbOfBlocks;            // nb of event blocks
     U32 currentBlockId;        // currently replayed block id 0-xxxx
     sNktBlock_t *pEvents;      // eventStart
     tLinearBuffer eventBuffer; // custom event buffer info
-}sNktSeq;
+
+} sNktSeq;
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
 
@@ -58,6 +64,7 @@ typedef struct NktSeq{
 typedef struct __attribute__((packed)) NktHd{
     U32 id;            // always ID_NKT
     U32 NbOfBlocks;    // nb of event blocks in file
+    U32 NbOfBytesData; // nb of bytes for data in event blocks
     BOOL bPacked;      // blocks, are data blocks LZO packed?
     U16 division;      // timeDivision
     U16 version;       // format version

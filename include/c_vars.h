@@ -60,13 +60,4 @@ BOOL checkEndianess();
   #define INLINE              /* no inline */
 #endif
 
-//TODO: make it more cross-compiler friendly
-// atm it's gcc specific
-#ifndef STRUCT_PACK
-#define PACK
-#else
-#define PACK __attribute__((packed))
-#endif
-
-
 #endif

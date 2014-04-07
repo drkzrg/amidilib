@@ -43,15 +43,15 @@ typedef struct  {
   U16 period;
   U8 highbyte;
   U8 lowbyte;
-}__attribute__((packed)) ymData;
+} ymData;
 
 typedef struct{
  U8 amp;	
  U8 oscFreq;		// if 4th bit is set, current envelope is used
- U8 oscStepSize;	// period lenght, pitch
+ U8 oscStepSize;	// period lenght, pitch  //TODO: change it to bitfield
  U8 noiseEnable;	// 0-disabled, 1-enabled
  U8 toneEnable;		// 0-disabled, 1-enabled
-}__attribute__((packed)) ymChannelData;
+} ymChannelData;
 
 enum{
   CH_A=0,
@@ -59,7 +59,6 @@ enum{
   CH_C=2,
   CH_ALL
 };
-
 
 void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod,U8 affectsChannels);
 void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod);

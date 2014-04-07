@@ -13,10 +13,11 @@
 #include "c_vars.h"
 
 typedef S8 ID[4];             /* 4 chars in ' ' through '~' */
-typedef struct {
+
+typedef struct IFF_Chunk{
   U32 chunkID;
   U32 chSize;  /* sizeof(chData) */
-  } PACK IFF_Chunk;
+} __attribute__ ((packed)) sIFF_Chunk;
 
 
 /* IFF ID's*/

@@ -128,7 +128,6 @@ env['VASM'] = 'vasmm68k_mot'
 # DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
 # FORCE_MALLOC forces use of libc malloc() for memory allocation, not native functions
 # MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
-# STRUCT_PACK enables structure packing if defined (for now only gcc compatible) 
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined

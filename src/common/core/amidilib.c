@@ -356,7 +356,7 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
      case T_MIDI1:
      case T_MIDI2:{
         sMThd *pMidiInfo=0;
-	pMidiInfo=(sMThd *)pMidiPtr;
+        pMidiInfo=(sMThd *)pMidiPtr;
         
 	/* check midi header */
         if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
@@ -367,7 +367,7 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
 
      case T_XMIDI:{
         /*TODO: ! not implemented */
-	IFF_Chunk *pXmidiInfo=0;
+    sIFF_Chunk *pXmidiInfo=0;
 	U32 ulNextChunk=0;
 	U32 ulChunkOffset=0;
 	U8 *Ptr=NULL;

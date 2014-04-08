@@ -19,8 +19,8 @@ void serialLog(const char *mes,...);
 #define amTrace(...) (serialLog(__VA_ARGS__))
 #elif (defined(DEBUG)||defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)&&defined(DEBUG_FILE_OUTPUT))
 #warning general debug output enabled
-#define amTrace(...) (logd(__VA_ARGS__))
 void logd(const char *mes,...);
+#define amTrace(...) (logd(__VA_ARGS__))
 #else
 #warning DEBUG output disabled
 #define amTrace(...) ((void)0)

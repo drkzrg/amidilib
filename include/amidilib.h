@@ -11,7 +11,7 @@
 #include "midi_rep.h"
 #include "mdevtype.h"
 
-#define LIB_NAME "AMIDILIB : Atari (X)MIDI replay library\n"
+#define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
 #define AMIDI_INFO "(c)2007-2014 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
 
 #define AMIDI_MAJOR_VERSION 1

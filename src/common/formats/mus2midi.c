@@ -47,45 +47,6 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 
 // we are making format 0, nb of tracks==1, div=0xe250(?)
 
-// reads a variable length integer
-// TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
-static U32 ReadVarLen(S8* buffer){
-U32 value;
-U8 c;
-
-if ((value = *buffer++) & 0x80) {
-  value &= 0x7f;
-  do  {
-    value = (value << 7) + ((c = *buffer++) & 0x7f);
-  } while (c & 0x80);
- }
- return value;
-}
-
-// Writes a variable length integer to a buffer, and returns bytes written
-static S32 WriteVarLen( S32 value, U8* out ){
-    S32 buffer, count = 0;
-
-	buffer = value & 0x7f;
-
-    while ((value >>= 7) > 0) {
-		buffer <<= 8;
-		buffer += 0x80;
-		buffer += (value & 0x7f);
-	}
-
-	while (1) {
-		++count;
-        *out = (U8)buffer;
-		++out;
-		if (buffer & 0x80)
-			buffer >>= 8;
-		else
-			break;
- }
- return count;
-}
-
 // Format - 0 (1 track only)
 void Midi_CreateHeader(sMThd* header){
 	WriteInt(&header->id,ID_MTHD);

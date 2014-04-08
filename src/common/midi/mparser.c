@@ -27,36 +27,7 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
  return (0);
 }
 
-/* reads Variable Lenght Quantity */
-U32 readVLQ(U8 *pChar,U8 *ubSize){
-// TODO: rewrite this in assembly, maybe make as inline
-U32 value=0;
-U8 c=0;
-(*ubSize)=0;
-value = (*pChar);
 
-if ( (value & 0x80) ){
-       value &= 0x7F;
-
-/* get next byte */
-pChar++;
-(*ubSize)++;
-
-       do{
-         value = (value << 7);
-         c = (*pChar);
-         value = value + (c&0x7F);
-
-         pChar++;
-          (*ubSize)++;
-       } while (c & 0x80);
-    }
-    else{
-     (*ubSize)++;
-    }
-
-return(value);
-}
 
 /* at this point pCurSequence should have the info about the type of file that resides in memory,
 because we have to know if we have to dump event data to one eventlist or several ones */

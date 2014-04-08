@@ -136,4 +136,81 @@ const U8 *getMidiControllerName(const U8 NoteNb);
 //returns note name or rhytm part name if current channel is 9
 const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNumber);
 
+/** read MIDI Variable lenght quantity
+*  @param pVLQdata pointer to VLQ data
+*  @param ubSize size of VLQ data
+*  @return decoded VLQ value
+*/
+
+/* reads Variable Lenght Quantity */
+static inline U32 readVLQ(U8 *pChar,U8 *ubSize){
+// TODO: rewrite this in assembly
+U32 value=0;
+U8 c=0;
+(*ubSize)=0;
+value = (*pChar);
+
+if ( (value & 0x80) ){
+       value &= 0x7F;
+
+/* get next byte */
+pChar++;
+(*ubSize)++;
+
+       do{
+         value = (value << 7);
+         c = (*pChar);
+         value = value + (c&0x7F);
+
+         pChar++;
+          (*ubSize)++;
+       } while (c & 0x80);
+    }
+    else{
+     (*ubSize)++;
+    }
+
+return(value);
+}
+
+// reads a variable length integer
+// TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
+static inline U32 ReadVarLen(S8* buffer){
+U32 value;
+U8 c;
+
+if ((value = *buffer++) & 0x80) {
+  value &= 0x7f;
+  do  {
+    value = (value << 7) + ((c = *buffer++) & 0x7f);
+  } while (c & 0x80);
+ }
+ return value;
+}
+
+// Writes a variable length integer to a buffer, and returns bytes written
+static inline S32 WriteVarLen( S32 value, U8* out ){
+    S32 buffer, count = 0;
+
+    buffer = value & 0x7f;
+
+    while ((value >>= 7) > 0) {
+        buffer <<= 8;
+        buffer += 0x80;
+        buffer += (value & 0x7f);
+    }
+
+    while (1) {
+        ++count;
+        *out = (U8)buffer;
+        ++out;
+        if (buffer & 0x80)
+            buffer >>= 8;
+        else
+            break;
+ }
+ return count;
+}
+
+
 #endif

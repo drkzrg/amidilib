@@ -61,14 +61,6 @@ void *processMidiTrackData(void *startPtr, const U32 fileTypeFlag,const U32 numT
 */
 void *processMIDItrackEvents(void**startPtr, const void *endAddr, sTrack_t **pCurTrack,S16 *iError);
 
-/** read MIDI Variable lenght quantity
-*  @param pChar pointer to VLQ data
-*  @param ubSize size of VLQ data
-*  @return decoded VLQ value
-*/
-
-U32 readVLQ(U8 *pChar,U8 *ubSize);
-
 /** read/decode note off message
 *   @param pPtr pointer to the pointer with midi data to read
 *   @param recallRS current recall running status

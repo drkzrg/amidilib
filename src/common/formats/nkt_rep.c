@@ -5,6 +5,10 @@
 #include "memory.h"
 #include "midi_cmd.h"
 #include "timing/miditim.h"
+#include "midi.h"
+
+// load test
+#define LOAD_TEST 1
 
 // nkt replay
 extern void replayNktTC(void);
@@ -435,16 +439,26 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     U8 *pTempPtr = pNewSeq->pEventDataBuffer;
 
     while( (!feof(fp))&&(i<pNewSeq->NbOfBlocks)){
+            U32 tempDelta,delta=0;
+            U8 count=0;
 
+            fread(&tempDelta,sizeof(U32),1,fp);
+            delta=readVLQ((U8*)&tempDelta,&count);
+            amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+
+            // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
+            fseek(fp,-(sizeof(U32)-count),1);
+
+            // read msg block
             fread(&blk,sizeof(sNktBlk),1,fp);
 
-            pNewSeq->pEvents[i].delta=blk.delta;
             pNewSeq->pEvents[i].msgType=blk.msgType;
             pNewSeq->pEvents[i].blockSize=blk.blockSize;
 
-            amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", blk.delta, blk.msgType, blk.blockSize );
+            amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
 
             if(pNewSeq->pEvents[i].blockSize!=0){
+
                 // assign buffer memory pointer for data, size blk.blockSize
                 pNewSeq->pEvents[i].pData=pTempPtr;
                 pTempPtr+=blk.blockSize;
@@ -460,9 +474,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     }
 
     fclose(fp);fp=0;
-
-// load test
-//#define LOAD_TEST 1
 
 #ifdef LOAD_TEST
 for (U32 i=0;i<pNewSeq->NbOfBlocks;++i){

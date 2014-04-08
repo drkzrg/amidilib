@@ -14,17 +14,19 @@ base_dir='/home/saulot/'
 #linux
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
-build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes"
+build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
 copy_to_shared_dir=0
 
 # hatari
 # if copy_to_emu_dir=1 copy binaries to emulator directory
-copy_to_emu_dir=0
+copy_to_emu_dir=1
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 #emu_dir=$base_dir'Pulpit/HD/'
-emu_dir='/cygdrive/k/Emulatory/TwardzielST/C/'
+#emu_dir='/cygdrive/k/Emulatory/TwardzielST/C/'
+emu_dir='/cygdrive/h/atari/HATARI/HD/'
+
 install_dir=$emu_dir'AMIDIDEV/'
 
 stack_size=64k
@@ -38,7 +40,7 @@ NKTREP_BIN='nktrep.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
-send_to_native_machine=1
+send_to_native_machine=0
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
@@ -162,7 +164,7 @@ then
 
    if [ $copy_to_emu_dir -eq 1 ]
    then
-        cp -v ../bin/$MIDISEQ_BIN $install_dir
+        cp -v ../bin/$NKTREP_BIN $install_dir
    fi
 fi
 

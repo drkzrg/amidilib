@@ -73,7 +73,6 @@ typedef struct __attribute__((packed)) NktHd{
 
 // binary header, big endian
 typedef struct __attribute__((packed)) NktBlk{
-    U32 delta;
     U16 msgType;
     U16 blockSize;
 } sNktBlk;

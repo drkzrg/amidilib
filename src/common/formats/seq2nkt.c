@@ -17,30 +17,31 @@ void Nkt_CreateHeader(sNktHd* header, const sSequence_t *pSeqData, const BOOL bC
     WriteShort(&header->version, 1);
 }
 
-static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bufDataSize){
+void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSize){
     // write data to out data block
 
     switch(pCurEvent->eventBlock.type){
         case T_NOTEON:{
             // dump data
-            amTrace("T_NOTEON \n");
+
             sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)&(pCurEvent->eventBlock);
-
+            amTrace("T_NOTEON ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
             // write to output buffer
-            tab[(*bufPos)++]=(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.noteNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.velocity;
-            (*bufDataSize)+=3;
+            *(tab + (*bufPos))= (U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+          //  tab[]=(U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
 
+            (*bufDataSize)+=3;
             return;
         } break;
         case T_NOTEOFF:{
             // dump data
-            amTrace("T_NOTEOFF \n");
-            sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)&(pCurEvent->eventBlock);           
-            tab[(*bufPos)++]=(EV_NOTE_OFF<<4)|(pEventBlk->ubChannelNb);
-            tab[(*bufPos)++]=pEventBlk->eventData.noteNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.velocity;
+            sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)&(pCurEvent->eventBlock);
+            amTrace("T_NOTEOFF ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
+            tab[(*bufPos)]=(U8)(EV_NOTE_OFF<<4)|(pEventBlk->ubChannelNb); (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
             (*bufDataSize)+=3;
             return;
         } break;
@@ -48,9 +49,9 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
             // dump data
             amTrace("T_NOTEAFT \n");
             sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)&(pCurEvent->eventBlock);
-            tab[(*bufPos)++]=(EV_NOTE_AFTERTOUCH<<4)|pEventBlk->ubChannelNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.noteNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.pressure;
+            tab[(*bufPos)]=(EV_NOTE_AFTERTOUCH<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.pressure; (*bufPos)++;
             (*bufDataSize)+=3;
 
             return;
@@ -60,10 +61,10 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
             // program change (dynamic according to connected device)
             sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)&(pCurEvent->eventBlock);
 
-            tab[(*bufPos)++]=(EV_CONTROLLER<<4)|pEventBlk->ubChannelNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.controllerNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.value;
-            tab[(*bufPos)++]=0x00;
+            tab[(*bufPos)]=(EV_CONTROLLER<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.controllerNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.value; (*bufPos)++;
+            tab[(*bufPos)]=0x00; (*bufPos)++;
             (*bufDataSize)+=4;
             return;
         } break;
@@ -71,8 +72,8 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
         // program change (dynamic according to connected device)
          amTrace("T_PRG_CH \n");
             sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)&(pCurEvent->eventBlock);
-            tab[(*bufPos)++]=(EV_PROGRAM_CHANGE<<4)|pEventBlk->ubChannelNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.programNb;
+            tab[(*bufPos)]=(EV_PROGRAM_CHANGE<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.programNb; (*bufPos)++;
             (*bufDataSize)+=2;
             return;
         } break;
@@ -80,8 +81,8 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
             // dump data
          amTrace("T_CHAN_AFT \n");
             sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)&(pCurEvent->eventBlock);
-            tab[(*bufPos)++] = (EV_CHANNEL_AFTERTOUCH<<4) | pEventBlk->ubChannelNb;
-            tab[(*bufPos)++] = pEventBlk->eventData.pressure;
+            tab[(*bufPos)] = (EV_CHANNEL_AFTERTOUCH<<4) | pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)] = pEventBlk->eventData.pressure; (*bufPos)++;
             (*bufDataSize)+=2;
             return;
         } break;
@@ -89,11 +90,10 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
             // dump data
          amTrace("T_PITCH_BEND \n");
             sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)&(pCurEvent->eventBlock);
-            copy_pitch_bend_2(pEventBlk->ubChannelNb,pEventBlk->eventData.LSB,pEventBlk->eventData.MSB);
 
-            tab[(*bufPos)++]=(EV_PITCH_BEND<<4)|pEventBlk->ubChannelNb;
-            tab[(*bufPos)++]=pEventBlk->eventData.LSB; //LSB
-            tab[(*bufPos)++]=pEventBlk->eventData.MSB; //MSB
+            tab[(*bufPos)]=(EV_PITCH_BEND<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=pEventBlk->eventData.LSB; (*bufPos)++; //LSB
+            tab[(*bufPos)]=pEventBlk->eventData.MSB; (*bufPos)++; //MSB
             (*bufDataSize)+=3;
             return;
         } break;
@@ -132,8 +132,7 @@ static void processSeqEvent(sEventList *pCurEvent, U8 tab[],U32 *bufPos, U32 *bu
         // copy data
          amTrace("T_SYSEX \n");
         // format depends on connected device
-
-         sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)&(pCurEvent->eventBlock);
+          sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)&(pCurEvent->eventBlock);
           amTrace((const U8*)"Copy SysEX Message.\n");
           //TODO: check buffer overflow
           amMemCpy(&tab[(*bufPos)],pEventBlk->pBuffer,pEventBlk->bufferSize);
@@ -167,20 +166,17 @@ U8 seq2nktMap[]={
 
 
 
-
 static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file,U32 *blocksWritten, U32 *bytesWritten){
 
     printf("Processing single track ...\n");
     U8 tempBuffer[32 * 1024]={0};
+
     U32 bufPos=0;
     U32 bufDataSize=0;
-
     sTrack_t *pTrack=pSeq->arTracks[0];
     sEventList *eventPtr=pTrack->pTrkEventList;
     U32 currDelta=0;
     sNktBlk stBlock;
-
-
 
     while(eventPtr!=NULL){
 
@@ -190,8 +186,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
            // and go to next event
             bufPos=0;
             bufDataSize=0;
-
-            stBlock.delta=currDelta;
 
             //skip uninteresting events
             while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
@@ -204,31 +198,41 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                 amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                stBlock.delta=currDelta;
                 stBlock.blockSize=sizeof(U32);
                 stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
+                U32 VLQdeltaTemp=0;
                 if(file!=NULL){
+
+                   // write VLQ delta
+                   S32 count=0;
+                   count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                   *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
                    *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
                    *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
                  }
                 ++(*blocksWritten);
 
-                amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+                amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize );
                 eventPtr=eventPtr->pNext;
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
 
                 amTrace("Write End of Track \n");
-
-                stBlock.delta=currDelta;
                 stBlock.blockSize=0;
                 stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
                 if(file!=NULL){
+                    // write VLQ delta
+                    U32 VLQdeltaTemp=0;
+                    S32 count=0;
+                    count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                    *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
                     *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
                     //no data to write
                 }
@@ -240,8 +244,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
             if(eventPtr!=0){
 
                 // process events as normal
-                processSeqEvent(eventPtr, tempBuffer, &bufPos, &bufDataSize);
-
+                processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
                 stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                 // next event
@@ -249,7 +252,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                 //check next events, dump until delta != 0
                 while(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==0){
-
 
                     //skip uninteresting events
                     while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
@@ -263,30 +265,42 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                         amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                        stBlock.delta=currDelta;
                         stBlock.blockSize=sizeof(U32);
                         stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                         //write block to file
+
                         if(file!=NULL){
+                           // write VLQ delta
+                           S32 count=0;
+                           U32 VLQdeltaTemp=0;
+
+                           count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                           *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
                            *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
                            *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
                          }
                         ++(*blocksWritten);
 
-                        amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize );
+                        amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize );
                         eventPtr=eventPtr->pNext;
                     }
 
                     if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
                         printf("Write End of Track, event delta 0\n");
 
-                        stBlock.delta=currDelta;
                         stBlock.blockSize=0;
                         stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
 
                         //write block to file
                         if(file!=NULL){
+                            // write VLQ data
+                            U32 VLQdeltaTemp=0;
+                            S32 count=0;
+                            count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+
+                            *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
                             *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
                             //no data to write
                         }
@@ -296,7 +310,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     }
 
                     if(eventPtr!=NULL) {
-                        processSeqEvent(eventPtr, tempBuffer, &bufPos, &bufDataSize);
+                        processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
 
                         // next event
                         eventPtr=eventPtr->pNext;
@@ -312,19 +326,28 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     amTrace("[DATA] ");
                         U8 *data = &tempBuffer[0];
                         for(int j=0;j<bufDataSize;++j){
-                            amTrace("0x%02x ",data[j]);
+                            amTrace("0x%x ",data[j]);
                         }
                     amTrace(" [/DATA]\n");
 
                     //write block to file
+
+
                     if(file!=NULL){
-                            amTrace("Write block size %d\n",stBlock.blockSize);
-                            *bytesWritten+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
-                            *bytesWritten+=fwrite((const void *)tempBuffer,stBlock.blockSize,1,*file);
+                      // write VLQ delta
+                      S32 count=0;
+                      U32 VLQdeltaTemp=0;
+
+                      count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                      *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+                      amTrace("Write block size %d\n",stBlock.blockSize);
+                      *bytesWritten+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
+                      *bytesWritten+=fwrite((const void *)tempBuffer,stBlock.blockSize,1,*file);
                     }
                     ++(*blocksWritten);
 
-                    amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",stBlock.delta, stBlock.msgType, stBlock.blockSize);
+                    amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize);
 
                     //clear buffer
                     bufDataSize=0;
@@ -343,12 +366,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
             }//end null check
 
-
-
-
         }; // end while
-
-
 
     }; //end while end of sequence
 

@@ -28,7 +28,7 @@ static FILE *ofp=0;
 static char buffer[OUTPUT_BUFFER_SIZE];
 #endif
 
-#if (defined(DEBUG)||defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
+#if (defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
 void logd(const char *mes,...){
 
 #if (defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_CONSOLE_OUTPUT))

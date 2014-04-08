@@ -451,7 +451,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
             // read msg block
             fread(&blk,sizeof(sNktBlk),1,fp);
-
+            pNewSeq->pEvents[i].delta=delta;
             pNewSeq->pEvents[i].msgType=blk.msgType;
             pNewSeq->pEvents[i].blockSize=blk.blockSize;
 

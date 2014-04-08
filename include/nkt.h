@@ -94,6 +94,6 @@ void switchReplayMode(void);
 //debug helpers
 void initSequenceManual(sNktSeq *pSeq); //todo remove in final build
 void printNktSequenceState();
-
+const U8 *getEventTypeName(eNktMsgType type);
 
 #endif // NKT_H

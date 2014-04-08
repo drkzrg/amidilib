@@ -26,7 +26,7 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _MIDIsendBuffer	;buffer with data to send (when used)
     xdef _MIDIbytesToSend	;nb of bytes to send (when used)
     
-    xdef _amMidiSendIKBD	;bypass of Atari XBIOS, writes midi data directly to IKBD
+    xdef _flushMidiSendBuffer	;bypass of Atari XBIOS, writes midi data directly to IKBD
     xdef update			;no underscore, it will be not used from C level atm
 				;interrupt routine address
     xdef _tbData		;data value passed to mfp registers to install callback

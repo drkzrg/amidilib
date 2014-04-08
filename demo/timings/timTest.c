@@ -30,7 +30,7 @@
 
 extern void customSeqReplay(void);
 extern void playNote(U8 channel,U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
-extern void amMidiSendIKBD();
+
 
 volatile BOOL handleTempoChange;
 BOOL midiOutputEnabled;
@@ -154,7 +154,7 @@ int main(void){
   }//end while
 
   am_allNotesOff(16);
-  amMidiSendIKBD();
+  flushMidiSendBuffer();
   
   ymSoundOff();
   deinstallReplayRout();   

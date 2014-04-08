@@ -724,7 +724,7 @@ void MT32Reset(void){
   for(int i=0;i<7;i++){
     MIDIsendBuffer[MIDIbytesToSend++]=arReset[i];
   }
-  amMidiSendIKBD();
+  flushMidiSendBuffer();
 #else
     MIDI_SEND_DATA(8,arReset);
 #endif

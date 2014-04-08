@@ -648,5 +648,15 @@ if(g_CurrentNktSequence){
 
 }
 
+static const U8* _arNktEventName[NKT_MAX_EVENT]={
+    "NKT_MIDIDATA",
+    "NKT_TEMPO_CHANGE",
+    "NKT_JUMP",
+    "NKT_TRIGGER",
+    "NKT_END"
+};
 
+const U8 *getEventTypeName(eNktMsgType type){
+    return _arNktEventName[type];
+}
 

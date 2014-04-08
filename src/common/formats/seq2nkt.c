@@ -24,20 +24,19 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_NOTEON:{
             // dump data
 
-            sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)&(pCurEvent->eventBlock);
+            sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)(pCurEvent->eventBlock.dataPtr);
             amTrace("T_NOTEON ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
             // write to output buffer
             *(tab + (*bufPos))= (U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
           //  tab[]=(U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
-
             (*bufDataSize)+=3;
             return;
         } break;
         case T_NOTEOFF:{
             // dump data
-            sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)&(pCurEvent->eventBlock);
+            sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             amTrace("T_NOTEOFF ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
             tab[(*bufPos)]=(U8)(EV_NOTE_OFF<<4)|(pEventBlk->ubChannelNb); (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
@@ -48,7 +47,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_NOTEAFT:{
             // dump data
             amTrace("T_NOTEAFT \n");
-            sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)&(pCurEvent->eventBlock);
+            sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)]=(EV_NOTE_AFTERTOUCH<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.pressure; (*bufPos)++;
@@ -59,7 +58,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_CONTROL:{
             amTrace("T_CONTROL \n");
             // program change (dynamic according to connected device)
-            sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)&(pCurEvent->eventBlock);
+            sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
             tab[(*bufPos)]=(EV_CONTROLLER<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.controllerNb; (*bufPos)++;
@@ -71,7 +70,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_PRG_CH:{
         // program change (dynamic according to connected device)
          amTrace("T_PRG_CH \n");
-            sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)&(pCurEvent->eventBlock);
+            sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)]=(EV_PROGRAM_CHANGE<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.programNb; (*bufPos)++;
             (*bufDataSize)+=2;
@@ -80,7 +79,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_CHAN_AFT:{
             // dump data
          amTrace("T_CHAN_AFT \n");
-            sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)&(pCurEvent->eventBlock);
+            sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)] = (EV_CHANNEL_AFTERTOUCH<<4) | pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)] = pEventBlk->eventData.pressure; (*bufPos)++;
             (*bufDataSize)+=2;
@@ -89,7 +88,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         case T_PITCH_BEND:{
             // dump data
          amTrace("T_PITCH_BEND \n");
-            sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)&(pCurEvent->eventBlock);
+            sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
             tab[(*bufPos)]=(EV_PITCH_BEND<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.LSB; (*bufPos)++; //LSB
@@ -132,7 +131,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         // copy data
          amTrace("T_SYSEX \n");
         // format depends on connected device
-          sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)&(pCurEvent->eventBlock);
+          sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
           amTrace((const U8*)"Copy SysEX Message.\n");
           //TODO: check buffer overflow
           amMemCpy(&tab[(*bufPos)],pEventBlk->pBuffer,pEventBlk->bufferSize);
@@ -324,14 +323,13 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     stBlock.blockSize=bufDataSize;
 
                     amTrace("[DATA] ");
-                        U8 *data = &tempBuffer[0];
-                        for(int j=0;j<bufDataSize;++j){
-                            amTrace("0x%x ",data[j]);
+
+                        for(int j=0;j<bufDataSize;j++){
+                            amTrace("0x%x ",tempBuffer[j]);
                         }
                     amTrace(" [/DATA]\n");
 
                     //write block to file
-
 
                     if(file!=NULL){
                       // write VLQ delta
@@ -343,7 +341,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                       amTrace("Write block size %d\n",stBlock.blockSize);
                       *bytesWritten+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
-                      *bytesWritten+=fwrite((const void *)tempBuffer,stBlock.blockSize,1,*file);
+                      *bytesWritten+=fwrite(&tempBuffer[0],stBlock.blockSize,1,*file);
                     }
                     ++(*blocksWritten);
 
@@ -354,8 +352,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     bufPos=0;
                     amMemSet(tempBuffer,0,32 * 1024);
 
-                }else{
-                    printf(" Nothing to dump... \n");
                 }
 
 

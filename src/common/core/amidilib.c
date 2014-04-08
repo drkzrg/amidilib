@@ -549,7 +549,7 @@ void getDeviceInfoResponse(U8 channel){
   for(int i=0;i<10;i++){
     MIDIsendBuffer[MIDIbytesToSend++]=getInfoSysEx[i];
   }
-  amMidiSendIKBD();
+  flushMidiSendBuffer();
 #else
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 

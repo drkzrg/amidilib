@@ -19,13 +19,13 @@ copy_to_shared_dir=0
 
 # hatari
 # if copy_to_emu_dir=1 copy binaries to emulator directory
-copy_to_emu_dir=1
+copy_to_emu_dir=0
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
 #emu_dir=$base_dir'Pulpit/HD/'
-#emu_dir='/cygdrive/k/Emulatory/TwardzielST/C/'
-emu_dir='/cygdrive/h/atari/HATARI/HD/'
+emu_dir='/cygdrive/k/Emulatory/TwardzielST/C/'
+#emu_dir='/cygdrive/h/atari/HATARI/HD/'
 
 install_dir=$emu_dir'AMIDIDEV/'
 
@@ -40,11 +40,11 @@ NKTREP_BIN='nktrep.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
-send_to_native_machine=0
+send_to_native_machine=1
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
-REMOTE_MACHINE='192.168.0.5'
+REMOTE_MACHINE='192.168.0.8'
 REMOTE_PATH='/c/amidilib/'
 
 # delete binaries if they exist

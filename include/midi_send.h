@@ -15,7 +15,7 @@
 
 #ifdef IKBD_MIDI_SEND_DIRECT  
   //bypass of Atari XBIOS, writes directly to IKBD to send data
-  extern void amMidiSendIKBD();  //TODO: remove it, use flushMidiSendBuffer instead
+  extern void flushMidiSendBuffer();  //TODO: remove it, use flushMidiSendBuffer instead
 #endif
 
 
@@ -53,18 +53,18 @@ static INLINE U8 amMidiGetData(U8 deviceId){
 #define GET_MIDI_DATA amMidiGetData(DEV_MIDI)
 
 
-#ifdef IKBD_MIDI_SEND_DIRECT
+
 extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
 extern U16 MIDIbytesToSend;
 
 //clears custom midi output buffer
-static INLINE void clearMidiOutputBuffer(){
+static void clearMidiOutputBuffer(){
     MIDIbytesToSend=0;
     amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(U8));
 }
 
+#ifndef IKBD_MIDI_SEND_DIRECT
 static INLINE void flushMidiSendBuffer(){
-
     if(MIDIbytesToSend>0){
         amMidiSendData(MIDIbytesToSend,MIDIsendBuffer);
     }
@@ -74,13 +74,14 @@ static INLINE void flushMidiSendBuffer(){
 #endif
 
 
+
 #ifdef DEBUG_BUILD
-static INLINE void printMidiSendBufferState(){
+static void printMidiSendBufferState(){
     amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
 
     if(MIDIbytesToSend>0){
         for(int i=0;i<MIDIbytesToSend;++i){
-            amTrace("%x",MIDIsendBuffer[i]);
+            amTrace("0x%02x ",MIDIsendBuffer[i]);
         }
 
         amTrace(".\n");

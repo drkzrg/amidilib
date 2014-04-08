@@ -8,7 +8,7 @@
 #include "timing/miditim.h"
 #include "amlog.h"
 
-//#define MANUAL_STEP 1
+#define MANUAL_STEP 1
 
 #ifdef MANUAL_STEP
 extern void updateStepNkt();
@@ -22,22 +22,17 @@ int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
  S16 iError=0;
 
-    if(argc>=1&&argv[1]!='\0'){
-      fprintf(stderr,"Trying to load %s\n",argv[1]);
+   if(argc>=1&&argv[1]!='\0'){
+        fprintf(stderr,"Trying to load %s\n",argv[1]);
     }else{
-      fprintf(stderr,"No specified midi filename! exiting\n");
-      return 0;
+        fprintf(stderr,"No specified nkt filename! exiting\n");
+        am_deinit();
+        return 0;
     }
 
     am_init();
 
-    if(argc>=1&&argv[1]!='\0'){
-      fprintf(stderr,"Trying to load %s\n",argv[1]);
-    }else{
-      fprintf(stderr,"No specified nkt filename! exiting\n");
-      am_deinit();
-      return 0;
-    }
+    flushMidiSendBuffer();
 
     float time=0,delta=0;
     time = getTimeStamp();
@@ -45,7 +40,7 @@ sNktSeq *pNktSeq=0;
     delta=getTimeDelta();
 
     if(pNktSeq!=NULL){
-        fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+        fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n", delta, delta / 60.0f);
 
         printInfoScreen();
         mainLoop(pNktSeq);
@@ -56,8 +51,9 @@ sNktSeq *pNktSeq=0;
 
         deinstallReplayRout();
         am_deinit(); //deinit our stuff
+
     }else{
-        printf("Error: Loading %s failed.\n",argv[1]);
+        printf("Error: Loading %s failed.\n", argv[1]);
     }
 
 
@@ -106,6 +102,7 @@ void mainLoop(sNktSeq *pSequence){
 #else
     initSequence(pSequence);
 #endif
+
     //install replay rout
       amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
       Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
@@ -158,13 +155,12 @@ void mainLoop(sNktSeq *pSequence){
             printNktSequenceState();
 
             // clear buffer after each update step
-            MIDIbytesToSend=0;
-            amMemSet(MIDIsendBuffer,0,32*1024);
+            flushMidiSendBuffer();
 
           }break;
 #endif
          case SC_SPACEBAR:{
-          stopSequence();
+            stopSequence();
          }break;
 
           };

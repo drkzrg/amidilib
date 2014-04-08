@@ -34,7 +34,7 @@ if(seq!=0){
 
     g_CurrentSequence=seq;
 
-    MIDIbytesToSend=0;
+    clearMidiOutputBuffer();
 
     for(int i=0;i<seq->ubNumTracks;++i){
         pTrack=seq->arTracks[i];
@@ -57,7 +57,7 @@ if(seq!=0){
     seq->timeStep=am_calculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-        clearMidiOutputBuffer();
+        flushMidiSendBuffer();
 #endif
 
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
@@ -241,9 +241,6 @@ void updateStepSingle(){
           //reset tempo to initial valueas taken during start(get them from main sequence?)
           g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-           flushMidiSendBuffer();
-#endif
           //rewind to the first event
           while(pActiveTrackState->currEventPtr->pPrev!=0){
               pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pPrev;

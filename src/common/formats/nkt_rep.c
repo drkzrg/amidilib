@@ -220,17 +220,17 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         //copy event data to custom buffer
-        amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
+ /*       amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
 
         U8 *data = nktBlk->pData;
         for(int j=0;j<nktBlk->blockSize;++j){
             amTrace("0x%02x ",data[j]);
         }
-        amTrace(" [/COPY] \n");
+        amTrace(" [/COPY] \n");*/
 
         amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
         MIDIbytesToSend=nktBlk->blockSize;
-        amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
+      //  amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
 #else
         //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);
@@ -247,17 +247,17 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
         //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
        //copy event data to custom buffer
-       amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
+     /*  amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
 
        U8 *data = nktBlk->pData;
        for(int j=0;j<nktBlk->blockSize;++j){
            amTrace("0x%02x ",data[j]);
        }
-       amTrace(" [/COPY] \n");
+       amTrace(" [/COPY] \n");*/
 
        amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],nktBlk->pData, nktBlk->blockSize);
        MIDIbytesToSend+=nktBlk->blockSize;
-       amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
+     //  amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
 #else
          //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);

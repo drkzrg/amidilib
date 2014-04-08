@@ -8,7 +8,7 @@
 #include "midi.h"
 
 // load test
-#define LOAD_TEST 1
+//#define LOAD_TEST 1
 
 // nkt replay
 extern void replayNktTC(void);

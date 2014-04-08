@@ -8,7 +8,7 @@
 #include "timing/miditim.h"
 #include "amlog.h"
 
-#define MANUAL_STEP 1
+//#define MANUAL_STEP 0
 
 #ifdef MANUAL_STEP
 extern void updateStepNkt();

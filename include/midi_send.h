@@ -13,12 +13,6 @@
 #define MIDI_SENDBUFFER_SIZE (32*1024) /*default MIDI buffer size 32k */
                                        // see common_m68k.inc
 
-#ifdef IKBD_MIDI_SEND_DIRECT  
-  //bypass of Atari XBIOS, writes directly to IKBD to send data
-  extern void flushMidiSendBuffer();  //TODO: remove it, use flushMidiSendBuffer instead
-#endif
-
-
 //midi data sending, platform specific
 
 static INLINE U16 amMidiDataReady(U8 deviceNo){
@@ -63,7 +57,6 @@ static void clearMidiOutputBuffer(){
     amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(U8));
 }
 
-#ifndef IKBD_MIDI_SEND_DIRECT
 static INLINE void flushMidiSendBuffer(){
     if(MIDIbytesToSend>0){
         amMidiSendData(MIDIbytesToSend,MIDIsendBuffer);
@@ -71,7 +64,6 @@ static INLINE void flushMidiSendBuffer(){
 
     clearMidiOutputBuffer();
 }
-#endif
 
 
 

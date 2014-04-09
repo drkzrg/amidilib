@@ -15,9 +15,10 @@
         xref    _updateStepNkt
 
 _replayNktTC:
-        or.w    #$2700,sr               ;disable interrupts
-        movem.l   d0-7/a0-6,-(a7)	;save registers
 
+        movem.l d0-7/a0-6,-(sp)         ; save registers
+        move.w  sr,-(sp)                ; save status register
+        or.w    #$0700,sr               ; disable interrupts
 ;       jump to the old interrupt routine afterwards
 ;       send midi status byte once per 1ms
 ;       assume 200Hz update for TC (?)
@@ -76,19 +77,22 @@ _replayNktTC:
         ori.b     #$3f,d0
         and.b     d0,$fffffa1d.w       ;set div mode (4,5,6 bits TiC, 0,1,2 TiB)
 
+.finish:
         bset.b    #5,$fffffa09.w       ;enable TiC
         bset.b    #5,$fffffa15.w
-.finish:
-        movem.l   (a7)+,d0-7/a0-6	;restore registers
-        bclr.b	  #0,$fffffa0f  	;clear IRQ in service Bit
-        move.w    #$2300,sr             ;enable interrupts
+        bset.b	  #5,$fffffa11.w  	; clear IRQ in service Bit TiC
+        move.w   (sp)+,sr               ; restore Status Register
+        movem.l   (sp)+,d0-7/a0-6	; restore registers
+
         rte
 
 
 _replayNktTB:
-        or.w    #$2700,sr               ;disable interrupts
-        movem.l   d0-7/a0-6,-(a7)	;save registers
 
+        movem.l   d0-7/a0-6,-(a7)	;save registers
+        move.w    sr,-(a7)
+
+        or.w        #$0700,sr               ;disable interrupts
         clr.b     $fffffa1b             ; stop TiB
         jsr 	_updateStepNkt      ; update sequence state and send events / copy events to internal send buffer
 
@@ -142,7 +146,7 @@ _replayNktTB:
         bset.b    #0,$fffffa07		;go!
         bset.b    #0,$fffffa13
 .finish:
+        bclr.b	  #0,$fffffa0f  	;clear IRQ in service bit TiB
+        move.w    (a7)+,sr             ;restore sr
         movem.l   (a7)+,d0-7/a0-6	;restore registers
-        bclr.b	  #0,$fffffa0f  	;clear IRQ in service bit
-        move.w    #$2300,sr             ;enable interrupts
         rte

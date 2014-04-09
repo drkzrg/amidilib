@@ -82,7 +82,7 @@ if(pSeq!=0){
     amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif
 
-  // installReplayRout(mode, data, replayNktTC);
+  //installReplayRout(mode, data, replayNktTC);
   installReplayRout(mode, data, replayNktTB);
 
 #ifdef DEBUG_BUILD
@@ -204,14 +204,16 @@ void updateStepNkt(){
        ++(g_CurrentNktSequence->currentBlockId);
 
        nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+       return;
    }
-
-   timeElapsed=g_CurrentNktSequence->timeElapsedInt;
-   currentDelta=nktBlk->delta;
 
    //reset
    bEventSent=FALSE;
    bSend=FALSE;
+
+
+   timeElapsed=g_CurrentNktSequence->timeElapsedInt;
+   currentDelta=nktBlk->delta;
 
    if(currentDelta==timeElapsed) bSend=TRUE;
 
@@ -219,18 +221,8 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
     endOfSequence=FALSE;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-        //copy event data to custom buffer
- /*       amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
-
-        U8 *data = nktBlk->pData;
-        for(int j=0;j<nktBlk->blockSize;++j){
-            amTrace("0x%02x ",data[j]);
-        }
-        amTrace(" [/COPY] \n");*/
-
         amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
         MIDIbytesToSend=nktBlk->blockSize;
-      //  amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
 #else
         //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);
@@ -246,18 +238,8 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
    while(bEOTflag!=FALSE&&nktBlk->delta==0){
         //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
-       //copy event data to custom buffer
-     /*  amTrace("[d: %lu][COPY][%d] ",nktBlk->delta,nktBlk->blockSize);
-
-       U8 *data = nktBlk->pData;
-       for(int j=0;j<nktBlk->blockSize;++j){
-           amTrace("0x%02x ",data[j]);
-       }
-       amTrace(" [/COPY] \n");*/
-
        amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],nktBlk->pData, nktBlk->blockSize);
        MIDIbytesToSend+=nktBlk->blockSize;
-     //  amTrace(" POST MIDIbytesToSend %d\n",MIDIbytesToSend);
 #else
          //send to xbios
         amMidiSendData(nktBlk->blockSize,nktBlk->pData);
@@ -278,13 +260,12 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 
   } //endif
 
-    // update
-    g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
-    TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
-    g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
+   // update
+   g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
+   TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
+   g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
 
-    if(TimeAdd>1)TimeAdd=1;
-
+   if(TimeAdd>1) TimeAdd=1;
    //add time elapsed
    if(bEventSent!=FALSE){
      g_CurrentNktSequence->timeElapsedInt=0;
@@ -292,15 +273,12 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
      g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
    }
 
-
-
-  //check if we have end of sequence
-  //on all tracks
-  if(endOfSequence!=FALSE){
-    onEndSequence();
-    endOfSequence=FALSE;
-    amTrace("End of Sequence\n");
-  }
+   //check if we have end of sequence
+   //on all tracks
+   if(endOfSequence!=FALSE){
+     onEndSequence();
+     endOfSequence=FALSE;
+   }
 
 } //end updateStepNkt()
 

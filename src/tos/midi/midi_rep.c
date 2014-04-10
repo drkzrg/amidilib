@@ -139,7 +139,6 @@ BOOL isEOT(volatile const sEventList *pPtr){
 void onEndSequence(){
 U8 activeTrack=0;
 sTrackState_t *pTrackState=0;
-
 sTrack_t *pTrack=0;
 
 if(g_CurrentSequence){
@@ -356,6 +355,8 @@ void updateStepMulti(){
 
     U8 numOfTracks=g_CurrentSequence->ubNumTracks;
 
+for(int i=0;i<numOfTracks;++i){
+
     pTrack=g_CurrentSequence->arTracks[0];
     pActiveTrackState=&(pTrack->currentState);
 
@@ -500,6 +501,7 @@ void updateStepMulti(){
       } // cur event null check
       } // repeat for each track >> end
 
+    } // end track processing
 
      //check if we have end of sequence
      //on all tracks

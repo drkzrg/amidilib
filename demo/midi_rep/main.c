@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-//#define MANUAL_STEP 1
+#define MANUAL_STEP 1
 
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
@@ -29,7 +29,8 @@
 
 
 #ifdef MANUAL_STEP
-extern void updateStep();
+extern void updateStepSingle();
+extern void updateStepMulti();
 #endif
 
 // display info screen
@@ -200,7 +201,15 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
           case SC_ENTER:{
 
             for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
-                updateStep();
+
+                if(pSequence->seqType==ST_SINGLE){
+                    updateStepSingle();
+                }
+                else if(pSequence->seqType==ST_MULTI){
+                    updateStepMulti();
+                }else if(pSequence->seqType==ST_MULTI_SUB){
+                    printf("!!! ST_MULTI_SUB update TODO...\n");
+                }
             }
 
             printSequenceState();

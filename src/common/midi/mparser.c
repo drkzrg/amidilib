@@ -408,7 +408,12 @@ if((*recallRS)==0){
 #endif
 
   /* add event to list */
+
+#ifdef EVENT_LINEAR_BUFFER
   return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 //
@@ -489,7 +494,11 @@ sEventBlock_t tempEvent;
  #endif
 
     /* add event to list */
-    return addEvent(pSeq,&(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 
 }
 
@@ -555,7 +564,11 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
      amTrace((const U8*)"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d\n",(unsigned long)delta, noteNb,pressure);
 #endif
     /* add event to list */
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 S16 am_Controller(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -627,7 +640,11 @@ sEventBlock_t tempEvent;
 #endif
 
     /* add event to list */
-    return addEvent(pSeq,&(*pCurTrack)->pTrkEventList, &tempEvent);
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 S16 am_PC(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -696,7 +713,11 @@ sEventBlock_t tempEvent;
 #endif
 
   /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
   return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
  }
 
 S16 am_ChannelAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
@@ -757,7 +778,11 @@ if((*recallRS)==0){
     amTrace((const U8*)"delta: %lu\tevent: Channel aftertouch pressure: %d\n",delta, param);
 #endif
     /* add event to list */
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 S16 am_PitchBend(sSequence_t *pSeq, U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -828,7 +853,11 @@ tempEvent.dataPtr=0;
  #endif
 
  /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
   return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
@@ -876,7 +905,11 @@ S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 #endif
 
  /* add event to list */
- return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent);
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }
 
 S16 am_Meta(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack, BOOL *bEOT){
@@ -1037,7 +1070,11 @@ sEventBlock_t tempEvent;
     (*pPtr)=((*pPtr)+ubLenght);
 
     /* add event to list */
-    addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+   addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
@@ -1079,7 +1116,11 @@ sEventBlock_t tempEvent;
     (*pPtr)=((*pPtr)+ubLenght);
 
     /* add event to list */
-    addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+   addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"meta size: %d ",ubLenght);
@@ -1189,7 +1230,11 @@ sEventBlock_t tempEvent;
 
     *bEOT=TRUE;
     /* add event to list */
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
     }break;
     case MT_SET_TEMPO:{
         /* sets tempo in track, should be in the first track, if not 120 BPM is assumed */
@@ -1234,7 +1279,11 @@ sEventBlock_t tempEvent;
     amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 #endif
     /* add event to list */
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
     }
     break;
     case MT_SMPTE_OFFSET:{
@@ -1293,7 +1342,11 @@ sEventBlock_t tempEvent;
         amTrace((const U8*)"Time signature change nn: %d\tdd: %d\tcc: %d\tbb: %d\r\n",timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
 #endif
     /* add event to list */
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#ifdef EVENT_LINEAR_BUFFER
+  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 
     }break;
     case MT_KEY_SIG:{

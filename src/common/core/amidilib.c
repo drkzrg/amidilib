@@ -114,6 +114,17 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
    (*pSequence)->eotThreshold = getGlobalConfig()->midiSilenceThreshold;
    (*pSequence)->ubActiveTrack=0;
     
+   tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
+   amTrace((const U8 *)"am_handleMIDIfile() trying to allocate %d Kb\n",memSize/1024);
+
+#ifdef EVENT_LINEAR_BUFFER
+   if(createLinearBuffer(&((*pSequence)->eventBuffer), memSize, PREFER_TT)<0){
+       fprintf(stderr, "Error: Cannot allocate memory for sequence internal event buffer...\n");
+       amFree((void **)&(*pSequence));
+       return -1;
+   }
+#endif
+
    int iRet=0;
    iRet=am_getHeaderInfo(pMidiPtr);
     
@@ -480,12 +491,6 @@ S16 am_init(){
     flushMidiSendBuffer();	//
 #endif
 
-#ifdef EVENT_LINEAR_BUFFER    
-    if(initEventBuffer()<0){
-       printf("Error: Couldn't allocate memory for internal midi event buffer.\n");
-    }
-#endif
-
    //TODO: interrogate connected external module type
    //check external module communication scheme
  if(getGlobalConfig()->handshakeModeEnabled){
@@ -503,10 +508,6 @@ S16 am_init(){
 }
 
 void am_deinit(){
-
-#ifdef EVENT_LINEAR_BUFFER
-    destroyEventBuffer();
-#endif  
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device

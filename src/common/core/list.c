@@ -16,28 +16,14 @@
 
 #include "timing/mfp.h"
 
-#if defined (EVENT_LINEAR_BUFFER)
-#include "memory/linalloc.h" 	/* custom memory allocator */
-#include "config.h"
-
-static tLinearBuffer eventBuffer;
-
-S32 initEventBuffer(){
-  tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
-  amTrace((const U8 *)"initEventBuffer() trying to allocate %d Kb\n",memSize/1024);
-  return createLinearBuffer(&eventBuffer, memSize, PREFER_TT);
-}
-
-void destroyEventBuffer(){
-   destroyLinearBuffer(&eventBuffer);
-}
-
-#endif
-
 /* adds event to linked list, list has to be inintialised with null */
 // event list, temp event
-
-S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr ){
+#ifdef EVENT_LINEAR_BUFFER
+S16 addEvent(sSequence_t *pSequence, sEventList **listPtr, sEventBlock_t *eventBlockPtr )
+#else
+S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr )
+#endif
+{
  sEventList *pTempPtr=NULL;
  sEventList *pNewItem=NULL;
 
@@ -52,7 +38,12 @@ if(*listPtr!=NULL){
   }
     
   /* insert at the end of list */
+#ifdef EVENT_LINEAR_BUFFER
+  if(copyEvent(pSequence, eventBlockPtr, &pNewItem)>=0){
+#else
   if(copyEvent(eventBlockPtr, &pNewItem)>=0){
+#endif
+
       pNewItem->pNext=NULL;		/* next node is NULL for new node */
       pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
 
@@ -63,7 +54,12 @@ if(*listPtr!=NULL){
   
 }else{
   
+#ifdef EVENT_LINEAR_BUFFER
+  if(copyEvent(pSequence, eventBlockPtr, listPtr)>=0){
+#else
   if(copyEvent(eventBlockPtr, listPtr)>=0){
+#endif
+
       (*listPtr)->pPrev=NULL;		/* first element in the list, no previous item */
       (*listPtr)->pNext=NULL;
       return 1;
@@ -74,13 +70,18 @@ if(*listPtr!=NULL){
  return -1;
 }
 
+#ifdef EVENT_LINEAR_BUFFER
+S16 copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest){
+#else
 S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
+#endif
+
   #ifdef DEBUG_MEM
     amTrace((const U8 *)"copyEvent() src: %p dst: %p\n",src,dest);
   #endif
     
 #ifdef EVENT_LINEAR_BUFFER
-    (*dest)=linearBufferAlloc(&eventBuffer, sizeof(sEventList));
+    (*dest)=linearBufferAlloc(&(pSequence->eventBuffer), sizeof(sEventList));
 #else
     (*dest)=(sEventList *)amMallocEx(sizeof(sEventList),PREFER_TT);
 #endif
@@ -88,7 +89,7 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
     if((*dest)==NULL){
 		amTrace((const U8 *)"copyEvent() out of memory [event block]\n");
 		#ifdef EVENT_LINEAR_BUFFER
-			linearBufferPrintInfo(&eventBuffer);
+            linearBufferPrintInfo(&(pSequence->eventBuffer));
 		#endif
 	return -1;
     }else{
@@ -108,7 +109,7 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
 #ifdef EVENT_LINEAR_BUFFER
-        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->copyEventCb.size * sizeof(U8)));
+        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->copyEventCb.size * sizeof(U8)));
 #else
         (*dest)->eventBlock.dataPtr = amMallocEx((src->copyEventCb.size * sizeof(U8)),PREFER_TT);
 #endif
@@ -126,7 +127,7 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 	    amTrace((const U8 *)"copyEvent() out of memory [callback block]\n");
 	    
 		#ifdef EVENT_LINEAR_BUFFER
-			linearBufferPrintInfo(&eventBuffer);
+            linearBufferPrintInfo(&(pSequence->eventBuffer));
 		#endif
 
 		return -1;
@@ -141,8 +142,12 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
    }
    return -1;
 }
-
+#ifdef EVENT_LINEAR_BUFFER
+U32 destroyList(sSequence_t *pSequence,sEventList **listPtr){
+#else
 U32 destroyList(sEventList **listPtr){
+#endif
+
 sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 
 #ifdef DEBUG_MEM
@@ -152,7 +157,7 @@ amTrace((const U8 *)"destroyList()\n");
 	if(*listPtr!=NULL){
 	  
 #ifdef EVENT_LINEAR_BUFFER
-	  linearBufferFree(&eventBuffer);
+      linearBufferFree(&(pSequence->eventBuffer));
 	  *listPtr=0; //that's right :P
 #else	
 	  /*go to the end of the list */

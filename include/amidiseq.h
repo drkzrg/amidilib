@@ -11,6 +11,10 @@
 
 #include "midiseq.h"
 
+#ifdef EVENT_LINEAR_BUFFER
+#include "memory/linalloc.h"
+#endif
+
 #define AMIDI_MAX_TRACKS 64         // 64 should be enough
 #define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
                                     /* sequence is considered finished and ready to STOP or LOOP */
@@ -44,6 +48,7 @@ typedef struct TrackState_t{
  U32 currentTempo;		      // quaternote duration in ms, 500ms default
  U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
  U32 timeElapsedInt;		  // track elapsed time
+
  sEventList *currEventPtr;
  ePlayState playState;		  // STOP, PLAY, PAUSED
  ePlayMode playMode;	      // current play mode (loop, play_once, random)
@@ -59,15 +64,20 @@ typedef struct TrackState_t{
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
-   U8 *pSequenceName;				/* NULL terminated string */
-   U32 timeElapsedFrac; 			// sequence elapsed time
-   U32 timeStep;                    // sequence time step
-   U32 eotThreshold;				/* see define EOT_SILENCE_THRESHOLD */
-   U16 timeDivision;                // pulses per quater note /PPQN /pulses per quaternote
-   U16 ubNumTracks;            	    /* number of tracks 1->AMIDI_MAX_TRACKS */
-   U16 ubActiveTrack; 				/* range 0-(ubNumTracks-1) tracks */
+   U8 *pSequenceName;                       /* NULL terminated string */
+   U32 timeElapsedFrac;                     // sequence elapsed time
+   U32 timeStep;                            // sequence time step
+   U32 eotThreshold;                        /* see define EOT_SILENCE_THRESHOLD */
+   U16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
+   U16 ubNumTracks;                         /* number of tracks 1->AMIDI_MAX_TRACKS */
+   U16 ubActiveTrack;                       /* range 0-(ubNumTracks-1) tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS tracks available */
-   eSequenceType seqType;           // sequence: single, multitrack, separate
+   eSequenceType seqType;                   // sequence: single, multitrack, separate
+
+#ifdef EVENT_LINEAR_BUFFER
+   tLinearBuffer eventBuffer;               // contigous, linear buffer for midi events
+#endif
+
 } sSequence_t;
 
 // timer type on which update will be executed

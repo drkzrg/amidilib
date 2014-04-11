@@ -30,12 +30,15 @@ static void onEndSequence(){
 
 if(g_CurrentNktSequence){
 
-      if(g_CurrentNktSequence->playMode==NKT_PLAY_ONCE){
-          //reset set state to stopped
-          //reset song position on all tracks
-          g_CurrentNktSequence->playState=NKT_PS_STOPPED;
-        }else if(g_CurrentNktSequence->playMode==NKT_PLAY_LOOP){
-          g_CurrentNktSequence->playState=NKT_PS_PLAYING;
+      if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
+          // set state to stopped
+          // reset song position on all tracks
+          g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
+
+        }else{
+          // loop
+          g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED);
+          g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
         }
 
         am_allNotesOff(16);
@@ -55,7 +58,7 @@ if(g_CurrentNktSequence){
 
 
 // init sequence
-void initSequence(sNktSeq *pSeq){
+void initSequence(sNktSeq *pSeq, U16 initialState){
  g_CurrentNktSequence=0;
 
 if(pSeq!=0){
@@ -68,8 +71,7 @@ if(pSeq!=0){
     pSeq->timeElapsedFrac=0UL;
     pSeq->currentBlockId=0;
     pSeq->timeStep=am_calculateTimeStep(pSeq->currentBPM, pSeq->timeDivision, SEQUENCER_UPDATE_HZ);
-    pSeq->playState = getGlobalConfig()->playState;
-    pSeq->playMode = getGlobalConfig()->playMode;
+    pSeq->sequenceState = initialState;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     clearMidiOutputBuffer();
@@ -93,7 +95,7 @@ if(pSeq!=0){
  return;
 }
 
-void initSequenceManual(sNktSeq *pSeq){
+void initSequenceManual(sNktSeq *pSeq, U16 state){
  g_CurrentNktSequence=0;
 
  if(pSeq!=0){
@@ -106,8 +108,7 @@ void initSequenceManual(sNktSeq *pSeq){
   pSeq->timeElapsedFrac=0UL;
   pSeq->currentBlockId=0;
   pSeq->timeStep = am_calculateTimeStep(pSeq->currentBPM, pSeq->timeDivision, SEQUENCER_UPDATE_HZ);
-  pSeq->playState = getGlobalConfig()->playState;
-  pSeq->playMode = getGlobalConfig()->playMode;
+  pSeq->sequenceState = state;
 
   #ifdef IKBD_MIDI_SEND_DIRECT
   clearMidiOutputBuffer();
@@ -142,7 +143,7 @@ void updateStepNkt(){
  if(g_CurrentNktSequence==0) return;
 
  //check sequence state if paused do nothing
-  if(g_CurrentNktSequence->playState==NKT_PS_PAUSED) {
+  if(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
     am_allNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
@@ -152,40 +153,35 @@ void updateStepNkt(){
     return;
   }
 
-  switch(g_CurrentNktSequence->playState){
-    case NKT_PS_PLAYING:{
-      bStopped=FALSE;
-    }break;
-    case NKT_PS_STOPPED:{
+  U16 state=g_CurrentNktSequence->sequenceState;
+
+  if(state&NKT_PS_PLAYING){
+        bStopped=FALSE;
+  }else{
       //check sequence state if stopped reset position
       //and tempo to default, but only once
 
-      if(bStopped==FALSE){
-          bStopped=TRUE;
+   if(bStopped==FALSE){
+      bStopped=TRUE;
 
-          g_CurrentNktSequence->currentTempo=DEFAULT_MPQN;
-          g_CurrentNktSequence->currentBPM=DEFAULT_BPM;
-          g_CurrentNktSequence->timeElapsedInt=0L;
-          g_CurrentNktSequence->timeElapsedFrac=0L;
+      g_CurrentNktSequence->currentTempo=DEFAULT_MPQN;
+      g_CurrentNktSequence->currentBPM=DEFAULT_BPM;
+      g_CurrentNktSequence->timeElapsedInt=0L;
+      g_CurrentNktSequence->timeElapsedFrac=0L;
 
-          //reset tempo to initial valueas taken during start(get them from main sequence?)
-          g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM,g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+      //reset tempo to initial valueas taken during start(get them from main sequence?)
+      g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM,g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
-          //rewind to the first event
-          g_CurrentNktSequence->currentBlockId=0;
-          nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+      //rewind to the first event
+      g_CurrentNktSequence->currentBlockId=0;
+      nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+      return;
+    }else
+       return;
+  }
 
-          return;
-      }else{
-          //do nothing
-          return;
-      }
-
-    }break;
-  };
-
-   bStopped=FALSE; //we replaying, so we have to reset this flag
-   nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+  bStopped=FALSE;   //we replaying, so we have to reset this flag
+  nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
 
    if(nktBlk) bEOTflag=isEOT(nktBlk);
 
@@ -296,8 +292,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 
-    pNewSeq->playMode=NKT_PLAY_ONCE;
-    pNewSeq->playState=NKT_PS_STOPPED;
+    pNewSeq->sequenceState |= NKT_PLAY_ONCE;
     pNewSeq->currentTempo=DEFAULT_MPQN;
     pNewSeq->currentBPM=DEFAULT_BPM;
     pNewSeq->timeDivision=DEFAULT_PPQN;
@@ -497,113 +492,105 @@ void destroySequence(sNktSeq *pSeq){
 ////////////////////////////////////////////////// replay control
 
 BOOL isSequencePlaying(void){
+
  if(g_CurrentNktSequence!=0){
-       if(g_CurrentNktSequence->playState==NKT_PS_PLAYING)
+       if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)
         return TRUE;
        else
         return FALSE;
  }
-return FALSE;
+
+ return FALSE;
 }
 
 
 void stopSequence(void){
-        if(g_CurrentNktSequence!=0){
-            if(g_CurrentNktSequence->playState!=NKT_PS_STOPPED){
-              g_CurrentNktSequence->playState=NKT_PS_STOPPED;
-              printf("Stop sequence\n");
-            }
-        }
+ if(g_CurrentNktSequence!=0){
 
-      //all notes off
-      am_allNotesOff(16);
+    if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING){
+       g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
+       printf("Stop sequence\n");
+    }
+
+    //all notes off
+    am_allNotesOff(16);
 
     #ifdef IKBD_MIDI_SEND_DIRECT
       flushMidiSendBuffer();
     #endif
-
-    }
+  }
+}
 
 void pauseSequence(){
-      //printf("Pause/Resume.\n");
-      if(g_CurrentNktSequence!=0){
-            switch(g_CurrentNktSequence->playState){
-                case NKT_PS_PLAYING:{
-                    g_CurrentNktSequence->playState=NKT_PS_PAUSED;
-                    printf("Pause sequence\n");
-                }break;
-                case NKT_PS_PAUSED:{
-                    g_CurrentNktSequence->playState=NKT_PS_PLAYING;
-                }break;
-            };
-      }
-      //all notes off
-      am_allNotesOff(16);
-    } //pauseSequence
-
-void playSequence(void){
 
      if(g_CurrentNktSequence!=0){
+     U16 state=g_CurrentNktSequence->sequenceState;
 
-            if(g_CurrentNktSequence->playState==NKT_PS_STOPPED){
-                g_CurrentNktSequence->playState=NKT_PS_PLAYING;
-                printf("Play sequence\t");
+          if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED))){
+           g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED|NKT_PS_PLAYING));
+           g_CurrentNktSequence->sequenceState|=NKT_PS_PAUSED;
 
-                switch(g_CurrentNktSequence->playMode){
-                    case  NKT_PLAY_ONCE: printf("[ ONCE ]\n"); break;
-                    case  NKT_PLAY_LOOP: printf("[ LOOP ]\n"); break;
-                    default: printf("\n"); break;
+           // all notes off
+           am_allNotesOff(16);
 
-                };
-            }
+           printf("Pause sequence\n");
+          }else if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING){
+            g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
+            g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
+          }
       }
+ } //pauseSequence
+
+// play sequence
+void playSequence(void){
+
+if(g_CurrentNktSequence!=0){
+  U16 state=g_CurrentNktSequence->sequenceState;
+
+    if(!(state&NKT_PS_PLAYING)){
+
+         g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
+         g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
+
+         printf("Play sequence\t");
+
+         if(state&NKT_PLAY_ONCE){
+           printf("[ ONCE ]\n");
+         }else{
+           printf("[ LOOP ]\n");
+         }
+      }
+ }
 }
 
 void switchReplayMode(void){
 
  if(g_CurrentNktSequence!=0){
-    switch(g_CurrentNktSequence->playMode){
-      case NKT_PLAY_ONCE:{
-               g_CurrentNktSequence->playMode=NKT_PLAY_LOOP;
-               printf("Set replay mode: [ LOOP ]\n");
-      }break;
-          case NKT_PLAY_LOOP:{
-                g_CurrentNktSequence->playMode=NKT_PLAY_ONCE;
-                printf("Set replay mode: [ ONCE ]\n");
-          }break;
-        }
+
+     if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
+
+        g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
+        printf("Set replay mode: [ LOOP ]\n");
+     }else{
+         g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
+         printf("Set replay mode: [ ONCE ]\n");
+     }
   }
 }
 
 // debug stuff
-static const U8 *getPlayStateStr(const eNktPlayState state){
+static const U8 *getSequenceStateStr(const U16 state){
 
-    switch(state){
-        case NKT_PS_STOPPED:
-            return "Stopped";
-        break;
-        case NKT_PS_PLAYING:
-            return "Playing";
-        break;
-        case NKT_PS_PAUSED:
-            return "Paused";
-        break;
-        default:
-            return NULL;
-    }
-}
+ if(state&NKT_PS_PAUSED){
+   return "Paused";
+ }
 
-static const U8 *getPlayModeStr(const eNktPlayMode mode){
-    switch(mode){
-        case NKT_PLAY_ONCE:
-            return "Play once";
-        break;
-        case NKT_PLAY_LOOP:
-            return "Loop";
-        break;
-        default:
-            return NULL;
-    }
+ if(state&NKT_PS_PLAYING){
+    return "Playing";
+ }else{
+    return "Stopped";
+ }
+
 }
 
 
@@ -616,8 +603,7 @@ if(g_CurrentNktSequence){
     printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
     printf("\tCur BPM: %lu\n",g_CurrentNktSequence->currentBPM);
     printf("\tCur Tempo: %lu\n",g_CurrentNktSequence->currentTempo);
-    printf("\tPlay mode: %s\n",getPlayModeStr(g_CurrentNktSequence->playMode));
-    printf("\tPlay state: %s\n",getPlayStateStr(g_CurrentNktSequence->playState));
+    printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 
 #ifdef DEBUG_BUILD

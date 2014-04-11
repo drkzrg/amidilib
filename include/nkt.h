@@ -4,18 +4,15 @@
 #include <c_vars.h>
 #include "memory/linalloc.h"
 
-/** sequence replay mode */
 typedef enum{
-  NKT_PLAY_ONCE=0x06,
-  NKT_PLAY_LOOP=0x08
-} eNktPlayMode;
+    // play mode
+    NKT_PLAY_ONCE  = 0b00000001, // play once, loop otherwise
 
-/** current track state */
-typedef enum{
-  NKT_PS_STOPPED=0x00,
-  NKT_PS_PLAYING=0x02,
-  NKT_PS_PAUSED=0x04
-} eNktPlayState;
+    // track state
+    NKT_PS_PLAYING = 0b00000010, // playing if set, stopped otherwise
+    NKT_PS_PAUSED  = 0b00000100, // paused if set
+}eNktTrackState;
+
 
 // custom binary midi replay format
 typedef enum{
@@ -43,9 +40,7 @@ typedef struct NktSeq{
     U32 timeElapsedFrac;	   // track elapsed time
     U32 timeElapsedInt;		   // track elapsed time
     U32 timeStep;              // current track's timestep
-    eNktPlayState playState;   // STOP, PLAY, PAUSED    //TODO: make it on bitflags and merge with playmode
-    eNktPlayMode playMode;	   // current play mode (loop, play_once, random)
-
+    U16 sequenceState;         // bitfield with sequence state
     U32 dataBufferSize;        // nb of bytes used for data buffer
     U8 *pEventDataBuffer;
     tLinearBuffer dataBuffer;  // custom data buffer info
@@ -79,7 +74,7 @@ typedef struct __attribute__((packed)) NktBlk{
 /////////////////////////////////////////////
 
 void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq);
+void initSequence(sNktSeq *seq, U16 initialState);
 
 sNktSeq *loadSequence(const U8 *filepath);
 void destroySequence(sNktSeq *pSeq);
@@ -92,7 +87,7 @@ void playSequence(void);
 void switchReplayMode(void);
 
 //debug helpers
-void initSequenceManual(sNktSeq *pSeq); //todo remove in final build
+void initSequenceManual(sNktSeq *pSeq, U16 initialState); //todo remove in final build
 void printNktSequenceState();
 const U8 *getEventTypeName(eNktMsgType type);
 

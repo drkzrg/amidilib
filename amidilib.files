@@ -85,3 +85,5 @@ src/common/formats/nkt_rep.c
 src/common/formats/nkt_rep_m68k.s
 include/seq2nkt.h
 demo/nktReplay/nktReplay.c
+src/common/formats/midi2nkt.c
+include/midi2nkt.h

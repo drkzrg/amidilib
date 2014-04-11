@@ -43,7 +43,7 @@ typedef struct NktSeq{
     U32 timeElapsedFrac;	   // track elapsed time
     U32 timeElapsedInt;		   // track elapsed time
     U32 timeStep;              // current track's timestep
-    eNktPlayState playState;   // STOP, PLAY, PAUSED
+    eNktPlayState playState;   // STOP, PLAY, PAUSED    //TODO: make it on bitflags and merge with playmode
     eNktPlayMode playMode;	   // current play mode (loop, play_once, random)
 
     U32 dataBufferSize;        // nb of bytes used for data buffer

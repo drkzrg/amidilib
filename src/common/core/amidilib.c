@@ -475,10 +475,16 @@ S16 am_init(){
       program_change(getGlobalConfig()->midiChannel, 1);
     }break;
     
-    case DT_GS_SOUND_SOURCE:       /* for pure GS/GM sound source */
-    case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
-    case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
+    case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
+        //TODO: standard handling
+    case DT_LA_GS_MIXED:           /* if both LA / GS sound sources are available, like in CM-500 */
+       //TODO: silence CM-32P part
+
+    case DT_MT32_GM_EMULATION:
+       /* before loading midi data MT32 sound banks has to be patched */
+
     case DT_XG_GM_YAMAHA:
+       //unsupported
     default:{
       amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
       control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);

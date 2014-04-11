@@ -8,8 +8,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include <unistd.h>
-
 #include "amidilib.h"
 #include "amlog.h"
 #include "list/list.h"
@@ -18,6 +16,7 @@
 
 /* adds event to linked list, list has to be inintialised with null */
 // event list, temp event
+
 #ifdef EVENT_LINEAR_BUFFER
 S16 addEvent(sSequence_t *pSequence, sEventList **listPtr, sEventBlock_t *eventBlockPtr )
 #else

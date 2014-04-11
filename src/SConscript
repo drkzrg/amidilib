@@ -137,11 +137,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' -DDEBUG_FILE_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER' + ' -DDEBUG_SERIAL_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER' + ' -DDEBUG_FILE_OUTPUT'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DEVENT_LINEAR_BUFFER'
   
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS  
@@ -166,7 +166,8 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/roland.c"]
-nkt_format_src = ["common/formats/seq2nkt.c","common/formats/nkt_rep.c","common/formats/nkt_rep_m68k.s"]
+nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep.c","common/formats/nkt_rep_m68k.s"]
+
 midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 

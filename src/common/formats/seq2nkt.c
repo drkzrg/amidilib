@@ -373,10 +373,205 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file, U32 *bytesWritten, U32 *blocksWritten){
 //TODO
     printf("Processing multi track sequence\n");
+    U8 tempBuffer[32 * 1024]={0};
+
+    U32 bufPos=0;
+    U32 bufDataSize=0;
+    sTrack_t *pTrack=pSeq->arTracks[0];
+    sEventList *eventPtr=pTrack->pTrkEventList;
+    U32 currDelta=0;
+    sNktBlk stBlock;
+
+    while(eventPtr!=NULL){
+
+        // dump data
+        if(eventPtr->eventBlock.uiDeltaTime==currDelta){
+           // if event is tempo related then create event with curent delta
+           // and go to next event
+            bufPos=0;
+            bufDataSize=0;
+
+            //skip uninteresting events
+            while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
+                printf("Skip event >> %d\n",eventPtr->eventBlock.type);
+                eventPtr=eventPtr->pNext;
+            }
+
+            if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
+                U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+
+                amTrace("Write Set Tempo: %lu event\n",tempo);
+
+                stBlock.blockSize=sizeof(U32);
+                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+
+                //write block to file
+                U32 VLQdeltaTemp=0;
+                if(file!=NULL){
+
+                   // write VLQ delta
+                   S32 count=0;
+                   count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                   *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+                   *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                   *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                 }
+                ++(*blocksWritten);
+
+                amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize );
+                eventPtr=eventPtr->pNext;
+            }
+
+            if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
+
+                amTrace("Write End of Track \n");
+                stBlock.blockSize=0;
+                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+
+                //write block to file
+                if(file!=NULL){
+                    // write VLQ delta
+                    U32 VLQdeltaTemp=0;
+                    S32 count=0;
+                    count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                    *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+                    *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                    //no data to write
+                }
+                ++(*blocksWritten);
+                eventPtr=eventPtr->pNext;
+
+            }
+
+            if(eventPtr!=0){
+
+                // process events as normal
+                processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
+                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+
+                // next event
+                eventPtr=eventPtr->pNext;
+
+                //check next events, dump until delta != 0
+                while(eventPtr!=NULL&&eventPtr->eventBlock.uiDeltaTime==0){
+
+                    //skip uninteresting events
+                    while((eventPtr!=NULL) &&( (eventPtr->eventBlock.type==T_META_CUEPOINT) || (eventPtr->eventBlock.type==T_META_MARKER) )){
+                        printf("Skip event >> %d delta 0\n",eventPtr->eventBlock.type);
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                    if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
+                        printf("Write Set Tempo: %lu, event delta 0\n",((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal);
+                        U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+
+                        amTrace("Write Set Tempo: %lu event\n",tempo);
+
+                        stBlock.blockSize=sizeof(U32);
+                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+
+                        //write block to file
+
+                        if(file!=NULL){
+                           // write VLQ delta
+                           S32 count=0;
+                           U32 VLQdeltaTemp=0;
+
+                           count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                           *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+                           *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                           *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                         }
+                        ++(*blocksWritten);
+
+                        amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize );
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                    if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
+                        printf("Write End of Track, event delta 0\n");
+
+                        stBlock.blockSize=0;
+                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+
+                        //write block to file
+                        if(file!=NULL){
+                            // write VLQ data
+                            U32 VLQdeltaTemp=0;
+                            S32 count=0;
+                            count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+
+                            *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+                            *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+                            //no data to write
+                        }
+                        ++(*blocksWritten);
+
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                    if(eventPtr!=NULL) {
+                        processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
+
+                        // next event
+                        eventPtr=eventPtr->pNext;
+                    }
+
+                }; //end delta == 0 while
 
 
+                // dump midi event block to memory
+                if(bufPos>0){
+                    stBlock.blockSize=bufDataSize;
 
-    printf("Event blocks written: %lu\n",*blocksWritten);
+                    amTrace("[DATA] ");
+
+                        for(int j=0;j<bufDataSize;j++){
+                            amTrace("0x%x ",tempBuffer[j]);
+                        }
+                    amTrace(" [/DATA]\n");
+
+                    //write block to file
+
+                    if(file!=NULL){
+                      // write VLQ delta
+                      S32 count=0;
+                      U32 VLQdeltaTemp=0;
+
+                      count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                      *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+                      amTrace("Write block size %d\n",stBlock.blockSize);
+                      *bytesWritten+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
+                      *bytesWritten+=fwrite(&tempBuffer[0],stBlock.blockSize,1,*file);
+                    }
+                    ++(*blocksWritten);
+
+                    amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currDelta, stBlock.msgType, stBlock.blockSize);
+
+                    //clear buffer
+                    bufDataSize=0;
+                    bufPos=0;
+                    amMemSet(tempBuffer,0,32 * 1024);
+
+                }
+
+
+                if(eventPtr) {
+                    currDelta=eventPtr->eventBlock.uiDeltaTime; //get next delta
+                    amTrace("Next delta: %lu\n",currDelta);
+                }
+
+            }//end null check
+
+        }; // end while
+
+    }; //end while end of sequence
+    printf("Event blocks written: %lu, total bytes of data written %lu\n",*blocksWritten,*bytesWritten);
+
  return 0;
 }
 

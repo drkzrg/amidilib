@@ -27,17 +27,90 @@
 #define MFP_DEL100	0b00001110  /* delay 100 */
 #define MFP_DEL200	0b00001111  /* delay 200 */
 
-/** Utility function returns MFP mode and data settings for MFP.
-*   @param freq - desired frequency
-*   @param mode - pointer to unsigned long int for MFP mode of operation value
-*   @param data - pointer to unsigned long int for MFP data value
-*/
-void getMFPTimerSettings(const U16 freq,U8 *mode,U8 *data);
 
 /** installs sequence replay routine (hooked to timer B atm) */
 extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRout(void);
+
+
+/* calculates settings for MFP timers for given frequency of tick */
+static const U8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
+
+/** Utility function returns MFP mode and data settings for MFP.
+*   @param freq - desired frequency
+*   @param mode - pointer to unsigned long int for MFP mode of operation value
+*   @param data - pointer to unsigned long int for MFP data value
+*/
+
+static inline void getMFPTimerSettings(const U16 freq,U8 *mode,U8 *data){
+static U8 presc=0;
+static U32 temp=0;
+
+if( freq<=614400 && freq>=2400 ) {
+  *mode=MFP_DIV4;		/* divide by 4  */
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+  return;
+}
+
+if( freq<2400 && freq>=960 ) {
+  *mode=MFP_DIV10;		/* divide by 10 	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+  return;
+}
+
+if( freq<960  && freq>=600 ) {
+  *mode=MFP_DIV16;		/* divide by 16 	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+
+  return;
+}
+
+if( freq<600  && freq>=192 ) {
+  *mode = MFP_DIV50;		/* divide by 50 	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+
+  return;
+}
+
+if( freq<192  && freq>=150 ) {
+  *mode=MFP_DIV64;		/* divide by 64 	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+  return;
+}
+
+if( freq<150  && freq>=96  ) {
+  *mode=MFP_DIV100;		/* divide by 100	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+  return;
+}
+
+if(freq<96 && freq>=48) {
+  *mode=MFP_DIV200; 		/* divide by 200	*/
+  presc=prescales[*mode];
+  temp=presc*freq;
+  *data=(U8)((U32)2457600/temp);
+  return;
+}
+
+ if( *mode==0 ) {
+  *data=0;
+ }
+ return;
+}
+
 
 #endif

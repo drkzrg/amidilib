@@ -6,7 +6,7 @@
 
 typedef enum{
     // play mode
-    NKT_PLAY_ONCE  = 0b00000001, // play once, loop otherwise
+    NKT_PLAY_ONCE  = 0b00000001, // play once if set, loop otherwise
 
     // track state
     NKT_PS_PLAYING = 0b00000010, // playing if set, stopped otherwise
@@ -16,12 +16,12 @@ typedef enum{
 
 // custom binary midi replay format
 typedef enum{
-  NKT_MIDIDATA=0,
-  NKT_TEMPO_CHANGE,
-  NKT_JUMP,  //not used atm
-  NKT_TRIGGER,
-  NKT_END,
-  NKT_MAX_EVENT
+  NKT_MIDIDATA      = 0b00000001,
+  NKT_TEMPO_CHANGE  = 0b00000010,
+  NKT_JUMP          = 0b00000100,          //not used atm
+  NKT_TRIGGER       = 0b00001000,
+  NKT_END           = 0b00010000,
+  NKT_MAX_EVENT = 5
 } eNktMsgType;
 
 // Nkt structure in memory
@@ -89,6 +89,6 @@ void switchReplayMode(void);
 //debug helpers
 void initSequenceManual(sNktSeq *pSeq, U16 initialState); //todo remove in final build
 void printNktSequenceState();
-const U8 *getEventTypeName(eNktMsgType type);
+const U8 *getEventTypeName(U16 type);
 
 #endif // NKT_H

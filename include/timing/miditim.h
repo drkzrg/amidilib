@@ -13,8 +13,9 @@
 */
 
 static inline U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups){
-    U32 ppu;
-    U32 temp;
+    static U32 ppu=0;
+    static U32 temp=0;
+
     temp=(U32)qpm*(U32)ppq;
 
     if(temp<0x10000){
@@ -22,8 +23,6 @@ static inline U32 am_calculateTimeStep(const U16 qpm,const U16 ppq,const U16 ups
     }else{
         ppu=((temp/60)*0x10000)/(U32)ups;
     }
-
-   // amTrace("calculateTimeStep %lu\n",ppu);
 
  return ppu;
 }
@@ -60,7 +59,7 @@ float getTimeDelta();
 
 #define DEFAULT_MPQN 500000	   	// microsecs per quaternote
 #define DEFAULT_PPQN 96	   		// default pulses per quater note (resolution)
-#define SEQUENCER_UPDATE_HZ 400  	// sequencer update rate
+#define SEQUENCER_UPDATE_HZ 300 // sequencer update rate
 #define DEFAULT_BPM 120	   		// 60,000,000/DEFAULT_MPQN quaternotes per minute
 
 

@@ -14,11 +14,12 @@
         xref    update
         xref    _updateStepNkt
 
+        even
 _replayNktTC:
-
         movem.l d0-7/a0-6,-(sp)         ; save registers
         move.w  sr,-(sp)                ; save status register
         or.w    #$0700,sr               ; disable interrupts
+
 ;       jump to the old interrupt routine afterwards
 ;       send midi status byte once per 1ms
 ;       assume 200Hz update for TC (?)

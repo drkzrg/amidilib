@@ -57,7 +57,7 @@ print "Cross tools path: " + prefix
 
 if ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
-    ST_CFLAGS='-std=c99 -m68030 -fomit-frame-pointer'
+    ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
@@ -75,7 +75,7 @@ elif (target == "atarist"):
     LIB_POSTFIX='000'
 elif (target == "ct60"):
     print "Building Falcon CT60/63 target..."
-    ST_CFLAGS='-std=c99 -m68060 --ffast-math -fomit-frame-pointer'
+    ST_CFLAGS='-std=c99 -m68060 -ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''

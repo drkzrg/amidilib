@@ -114,7 +114,7 @@ S16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 #endif
 #else
 #ifdef EVENT_LINEAR_BUFFER
-        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&eventBuffer,(src->sendEventCb.size * sizeof(U8)));
+        (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->sendEventCb.size * sizeof(U8)));
 #else
         (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(U8)),PREFER_TT);
 #endif

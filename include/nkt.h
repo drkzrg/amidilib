@@ -35,7 +35,8 @@ typedef struct NktBlock_t{
 typedef struct NktSeq{
     U16 version;               // version
     U16 timeDivision;          // time division
-    U32 currentTempo;		   // quaternote duration in ms, 500ms default
+    U32 defaultTempo;		   // quaternote duration in ms, 500ms default
+    U32 lastTempo;             // quaternote duration in ms, 500ms default
     U32 currentBPM;	           // beats per minute (60 000000 / currentTempo)
     U32 timeElapsedFrac;	   // track elapsed time
     U32 timeElapsedInt;		   // track elapsed time

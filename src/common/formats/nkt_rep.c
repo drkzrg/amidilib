@@ -38,8 +38,9 @@ if(g_CurrentNktSequence){
 
   am_allNotesOff(16);
   g_CurrentNktSequence->timeElapsedInt=0L;
-  g_CurrentNktSequence->currentTempo=DEFAULT_MPQN;
-  g_CurrentNktSequence->currentBPM=DEFAULT_BPM;
+  g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
+
+  g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
   g_CurrentNktSequence->currentBlockId=0;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
@@ -49,6 +50,7 @@ if(g_CurrentNktSequence){
   g_CurrentNktSequence->timeElapsedFrac=0L;
   g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
  }
+
 }
 
 
@@ -60,8 +62,8 @@ if(pSeq!=0){
     U8 mode=0,data=0;
     g_CurrentNktSequence=pSeq;
 
-    pSeq->currentTempo=DEFAULT_MPQN;
-    pSeq->currentBPM=DEFAULT_BPM;
+    pSeq->lastTempo=pSeq->defaultTempo;
+    pSeq->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
     pSeq->timeElapsedInt=0UL;
     pSeq->timeElapsedFrac=0UL;
     pSeq->currentBlockId=0;
@@ -97,7 +99,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
   U8 mode=0,data=0;
   g_CurrentNktSequence=pSeq;
 
-  pSeq->currentTempo = DEFAULT_MPQN;
+  pSeq->lastTempo = pSeq->defaultTempo;
   pSeq->currentBPM = DEFAULT_BPM;
   pSeq->timeElapsedInt = 0UL;
   pSeq->timeElapsedFrac = 0UL;
@@ -142,21 +144,19 @@ void updateStepNkt(){
     return;
   }
 
-  U16 state=g_CurrentNktSequence->sequenceState;
-
-  if(!(state&NKT_PS_PLAYING)){
+  if(!(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)){
     //check sequence state if stopped reset position
     //and tempo to default, but only once
 
    if(bStopped==FALSE){
       bStopped=TRUE;
 
-      g_CurrentNktSequence->currentTempo=DEFAULT_MPQN;
-      g_CurrentNktSequence->currentBPM=DEFAULT_BPM;
+      g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
+      g_CurrentNktSequence->currentBPM=60000000/g_CurrentNktSequence->defaultTempo;
       g_CurrentNktSequence->timeElapsedInt=0L;
       g_CurrentNktSequence->timeElapsedFrac=0L;
 
-      //reset tempo to initial valueas taken during start(get them from main sequence?)
+      // reset tempo to initial valueas taken during start (get them from main sequence?)
       // calculate new timestep
       tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
 
@@ -168,7 +168,7 @@ void updateStepNkt(){
 
       //rewind to the first event
       g_CurrentNktSequence->currentBlockId=0;
-      nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+      //nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
       return;
     }else
        return;
@@ -179,12 +179,12 @@ void updateStepNkt(){
 
    if(nktBlk!=0 && (nktBlk->msgType&NKT_TEMPO_CHANGE)){
        //set new tempo
-       g_CurrentNktSequence->currentTempo=(U32 *)nktBlk->pData;
+       g_CurrentNktSequence->lastTempo=*((U32 *)nktBlk->pData);
 
-       //amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->currentTempo);
+       //amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->lastTempo);
 
        // calculate new timestep
-       g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->currentTempo;
+       g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
        tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
 
        if(tempPPU<0x10000){
@@ -195,8 +195,8 @@ void updateStepNkt(){
 
        //next event
        ++(g_CurrentNktSequence->currentBlockId);
-       nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-       //return;
+       //nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+       return;
    }
 
    //reset
@@ -204,7 +204,30 @@ void updateStepNkt(){
 
    if(nktBlk->delta==g_CurrentNktSequence->timeElapsedInt) bSend=TRUE;
 
-if( (!(nktBlk->msgType&NKT_END)) && bSend!=FALSE){
+   if( (!(nktBlk->msgType&NKT_END)) && bSend!=FALSE){
+
+       if(nktBlk->msgType&NKT_TEMPO_CHANGE){
+              //set new tempo
+              g_CurrentNktSequence->lastTempo=*((U32 *)nktBlk->pData);
+
+              //amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->lastTempo);
+
+              // calculate new timestep
+              g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
+              tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
+
+              if(tempPPU<0x10000){
+                  g_CurrentNktSequence->timeStep=((tempPPU*0x10000)/60)/SEQUENCER_UPDATE_HZ;
+              }else{
+                  g_CurrentNktSequence->timeStep=((tempPPU/60)*0x10000)/SEQUENCER_UPDATE_HZ;
+              }
+
+              //next event
+              ++(g_CurrentNktSequence->currentBlockId);
+              nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+
+          }
+
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
@@ -274,7 +297,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
-    pNewSeq->currentTempo=DEFAULT_MPQN;
+    pNewSeq->defaultTempo=631578;
+    pNewSeq->lastTempo=631578;
     pNewSeq->currentBPM=DEFAULT_BPM;
     pNewSeq->timeDivision=DEFAULT_PPQN;
 
@@ -315,6 +339,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
    pNewSeq->NbOfBlocks=tempHd.NbOfBlocks;
    pNewSeq->dataBufferSize=tempHd.NbOfBytesData;
+   pNewSeq->timeDivision=tempHd.division;
 
    if(pNewSeq->NbOfBlocks==0 || pNewSeq->dataBufferSize==0){
         amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
@@ -383,7 +408,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
      }
 
-    // process blocks, todo allocation on second linear buffer ?
+    // process blocks
     sNktBlk blk;
     BOOL bFinished=FALSE;
     int i=0;
@@ -581,7 +606,8 @@ if(g_CurrentNktSequence){
     printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
     printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
     printf("\tCur BPM: %lu\n",g_CurrentNktSequence->currentBPM);
-    printf("\tCur Tempo: %lu\n",g_CurrentNktSequence->currentTempo);
+    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo);
+    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->lastTempo);
     printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 

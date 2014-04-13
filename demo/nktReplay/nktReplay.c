@@ -1,5 +1,3 @@
-
-
 #include "nkt.h"
 #include "amidilib.h"
 
@@ -86,13 +84,11 @@ void displayTuneInfo(){
   sNktSeq *pPtr=0;
   getCurrentSequence(&pPtr);
 
-  U32 tempo=pPtr->currentTempo;
-  U16 td=pPtr->timeDivision;
+  if(pPtr){
+    printf("PPQN: %u\t",pPtr->timeDivision);
+    printf("Tempo default: %lu [ms] last: %lu [ms]\n",pPtr->defaultTempo, pPtr->lastTempo);
+  }
 
-  printf("PPQN: %u\t",td);
-  printf("Tempo: %lu [ms]\n",tempo);
-
-  printf("\nReady...\n");
 }
 
 void mainLoop(sNktSeq *pSequence){

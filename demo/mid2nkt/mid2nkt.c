@@ -1,11 +1,14 @@
 
 #include <stdio.h>
+#include <string.h>
+
 #include "midi2nkt.h"
 
 #include "timing/miditim.h"
 #include "fmio.h"           // disc i/o
 #include "amlog.h"
 #include "midi.h"
+
 
 void printInfoScreen();
 
@@ -20,6 +23,7 @@ int main(int argc, char *argv[]){
 
 
   // load midi file into memory
+  U32 iError=0;
   U32 ulFileLenght=0L;
   void *pMidi=0;
 
@@ -29,12 +33,29 @@ int main(int argc, char *argv[]){
        // check mid 0, no quit
        fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int) ulFileLenght);
 
-
        U32 time=0,delta=0;
-       time = getTimeStamp();
+       sMThd *pMidiInfo=0;
+
+       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->format==0){
+           char tempName[128]={0};
+           char *pTempPtr=0;
+           strncpy(tempName,argv[1],strlen(argv[1]));
+           pTempPtr=strrchr(tempName,'.');
+           memcpy(pTempPtr+1,"nkt",4);
+
+           time = getTimeStamp();
+
+           iError=Midi2Nkt(pMidi,tempName,FALSE);
+
+           delta=getTimeDelta();
+
+           if(iError==0){
+            fprintf(stderr,"MIDI file conversion in ~%4.2ul[sec]/~%4.2ul[min]\n",delta,delta/60.0f);
+           }
+
+       }
 
 
-       delta=getTimeDelta();
 
        /* free up buffer with loaded midi file, we don't need it anymore */
        amFree(&pMidi);

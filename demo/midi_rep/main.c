@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
       amFree(&pMidi);
 
       if(iError==0){
-	  fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n",delta,delta/60.0f);
+      fprintf(stderr,"MIDI file parsed in ~%4.2ul[sec]/~%4.2ul[min]\n",delta,delta/60.0f);
 	
 	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);

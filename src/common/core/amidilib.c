@@ -177,11 +177,13 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             (*pSequence)->arTracks[0]->pTrkEventList=0;
 		  
 		   while (startPtr!=0){
-                /* Pointer to midi data,
+
+               /* Pointer to midi data,
                  type of midi to preprocess,
                  number of tracks,
                  pointer to the structure in which track data will be dumped (or not).
                 */
+
                 startPtr=processMidiTrackData(startPtr,T_MIDI0,1, pSequence,&iError);
                 if(iError<0)return iError;
             }

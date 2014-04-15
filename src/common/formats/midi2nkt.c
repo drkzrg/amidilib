@@ -1,7 +1,7 @@
 
 #include "nkt.h"
 
-#include "midi_cmd.h"
+#include "events.h"
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
 

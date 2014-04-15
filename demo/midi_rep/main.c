@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
      /* check midi header */
       fprintf(stderr,"Please wait...\n");
 
-      float time=0,delta=0;
+      U32 time=0,delta=0;
       time = getTimeStamp();
       iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
       delta=getTimeDelta();

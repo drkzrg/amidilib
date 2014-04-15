@@ -10,14 +10,12 @@
 
 #include "c_vars.h"
 
-#include <alloca.h> //todo: remove alloca from code
-
-#include <mint/osbind.h>
 #include <mint/ostruct.h>
+#include <mint/osbind.h>
 
 /* memory allocation preference */
 
-typedef enum{
+typedef enum {
   ST_RAM = MX_STRAM,
   TT_RAM = MX_TTRAM,
   PREFER_ST = MX_PREFSTRAM,
@@ -51,7 +49,6 @@ U8* WriteByte(void* buf, S8 b);
 U8* WriteShort(void* b, U16 s);
 U8* WriteInt(void* b, U32 i);
 S32 UpdateBytesWritten(S32* bytes_written, S32 to_add, S32 max);
-
 
 #endif
 

@@ -50,12 +50,12 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 * @return returns current time signature in ms
 */
 
-float getTimeStamp();
+U32 getTimeStamp();
 
 /** Utility function for measuring delta time  
  *   @return delta time since last getTimeStamp() function call in ms
  */
-float getTimeDelta();
+U32 getTimeDelta();
 
 #define DEFAULT_MPQN 500000	   	// microsecs per quaternote
 #define DEFAULT_PPQN 96	   		// default pulses per quater note (resolution)

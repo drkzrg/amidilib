@@ -9,6 +9,7 @@
 #define __FMIO_H__
 
 #include "c_vars.h"
+#include "memory/memory.h"
 
 /*XBIOS input/output devices*/
 #define XB_DEV_AUX 0	/* Centronics interface */

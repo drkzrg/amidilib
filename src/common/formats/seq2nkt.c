@@ -160,7 +160,7 @@ U8 seq2nktMap[]={
     NKT_TRIGGER,        //	T_META_CUEPOINT,
     NKT_TRIGGER,        //	T_META_MARKER,
     NKT_MIDIDATA,       //	T_META_SET_SIGNATURE,
-    NKT_MIDIDATA       //	T_SYSEX,
+    NKT_MIDIDATA        //	T_SYSEX,
 };
 
 

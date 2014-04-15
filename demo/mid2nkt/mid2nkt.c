@@ -2,19 +2,21 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "midi2nkt.h"
-
-#include "timing/miditim.h"
+#include "midi2nkt.h"       // mid2nkt conversion
+#include "timing/miditim.h" // time measurement
 #include "fmio.h"           // disc i/o
-#include "amlog.h"
-#include "midi.h"
+#include "amlog.h"          // logging
+#include "midi.h"           // midi
 
+#include "lzo/minilzo.h" //compression
 
 void printInfoScreen();
 
 int main(int argc, char *argv[]){
 
     initDebug("mid2nkt.log");
+
+    //todo check parameters for compression
 
     if(argc>=1&&argv[1]!='\0'){
          fprintf(stderr,"Trying to load %s\n",argv[1]);
@@ -38,7 +40,7 @@ int main(int argc, char *argv[]){
        U32 time=0,delta=0;
        sMThd *pMidiInfo=0;
 
-       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->format==0){
+       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
            char tempName[128]={0};
            char *pTempPtr=0;
            strncpy(tempName,argv[1],strlen(argv[1]));
@@ -46,10 +48,10 @@ int main(int argc, char *argv[]){
            memcpy(pTempPtr+1,"nkt",4);
 
            printInfoScreen();
-            fprintf(stderr,"[ Please wait ]Converting MID to %s.\n",tempName);
+            fprintf(stderr,"[ Please wait ] Converting MID to %s.\n",tempName);
            // convert
            time = getTimeStamp();
-           iError=Midi2Nkt(pMidi,tempName,FALSE);
+           iError = Midi2Nkt(pMidi,tempName,FALSE);
            delta=getTimeDelta();
 
            if(iError==0){

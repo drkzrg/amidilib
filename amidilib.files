@@ -87,3 +87,5 @@ include/seq2nkt.h
 demo/nktReplay/nktReplay.c
 src/common/formats/midi2nkt.c
 include/midi2nkt.h
+demo/mid2nkt/mid2nkt.c
+demo/mid2nkt/mid2nkt.h

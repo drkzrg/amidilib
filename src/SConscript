@@ -1,5 +1,5 @@
 
-#    Copyright 2007-2012 Pawel Goralski
+#    Copyright 2007-2014 Pawel Goralski
 #    e-mail: pawel.goralski@nokturnal.pl
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
@@ -92,6 +92,7 @@ YM2149_TEST_EXE='ym2149' + EXE_EXT_1
 MIDI_SEQ_TEST_EXE='midiout' + EXE_EXT_1
 TIMINGS_TEST_EXE='midiseq' + EXE_EXT_1
 NKT_REPLAY_EXE = 'nktrep' + EXE_EXT_2
+MID2NKT_EXE = 'mid2nkt' + EXE_EXT_2
 
 env["CC"] = CROSS_PREFIX + 'gcc'
 env["CXX"] = CROSS_PREFIX + 'g++'
@@ -171,7 +172,7 @@ nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common
 midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 
-m68kasm_common_src=["tos/common.s"]
+m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
 discio_src = ["tos/discio/fmio.c"]
 timing_src = ["tos/timing/mfp.c","common/timing/miditim.c","tos/common.s"]
@@ -195,6 +196,7 @@ midiOut_test_src = ["../demo/midi_output/midiTest.c"]
 timings_test_src = ["../demo/timings/timTest.c","../demo/timings/sampleSequence.c","tos/testReplay.s"]
 ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
 nktReplay_src = ["../demo/nktReplay/nktReplay.c"]
+mid2nkt_src = ["../demo/mid2nkt/mid2nkt.c"]
 
 # build test programs and link them with amidilib
 env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
@@ -202,6 +204,7 @@ env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=
 env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(input_src) + env.Object(timing_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m']);
+env.Program(MID2NKT_EXE, [mid2nkt_src + env.Object("common/formats/midi2nkt.c") ] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m']);
 
 # TODO if release strip symbols, pack with executable packer
 if(debug=='none' or (int(debug)==0)):

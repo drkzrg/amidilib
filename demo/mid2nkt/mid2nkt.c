@@ -14,6 +14,8 @@ void printInfoScreen();
 
 int main(int argc, char *argv[]){
 
+    initDebug("mid2nkt.log");
+
     if(argc>=1&&argv[1]!='\0'){
          fprintf(stderr,"Trying to load %s\n",argv[1]);
      }else{
@@ -43,41 +45,35 @@ int main(int argc, char *argv[]){
            pTempPtr=strrchr(tempName,'.');
            memcpy(pTempPtr+1,"nkt",4);
 
+           printInfoScreen();
+            fprintf(stderr,"[ Please wait ]Converting MID to %s.\n",tempName);
+           // convert
            time = getTimeStamp();
-
            iError=Midi2Nkt(pMidi,tempName,FALSE);
-
            delta=getTimeDelta();
 
            if(iError==0){
-            fprintf(stderr,"MIDI file conversion in ~%4.2ul[sec]/~%4.2ul[min]\n",delta,delta/60.0f);
+            fprintf(stderr,"MIDI file conversion in ~%4ul[sec]/~%4ul[min]\n", delta, delta/60);
            }
 
+       }else{
+            fprintf(stderr,"File is not in MIDI 0 format. Exiting... \n");
        }
-
-
 
        /* free up buffer with loaded midi file, we don't need it anymore */
        amFree(&pMidi);
 
     }
 
-
-  printInfoScreen();
-
-  // convert
-
-
   //done..
+   deinitDebug();
+
+   return 0;
 }
 
 
 void printInfoScreen(){
-
-
     printf("\n== MID to NKT converter v.1.00 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
-
     printf("==========================================\n");
-    printf("Ready...\n");
 }

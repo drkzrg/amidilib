@@ -42,14 +42,30 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 }
 
 //
+
+/* for saving last running status */
+static U8 g_runningStatus;
+
+U32 processNoteOff(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processNoteOn(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processNoteAft(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processControllerEvent(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processProgramChange(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processChannelAft(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processPitchBend(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processMetaEvent(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos, BOOL *bEOF){;}
+U32 processSysex(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+//
+
 U32 midiTrackDataToFile(void *pMidiData, FILE **file, U32 *blocks_written, U32 *bytes_written){
 
 U8 tempBuffer[32 * 1024]={0};
 
 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
 sChunkHeader *pTrackHd=0;
-U32 trackChunkSize=0;
+U32 bufPos=0;
 
+U32 trackChunkSize=0;
 void *startTrkPtr=(void *)((U32)pMidiData+sizeof(sMThd));
 void *endTrkPtr=0;
 
@@ -70,15 +86,15 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
  U8 usSwitch=0;
  U16 recallStatus=0;
  U32 delta=0L;
+ S32 iError=0;
  BOOL bEOF=FALSE;
 
  U8 *pCmd=(U8 *)startTrkPtr;
  U8 ubSize=0;
 
- while ( ((pCmd!=endAddr)&&(bEOF!=TRUE)&&(*iError>=0)) ){
-  /*read delta time, pCmd should point to the command data */
+ while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
+  /* read delta time, pCmd should point to the command data */
   delta=readVLQ(pCmd,&ubSize);
-
   pCmd=(U8 *)((U32)pCmd+ubSize*sizeof(U8));
 
   /*read delta time, pCmd should point to the command data */
@@ -90,13 +106,17 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
   /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
   /* else set recallStatus = 0 and do nothing special */
   ubSize=(*pCmd);
+
   if( (!(isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(isMidiRTorSysex(ubSize))))){
+
     /* recall last cmd byte */
-    usSwitch=g_runningStatus;
-    usSwitch=((usSwitch>>4)&0x0F);
+    usSwitch = g_runningStatus;
+    usSwitch = ((usSwitch>>4)&0x0F);
+
    }else{
-    /* check if the new cmd is the system one*/
+    /* check if the new cmd is the system one */
       recallStatus=0;
+
       if((isMidiRTorSysex(ubSize))){
         usSwitch=ubSize;
       }else{
@@ -108,33 +128,32 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
    /* decode event and write it to our custom structure */
    switch(usSwitch){
       case EV_NOTE_OFF:
-       // processNoteOff(U8 *tab,U32 *bufPos,
-        *iError=processNoteOff(pSeq,delta, &pCmd,&recallStatus,);
+        iError=processNoteOff(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_NOTE_ON:
-        *iError=processNoteOn(pSeq,&pCmd,&recallStatus, delta);
+        iError=processNoteOn(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_NOTE_AFTERTOUCH:
-        *iError=processNoteAft(pSeq,&pCmd,&recallStatus, delta );
+        iError=processNoteAft(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_CONTROLLER:
-        *iError=processControllerEvent(pSeq,&pCmd,&recallStatus, delta );
+        iError=processControllerEvent(delta,&pCmd,&recallStatus,tempBuffer,&bufPos );
       break;
       case EV_PROGRAM_CHANGE:
-        *iError=processProgramChange(pSeq,&pCmd,&recallStatus, delta );
+        iError=processProgramChange(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_CHANNEL_AFTERTOUCH:
-        *iError=processChannelAft(pSeq,&pCmd,&recallStatus, delta );
+        iError=processChannelAft(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_PITCH_BEND:
-        *iError=processPitchBend(pSeq,&pCmd,&recallStatus, delta);
+        iError=processPitchBend(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case EV_META:
-        *iError=processMetaEvent(pSeq,&pCmd, delta, pCurTrack,&bEOF);
+        iError=processMetaEvent(delta,&pCmd,&recallStatus,tempBuffer,&bufPos,&bEOF);
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
         recallStatus=0; 	                /* cancel out midi running status */
-        *iError=(S16)processSysex(pSeq,&pCmd,delta, pCurTrack);
+        iError=(S16)processSysex(delta,&pCmd,&recallStatus,tempBuffer,&bufPos);
       break;
       case SC_MTCQF:
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */

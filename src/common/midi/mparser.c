@@ -12,6 +12,8 @@
 #include "amidilib.h"
 #endif
 
+#include <alloca.h>
+
 /* for saving last running status */
 static U8 g_runningStatus;
 

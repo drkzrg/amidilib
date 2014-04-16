@@ -46,15 +46,98 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 /* for saving last running status */
 static U8 g_runningStatus;
 
-U32 processNoteOff(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processNoteOn(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processNoteAft(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processControllerEvent(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processProgramChange(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processChannelAft(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processPitchBend(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
-U32 processMetaEvent(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos, BOOL *bEOF){;}
-U32 processSysex(U32 delta, U8 **pMidiEvent, U16 *recallStatus,U8 *tab, U32 *bufPos){;}
+U32 processNoteOff(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){
+sNoteOff_t *pNoteOff=0;
+
+if((*recallRS)==0){
+    /* save last running status */
+    g_runningStatus=*(*pMidiData);
+
+    /* now we can recall former running status next time */
+    (*recallRS)=1;
+
+    (*pMidiData)++;
+    pNoteOff=(sNoteOff_t *)(*pMidiData);
+
+    //TODO: copy NoteOff data
+    (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
+}else{
+    /* recall last cmd status */
+    /* and get parameters as usual */
+
+     pNoteOff=(sNoteOff_t *)(*pMidiData);
+     //TODO: copy NoteOff data
+
+     (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
+}
+
+}
+
+
+U32 processNoteOn(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){
+sNoteOn_t *pNoteOn=0;
+
+if((*recallRS)==0){
+  /* save last running status */
+  g_runningStatus=*(*pMidiData);
+
+  /* now we can recall former running status next time */
+  (*recallRS)=1;
+  (*pMidiData)++;
+
+  // get channel from running status
+  pNoteOn=(sNoteOn_t *)(*pMidiData);
+
+  // TODO: handle data
+
+  (*pMidiData)++;
+  (*pMidiData)++;
+ }else{
+  pNoteOn=(sNoteOn_t *)(*pMidiData);
+
+  // TODO: handle data
+
+  (*pMidiData)++;
+  (*pMidiData)++;
+}
+
+}
+
+U32 processNoteAft(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;
+  sNoteAft_t *pNoteAft=0;
+
+  if((*recallRS)==0){
+    /* save last running status */
+    g_runningStatus=*(*pMidiData);
+
+   /* now we can recall former running status next time */
+   (*recallRS)=1;
+   (*pMidiData)++;
+    pNoteAft=(sNoteAft_t *)(*pMidiData);
+   // TODO: handle data
+    (*pMidiData)++;
+    (*pMidiData)++;
+  }else{
+       pNoteAft=(sNoteAft_t *)(*pMidiData);
+       // TODO: handle data
+
+      (*pMidiData)++;
+      (*pMidiData)++;
+  }
+
+}
+
+
+U32 processControllerEvent(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){
+
+
+}
+
+U32 processProgramChange(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;}
+U32 processChannelAft(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;}
+U32 processPitchBend(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;}
+U32 processMetaEvent(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos, BOOL *bEOF){;}
+U32 processSysex(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;}
 //
 
 U32 midiTrackDataToFile(void *pMidiData, FILE **file, U32 *blocks_written, U32 *bytes_written){

@@ -315,7 +315,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                         eventPtr=eventPtr->pNext;
                     }
 
-                }; //end delta == 0 while
+                }; //end delta == 0 if
 
 
                 // dump midi event block to memory

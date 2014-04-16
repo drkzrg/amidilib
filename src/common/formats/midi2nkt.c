@@ -194,9 +194,10 @@ if((*recallRS)==0){
 
 }
 
-U32 processMetaEvent( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOT){
+U32 processMetaEvent( U32 delta, U8 **pMidiData, FILE **file, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOT,  U32 *blocks_written, U32 *bytesWritten){
 U8 size=0;
 U32 metaLenght=0;
+sNktBlk stBlock;
 
 /*get meta event type */
 (*pMidiData)++;
@@ -222,8 +223,45 @@ metaLenght=readVLQ((*pMidiData),&size);
     case MT_CH_PREFIX:{}break;
     case MT_MIDI_CH:{}break;
     case MT_MIDI_PORT:{}break;
-    case MT_EOT:{*bEOT=TRUE;}break;
+    case MT_EOT:{
+
+     printf("Write End of Track, event delta 0\n");
+
+     stBlock.blockSize=0;
+     stBlock.msgType=NKT_END;
+
+     //write block to file
+     if(file!=NULL){
+         // write VLQ data
+         U32 VLQdeltaTemp=0;
+         S32 count=0;
+         count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
+
+         *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+         *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+         //no data to write
+     }
+     ++(*blocks_written);
+     *bEOT=TRUE;
+    }break;
     case MT_SET_TEMPO:{
+        stBlock.blockSize=0;
+        stBlock.msgType=NKT_TEMPO_CHANGE;
+
+        U8 ulVal[3]={0};   /* for retrieving set tempo info */
+        U32 val1,val2,val3;
+        amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(U8) );
+
+        val1=ulVal[0],val2=ulVal[1],val3=ulVal[2];
+        val1=(val1<<16)&0x00FF0000L;
+        val2=(val2<<8)&0x0000FF00L;
+        val3=(val3)&0x000000FFL;
+
+        /* range: 0-8355711 ms, 24 bit value */
+        val1=val1|val2|val3;
+
+        ++(*blocks_written);
+        amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 
     }break;
     case MT_SMPTE_OFFSET:{}break;
@@ -291,110 +329,159 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
  U8 *pCmd=(U8 *)startTrkPtr;
  U8 ubSize=0;
+ U32 currentDelta=0;
+ sNktBlk stBlock;
 
  while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
   /* read delta time, pCmd should point to the command data */
-  delta=readVLQ(pCmd,&ubSize);
-  pCmd+=ubSize;
+  delta = readVLQ(pCmd,&ubSize);
+  if(delta==currentDelta){
+      //////////////////////////////////////////////////////////////////////
+      delta=readVLQ(pCmd,&ubSize);
 
-  /* handling of running status */
-  /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
-  /* else set recallStatus = 0 and do nothing special */
-  ubSize=(*pCmd);
+      pCmd+=ubSize;
 
-  if( (!(isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(isMidiRTorSysex(ubSize))))){
+      /* handling of running status */
+      /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
+      /* else set recallStatus = 0 and do nothing special */
+      ubSize=(*pCmd);
 
-    /* recall last cmd byte */
-    usSwitch = lastRunningStatus;
-    usSwitch = ((usSwitch>>4)&0x0F);
+      if( (!(isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(isMidiRTorSysex(ubSize))))){
 
-   }else{
-    /* check if the new cmd is the system one */
-      recallStatus=0;
+        /* recall last cmd byte */
+        usSwitch = lastRunningStatus;
+        usSwitch = ((usSwitch>>4)&0x0F);
 
-      if((isMidiRTorSysex(ubSize))){
-        usSwitch=ubSize;
-      }else{
-        usSwitch=ubSize;
-        usSwitch=((usSwitch>>4)&0x0F);
+       }else{
+        /* check if the new cmd is the system one */
+          recallStatus=0;
+
+          if((isMidiRTorSysex(ubSize))){
+            usSwitch=ubSize;
+          }else{
+            usSwitch=ubSize;
+            usSwitch=((usSwitch>>4)&0x0F);
+          }
+       }
+
+       /* decode event and write it to our custom structure */
+       switch(usSwitch){
+          case EV_NOTE_OFF:
+           amTrace("delta: %lu NOTE OFF\n", delta);
+            iError=processNoteOff(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_NOTE_ON:
+            amTrace("delta: %lu NOTE ON\n", delta);
+            iError=processNoteOn(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_NOTE_AFTERTOUCH:
+            amTrace("delta: %lu NOTE AFT\n", delta);
+            iError=processNoteAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_CONTROLLER:
+            amTrace("delta: %lu CONTROLLER\n", delta);
+            iError=processControllerEvent(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos );
+          break;
+          case EV_PROGRAM_CHANGE:
+            amTrace("delta: %lu PROGRAM CHANGE\n", delta);
+            iError=processProgramChange(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_CHANNEL_AFTERTOUCH:
+             amTrace("delta: %lu NOTE AFT\n", delta);
+            iError=processChannelAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_PITCH_BEND:
+           amTrace("delta: %lu PITCH BEND\n", delta);
+            iError=processPitchBend(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case EV_META:
+           amTrace("delta: %lu META\n", delta);
+            iError=processMetaEvent(delta, &pCmd,&(*file), &recallStatus,&lastRunningStatus,tempBuffer,&bufPos,&bEOF, blocks_written, bytes_written);
+          break;
+          case EV_SOX:                          	/* SySEX midi exclusive */
+            amTrace("delta: %lu SYSEX\n", delta);
+            recallStatus=0; 	                /* cancel out midi running status */
+            iError=(S16)processSysex(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
+          break;
+          case SC_MTCQF:
+            amTrace("delta: %lu SC_MTCQF\n", delta);
+            recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
+            amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
+            pCmd++;
+            pCmd++;
+          break;
+        case SC_SONG_POS_PTR:
+            amTrace((const U8*)"Event: System common Song position pointer\n");
+            recallStatus=0;                      /* Song position pointer, 2 data bytes */
+            pCmd++;
+            pCmd++;
+            pCmd++;
+          break;
+          case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
+            amTrace((const U8*)"Event: System common Song select\n");
+            recallStatus=0;
+            pCmd++;
+            pCmd++;
+          break;
+          case SC_UNDEF1:                   /* undefined */
+          case SC_UNDEF2:                   /* undefined */
+            amTrace((const U8*)"Event: System common not defined.\n");
+            recallStatus=0;
+            pCmd++;
+          break;
+          case SC_TUNE_REQUEST:             /* tune request, no data bytes */
+            amTrace((const U8*)"Event: System tune request.\n");
+            recallStatus=0;
+            pCmd++;
+          break;
+          default:{
+            amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
+            /* unknown event, do nothing or maybe throw error? */
+          }break;
+        } //end switch
+
+
+  } //end delta == 0
+
+  // dump midi event block to memory
+  if(bufPos>0){
+      stBlock.blockSize=bufPos;
+
+      amTrace("[DATA] ");
+
+          for(int j=0;j<bufPos;j++){
+              amTrace("0x%x ",tempBuffer[j]);
+          }
+      amTrace(" [/DATA]\n");
+
+      //write block to file
+
+      if(file!=NULL){
+        // write VLQ delta
+        S32 count=0;
+        U32 VLQdeltaTemp=0;
+
+        count=WriteVarLen((S32)currentDelta, (U8 *)&VLQdeltaTemp);
+        *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
+
+        amTrace("Write block size %d\n",stBlock.blockSize);
+        *bytes_written+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
+        *bytes_written+=fwrite(&tempBuffer[0],stBlock.blockSize,1,*file);
       }
-   }
+      ++(*blocks_written);
 
-   /* decode event and write it to our custom structure */
-   switch(usSwitch){
-      case EV_NOTE_OFF:
-       amTrace("delta: %lu NOTE OFF\n", delta);
-        iError=processNoteOff(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_NOTE_ON:
-        amTrace("delta: %lu NOTE ON\n", delta);
-        iError=processNoteOn(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_NOTE_AFTERTOUCH:
-        amTrace("delta: %lu NOTE AFT\n", delta);
-        iError=processNoteAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_CONTROLLER:
-        amTrace("delta: %lu CONTROLLER\n", delta);
-        iError=processControllerEvent(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos );
-      break;
-      case EV_PROGRAM_CHANGE:
-        amTrace("delta: %lu PROGRAM CHANGE\n", delta);
-        iError=processProgramChange(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_CHANNEL_AFTERTOUCH:
-         amTrace("delta: %lu NOTE AFT\n", delta);
-        iError=processChannelAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_PITCH_BEND:
-       amTrace("delta: %lu PITCH BEND\n", delta);
-        iError=processPitchBend(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case EV_META:
-       amTrace("delta: %lu META\n", delta);
-        iError=processMetaEvent(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos,&bEOF);
-      break;
-      case EV_SOX:                          	/* SySEX midi exclusive */
-        amTrace("delta: %lu SYSEX\n", delta);
-        recallStatus=0; 	                /* cancel out midi running status */
-        iError=(S16)processSysex(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
-      break;
-      case SC_MTCQF:
-        amTrace("delta: %lu SC_MTCQF\n", delta);
-        recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
-        amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
-        pCmd++;
-        pCmd++;
-      break;
-    case SC_SONG_POS_PTR:
-        amTrace((const U8*)"Event: System common Song position pointer\n");
-        recallStatus=0;                      /* Song position pointer, 2 data bytes */
-        pCmd++;
-        pCmd++;
-        pCmd++;
-      break;
-      case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-        amTrace((const U8*)"Event: System common Song select\n");
-        recallStatus=0;
-        pCmd++;
-        pCmd++;
-      break;
-      case SC_UNDEF1:                   /* undefined */
-      case SC_UNDEF2:                   /* undefined */
-        amTrace((const U8*)"Event: System common not defined.\n");
-        recallStatus=0;
-        pCmd++;
-      break;
-      case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-        amTrace((const U8*)"Event: System tune request.\n");
-        recallStatus=0;
-        pCmd++;
-      break;
-      default:{
-        amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
-        /* unknown event, do nothing or maybe throw error? */
-      }break;
-    } //end switch
+      amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",currentDelta, stBlock.msgType, stBlock.blockSize);
+
+      //clear buffer
+      bufDataSize=0;
+      bufPos=0;
+      amMemSet(tempBuffer,0,32 * 1024);
+  }
+
+
+
+
+
  } /*end of decode events loop */
 
  // OK

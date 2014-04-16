@@ -184,7 +184,7 @@ if((*recallRS)==0){
  /* now we can recall former running status next time */
  (*recallRS)=1;
  (*pMidiData)++;
- pPitchBend=(sPitchBend_t *)(*pMidiData);
+  pPitchBend=(sPitchBend_t *)(*pMidiData);
 }else{
  pPitchBend=(sPitchBend_t *)(*pMidiData);
 }
@@ -193,7 +193,43 @@ if((*recallRS)==0){
 
 }
 
-U32 processMetaEvent( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOF){;}
+U32 processMetaEvent( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOT){
+U32 size,metaLenght=0;
+
+/*get meta event type */
+(*pMidiData)++;
+U8 metaType=(*pMidiData);
+
+(*pMidiData)++;
+
+// get VLQ
+metaLenght=readVLQ((*pMidiData),&size);
+
+ switch(metaType){
+    case MT_SEQ_NB:{}break;
+    case MT_TEXT:
+    case MT_COPYRIGHT:{}break;
+    case MT_SEQNAME:{}break;
+    case MT_INSTRNAME:{}break;
+    case MT_LYRICS:{}break;
+    case MT_MARKER:{}break;
+    case MT_CUEPOINT:{}break;
+    case MT_PROGRAM_NAME:{}break;
+    case MT_DEVICE_NAME:{}break;
+    case MT_CH_PREFIX:{}break;
+    case MT_MIDI_CH:{}break;
+    case MT_MIDI_PORT:{}break;
+    case MT_EOT:{*bEOT=TRUE;}break;
+    case MT_SET_TEMPO:{}break;
+    case MT_SMPTE_OFFSET:{}break;
+    case MT_TIME_SIG:{}break;
+    case MT_KEY_SIG:{}break;
+    case MT_SEQ_SPEC:{}break;
+ };
+
+ (*pMidiData)=(*pMidiData)+size;
+
+}
 
 U32 processSysex(U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos){;
 U32 ulCount=0L;

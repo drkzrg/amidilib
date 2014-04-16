@@ -988,7 +988,7 @@ sEventBlock_t tempEvent;
         /* set to the start of the string */
         (*pPtr)++;
 
-    (*pCurTrack)->pTrackName=amMallocEx(128*sizeof(U8),PREFER_TT);
+        (*pCurTrack)->pTrackName=amMallocEx(128*sizeof(U8),PREFER_TT);
 
     if((*pCurTrack)->pTrackName!=NULL){
       amMemSet((*pCurTrack)->pTrackName,0,128*sizeof(U8));

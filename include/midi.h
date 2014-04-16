@@ -129,7 +129,6 @@ typedef struct __attribute__((packed)) Tempo_t{
  U32 tempoVal;
 } sTempo_t;
 
-
 const U8 *getMidiNoteName(const U8 NoteNb);
 const U8 *getMidiControllerName(const U8 NoteNb);
 

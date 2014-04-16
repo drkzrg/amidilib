@@ -38,7 +38,6 @@ int main(int argc, char *argv[]){
        fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int) ulFileLenght);
 
        U32 time=0,delta=0;
-       sMThd *pMidiInfo=0;
 
        if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
            char tempName[128]={0};

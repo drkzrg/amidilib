@@ -110,6 +110,7 @@ U32 processNoteAft(U8 **pMidiData, U16 *recallRS,U8 *runningStatus,U8 *tab, U32 
 
     pNoteAft=(sNoteAft_t *)(*pMidiData);
     // TODO: handle data
+
   }else{
     pNoteAft=(sNoteAft_t *)(*pMidiData);
     // TODO: handle data
@@ -194,16 +195,18 @@ if((*recallRS)==0){
 }
 
 U32 processMetaEvent( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOT){
-U32 size,metaLenght=0;
+U8 size=0;
+U32 metaLenght=0;
 
 /*get meta event type */
 (*pMidiData)++;
-U8 metaType=(*pMidiData);
+U8 metaType=*(*pMidiData);
 
 (*pMidiData)++;
 
 // get VLQ
 metaLenght=readVLQ((*pMidiData),&size);
+(*pMidiData)=(*pMidiData)+size;
 
  switch(metaType){
     case MT_SEQ_NB:{}break;
@@ -220,14 +223,16 @@ metaLenght=readVLQ((*pMidiData),&size);
     case MT_MIDI_CH:{}break;
     case MT_MIDI_PORT:{}break;
     case MT_EOT:{*bEOT=TRUE;}break;
-    case MT_SET_TEMPO:{}break;
+    case MT_SET_TEMPO:{
+
+    }break;
     case MT_SMPTE_OFFSET:{}break;
     case MT_TIME_SIG:{}break;
     case MT_KEY_SIG:{}break;
     case MT_SEQ_SPEC:{}break;
  };
 
- (*pMidiData)=(*pMidiData)+size;
+(*pMidiData)+=metaLenght;
 
 }
 
@@ -240,7 +245,7 @@ pDataPtr=(*pMidiData); //save SysEX start
 while( (*(*pMidiData))!=EV_EOX){
     (*pMidiData)++;
     /* count Sysex msg data bytes */
-    ulCount++;
+    ++ulCount;
 }
 
 // copy ulCount bytes from  pDataPtr
@@ -259,21 +264,22 @@ sChunkHeader *pTrackHd=0;
 U32 bufPos=0;
 
 U32 trackChunkSize=0;
-void *startTrkPtr=(void *)((U32)pMidiData+sizeof(sMThd));
+void *startTrkPtr=(void *)(((U8 *)pMidiData)+sizeof(sMThd));
 void *endTrkPtr=0;
 
 pTrackHd=(sChunkHeader *)startTrkPtr;
 
-// adjust to track start
-startTrkPtr=(void *)((U32)pTrackHd + sizeof(sChunkHeader));
-
 if(pTrackHd->id!=ID_MTRK){
+ printf("Error: Cannot find MIDI track chunk. Exiting. \n");
  amTrace("Error: Cannot find MIDI track chunk. Exiting. \n");
  return 1;
 };
 
 trackChunkSize=pTrackHd->headLenght;
-endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
+
+// adjust to track start
+startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
+endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
  // process track events
  U8 usSwitch=0;
@@ -289,12 +295,7 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
  while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
   /* read delta time, pCmd should point to the command data */
   delta=readVLQ(pCmd,&ubSize);
-  pCmd=(U8 *)((U32)pCmd+ubSize*sizeof(U8));
-
-  /*read delta time, pCmd should point to the command data */
-  delta=readVLQ(pCmd,&ubSize);
-
-  pCmd=(U8 *)((U32)pCmd+ubSize*sizeof(U8));
+  pCmd+=ubSize;
 
   /* handling of running status */
   /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
@@ -322,34 +323,44 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
    /* decode event and write it to our custom structure */
    switch(usSwitch){
       case EV_NOTE_OFF:
+       amTrace("delta: %lu NOTE OFF\n", delta);
         iError=processNoteOff(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_NOTE_ON:
+        amTrace("delta: %lu NOTE ON\n", delta);
         iError=processNoteOn(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_NOTE_AFTERTOUCH:
+        amTrace("delta: %lu NOTE AFT\n", delta);
         iError=processNoteAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_CONTROLLER:
+        amTrace("delta: %lu CONTROLLER\n", delta);
         iError=processControllerEvent(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos );
       break;
       case EV_PROGRAM_CHANGE:
+        amTrace("delta: %lu PROGRAM CHANGE\n", delta);
         iError=processProgramChange(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_CHANNEL_AFTERTOUCH:
+         amTrace("delta: %lu NOTE AFT\n", delta);
         iError=processChannelAft(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_PITCH_BEND:
+       amTrace("delta: %lu PITCH BEND\n", delta);
         iError=processPitchBend(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case EV_META:
+       amTrace("delta: %lu META\n", delta);
         iError=processMetaEvent(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos,&bEOF);
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
+        amTrace("delta: %lu SYSEX\n", delta);
         recallStatus=0; 	                /* cancel out midi running status */
         iError=(S16)processSysex(&pCmd,&recallStatus,&lastRunningStatus,tempBuffer,&bufPos);
       break;
       case SC_MTCQF:
+        amTrace("delta: %lu SC_MTCQF\n", delta);
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
         amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
         pCmd++;
@@ -380,8 +391,8 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
         pCmd++;
       break;
       default:{
-    amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
-    /* unknown event, do nothing or maybe throw error? */
+        amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
+        /* unknown event, do nothing or maybe throw error? */
       }break;
     } //end switch
  } /*end of decode events loop */
@@ -390,7 +401,7 @@ endTrkPtr=(void *)(((U32)pTrackHd) + trackChunkSize);
  return 0;
 }
 
-S32 Midi2Nkt(const void *pMidiData, const U8 *pOutFileName, const BOOL bCompress){
+S32 Midi2Nkt(void *pMidiData, const U8 *pOutFileName, const BOOL bCompress){
 U32 bytes_written = 0;
 U32 blocks_written = 0;
 BOOL error=FALSE;

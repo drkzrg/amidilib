@@ -60,16 +60,15 @@ if((*recallRS)==0){
     pNoteOff=(sNoteOff_t *)(*pMidiData);
 
     //TODO: copy NoteOff data
-    (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
 }else{
     /* recall last cmd status */
     /* and get parameters as usual */
 
      pNoteOff=(sNoteOff_t *)(*pMidiData);
      //TODO: copy NoteOff data
-
-     (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
 }
+
+(*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
 
 }
 
@@ -90,16 +89,14 @@ if((*recallRS)==0){
 
   // TODO: handle data
 
-  (*pMidiData)++;
-  (*pMidiData)++;
  }else{
   pNoteOn=(sNoteOn_t *)(*pMidiData);
 
   // TODO: handle data
 
-  (*pMidiData)++;
-  (*pMidiData)++;
-}
+ }
+
+(*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 
 }
 
@@ -113,24 +110,33 @@ U32 processNoteAft(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos
    /* now we can recall former running status next time */
    (*recallRS)=1;
    (*pMidiData)++;
-    pNoteAft=(sNoteAft_t *)(*pMidiData);
-   // TODO: handle data
-    (*pMidiData)++;
-    (*pMidiData)++;
-  }else{
-       pNoteAft=(sNoteAft_t *)(*pMidiData);
-       // TODO: handle data
 
-      (*pMidiData)++;
-      (*pMidiData)++;
+    pNoteAft=(sNoteAft_t *)(*pMidiData);
+    // TODO: handle data
+  }else{
+    pNoteAft=(sNoteAft_t *)(*pMidiData);
+    // TODO: handle data
   }
 
+  (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
 }
 
 
 U32 processControllerEvent(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){
+sController_t *pContrEv=0;
 
+if((*recallRS)==0){
+    /* save last running status */
+    g_runningStatus=*(*pMidiData);
+    /* now we can recall former running status next time */
+    (*recallRS)=1;
+    (*pMidiData)++;
+    pContrEv=(sController_t *)(*pMidiData);
+ }else{
+    pContrEv=(sController_t *)(*pMidiData);
+ }
 
+ (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
 U32 processProgramChange(U32 delta, U8 **pMidiData, U16 *recallRS,U8 *tab, U32 *bufPos){;}

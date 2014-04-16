@@ -153,7 +153,7 @@ if((*recallRS)==0){
   pPC=(sProgramChange_t *)(*pMidiData);
 }
 
-(*pMidiData)=(*pMidiData)+sizeof(sProgramChange_t);
+(*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
 U32 processChannelAft(U8 **pMidiData, U16 *recallRS,U8 *runningStatus,U8 *tab, U32 *bufPos){
@@ -174,9 +174,44 @@ if((*recallRS)==0){
 (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
-U32 processPitchBend( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos){;}
+U32 processPitchBend(U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos){;
+sPitchBend_t *pPitchBend=0;
+
+if((*recallRS)==0){
+ /* save last running status */
+ (*runningStatus)=*(*pMidiData);
+
+ /* now we can recall former running status next time */
+ (*recallRS)=1;
+ (*pMidiData)++;
+ pPitchBend=(sPitchBend_t *)(*pMidiData);
+}else{
+ pPitchBend=(sPitchBend_t *)(*pMidiData);
+}
+
+(*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
+
+}
+
 U32 processMetaEvent( U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos, BOOL *bEOF){;}
-U32 processSysex(U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos){;}
+
+U32 processSysex(U8 **pMidiData, U16 *recallRS, U8 *runningStatus,U8 *tab, U32 *bufPos){;
+U32 ulCount=0L;
+U8 *pDataPtr=0;
+
+pDataPtr=(*pMidiData); //save SysEX start
+
+while( (*(*pMidiData))!=EV_EOX){
+    (*pMidiData)++;
+    /* count Sysex msg data bytes */
+    ulCount++;
+}
+
+// copy ulCount bytes from  pDataPtr
+// TODO:
+
+}
+
 //
 
 U32 midiTrackDataToFile(void *pMidiData, FILE **file, U32 *blocks_written, U32 *bytes_written){

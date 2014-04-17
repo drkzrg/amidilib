@@ -46,7 +46,6 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 typedef struct sBufferInfo{
  U8 buffer[OUT_BUFFER_SIZE];
  U32 bufPos;
- U32 bufDataSize;
  U32 blocks_written;
  U32 bytes_written;
 } sBufferInfo_t;
@@ -65,6 +64,8 @@ if(rs->recallRS==0){
     /* save last running status */
     rs->runningStatus=*(*pMidiData);
 
+    bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+
     /* now we can recall former running status next time */
     rs->recallRS=1;
 
@@ -76,6 +77,9 @@ if(rs->recallRS==0){
 
     pNoteOff=(sNoteOff_t *)(*pMidiData);
 }
+
+bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->noteNb;
+bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->velocity;
 
 amTrace(" n: %d  v: %d\n",pNoteOff->noteNb, pNoteOff->velocity);
 (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
@@ -89,6 +93,7 @@ sNoteOn_t *pNoteOn=0;
 if(rs->recallRS==0){
   /* save last running status */
   rs->runningStatus=*(*pMidiData);
+  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
   /* now we can recall former running status next time */
   rs->recallRS=1;
@@ -99,17 +104,21 @@ if(rs->recallRS==0){
   pNoteOn=(sNoteOn_t *)(*pMidiData);
  }
 
+ bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->noteNb;
+ bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->velocity;
+
  amTrace(" n: %d  v: %d\n",pNoteOn->noteNb, pNoteOn->velocity);
  (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 
 }
 
-U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){;
+U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
   sNoteAft_t *pNoteAft=0;
 
   if(rs->recallRS==0){
    /* save last running status */
    rs->runningStatus=*(*pMidiData);
+   bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
    /* now we can recall former running status next time */
    rs->recallRS=1;
@@ -118,8 +127,12 @@ U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferIn
   }else{
     pNoteAft=(sNoteAft_t *)(*pMidiData);
   }
-   amTrace(" n: %d  p: %d\n",pNoteAft->noteNb, pNoteAft->pressure);
-   (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
+
+  bufferInfo->buffer[bufferInfo->bufPos++]=pNoteAft->noteNb;
+  bufferInfo->buffer[bufferInfo->bufPos++]=pNoteAft->pressure;
+
+  amTrace(" n: %d  p: %d\n",pNoteAft->noteNb, pNoteAft->pressure);
+  (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
 }
 
 
@@ -129,6 +142,8 @@ sController_t *pContrEv=0;
 if(rs->recallRS==0){
     /* save last running status */
     rs->runningStatus=*(*pMidiData);
+    bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+
     /* now we can recall former running status next time */
     rs->recallRS=1;
     (*pMidiData)++;
@@ -136,6 +151,9 @@ if(rs->recallRS==0){
  }else{
     pContrEv=(sController_t *)(*pMidiData);
  }
+
+ bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->controllerNb;
+ bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->value;
 
  amTrace(" c: %d  v: %d\n",pContrEv->controllerNb, pContrEv->value);
  (*pMidiData)=(*pMidiData)+sizeof(sController_t);
@@ -147,6 +165,8 @@ sProgramChange_t *pPC=0;
 if(rs->recallRS==0){
   /* save last running status */
   rs->runningStatus=*(*pMidiData);
+  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+
   /* now we can recall former running status next time */
   rs->recallRS=1;
   (*pMidiData)++;
@@ -155,6 +175,8 @@ if(rs->recallRS==0){
   pPC=(sProgramChange_t *)(*pMidiData);
 }
  amTrace(" p: %d \n",pPC->programNb);
+ bufferInfo->buffer[bufferInfo->bufPos++]=pPC->programNb;
+
 (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
@@ -164,6 +186,7 @@ sChannelAft_t *pChAft=0;
 if(rs->recallRS==0){
   /* save last running status */
   rs->runningStatus=*(*pMidiData);
+  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
   /* now we can recall former running status next time */
   rs->recallRS=1;
@@ -173,6 +196,9 @@ if(rs->recallRS==0){
   pChAft=(sChannelAft_t *)(*pMidiData);
 }
  amTrace(" press: %d \n",pChAft->pressure);
+
+ bufferInfo->buffer[bufferInfo->bufPos++]=pChAft->pressure;
+
 (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
@@ -182,6 +208,7 @@ sPitchBend_t *pPitchBend=0;
 if(rs->recallRS==0){
  /* save last running status */
  rs->runningStatus=*(*pMidiData);
+ bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
  /* now we can recall former running status next time */
  rs->recallRS=1;
@@ -191,7 +218,11 @@ if(rs->recallRS==0){
   pPitchBend=(sPitchBend_t *)(*pMidiData);
 }
 
- amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
+bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->LSB;
+bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->MSB;
+
+amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
+
 (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 
 }
@@ -295,8 +326,8 @@ while( (*(*pMidiData))!=EV_EOX){
     ++ulCount;
 }
 
-// copy ulCount bytes from  pDataPtr
-// TODO:
+// copy data
+amMemCpy(&bufferInfo->buffer[bufferInfo->bufPos],pDataPtr,ulCount);
 
 }
 
@@ -481,7 +512,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
         count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
         pBufInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
 
-        amTrace("Write block size %d\n",stBlock.blockSize);
+        amTrace("Write block: \t");
         pBufInfo->bytes_written+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
         pBufInfo->bytes_written+=fwrite(&(pBufInfo->buffer[0]),stBlock.blockSize,1,*file);
       }
@@ -491,11 +522,9 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
       amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",delta, stBlock.msgType, stBlock.blockSize);
 
       //clear buffer
-      pBufInfo->bufDataSize=0;
       pBufInfo->bufPos=0;
       amMemSet(&(pBufInfo->buffer[0]),0,OUT_BUFFER_SIZE);
   }
-
 
  } /*end of decode events loop */
 

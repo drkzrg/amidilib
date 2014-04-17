@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "midi2nkt.h"       // mid2nkt conversion
-#include "dmus.h"
+#include "dmus.h"           // MUS->MID conversion
 #include "timing/miditim.h" // time measurement
 #include "fmio.h"           // disc i/o
 #include "amlog.h"          // logging
@@ -20,13 +20,12 @@ int main(int argc, char *argv[]){
     printInfoScreen();
 
     // todo check parameters for compression
-    if(argc>=1&&argv[1]!='\0'){
-       fprintf(stderr,"Trying to load %s\n",argv[1]);
-     }else{
-       fprintf(stderr,"No specified mid filename! Exiting ...\n");
-       return 0;
-     }
-
+  if(argc>=1&&argv[1]!='\0'){
+   fprintf(stderr,"Trying to load %s\n",argv[1]);
+  }else{
+   fprintf(stderr,"No specified mid filename! Exiting ...\n");
+   return 0;
+  }
 
   // load midi file into memory
   U32 iError=0;
@@ -60,7 +59,6 @@ int main(int argc, char *argv[]){
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
            amFree(&pMidi);
-
            pMidi=(void *)pOut;
        }
 
@@ -76,8 +74,8 @@ int main(int argc, char *argv[]){
            pTempPtr=strrchr(tempName,'.');
            memcpy(pTempPtr+1,"nkt",4);
 
+           fprintf(stderr,"[ Please wait ] Converting MID to %s.\n",tempName);
 
-            fprintf(stderr,"[ Please wait ] Converting MID to %s.\n",tempName);
            // convert
            time = getTimeStamp();
            iError = Midi2Nkt(pMidi,tempName,FALSE);

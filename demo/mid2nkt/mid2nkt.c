@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "midi2nkt.h"       // mid2nkt conversion
+#include "dmus.h"
 #include "timing/miditim.h" // time measurement
 #include "fmio.h"           // disc i/o
 #include "amlog.h"          // logging
@@ -34,12 +35,40 @@ int main(int argc, char *argv[]){
   pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
 
    if(pMidi!=NULL){
-       // check mid 0, no quit
-       fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int) ulFileLenght);
+
+       // check MUS file
+       MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
+
+       if(((pMusHeader->ID)>>8)==MUS_ID){
+           // convert it to midi format
+           amTrace((const U8*)"Converting MUS -> MID ...\n");
+           U8 *pOut=0;
+           U32 len=0;
+
+           // allocate 64kb working buffer for midi output
+           pOut=amMallocEx(64*1024,PREFER_TT);
+
+           // set midi output name
+           char tempName[128]={0};
+           char *pTempPtr=0;
+           strncpy(tempName,argv[1],strlen(argv[1]));
+           pTempPtr=strrchr(tempName,'.');
+           memcpy(pTempPtr+1,"mid",4);
+           printf("[Please Wait] [MUS->MID] Processing midi data..\n");
+           Mus2Midi(pMidi,(unsigned char *)pOut,tempName,&len);
+
+           /* free up buffer with loaded MUS file, we don't need it anymore */
+           amFree(&pMidi);
+
+           pMidi=(void *)pOut;
+       }
 
        U32 time=0,delta=0;
 
+       // check mid 0, no quit
        if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
+           fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int) ulFileLenght);
+
            char tempName[128]={0};
            char *pTempPtr=0;
            strncpy(tempName,argv[1],strlen(argv[1]));
@@ -74,7 +103,7 @@ int main(int argc, char *argv[]){
 
 
 void printInfoScreen(){
-    printf("\n== MID to NKT converter v.1.00 =========\n");
+    printf("\n== MID / MUS to NKT converter v.1.00 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");
 }

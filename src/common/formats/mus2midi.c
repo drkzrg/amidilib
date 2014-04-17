@@ -35,7 +35,6 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
-#include <amidilib.h>
 
 #define MUSEVENT_KEYOFF	0
 #define MUSEVENT_KEYON	1
@@ -43,7 +42,6 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #define MUSEVENT_CHANNELMODE	3
 #define MUSEVENT_CONTROLLERCHANGE	4
 #define MUSEVENT_END	6
-
 
 // we are making format 0, nb of tracks==1, div=0xe250(?)
 

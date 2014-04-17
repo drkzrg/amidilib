@@ -203,7 +203,6 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                 //write block to file
                 U32 VLQdeltaTemp=0;
                 if(file!=NULL){
-
                    // write VLQ delta
                    S32 count=0;
                    count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);

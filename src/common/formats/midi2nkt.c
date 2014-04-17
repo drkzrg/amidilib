@@ -70,16 +70,14 @@ if(rs->recallRS==0){
 
     (*pMidiData)++;
     pNoteOff=(sNoteOff_t *)(*pMidiData);
-
-    // TODO: copy NoteOff data
 }else{
     /* recall last cmd status */
     /* and get parameters as usual */
 
     pNoteOff=(sNoteOff_t *)(*pMidiData);
-    // TODO: copy NoteOff data
 }
 
+amTrace(" n: %d  v: %d\n",pNoteOff->noteNb, pNoteOff->velocity);
 (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
 
 }
@@ -95,20 +93,14 @@ if(rs->recallRS==0){
   /* now we can recall former running status next time */
   rs->recallRS=1;
   (*pMidiData)++;
-
   // get channel from running status
   pNoteOn=(sNoteOn_t *)(*pMidiData);
-
-  // TODO: handle data
-
  }else{
   pNoteOn=(sNoteOn_t *)(*pMidiData);
-
-  // TODO: handle data
-
  }
 
-(*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
+ amTrace(" n: %d  v: %d\n",pNoteOn->noteNb, pNoteOn->velocity);
+ (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 
 }
 
@@ -122,16 +114,12 @@ U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferIn
    /* now we can recall former running status next time */
    rs->recallRS=1;
    (*pMidiData)++;
-
     pNoteAft=(sNoteAft_t *)(*pMidiData);
-    // TODO: handle data
-
   }else{
     pNoteAft=(sNoteAft_t *)(*pMidiData);
-    // TODO: handle data
   }
-
-  (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
+   amTrace(" n: %d  p: %d\n",pNoteAft->noteNb, pNoteAft->pressure);
+   (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
 }
 
 
@@ -149,6 +137,7 @@ if(rs->recallRS==0){
     pContrEv=(sController_t *)(*pMidiData);
  }
 
+ amTrace(" c: %d  v: %d\n",pContrEv->controllerNb, pContrEv->value);
  (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
@@ -158,17 +147,14 @@ sProgramChange_t *pPC=0;
 if(rs->recallRS==0){
   /* save last running status */
   rs->runningStatus=*(*pMidiData);
-
   /* now we can recall former running status next time */
   rs->recallRS=1;
   (*pMidiData)++;
-
   pPC=(sProgramChange_t *)(*pMidiData);
-
 }else{
   pPC=(sProgramChange_t *)(*pMidiData);
 }
-
+ amTrace(" p: %d \n",pPC->programNb);
 (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
@@ -186,7 +172,7 @@ if(rs->recallRS==0){
 }else{
   pChAft=(sChannelAft_t *)(*pMidiData);
 }
-
+ amTrace(" press: %d \n",pChAft->pressure);
 (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
@@ -201,12 +187,11 @@ if(rs->recallRS==0){
  rs->recallRS=1;
  (*pMidiData)++;
   pPitchBend=(sPitchBend_t *)(*pMidiData);
-
-
 }else{
   pPitchBend=(sPitchBend_t *)(*pMidiData);
 }
 
+ amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
 (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 
 }
@@ -328,54 +313,52 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
  ubSize=*(*pCmd);
 
   if( (!(isMidiChannelEvent(ubSize))&&(rs->recallRS==1)&&(!(isMidiRTorSysex(ubSize))))){
+   /* recall last cmd byte */
+   usSwitch = ((rs->runningStatus>>4)&0x0F);
+  }else{
+   /* check if the new cmd is the system one */
+   rs->recallRS=0;
 
-           /* recall last cmd byte */
-           usSwitch = rs->runningStatus;
-           usSwitch = ((usSwitch>>4)&0x0F);
-          }else{
-           /* check if the new cmd is the system one */
-             rs->recallRS=0;
+   if((isMidiRTorSysex(ubSize))){
+        usSwitch=ubSize;
+   }else{
+     usSwitch=ubSize;
+     usSwitch=((usSwitch>>4)&0x0F);
+    }
+   }
 
-             if((isMidiRTorSysex(ubSize))){
-               usSwitch=ubSize;
-             }else{
-               usSwitch=ubSize;
-               usSwitch=((usSwitch>>4)&0x0F);
-             }
-          }
-
-          /* decode event and write it to our custom structure */
+   /* decode event and write it to our custom structure */
           switch(usSwitch){
              case EV_NOTE_OFF:
-               amTrace("delta: %lu NOTE OFF\n", delta);
+               amTrace("delta: %lu NOTE OFF\t", delta);
                iError=processNoteOff(pCmd,rs, bufferInfo);
              break;
              case EV_NOTE_ON:
-               amTrace("delta: %lu NOTE ON\n", delta);
+               amTrace("delta: %lu NOTE ON\t", delta);
                iError=processNoteOn(pCmd,rs, bufferInfo);
              break;
              case EV_NOTE_AFTERTOUCH:
-               amTrace("delta: %lu NOTE AFT\n", delta);
+               amTrace("delta: %lu NOTE AFT\t", delta);
                iError=processNoteAft(pCmd,rs, bufferInfo);
              break;
              case EV_CONTROLLER:
-               amTrace("delta: %lu CONTROLLER\n", delta);
+               amTrace("delta: %lu CONTROLLER\t", delta);
                iError=processControllerEvent(pCmd,rs, bufferInfo );
              break;
              case EV_PROGRAM_CHANGE:
-               amTrace("delta: %lu PROGRAM CHANGE\n", delta);
+               amTrace("delta: %lu PROGRAM CHANGE\t", delta);
                iError=processProgramChange(pCmd,rs, bufferInfo);
              break;
              case EV_CHANNEL_AFTERTOUCH:
-                amTrace("delta: %lu NOTE AFT\n", delta);
+                amTrace("delta: %lu NOTE AFT\t", delta);
                iError=processChannelAft(pCmd,rs, bufferInfo);
              break;
              case EV_PITCH_BEND:
-              amTrace("delta: %lu PITCH BEND\n", delta);
+              amTrace("delta: %lu PITCH BEND\t", delta);
                iError=processPitchBend(pCmd,rs, bufferInfo);
              break;
              case EV_META:
-              amTrace("delta: %lu META\n", delta);
+              amTrace("delta: %lu META\t", delta);
                iError=processMetaEvent(delta, pCmd, file, rs, bufferInfo, bEOF);
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
@@ -457,10 +440,14 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
  rs.runningStatus=0;
  rs.recallRS=0;
 
+ amMemSet(pBufInfo,0,sizeof(sBufferInfo_t));
+
  while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
   /* read delta time, pCmd should point to the command data */
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
+
+
   iError=processMidiEvent(delta, &pCmd, &rs, pBufInfo ,&(*file),&bEOF);   // todo check error
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
@@ -474,6 +461,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
   // dump midi event block to memory
   if(pBufInfo->bufPos>0){
       stBlock.blockSize=pBufInfo->bufPos;
+      stBlock.msgType=NKT_MIDIDATA;
 
       amTrace("[DATA] ");
 
@@ -503,7 +491,6 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
       amTrace("delta [%lu] type:[%d] size:[%u] bytes \n",delta, stBlock.msgType, stBlock.blockSize);
 
       //clear buffer
-
       pBufInfo->bufDataSize=0;
       pBufInfo->bufPos=0;
       amMemSet(&(pBufInfo->buffer[0]),0,OUT_BUFFER_SIZE);

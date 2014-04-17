@@ -17,13 +17,14 @@ int main(int argc, char *argv[]){
 
     initDebug("mid2nkt.log");
 
-    //todo check parameters for compression
+    printInfoScreen();
 
+    // todo check parameters for compression
     if(argc>=1&&argv[1]!='\0'){
-         fprintf(stderr,"Trying to load %s\n",argv[1]);
+       fprintf(stderr,"Trying to load %s\n",argv[1]);
      }else{
-         fprintf(stderr,"No specified mid filename! exiting\n");
-         return 0;
+       fprintf(stderr,"No specified mid filename! Exiting ...\n");
+       return 0;
      }
 
 
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]){
            pTempPtr=strrchr(tempName,'.');
            memcpy(pTempPtr+1,"nkt",4);
 
-           printInfoScreen();
+
             fprintf(stderr,"[ Please wait ] Converting MID to %s.\n",tempName);
            // convert
            time = getTimeStamp();

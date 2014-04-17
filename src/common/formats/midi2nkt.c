@@ -201,6 +201,8 @@ if(rs->recallRS==0){
  rs->recallRS=1;
  (*pMidiData)++;
   pPitchBend=(sPitchBend_t *)(*pMidiData);
+
+
 }else{
   pPitchBend=(sPitchBend_t *)(*pMidiData);
 }
@@ -259,7 +261,7 @@ metaLenght=readVLQ((*pMidiData),&size);
      *bEOT=TRUE;
     }break;
     case MT_SET_TEMPO:{
-        stBlock.blockSize=0;
+        stBlock.blockSize=sizeof(U32);
         stBlock.msgType=NKT_TEMPO_CHANGE;
 
         U8 ulVal[3]={0};   /* for retrieving set tempo info */
@@ -273,12 +275,19 @@ metaLenght=readVLQ((*pMidiData),&size);
 
         /* range: 0-8355711 ms, 24 bit value */
         val1=val1|val2|val3;
-        bufferInfo->bytes_written+=sizeof(U32);
-
-        ++(bufferInfo->blocks_written);
         amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 
+        if(*file!=NULL){
+          // write VLQ delta
+           U32 VLQdeltaTemp=0;
+           S32 count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
+           bufferInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
+           bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+           bufferInfo->bytes_written+=fwrite(&val1,sizeof(U32),1,*file);
+         }
+        ++(bufferInfo->blocks_written);
     }break;
+
     case MT_SMPTE_OFFSET:{}break;
     case MT_TIME_SIG:{}break;
     case MT_KEY_SIG:{}break;

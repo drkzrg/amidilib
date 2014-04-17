@@ -378,32 +378,32 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
                amTrace("delta: %lu SC_MTCQF\n", delta);
                rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
                amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
-               (*(pCmd))++;
-               (*(pCmd))++;
+               (*pCmd)++;
+               (*pCmd)++;
              break;
            case SC_SONG_POS_PTR:
                amTrace((const U8*)"Event: System common Song position pointer\n");
                rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
-                (*(pCmd))++;
-               (*(pCmd))++;
-                (*(pCmd))++;
+                (*pCmd)++;
+                (*pCmd)++;
+                (*pCmd)++;
              break;
              case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
                amTrace((const U8*)"Event: System common Song select\n");
                rs->recallRS=0;
-               (*(pCmd))++;
-               (*(pCmd))++;
+               (*pCmd)++;
+               (*pCmd)++;
              break;
              case SC_UNDEF1:                   /* undefined */
              case SC_UNDEF2:                   /* undefined */
                amTrace((const U8*)"Event: System common not defined.\n");
                rs->recallRS=0;
-               pCmd++;
+               (*pCmd)++;
              break;
              case SC_TUNE_REQUEST:             /* tune request, no data bytes */
                amTrace((const U8*)"Event: System tune request.\n");
                rs->recallRS=0;
-               pCmd++;
+              (*pCmd)++;
              break;
              default:{
                amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));

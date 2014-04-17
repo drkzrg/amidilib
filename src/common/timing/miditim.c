@@ -5,9 +5,7 @@
 #include "timing/miditim.h"
 #include "amlog.h"
 
-U32 begin;
-U32 end;
-long usp;
+
 
 /* function for calculating tempo */
 /* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
@@ -55,25 +53,26 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision){
    }
 }
 
+static U32 begin;
+static  U32 end;
+static  S32 usp;
 
-U32 getTimeStamp(){
-
+void getTimeStamp(){
 // get Atari native system 200hz counter
-	 usp=Super(0);
-	 begin=*((long *)0x4ba);
-	 SuperToUser(usp);
-	
- return begin;
+     usp=Super(0L);
+     begin=*((S32 *)0x4ba);
+     SuperToUser(usp);
 }
 
 U32 getTimeDelta(){
-U32 delta=0.0f;
+U32 delta=0L;
 
 //calculate delta in seconds
-    usp=Super(0);
-    end=*((long *)0x4ba);
+    usp=Super(0L);
+    end=*((S32 *)0x4ba);
+    delta=(end-begin)/200;
     SuperToUser(usp);
-    delta=(end-begin)/200.0f;
+
     return(delta);
 }
 

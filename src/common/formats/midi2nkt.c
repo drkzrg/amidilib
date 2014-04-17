@@ -42,7 +42,7 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 }
 
 //
-#define OUT_BUFFER_SIZE (32*1024)
+#define OUT_BUFFER_SIZE 256   //should be sufficient if there are no big SysEx messages
 typedef struct sBufferInfo{
  U8 buffer[OUT_BUFFER_SIZE];
  U32 bufPos;

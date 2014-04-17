@@ -563,23 +563,24 @@ void getDeviceInfoResponse(U8 channel){
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
 #endif    
-    begin=getTimeStamp(); // get current timestamp
+//  getTimeStamp(); // get current timestamp
 	
-    /* get reply or there was timeout */
-    while((MIDI_DATA_READY&&(getTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
-	data = GET_MIDI_DATA;
-	begin=getTimeStamp(); // data received, reset timestamp
+//    /* get reply or there was timeout */
+//    while((MIDI_DATA_READY&&(getTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
+//	data = GET_MIDI_DATA;
+//	begin=getTimeStamp(); // data received, reset timestamp
       
-	 if(data!=0){
+//	 if(data!=0){
 	  
-	  if(bFlag==FALSE){
-		amTrace((const U8*)"Received device info on ch: %d\t",channel);
- 	    bFlag=TRUE;
-	}
+//	  if(bFlag==FALSE){
+//		amTrace((const U8*)"Received device info on ch: %d\t",channel);
+// 	    bFlag=TRUE;
+//	}
 	
-		amTrace((const U8*)"%x\t",(unsigned int)data);
-    }
-}
+//		amTrace((const U8*)"%x\t",(unsigned int)data);
+//    }
+
+//}
 
  if(bTimeout==TRUE) amTrace((const U8*)"Timeout on ch: %d\t",channel);
 

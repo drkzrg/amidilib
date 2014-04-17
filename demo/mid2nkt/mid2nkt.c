@@ -55,18 +55,18 @@ int main(int argc, char *argv[]){
            pTempPtr=strrchr(tempName,'.');
            memcpy(pTempPtr+1,"mid",4);
            printf("[Please Wait] [MUS->MID] Processing midi data..\n");
-           Mus2Midi(pMidi,(unsigned char *)pOut,tempName,&len);
+           Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
            amFree(&pMidi);
            pMidi=(void *)pOut;
        }
 
-       U32 time=0,delta=0;
+       U32 delta=0;
 
        // check mid 0, no quit
        if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
-           fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int) ulFileLenght);
+           fprintf(stderr,"Midi file loaded, size: %lu bytes.\n", ulFileLenght);
 
            char tempName[128]={0};
            char *pTempPtr=0;
@@ -77,16 +77,11 @@ int main(int argc, char *argv[]){
            fprintf(stderr,"[ Please wait ] Converting MID to %s.\n",tempName);
 
            // convert
-           time = getTimeStamp();
            iError = Midi2Nkt(pMidi,tempName,FALSE);
-           delta=getTimeDelta();
-
-           if(iError==0){
-            fprintf(stderr,"MIDI file conversion in ~%4ul[sec]/~%4ul[min]\n", delta, delta/60);
-           }
 
        }else{
             fprintf(stderr,"File is not in MIDI 0 format. Exiting... \n");
+
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */

@@ -47,10 +47,10 @@ U16 am_decodeTimeDivisionInfo(U16 timeDivision);
 /******************** time measuring functions */
 
 /** get current time signature  
-* @return returns current time signature in ms
+* @return none
 */
 
-U32 getTimeStamp();
+void getTimeStamp();
 
 /** Utility function for measuring delta time  
  *   @return delta time since last getTimeStamp() function call in ms

@@ -15,7 +15,7 @@
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
 #include "fmio.h"           // disc i/o
-#include "timing/miditim.h" 
+#include "timing/miditim.h"
 
 // nkt conversion
 #include "nkt.h"
@@ -74,17 +74,13 @@ int main(int argc, char *argv[]){
      /* check midi header */
       fprintf(stderr,"Please wait...\n");
 
-      U32 time=0,delta=0;
-      time = getTimeStamp();
       iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
-      delta=getTimeDelta();
-      
+
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(&pMidi);
 
       if(iError==0){
-      fprintf(stderr,"MIDI file parsed in ~%4.2ul[sec]/~%4.2ul[min]\n",delta,delta/60);
-	
+
 	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
 	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
       fprintf(stderr,"PPQN: %u\n",pMidiTune->timeDivision);

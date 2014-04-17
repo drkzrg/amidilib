@@ -31,15 +31,9 @@ sNktSeq *pNktSeq=0;
     am_init();
 
     flushMidiSendBuffer();
-
-    float time=0,delta=0;
-    time = getTimeStamp();
     pNktSeq=loadSequence(argv[1]);
-    delta=getTimeDelta();
 
     if(pNktSeq!=NULL){
-        fprintf(stderr,"MIDI file parsed in ~%4.2f[sec]/~%4.2f[min]\n", delta, delta / 60.0f);
-
         printInfoScreen();
         mainLoop(pNktSeq);
 

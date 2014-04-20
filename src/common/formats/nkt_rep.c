@@ -583,58 +583,6 @@ void switchReplayMode(void){
   }
 }
 
-// debug stuff
-static const U8 *getSequenceStateStr(const U16 state){
-
- if( !(state&NKT_PS_PLAYING) && (state&NKT_PS_PAUSED) ){
-    return "Paused";
- }else if(state&NKT_PS_PLAYING && !state&NKT_PS_PAUSED){
-    return "Playing";
- }else if(!(state&NKT_PS_PLAYING)){
-    return "Stopped...";
- }
-}
-
-
-void printNktSequenceState(){
-
-if(g_CurrentNktSequence){
-    printf("Td/PPQN: %u\n",g_CurrentNktSequence->timeDivision);
-    printf("Time step: %lu\n",g_CurrentNktSequence->timeStep);
-    printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
-    printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
-    printf("\tCur BPM: %lu\n",g_CurrentNktSequence->currentBPM);
-    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo);
-    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->lastTempo);
-    printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
-  }
-
-#ifdef DEBUG_BUILD
- printMidiSendBufferState();
-#endif
-
-}
-
-static const U8* _arNktEventName[NKT_MAX_EVENT]={
-    "NKT_MIDIDATA",
-    "NKT_TEMPO_CHANGE",
-    "NKT_JUMP",
-    "NKT_TRIGGER",
-    "NKT_END"
-};
-
-const U8 *getEventTypeName(U16 type){
-    switch(type){
-        case NKT_MIDIDATA: return _arNktEventName[0]; break;
-        case NKT_TEMPO_CHANGE: return _arNktEventName[1]; break;
-        case NKT_JUMP: return _arNktEventName[2]; break;
-        case NKT_TRIGGER: return _arNktEventName[3]; break;
-        case NKT_END: return _arNktEventName[4]; break;
-        default: return 0;
-
-    }
-}
-
 void NktInit(const eMidiDeviceType devType, const U8 channel){
 
 initDebug("nktlog.log");
@@ -661,7 +609,7 @@ initDebug("nktlog.log");
      case DT_XG_GM_YAMAHA:
         //unsupported
      default:{
-       amTrace("\nSetting generic GM/GS device on ch: %d\n", , channel);
+       amTrace("\nSetting generic GM/GS device on ch: %d\n", channel);
        control_change(C_BANK_SELECT, channel,0,0x00);
        program_change(channel, 1);
      }break;
@@ -682,5 +630,60 @@ void NktDeinit(){
 
     deinitDebug();
 }
+
+
+
+
+#ifdef DEBUG_BUILD
+
+// debug stuff
+static const U8 *getSequenceStateStr(const U16 state){
+
+ if( !(state&NKT_PS_PLAYING) && (state&NKT_PS_PAUSED) ){
+    return "Paused";
+ }else if(state&NKT_PS_PLAYING && !state&NKT_PS_PAUSED){
+    return "Playing";
+ }else if(!(state&NKT_PS_PLAYING)){
+    return "Stopped...";
+ }
+}
+
+
+void printNktSequenceState(){
+
+if(g_CurrentNktSequence){
+    printf("Td/PPQN: %u\n",g_CurrentNktSequence->timeDivision);
+    printf("Time step: %lu\n",g_CurrentNktSequence->timeStep);
+    printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
+    printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
+    printf("\tCur BPM: %lu\n",g_CurrentNktSequence->currentBPM);
+    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo);
+    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->lastTempo);
+    printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
+  }
+
+ printMidiSendBufferState();
+}
+
+static const U8* _arNktEventName[NKT_MAX_EVENT]={
+    "NKT_MIDIDATA",
+    "NKT_TEMPO_CHANGE",
+    "NKT_JUMP",
+    "NKT_TRIGGER",
+    "NKT_END"
+};
+
+const U8 *getEventTypeName(U16 type){
+    switch(type){
+        case NKT_MIDIDATA: return _arNktEventName[0]; break;
+        case NKT_TEMPO_CHANGE: return _arNktEventName[1]; break;
+        case NKT_JUMP: return _arNktEventName[2]; break;
+        case NKT_TRIGGER: return _arNktEventName[3]; break;
+        case NKT_END: return _arNktEventName[4]; break;
+        default: return 0;
+
+    }
+}
+#endif
 
 

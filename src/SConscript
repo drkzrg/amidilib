@@ -202,7 +202,7 @@ mid2nkt_src = ["../demo/mid2nkt/mid2nkt.c"]
 nkt_replay_src= ["common/formats/nkt_rep.c", "common/formats/nkt_rep_m68k.s"]
 
 ##################### nkt converters
-# TODO
+nkt_conv_src=["common/formats/midi2nkt.c","common/formats/mus2midi.c","common/core/c_vars.c","common/core/amlog.c","common/timing/miditim.c"]
 
 # build test programs and link them with amidilib
 env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
@@ -210,7 +210,7 @@ env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=
 env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_replay_src) + env.Object(["common/core/c_vars.c","common/core/amlog.c"]) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
-env.Program(MID2NKT_EXE, [mid2nkt_src + env.Object("common/formats/midi2nkt.c") + env.Object("common/formats/mus2midi.c") + env.Object(discio_src)+env.Object(["common/core/c_vars.c","common/core/amlog.c" , "common/timing/miditim.c"]) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+env.Program(MID2NKT_EXE, [mid2nkt_src + env.Object(nkt_conv_src) + env.Object(discio_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
 
 # TODO if release strip symbols, pack with executable packer
 if(debug=='none' or (int(debug)==0)):

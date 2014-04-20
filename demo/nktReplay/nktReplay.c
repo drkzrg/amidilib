@@ -4,9 +4,6 @@
 #include "timing/mfp.h"
 #include "timing/miditim.h"
 #include "midi_send.h"
-#include "amlog.h"
-
-//#define MANUAL_STEP 0
 
 #ifdef MANUAL_STEP
 extern void updateStepNkt();
@@ -57,7 +54,7 @@ S16 iError=0;
 void printInfoScreen(){
 
   printf("\n=========================================\n");
-  printf("\n=== NKT Player demo v.1.0 ===============\n");
+  printf("==== NKT replay demo v.1.0 ===============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");

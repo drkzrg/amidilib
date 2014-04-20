@@ -7,9 +7,6 @@
 #include "midi.h"
 #include "amlog.h"
 
-// load test
-//#define LOAD_TEST 1
-
 // nkt replay
 extern void replayNktTC(void);
 extern void replayNktTB(void);
@@ -90,6 +87,7 @@ if(pSeq!=0){
  return;
 }
 
+#ifdef DEBUG_BUILD
 void initSequenceManual(sNktSeq *pSeq, U16 state){
  g_CurrentNktSequence=0;
 
@@ -119,6 +117,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
  } //endif
  return;
 }
+#endif
 
 volatile static BOOL bSend=FALSE;
 volatile static BOOL bStopped=FALSE;
@@ -510,7 +509,7 @@ BOOL isSequencePlaying(void){
 void stopSequence(void){
  if(g_CurrentNktSequence!=0){
 
-    if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING){
+    if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING||g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
        printf("Stop sequence\n");
     }

@@ -475,7 +475,9 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
  rs.runningStatus=0;
  rs.recallRS=0;
 
- amMemSet(pBufInfo,0,sizeof(sBufferInfo_t));
+ pBufInfo->blocks_written=0;
+ pBufInfo->bytes_written=0;
+ pBufInfo->bufPos=0;
 
  while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
   /* read delta time, pCmd should point to the command data */
@@ -508,7 +510,12 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
       amTrace(" [/DATA]\n");
 #endif
       U32 nbBytesPacked=0;
-      lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pBufInfo->buffer,&nbBytesPacked,pBufInfo->pCompWrkBuf);
+      if(lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pBufInfo->buffer,&nbBytesPacked,pBufInfo->pCompWrkBuf)!=LZO_E_OK){;
+        fprintf(stderr,"LZO Compression eror\n");
+      }else{
+          fprintf(stderr,"unc: %lu comp %lu\n",pBufInfo->bufPos,nbBytesPacked);
+      }
+
       pBufInfo->bufPos=nbBytesPacked;
 #ifdef DEBUG_BUILD
       amTrace("[CDATA] ");

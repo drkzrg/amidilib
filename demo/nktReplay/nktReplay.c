@@ -2,7 +2,6 @@
 
 #include "input/ikbd.h"
 #include "timing/mfp.h"
-#include "timing/miditim.h"
 #include "midi_send.h"
 
 #ifdef MANUAL_STEP
@@ -25,7 +24,7 @@ S16 iError=0;
         return 0;
     }
 
-    // set GS / GM source
+    // set GS / GM source, channel
     NktInit(DT_GS_SOUND_SOURCE,1);
 
     flushMidiSendBuffer();
@@ -46,7 +45,6 @@ S16 iError=0;
     }else{
         printf("Error: Loading %s failed.\n", argv[1]);
     }
-
 
   return 0;
 }

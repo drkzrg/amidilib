@@ -5,6 +5,7 @@
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
 #include "midi.h"
+#include "lzo/minilzo.h"
 
 void Nkt_CreateHeader(sNktHd* header, const sMThd *pMidiHeader, const BOOL bCompress){
     WriteInt(&header->id,ID_NKT);
@@ -42,12 +43,15 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 }
 
 //
-#define OUT_BUFFER_SIZE 256   //should be sufficient if there are no big SysEx messages
+#define OUT_BUFFER_SIZE 256   // should be sufficient if there are no big SysEx messages
+                              // TODO: make it configurable
 typedef struct sBufferInfo{
  U8 buffer[OUT_BUFFER_SIZE];
  U32 bufPos;
  U32 blocks_written;
  U32 bytes_written;
+ BOOL bCompress;
+ void *pCompWrkBuf; // working buffer used for compression
 } sBufferInfo_t;
 
 
@@ -478,7 +482,6 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
 
-
   iError=processMidiEvent(delta, &pCmd, &rs, pBufInfo ,&(*file),&bEOF);   // todo check error
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
@@ -491,9 +494,34 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
   // dump midi event block to memory
   if(pBufInfo->bufPos>0){
-      stBlock.blockSize=pBufInfo->bufPos;
-      stBlock.msgType=NKT_MIDIDATA;
 
+      if(pBufInfo->bCompress!=FALSE){
+        //compress data
+          stBlock.blockSize=pBufInfo->bufPos;
+          stBlock.msgType=NKT_MIDIDATA;
+
+#ifdef DEBUG_BUILD
+      amTrace("[DATA] ");
+      for(int j=0;j<pBufInfo->bufPos;j++){
+       amTrace("0x%x ",pBufInfo->buffer[j]);
+      }
+      amTrace(" [/DATA]\n");
+#endif
+      U32 nbBytesPacked=0;
+      lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pBufInfo->buffer,&nbBytesPacked,pBufInfo->pCompWrkBuf);
+      pBufInfo->bufPos=nbBytesPacked;
+#ifdef DEBUG_BUILD
+      amTrace("[CDATA] ");
+      for(int j=0;j<pBufInfo->bufPos;j++){
+       amTrace("0x%x ",pBufInfo->buffer[j]);
+      }
+      amTrace(" [/CDATA]\n");
+#endif
+      }else{
+          stBlock.blockSize=pBufInfo->bufPos;
+          stBlock.msgType=NKT_MIDIDATA;
+
+#ifdef DEBUG_BUILD
       amTrace("[DATA] ");
 
       for(int j=0;j<pBufInfo->bufPos;j++){
@@ -501,8 +529,10 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
       }
 
       amTrace(" [/DATA]\n");
+#endif
+      }
 
-      //write block to file
+      // write block to file
 
       if(file!=NULL){
         // write VLQ delta
@@ -548,18 +578,36 @@ if(pOutFileName){
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
 }
 
+BufferInfo.bCompress=bCompress;
+BufferInfo.pCompWrkBuf=0;
+
+if(bCompress!=FALSE){
+ BufferInfo.pCompWrkBuf=amMallocEx(LZO1X_MEM_COMPRESS,PREFER_TT);
+
+ if(BufferInfo.pCompWrkBuf==0){
+     fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
+     BufferInfo.bCompress=FALSE;
+ }
+}
+
 // process event and store them into file
 error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
 
 if(file){
    fseek(file, 0, SEEK_SET);
    // update header
-   nktHead.NbOfBlocks=BufferInfo.blocks_written;
-   nktHead.NbOfBytesData=BufferInfo.bytes_written;
+   nktHead.NbOfBlocks = BufferInfo.blocks_written;
+   nktHead.NbOfBytesData = BufferInfo.bytes_written;
    fwrite(&nktHead, sizeof(sNktHd), 1, file);
 
    fclose(file); file=0;
    amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+ }
+
+ if(BufferInfo.bCompress!=FALSE){
+   if(BufferInfo.pCompWrkBuf!=0){
+        amFree((void **)&BufferInfo.pCompWrkBuf);
+   }
  }
 
 }

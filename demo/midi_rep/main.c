@@ -10,11 +10,12 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#define MANUAL_STEP 1
+//#define MANUAL_STEP 1
 
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
 #include "fmio.h"           // disc i/o
+#include "timing/mfp.h"           // disc i/o
 #include "timing/miditim.h"
 
 // nkt conversion

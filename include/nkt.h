@@ -3,6 +3,7 @@
 
 #include <c_vars.h>
 #include "memory/linalloc.h"
+#include "mdevtype.h" //device types
 
 typedef enum{
     // play mode
@@ -74,6 +75,9 @@ typedef struct __attribute__((packed)) NktBlk{
 } sNktBlk;
 /////////////////////////////////////////////
 
+void NktInit(const eMidiDeviceType devType, const U8 channel);
+void NktDeinit();
+
 void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq, U16 initialState);
 
@@ -87,9 +91,13 @@ void pauseSequence();
 void playSequence(void);
 void switchReplayMode(void);
 
+#ifdef DEBUG_BUILD
 //debug helpers
+#ifdef MANUAL_STEP
 void initSequenceManual(sNktSeq *pSeq, U16 initialState); //todo remove in final build
+#endif
 void printNktSequenceState();
 const U8 *getEventTypeName(U16 type);
+#endif
 
 #endif // NKT_H

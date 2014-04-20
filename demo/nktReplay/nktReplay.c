@@ -1,9 +1,9 @@
 #include "nkt.h"
-#include "amidilib.h"
 
 #include "input/ikbd.h"
 #include "timing/mfp.h"
 #include "timing/miditim.h"
+#include "midi_send.h"
 #include "amlog.h"
 
 //#define MANUAL_STEP 0
@@ -18,17 +18,18 @@ void mainLoop(sNktSeq *pSequence);
 
 int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
- S16 iError=0;
+S16 iError=0;
 
    if(argc>=1&&argv[1]!='\0'){
         fprintf(stderr,"Trying to load %s\n",argv[1]);
     }else{
         fprintf(stderr,"No specified nkt filename! exiting\n");
-        am_deinit();
+        NktDeinit();
         return 0;
     }
 
-    am_init();
+    // set GS / GM source
+    NktInit(DT_GS_SOUND_SOURCE,1);
 
     flushMidiSendBuffer();
     pNktSeq=loadSequence(argv[1]);
@@ -42,7 +43,8 @@ sNktSeq *pNktSeq=0;
         pNktSeq=0;
 
         deinstallReplayRout();
-        am_deinit(); //deinit our stuff
+
+        NktDeinit();
 
     }else{
         printf("Error: Loading %s failed.\n", argv[1]);
@@ -54,13 +56,9 @@ sNktSeq *pNktSeq=0;
 
 void printInfoScreen(){
 
-  const sAMIDI_version *pInfo=am_getVersionInfo();
-
   printf("\n=========================================\n");
-  printf(LIB_NAME);
-  printf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
+  printf("\n=== NKT Player demo v.1.0 ===============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
-
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once/loop mode\n");
@@ -68,7 +66,6 @@ void printInfoScreen(){
   printf("    [h] - show this help screen\n");
   printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");
-  printf(AMIDI_INFO);
   printf("==========================================\n");
   printf("Ready...\n");
 }

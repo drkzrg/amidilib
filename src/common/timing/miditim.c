@@ -5,8 +5,6 @@
 #include "timing/miditim.h"
 #include "amlog.h"
 
-
-
 /* function for calculating tempo */
 /* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
 

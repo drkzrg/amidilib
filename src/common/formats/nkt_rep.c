@@ -1,11 +1,11 @@
 
-#include "config.h"
 #include "nkt.h"
 #include "timing/mfp.h"
 #include "memory.h"
 #include "midi_cmd.h"
 #include "timing/miditim.h"
 #include "midi.h"
+#include "amlog.h"
 
 // load test
 //#define LOAD_TEST 1
@@ -16,11 +16,9 @@ extern void replayNktTB(void);
 
 static sNktSeq *g_CurrentNktSequence=0;
 
-
 void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
-
 
 static inline void onEndSequence(){
 
@@ -636,4 +634,53 @@ const U8 *getEventTypeName(U16 type){
 
     }
 }
+
+void NktInit(const eMidiDeviceType devType, const U8 channel){
+
+initDebug("nktlog.log");
+
+    // now depending on the connected device type and chosen operation mode
+    // set appropriate channel
+    //prepare device for receiving messages
+
+    switch(devType){
+     case DT_LA_SOUND_SOURCE:
+     case DT_LA_SOUND_SOURCE_EXT:{
+       amTrace("\nSetting MT32 device on ch: %d\n", channel);
+       program_change(channel, 1);
+     }break;
+
+     case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
+         //TODO: standard handling
+     case DT_LA_GS_MIXED:           /* if both LA / GS sound sources are available, like in CM-500 */
+        //TODO: silence CM-32P part
+
+     case DT_MT32_GM_EMULATION:
+        /* before loading midi data MT32 sound banks has to be patched */
+
+     case DT_XG_GM_YAMAHA:
+        //unsupported
+     default:{
+       amTrace("\nSetting generic GM/GS device on ch: %d\n", , channel);
+       control_change(C_BANK_SELECT, channel,0,0x00);
+       program_change(channel, 1);
+     }break;
+
+    }
+
+ #ifdef IKBD_MIDI_SEND_DIRECT
+     flushMidiSendBuffer();	//
+ #endif
+}
+
+
+void NktDeinit(){
+#ifdef IKBD_MIDI_SEND_DIRECT
+    // send content of midi buffer to device
+    flushMidiSendBuffer();
+#endif
+
+    deinitDebug();
+}
+
 

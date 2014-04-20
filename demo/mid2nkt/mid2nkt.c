@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
 
     printInfoScreen();
 
-    // todo check parameters for compression
+  // todo check parameters for compression
   if(argc>=1&&argv[1]!='\0'){
    fprintf(stderr,"Trying to load %s\n",argv[1]);
   }else{
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
            U32 len=0;
 
            // allocate 64kb working buffer for midi output
-           pOut=amMallocEx(64*1024,PREFER_TT);
+           pOut=amMallocEx(72*1024,PREFER_TT);
 
            // set midi output name
            char tempName[128]={0};

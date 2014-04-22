@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2014 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -51,6 +51,9 @@ const U8 *getCM32LRhythmName(const U8 ubNoteNb);
 
 /** resets MT-32 module to factory settings with default timbre library */
 void MT32Reset(void);
+
+/** patch MT-32 module to GM timbres */
+void patchMT32toGM();
 
 /* CM-500 */
 const U8 *getCM500SFXName(const U8 ubNoteNb);

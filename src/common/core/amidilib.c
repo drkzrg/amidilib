@@ -461,8 +461,8 @@ S16 am_init(){
  (*g_psMidiBufferInfo).ibufsiz = getGlobalConfig()->midiBufferSize;
  (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
- (*g_psMidiBufferInfo).ibuflow=(U16)MIDI_LWM;
- (*g_psMidiBufferInfo).ibufhi=(U16)MIDI_HWM;
+ (*g_psMidiBufferInfo).ibuflow=(U16) MIDI_LWM;
+ (*g_psMidiBufferInfo).ibufhi=(U16) MIDI_HWM;
  SuperToUser(usp);
 #endif
 
@@ -471,22 +471,36 @@ S16 am_init(){
    //prepare device for receiving messages
    
    switch(getGlobalConfig()->connectedDeviceType){
-    case DT_LA_SOUND_SOURCE:     
+    case DT_LA_SOUND_SOURCE:{
+       MT32Reset();
+       amTrace("\nSetting MT32 device on ch: %d\n", getGlobalConfig()->midiChannel);
+       program_change(getGlobalConfig()->midiChannel, 1);
+    } break;
+
     case DT_LA_SOUND_SOURCE_EXT:{
-      amTrace("\nSetting MT32 device on ch: %d\n", getGlobalConfig()->midiChannel);
+      MT32Reset();
+      amTrace("\nSetting MT32 ext device on ch: %d\n", getGlobalConfig()->midiChannel);
       program_change(getGlobalConfig()->midiChannel, 1);
     }break;
     
     case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
-        //TODO: standard handling
-    case DT_LA_GS_MIXED:           /* if both LA / GS sound sources are available, like in CM-500 */
-       //TODO: silence CM-32P part
+       amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
+       control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);
+       program_change(getGlobalConfig()->midiChannel, 1);
+    break;
+
+    case DT_LA_GS_MIXED:           /* if both LA / GS sound sources are available, like in CM-500 mode A */
+       // silence CM-32P part
+       allPartsOffCm500();
 
     case DT_MT32_GM_EMULATION:
-       /* before loading midi data MT32 sound banks has to be patched */
+       MT32Reset();
+
+      /* before loading midi data MT32 sound banks has to be patched */
+      patchMT32toGM();
 
     case DT_XG_GM_YAMAHA:
-       //unsupported
+       //not supported yet
     default:{
       amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
       control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);

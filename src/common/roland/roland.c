@@ -869,6 +869,12 @@ void  allPartsOffCm500(void)
 #endif
 }
 
+// MT32 2 GM
+
+void patchMT32toGM(){
+
+}
+
 // all
 U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end){
 U8 total = 0 ;

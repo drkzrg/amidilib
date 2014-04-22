@@ -33,17 +33,18 @@ if(g_CurrentNktSequence){
 
   am_allNotesOff(16);
   g_CurrentNktSequence->timeElapsedInt=0L;
-  g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
+  g_CurrentNktSequence->timeElapsedFrac=0L;
 
+  g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
   g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
   g_CurrentNktSequence->currentBlockId=0;
+
+  // reset all tracks state
+  g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   flushMidiSendBuffer();
 #endif
-  // reset all tracks state
-  g_CurrentNktSequence->timeElapsedFrac=0L;
-  g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
  }
 
 }
@@ -509,7 +510,7 @@ BOOL isSequencePlaying(void){
 void stopSequence(void){
  if(g_CurrentNktSequence!=0){
 
-    if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING||g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
+    if((g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)||(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED)){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
        printf("Stop sequence\n");
     }

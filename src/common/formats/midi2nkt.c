@@ -497,49 +497,8 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
   // dump midi event block to memory
   if(pBufInfo->bufPos>0){
 
-      if(pBufInfo->bCompress!=FALSE){
-        //compress data
-          stBlock.blockSize=pBufInfo->bufPos;
-          stBlock.msgType=NKT_MIDIDATA;
-
-#ifdef DEBUG_BUILD
-      amTrace("[DATA] ");
-      for(int j=0;j<pBufInfo->bufPos;j++){
-       amTrace("0x%x ",pBufInfo->buffer[j]);
-      }
-      amTrace(" [/DATA]\n");
-#endif
-      U32 nbBytesPacked=0;
-
-      U8 *pTempBuf=(U8 *)amMallocEx(pBufInfo->bufPos+pBufInfo->bufPos/16,PREFER_TT);
-      amMemSet(pTempBuf,0,pBufInfo->bufPos+pBufInfo->bufPos/16);
-
-      if(pTempBuf!=0){
-        if(lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pTempBuf,&nbBytesPacked,pBufInfo->pCompWrkBuf)!=LZO_E_OK){
-            fprintf(stderr,"LZO Compression error...\n");
-        }else{
-          if (nbBytesPacked >= pBufInfo->bufPos){
-           fprintf(stderr,"Block contains incompressible data.\n");
-          }else{
-            fprintf(stderr,"Block uncompressed: %lu compressed: %lu\n",pBufInfo->bufPos,nbBytesPacked);
-          }
-        }
-      }else{
-           fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",pBufInfo->bufPos,nbBytesPacked);
-      }
-
-#ifdef DEBUG_BUILD
-      amTrace("[CDATA] ");
-      for(int j=0;j<nbBytesPacked;j++){
-       amTrace("0x%x ",pTempBuf[j]);
-      }
-      amTrace(" [/CDATA]\n");
-#endif
-      amFree(&pTempBuf);
-
-      }else{
-          stBlock.blockSize=pBufInfo->bufPos;
-          stBlock.msgType=NKT_MIDIDATA;
+   stBlock.blockSize=pBufInfo->bufPos;
+   stBlock.msgType=NKT_MIDIDATA;
 
 #ifdef DEBUG_BUILD
       amTrace("[DATA] ");
@@ -550,7 +509,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
       amTrace(" [/DATA]\n");
 #endif
-      }
+
 
       // write block to file
 
@@ -592,7 +551,7 @@ sBufferInfo_t BufferInfo;
 if(pOutFileName){
    // create file header
    amTrace("Writing NKT file to: %s\n",pOutFileName);
-   Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, bCompress);
+   Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
 
    file = fopen(pOutFileName, "wb");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
@@ -603,10 +562,11 @@ BufferInfo.pCompWrkBuf=0;
 
 if(bCompress!=FALSE){
  BufferInfo.pCompWrkBuf=amMallocEx(LZO1X_MEM_COMPRESS,PREFER_TT);
+ amMemSet(BufferInfo.pCompWrkBuf,0,LZO1X_MEM_COMPRESS);
 
  if(BufferInfo.pCompWrkBuf==0){
-     fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
-     BufferInfo.bCompress=FALSE;
+  fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
+  BufferInfo.bCompress=FALSE;
  }
 
  if(BufferInfo.bCompress!=FALSE){
@@ -629,14 +589,60 @@ if(file){
    nktHead.NbOfBlocks = BufferInfo.blocks_written;
    nktHead.NbOfBytesData = BufferInfo.bytes_written;
    fwrite(&nktHead, sizeof(sNktHd), 1, file);
-
-   fclose(file); file=0;
-   amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
+
+
+// optional step LZO compression
+if(BufferInfo.bCompress!=FALSE){
+    // read file beside the header
+
+    // compress
+    // save
+
+    //compress data
+    U32 sizeOfBlock=0; //sizeof block to compress
+    U8 *pData=0;
+    U32 nbBytesPacked=0;
+
+    // allocate temp buffer
+    U8 *pTempBuf=(U8 *)amMallocEx(sizeOfBlock+sizeOfBlock/16,PREFER_TT);
+
+    if(pTempBuf!=0){
+     amMemSet(pTempBuf,0,sizeOfBlock+sizeOfBlock/16);
+
+     if(lzo1x_1_compress(&pData,sizeOfBlock,pTempBuf,&nbBytesPacked,BufferInfo.pCompWrkBuf)!=LZO_E_OK){
+          fprintf(stderr,"LZO Compression error...\n");
+     }else{
+       if (nbBytesPacked >= sizeOfBlock){
+          fprintf(stderr,"Block contains incompressible data.\n");
+       }else{
+          fprintf(stderr,"Block uncompressed: %lu compressed: %lu\n",BufferInfo.bufPos,nbBytesPacked);
+       }
+     }
+    }else{
+     fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",BufferInfo.bufPos,nbBytesPacked);
+    }
+
+#ifdef DEBUG_BUILD
+    amTrace("[CDATA] ");
+    for(int j=0;j<nbBytesPacked;j++){
+        amTrace("0x%x ",pTempBuf[j]);
+    }
+    amTrace(" [/CDATA]\n");
+#endif
+ amFree((void **)&pTempBuf);
+
+}
+
+
 
  if(BufferInfo.pCompWrkBuf!=0){
-     amFree((void **)&BufferInfo.pCompWrkBuf);
+   amFree((void **)&BufferInfo.pCompWrkBuf);
  }
 
+ if(file){
+     fclose(file); file=0;
+     amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+ }
 
 }

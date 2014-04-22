@@ -64,14 +64,14 @@ typedef struct TrackState_t{
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
-   U8 *pSequenceName;                       /* NULL terminated string */
+   U8 *pSequenceName;                       // NULL terminated string */
    U32 timeElapsedFrac;                     // sequence elapsed time
    U32 timeStep;                            // sequence time step
-   U32 eotThreshold;                        /* see define EOT_SILENCE_THRESHOLD */
+   U32 eotThreshold;                        // see define EOT_SILENCE_THRESHOLD */
    U16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
-   U16 ubNumTracks;                         /* number of tracks 1->AMIDI_MAX_TRACKS */
-   U16 ubActiveTrack;                       /* range 0-(ubNumTracks-1) tracks */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	/* up to AMIDI_MAX_TRACKS tracks available */
+   U16 ubNumTracks;                         // number of tracks 1->AMIDI_MAX_TRACKS */
+   U16 ubActiveTrack;                       // range 0-(ubNumTracks-1) tracks */
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	// up to AMIDI_MAX_TRACKS tracks available */
    eSequenceType seqType;                   // sequence: single, multitrack, separate
 
 #ifdef EVENT_LINEAR_BUFFER

@@ -273,6 +273,16 @@ const U8 *arMIDIcontrollers[]={
 };
 
 
+// General MIDI Reset SysEX message (vendor independent)
+U8 gm_ResetSysEX[6]={0xF0,0x7E,0x7F,0x09,0x01,0xF7};
+
+// gm_MasterVolume[2] - channel (0x00 to 0x7F)
+// gm_MasterVolume[6] - Bits 0 to 6 of a 14-bit volume
+// gm_MasterVolume[7] - Bits 7 to 13 of a 14-bit volume
+
+U8 gm_MasterVolumeSysEX[8]={0xF0,0x7E,0x7F,0x04,0x01, 0x00, 0x00, 0xF7};
+
+
 const U8 *getMidiNoteName(const U8 noteNb){
     if((noteNb>=0&&noteNb<=127)) /* 0-127 range check */
         return(arMIDI2key[noteNb]);

@@ -19,6 +19,26 @@
 static U8 g_midi_cmd_buffer[4];
 #endif
 
+
+typedef struct SysEX_t{
+   U16 size;
+   U8 *data;
+}sSysEX_t;
+
+// Master Volume
+
+/*
+0xF0  SysEx
+0x7F  Realtime
+0x7F  The SysEx channel. Could be from 0x00 to 0x7F.
+      Here we set it to "disregard channel".
+0x04  Sub-ID -- Device Control
+0x01  Sub-ID2 -- Master Volume
+0xLL  Bits 0 to 6 of a 14-bit volume
+0xMM  Bits 7 to 13 of a 14-bit volume
+0xF7  End of SysEx
+*/
+
 //////////////////////////////////////////////////////////////////////////////
 // helper functions for copying midi data to internal buffer
 extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame

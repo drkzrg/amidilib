@@ -890,7 +890,7 @@ S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
    while( (*(*pPtr))!=EV_EOX){
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"%x ",*(*pPtr));
+    amTrace((const U8*)"0x%x, ",*(*pPtr));
 #endif
      (*pPtr)++;
       /*count Sysex msg data bytes */

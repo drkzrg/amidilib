@@ -510,20 +510,33 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
       amTrace(" [/DATA]\n");
 #endif
       U32 nbBytesPacked=0;
-      if(lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pBufInfo->buffer,&nbBytesPacked,pBufInfo->pCompWrkBuf)!=LZO_E_OK){;
-        fprintf(stderr,"LZO Compression eror\n");
+
+      U8 *pTempBuf=(U8 *)amMallocEx(pBufInfo->bufPos+pBufInfo->bufPos/16,PREFER_TT);
+      amMemSet(pTempBuf,0,pBufInfo->bufPos+pBufInfo->bufPos/16);
+
+      if(pTempBuf!=0){
+        if(lzo1x_1_compress(&pBufInfo->buffer[0],pBufInfo->bufPos,pTempBuf,&nbBytesPacked,pBufInfo->pCompWrkBuf)!=LZO_E_OK){
+            fprintf(stderr,"LZO Compression error...\n");
+        }else{
+          if (nbBytesPacked >= pBufInfo->bufPos){
+           fprintf(stderr,"Block contains incompressible data.\n");
+          }else{
+            fprintf(stderr,"Block uncompressed: %lu compressed: %lu\n",pBufInfo->bufPos,nbBytesPacked);
+          }
+        }
       }else{
-          fprintf(stderr,"unc: %lu comp %lu\n",pBufInfo->bufPos,nbBytesPacked);
+           fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",pBufInfo->bufPos,nbBytesPacked);
       }
 
-      pBufInfo->bufPos=nbBytesPacked;
 #ifdef DEBUG_BUILD
       amTrace("[CDATA] ");
-      for(int j=0;j<pBufInfo->bufPos;j++){
-       amTrace("0x%x ",pBufInfo->buffer[j]);
+      for(int j=0;j<nbBytesPacked;j++){
+       amTrace("0x%x ",pTempBuf[j]);
       }
       amTrace(" [/CDATA]\n");
 #endif
+      amFree(&pTempBuf);
+
       }else{
           stBlock.blockSize=pBufInfo->bufPos;
           stBlock.msgType=NKT_MIDIDATA;
@@ -595,6 +608,16 @@ if(bCompress!=FALSE){
      fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
      BufferInfo.bCompress=FALSE;
  }
+
+ if(BufferInfo.bCompress!=FALSE){
+     if(lzo_init()!=LZO_E_OK){
+         fprintf(stderr,"Could't initialise LZO library. Turning off compression.\n");
+         BufferInfo.bCompress=FALSE;
+     }else{
+         fprintf(stderr,"LZO init ok.\n");
+     }
+ }
+
 }
 
 // process event and store them into file
@@ -611,10 +634,9 @@ if(file){
    amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
 
- if(BufferInfo.bCompress!=FALSE){
-   if(BufferInfo.pCompWrkBuf!=0){
-        amFree((void **)&BufferInfo.pCompWrkBuf);
-   }
+ if(BufferInfo.pCompWrkBuf!=0){
+     amFree((void **)&BufferInfo.pCompWrkBuf);
  }
+
 
 }

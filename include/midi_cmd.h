@@ -46,6 +46,9 @@ extern U16 MIDIbytesToSend;
 
 // sends SysEX message without recalculating the checksum
 static INLINE void sendSysEX(const sSysEX_t *pMsg){
+
+amTrace("Send SysEx size: %lu \n",pMsg->size);
+
 #ifdef IKBD_MIDI_SEND_DIRECT
  amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
  MIDIbytesToSend+=pMsg->size;

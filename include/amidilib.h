@@ -97,6 +97,7 @@ void getDeviceInfoResponse(U8 channel);
 /** returns meaningful name for Midi Device type enumeration.  */
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 
+
 #ifdef DEBUG_BUILD
 /** function for variable quantity reading test */
 void VLQtest(void);

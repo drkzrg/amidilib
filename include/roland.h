@@ -33,52 +33,11 @@
 #define DEV_ID15 	0x0e
 #define DEV_ID16	0x0f
 
-#include "c_vars.h"
-
 /* TODO:
  * functions for maintaining current device state, initial settings etc..   */
 /* blocking/unblocking functions on certain devices
    (e.g. Roland MT-32 recognizes the standard MIDI controllers for
    Volume (controller 7), Panpot (controller 10), Sustain (controller 64), and Modulation (controller 1))  */
-
-/* Roland modules header */
-const U8 *getMT32InstrName(const U8 ubInstrNb);
-const U8 *getMT32RhythmName(const U8 ubNoteNb);
-
-/* MT-32, CM-32L, CM-64 */
-const U8 *getCM32LInstrName(const U8 ubInstrNb);
-const U8 *getCM32LRhythmName(const U8 ubNoteNb);
-
-/** resets MT-32 module to factory settings with default timbre library */
-void MT32Reset(void);
-
-/** patch MT-32 module to GM timbres */
-void patchMT32toGM();
-
-/* CM-500 */
-const U8 *getCM500SFXName(const U8 ubNoteNb);
-
-/* these two functions turn parts (channels) 2-10 off on Roland CM-300 and CM-500 modules,
-as well as many other Roland GS devices.
-
-This is especially useful for those who route MIDI output through a Sound Canvas to a LA synth and need to silence the GS channels.
-The allPartsOff() will also correct LA synth playback problems with some older Sierra games when played on the CM-500, in 'Mode A'.
-allPartsOn() will revert all these settings.
-
-*/
-
-void  allPartsOn(void);
-void  allPartsOff(void);
-
-/* GS native */
-
-// calculate Roland checksum for SysEX messages
-/** Calculates checksum of Roland SysEx messages
-*	@param buf_start pointer to the start of SysEx message buffer
-*	@param buf_end pointer to an end of SysEx message buffer
-*	@return calculated checksum */
-
-U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 
 
 #endif

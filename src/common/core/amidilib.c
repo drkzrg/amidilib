@@ -468,54 +468,12 @@ S16 am_init(){
 
    // now depending on the connected device type and chosen operation mode
    // set appropriate channel
-   //prepare device for receiving messages
-   
-   switch(getGlobalConfig()->connectedDeviceType){
-    case DT_LA_SOUND_SOURCE:{
-       MT32Reset();
-       amTrace("\nSetting MT32 device on ch: %d\n", getGlobalConfig()->midiChannel);
-       program_change(getGlobalConfig()->midiChannel, 1);
-    } break;
-
-    case DT_LA_SOUND_SOURCE_EXT:{
-      MT32Reset();
-      amTrace("\nSetting MT32 ext device on ch: %d\n", getGlobalConfig()->midiChannel);
-      program_change(getGlobalConfig()->midiChannel, 1);
-    }break;
-    
-    case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
-       amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
-       control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);
-       program_change(getGlobalConfig()->midiChannel, 1);
-    break;
-
-    case DT_LA_GS_MIXED:           /* if both LA / GS sound sources are available, like in CM-500 mode A */
-       // silence CM-32P part
-       allPartsOffCm500();
-
-    case DT_MT32_GM_EMULATION:
-       MT32Reset();
-
-      /* before loading midi data MT32 sound banks has to be patched */
-      patchMT32toGM();
-
-    case DT_XG_GM_YAMAHA:
-       //not supported yet
-    default:{
-      amTrace("\nSetting generic GM/GS device on ch: %d\n", getGlobalConfig()->midiChannel);
-      control_change(C_BANK_SELECT, getGlobalConfig()->midiChannel,0,0x00);
-      program_change(getGlobalConfig()->midiChannel, 1);
-    }break;
-    
-   }
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-    flushMidiSendBuffer();	//
-#endif
+   // prepare device for receiving messages
+   setupMidiDevice(getGlobalConfig()->connectedDeviceType,getGlobalConfig()->midiChannel);
 
    //TODO: interrogate connected external module type
    //check external module communication scheme
- if(getGlobalConfig()->handshakeModeEnabled){
+ /*if(getGlobalConfig()->handshakeModeEnabled){
     
     //display info 
      //if timeout turn off handshake mode
@@ -523,8 +481,7 @@ S16 am_init(){
     // getDeviceInfoResponse(i);
     //    }
     ;
- }
-   
+ }*/
    
  return 1;
 }
@@ -613,6 +570,10 @@ const S8 *getConnectedDeviceInfo(void){
  return NULL;
 }
 
+const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
+ if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];
+ else return NULL;
+}
 
 #ifdef DEBUG_BUILD
 /* variable quantity reading test */
@@ -640,10 +601,7 @@ void VLQtest(void){
 
 
 
-const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
- if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];
- else return NULL;
-}
+
 
 
 

@@ -50,10 +50,6 @@ src/common/lzo/minilzo.c
 src/common/memory/linalloc.c
 src/common/memory/stack.c
 src/common/midi/midiseq.c
-src/common/roland/cm_32l.c
-src/common/roland/cm_500.c
-src/common/roland/mt32.c
-src/common/roland/roland.c
 src/common/timing/miditim.c
 src/common/twisterm.c
 src/common/ym2149.c
@@ -89,3 +85,7 @@ src/common/formats/midi2nkt.c
 include/midi2nkt.h
 demo/mid2nkt/mid2nkt.c
 demo/mid2nkt/mid2nkt.h
+src/common/roland/rol_ptch.c
+include/rol_ptch.h
+src/common/roland/rol_tbl.c
+include/rolinstr.h

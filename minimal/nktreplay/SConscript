@@ -1,0 +1,160 @@
+#    Copyright 2007-2014 Pawel Goralski
+#    e-mail: pawel.goralski@nokturnal.pl
+#    This file is part of AMIDILIB.
+#    See license.txt for licensing information.
+
+import sys
+import os
+
+env = Environment(tools=['default'])
+
+Help("AMIDILIB Copyright 2007-2012 Pawel Goralski\n \
+Type: 'scons target=name (mandatory) cross=y/n (default=y, optional) debug=0/1 (default=0,optional)'\n \
+where name of 'target' can be: \n \
+ 'f030' - for Atari Falcon030/TT build\n \
+ 'atarist' - for Atari ST build \n \
+ 'ct60' - for Atari Falcon CT60/63\n \
+ 'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
+ 'prefix' - prefix path to cross tools (optional) \n \
+ 'debug' - enables/disables build of debug version of library with additional tracing options,\n \
+ set to '0' by default")
+
+debug = ARGUMENTS.get('debug', 0)
+cross = ARGUMENTS.get('cross', 0)
+prefix = ARGUMENTS.get('prefix', 0)
+target = ARGUMENTS.get('target', 0)
+ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
+LIBRARYNAME = 'amidi'
+
+#to indicate that we are cross compiling
+if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
+  CROSS=0
+  CROSS_PREFIX=''
+elif ((cross=='yes')or (cross=='y')):
+  CROSS=1
+  if((prefix!='')):
+	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+  else:
+	CROSS_PREFIX = 'm68k-atari-mint-'
+else:
+  print "No compilation parameter set. Assuming cross compilation for Atari target."
+  CROSS=1
+  if((prefix!='')):
+	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+  else:
+	CROSS_PREFIX = 'm68k-atari-mint-'
+	
+ST_CFLAGS=''
+ST_LDFLAGS=''
+ST_VASM_FLAGS =''
+ST_CCFLAGS =''
+EXE_EXT_1=''
+EXE_EXT_2=''
+LIB_POSTFIX=''
+
+print "Cross tools path: " + prefix
+
+if ((target == "f030") or (target == "ataritt")):
+    print "Building Atari Falcon 030/TT target..."
+    ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
+    ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
+    LIB_POSTFIX='030'
+elif (target == "atarist"):
+    print "Building Atari ST/Ste target..."
+    ST_CFLAGS='-std=c99 -m68000 -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
+    ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
+    LIB_POSTFIX='000'
+elif (target == "ct60"):
+    print "Building Falcon CT60/63 target..."
+    ST_CFLAGS='-std=c99 -m68060 -ffast-math -fomit-frame-pointer'
+    ST_LDFLAGS='-Wl,--traditional-format -lm'
+    ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
+    ST_CCFLAGS =''
+    EXE_EXT_1='.tos'
+    EXE_EXT_2='.ttp'
+    LIB_POSTFIX='060'
+else:
+    print "Unknown target...["+target+"] Terminating build. Type in 'scons --help' from commandline for a list of options" 
+
+# output executable name
+OUTPUT_DIR='../lib/'
+
+env["CC"] = CROSS_PREFIX + 'gcc'
+env["CXX"] = CROSS_PREFIX + 'g++'
+env["AS"] = 'vasmm68k_mot'
+env['AR'] = CROSS_PREFIX + 'ar'
+env['RANLIB'] = CROSS_PREFIX + 'ranlib'
+env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
+env['STRIP'] = CROSS_PREFIX + 'strip -s'
+env['STACK'] = CROSS_PREFIX + 'stack'
+  
+include_path=''
+lib_path=''
+  
+if(CROSS==1):
+    include_path = prefix + "/m68k-atari-mint/include"
+    lib_path = prefix + "/m68k-atari-mint/lib"
+else:
+    include_path = prefix + "/include"
+    lib_path = prefix + "/lib"
+	
+env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
+env["LIBPATH"] = [lib_path,'../bin/']
+  
+# VASM settings
+env['VASM'] = 'vasmm68k_mot'
+
+if ( (debug != 'none') and (int(debug)>0)):
+  print "Debug build..."
+  if(int(debug)==1):
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD' + ' -DUSE_INLINE' + ' -DDEBUG_FILE_OUTPUT'
+  elif(int(debug)==2):
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DLOAD_TEST' + ' -DDEBUG_FILE_OUTPUT'
+  elif(int(debug)==3):
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT'
+
+  LIB_POSTFIX = LIB_POSTFIX+'d'
+  ST_CFLAGS= ST_CFLAGS
+else:
+    print "Release build... Code optimisation is turned on."
+    ST_CFLAGS= ST_CFLAGS + ' -O2' + ' -DUSE_INLINE'
+
+if(ikbd_direct=="yes"):
+    print "Sending data directly via IKBD ENABLED"
+    ST_CFLAGS=ST_CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
+    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+elif(((ikbd_direct=='') or (ikbd_direct=='no') or (ikbd_direct=='n') or (ikbd_direct == None))):
+    print "Sending data directly via IKBD DISABLED"
+    ST_CFLAGS=ST_CFLAGS +' '
+    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
+
+env["CFLAGS"] = ST_CFLAGS
+env["LINKFLAGS"] = ST_LDFLAGS
+env["ASFLAGS"] = ST_VASM_FLAGS
+env['VASM_FLAGS'] = ST_VASM_FLAGS
+
+src_dir='../../src/'
+lib_dir='./lib'
+
+# copy source files
+Command("./src/nkt_rep.c", [], Copy('$TARGET', src_dir+'common/formats/nkt_rep.c'))
+Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep_m68k.s', Copy('./src/nkt_rep.c', src_dir+'common/formats/nkt_rep.c'))
+Command("./src/nkt_rep.c", src_dir+'common/roland/rol_ptch.c', Copy('./src/nkt_rep.c', src_dir+'common/formats/nkt_rep.c'))
+
+Copy(src_dir+'common/formats/nkt_rep.c', './src/nkt_rep.c')
+Copy(src_dir+'common/formats/nkt_rep_m68k.s', './src/nkt_rep_m68k.s')
+Copy(src_dir+'common/roland/rol_ptch.c', './src/rol_ptch.c')
+
+# set up project
+
+# build lib
+
+

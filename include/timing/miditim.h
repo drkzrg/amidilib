@@ -59,7 +59,7 @@ U32 getTimeDelta();
 
 #define DEFAULT_MPQN 500000	   	// microsecs per quaternote
 #define DEFAULT_PPQN 96	   		// default pulses per quater note (resolution)
-#define SEQUENCER_UPDATE_HZ 300 // sequencer update rate
+#define SEQUENCER_UPDATE_HZ 200 // sequencer update rate
 #define DEFAULT_BPM 120	   		// 60,000,000/DEFAULT_MPQN quaternotes per minute
 
 

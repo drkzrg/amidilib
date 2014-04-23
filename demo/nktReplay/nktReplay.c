@@ -24,8 +24,32 @@ S16 iError=0;
         return 0;
     }
 
+    eMidiDeviceType devType=DT_GS_SOUND_SOURCE;
+
+    switch(devType){
+        case DT_LA_SOUND_SOURCE:{
+            fprintf(stderr,"Configuring MT-32 compatible midi device.\n");
+        }break;     /* native MT32 */
+        case DT_LA_SOUND_SOURCE_EXT:{
+            fprintf(stderr,"Configuring extended MT-32 compatible midi device(CM-32L/CM-64).\n");
+        }break;   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
+        case DT_GS_SOUND_SOURCE:{
+             fprintf(stderr,"Configuring GS compatible midi device.\n");
+        }break;       /* for pure GS/GM sound source */
+        case DT_LA_GS_MIXED:{
+              fprintf(stderr,"Configuring GS compatible midi device with LA module.\n");
+        }break;           /* if both LA/GS sound sources are available, like in CM-500 */
+        case DT_MT32_GM_EMULATION:{
+              fprintf(stderr,"Configuring MT-32 compatible midi device with GM instrument patch set.\n");
+        }break;     /* before loading midi data MT32 sound banks has to be patched */
+        case DT_XG_GM_YAMAHA:
+        default:{
+               fprintf(stderr,"Configuring Generic GM/GS compatible midi device.\n");
+        }break;
+    }
+
     // set GS / GM source, channel
-    NktInit(DT_GS_SOUND_SOURCE,1);
+    NktInit(devType,1);
 
     flushMidiSendBuffer();
     pNktSeq=loadSequence(argv[1]);
@@ -43,7 +67,7 @@ S16 iError=0;
         NktDeinit();
 
     }else{
-        printf("Error: Loading %s failed.\n", argv[1]);
+        fprintf(stderr,"Error: Loading %s failed.\n", argv[1]);
     }
 
   return 0;

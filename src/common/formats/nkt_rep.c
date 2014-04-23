@@ -6,6 +6,7 @@
 #include "timing/miditim.h"
 #include "midi.h"
 #include "amlog.h"
+#include "rol_ptch.h"
 
 // nkt replay
 extern void replayNktTC(void);
@@ -81,7 +82,7 @@ if(pSeq!=0){
   installReplayRout(mode, data, replayNktTB);
 
 #ifdef DEBUG_BUILD
- printNktSequenceState();
+  printNktSequenceState();
 #endif
 
   } //endif
@@ -294,8 +295,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
-    pNewSeq->defaultTempo=631578;
-    pNewSeq->lastTempo=631578;
+    pNewSeq->defaultTempo=DEFAULT_MPQN;
+    pNewSeq->lastTempo=DEFAULT_MPQN;
     pNewSeq->currentBPM=DEFAULT_BPM;
     pNewSeq->timeDivision=DEFAULT_PPQN;
 

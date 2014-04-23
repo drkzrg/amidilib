@@ -20,6 +20,7 @@
 //
 
 #include "roland.h"
+#include "rol_ptch.h"
 #include "config.h"
 
 #include <mint/ostruct.h>

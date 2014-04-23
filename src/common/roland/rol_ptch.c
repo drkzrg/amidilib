@@ -170,7 +170,7 @@ void patchMT32toGM(const BOOL bStandardGMDrumset){
         sendSysEX(&mt32_gm[i]);
     }
 
-    if(bStandardGMDrumset){
+    if(bStandardGMDrumset!=FALSE){
         // standard drumset
         sendSysEX(&mt32_stnd[0]);
         sendSysEX(&mt32_stnd[1]);

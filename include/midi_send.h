@@ -65,8 +65,6 @@ static INLINE void flushMidiSendBuffer(){
     clearMidiOutputBuffer();
 }
 
-
-
 #ifdef DEBUG_BUILD
 static void printMidiSendBufferState(){
     amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);

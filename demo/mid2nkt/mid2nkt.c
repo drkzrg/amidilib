@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "midi2nkt.h"       // mid2nkt conversion
 #include "dmus.h"           // MUS->MID conversion
 #include "fmio.h"           // disc i/o
 #include "amlog.h"          // logging

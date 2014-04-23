@@ -44,6 +44,17 @@ typedef struct SysEX_t{
 extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
 extern U16 MIDIbytesToSend; 
 
+// sends SysEX message without recalculating the checksum
+static INLINE void sendSysEX(const sSysEX_t *pMsg){
+#ifdef IKBD_MIDI_SEND_DIRECT
+ amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
+ MIDIbytesToSend+=pMsg->size;
+ flushMidiSendBuffer();
+#else
+    MIDI_SEND_DATA(pMsg->size,pMsg->data);
+#endif
+}
+
 /* common, channel voice messages */
 /**
  * sends NOTE OFF MIDI message (key depressed)
@@ -518,5 +529,7 @@ U16 iCounter;
     all_notes_off(iCounter);
   }
 }
+
+
 
 #endif

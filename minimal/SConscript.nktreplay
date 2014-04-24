@@ -24,7 +24,7 @@ cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
-LIBRARYNAME = 'amidi'
+LIBRARYNAME = 'nktrep'
 
 #to indicate that we are cross compiling
 if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
@@ -106,7 +106,7 @@ else:
     include_path = prefix + "/include"
     lib_path = prefix + "/lib"
 	
-env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
+env["CPPPATH"] = [include_path, "../","./include","./include/lzo"]
 env["LIBPATH"] = [lib_path,'../bin/']
   
 # VASM settings
@@ -142,19 +142,45 @@ env["ASFLAGS"] = ST_VASM_FLAGS
 env['VASM_FLAGS'] = ST_VASM_FLAGS
 
 src_dir='../../src/'
-lib_dir='./lib'
+inc_dir='../../include/'
+lib_dir='./lib/'
 
 # copy source files
-Command("./src/nkt_rep.c", [], Copy('$TARGET', src_dir+'common/formats/nkt_rep.c'))
-Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep_m68k.s', Copy('./src/nkt_rep.c', src_dir+'common/formats/nkt_rep.c'))
-Command("./src/nkt_rep.c", src_dir+'common/roland/rol_ptch.c', Copy('./src/nkt_rep.c', src_dir+'common/formats/nkt_rep.c'))
+Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/rol_ptch.c", src_dir+'common/roland/rol_ptch.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
-Copy(src_dir+'common/formats/nkt_rep.c', './src/nkt_rep.c')
-Copy(src_dir+'common/formats/nkt_rep_m68k.s', './src/nkt_rep_m68k.s')
-Copy(src_dir+'common/roland/rol_ptch.c', './src/rol_ptch.c')
+# copy includes
+Command("./include/nkt.h", inc_dir+'nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/c_vars.h", inc_dir+'c_vars.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
-# set up project
+if './include/memory' and not os.path.exists('./include/memory'):
+    os.makedirs('./include/memory')
+Command("./include/memory/linalloc.h", inc_dir+'memory/linalloc.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/memory/memory.h", inc_dir+'memory/memory.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/mdevtype.h", inc_dir+'mdevtype.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+if './include/timing' and not os.path.exists('./include/timing'):
+    os.makedirs('./include/timing')
+Command("./include/timing/mfp.h", inc_dir+'timing/mfp.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/timing/miditim.h", inc_dir+'timing/miditim.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
-# build lib
+Command("./include/midi_cmd.h", inc_dir+'midi_cmd.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/midi_send.h", inc_dir+'midi_send.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/amlog.h", inc_dir+'amlog.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/events.h", inc_dir+'events.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+
+nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c"]
+
+# build library
+if './lib' and not os.path.exists('./lib'):
+    os.makedirs('./lib')
+
+env.Library(lib_dir+LIBRARYNAME + LIB_POSTFIX, nkt_replay_src)
+
+# strip symbols for release
+# TODO
 
 

@@ -94,3 +94,10 @@ minimal/nktconvert/nktconvert.sh
 minimal/nktreplay/Makefile
 minimal/nktreplay/nktreplay.sh
 include/midi2nkt.h
+minimal/nktreplay/Makefile
+minimal/nktreplay/nktreplay.sh
+minimal/nktreplay/SConscript
+minimal/nktreplay/SConstruct
+minimal/nktreplay.sh
+minimal/SConscript.nktreplay
+minimal/SConstruct

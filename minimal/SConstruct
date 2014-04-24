@@ -1,0 +1,1 @@
+SConscript('SConscript.nktreplay', variant_dir='./nktreplay', duplicate=0, exports={'MODE':'release'})

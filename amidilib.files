@@ -89,7 +89,6 @@ src/common/roland/rol_ptch.c
 include/rol_ptch.h
 src/common/roland/rol_tbl.c
 include/rolinstr.h
-minimal/nktconvert/Makefile
 minimal/nktconvert/nktconvert.sh
 minimal/nktreplay/Makefile
 minimal/nktreplay/nktreplay.sh

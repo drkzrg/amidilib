@@ -101,3 +101,4 @@ minimal/nktreplay/SConstruct
 minimal/nktreplay.sh
 minimal/SConscript.nktreplay
 minimal/SConstruct
+minimal/SConscript.nktconvert

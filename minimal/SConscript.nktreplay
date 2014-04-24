@@ -146,6 +146,14 @@ inc_dir='../../include/'
 lib_dir='./lib/'
 
 # copy source files
+if './src' and not os.path.exists('./src'):
+    os.makedirs('./src')
+if './include' and not os.path.exists('./include'):
+    os.makedirs('./include')
+if './lib' and not os.path.exists('./lib'):
+    os.makedirs('./lib')
+
+
 Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/rol_ptch.c", src_dir+'common/roland/rol_ptch.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
@@ -175,9 +183,6 @@ Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy(
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c"]
 
 # build library
-if './lib' and not os.path.exists('./lib'):
-    os.makedirs('./lib')
-
 env.Library(lib_dir+LIBRARYNAME + LIB_POSTFIX, nkt_replay_src)
 
 # strip symbols for release

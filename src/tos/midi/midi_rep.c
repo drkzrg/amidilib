@@ -605,8 +605,13 @@ void playSeq(void){
 
 void muteTrack(const U16 trackNb,const BOOL bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
-    g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
-    printf("Mute track %d\n",trackNb);
+    if(bMute!=FALSE){
+        g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
+        printf("Mute track %d\n",trackNb);
+    }else{
+        g_CurrentSequence->arTracks[trackNb]->currentState.playState&=(~TM_MUTE);
+        printf("UnMute track %d\n",trackNb);
+    }
   }
 }
 

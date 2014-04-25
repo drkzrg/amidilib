@@ -38,7 +38,7 @@ _replayNktTC:
         beq.s   .done       ;if 0 bytes do nothing
 .send:
         ;slap data to d0
-        move.w	(a0),d0	;get word
+        move.w	(a0)+,d0	;get word
         ;clr.w	(a0)+ 	;clear it
 
         move.w	d0,d2		;make copy
@@ -108,7 +108,7 @@ _replayNktTB:
         beq.s   .done       ;if 0 bytes do nothing
 .send:
       ; slap data to d0
-      move.w	(a0),d0	;get word
+      move.w	(a0)+,d0	;get word
       ;clr.w	(a0)+ 	;clear it
 
       move.w	d0,d2		;make copy

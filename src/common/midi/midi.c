@@ -1,6 +1,7 @@
 
 #include "midi.h"
 #include "roland.h"
+#include "rolinstr.h"
 
 /* MIDI notes to international note mapping */
 /* notes are mapped from 21 to 108 */

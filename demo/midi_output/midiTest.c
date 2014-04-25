@@ -7,12 +7,13 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+
 
 #include "c_vars.h"
 #include "amidilib.h"
 #include "config.h"
 #include "roland.h"
+#include "rolinstr.h"
 #include "midi.h"
 
 #include "input/scancode.h"	// scancode definitions

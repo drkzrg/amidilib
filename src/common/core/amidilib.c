@@ -112,7 +112,6 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
     }
    
    amMemSet((*pSequence),0,sizeof(sSequence_t));
-   (*pSequence)->eotThreshold = getGlobalConfig()->midiSilenceThreshold;
    (*pSequence)->ubActiveTrack=0;
     
    tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;

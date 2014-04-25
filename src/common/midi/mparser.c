@@ -63,10 +63,7 @@ switch(fileTypeFlag){
       (*pCurSequence)->seqType=ST_SINGLE;
 
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
-
-      pTempTrack->currentState.playMode = getGlobalConfig()->playMode;
-      pTempTrack->currentState.playState = getGlobalConfig()->playState;
-
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -91,8 +88,7 @@ switch(fileTypeFlag){
       /* add all of them to given track */
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 
-      pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
-      pTempTrack->currentState.playState = getGlobalConfig()->playState;
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -140,8 +136,7 @@ switch(fileTypeFlag){
       /* add all of them to given track */
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 
-      pTempTrack->currentState.playMode = getGlobalConfig()->playMode;;
-      pTempTrack->currentState.playState = getGlobalConfig()->playState;
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 

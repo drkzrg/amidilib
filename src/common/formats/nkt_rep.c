@@ -167,10 +167,8 @@ void updateStepNkt(){
 
       //rewind to the first event
       g_CurrentNktSequence->currentBlockId=0;
-      //nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-      return;
-    }else
-       return;
+    }
+   return;
   }
 
   bStopped=FALSE;   // we replaying, so we have to reset this flag
@@ -558,7 +556,7 @@ if(g_CurrentNktSequence!=0){
 
          printf("Play sequence\t");
 
-         if(state&NKT_PLAY_ONCE){
+         if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
            printf("[ ONCE ]\n");
          }else{
            printf("[ LOOP ]\n");
@@ -570,15 +568,12 @@ if(g_CurrentNktSequence!=0){
 void switchReplayMode(void){
 
  if(g_CurrentNktSequence!=0){
-
      if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
-
         g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
         printf("Set replay mode: [ LOOP ]\n");
-
      }else{
-         g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
-         printf("Set replay mode: [ ONCE ]\n");
+        g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
+        printf("Set replay mode: [ ONCE ]\n");
      }
   }
 }
@@ -603,9 +598,6 @@ void NktDeinit(){
 
     deinitDebug();
 }
-
-
-
 
 #ifdef DEBUG_BUILD
 

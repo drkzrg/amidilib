@@ -15,15 +15,7 @@
 #include "memory/linalloc.h"
 #endif
 
-#define AMIDI_MAX_TRACKS 64         // 64 should be enough
-#define EOT_SILENCE_THRESHOLD 80	/* after EOT_SILENCE_THRESHOLD delta increments and null events on all tracks */
-                                    /* sequence is considered finished and ready to STOP or LOOP */
-/** sequence replay mode */
-typedef enum{
-  S_PLAY_ONCE=0x06,
-  S_PLAY_LOOP=0x08,
-  S_PLAY_RANDOM=0x10
-} ePlayMode;
+#define AMIDI_MAX_TRACKS 16         // 16 should be enough
 
 /** sequence type*/
 typedef enum{
@@ -32,26 +24,28 @@ typedef enum{
     ST_MULTI_SUB
 } eSequenceType;
 
-/** current track state */
-typedef enum{
-  PS_STOPPED=0x00,
-  PS_PLAYING=0x02,   
-  PS_PAUSED=0x04 
-} ePlayState;
+// track state and play mode
+typedef enum {
+    // play mode
+    TM_PLAY_ONCE  = 0b00000001, // play once if set, loop otherwise
+
+    // track state
+    TS_PS_PLAYING = 0b00000010, // playing if set, stopped otherwise
+    TS_PS_PAUSED  = 0b00000100, // paused if set
+} eTrackState;
+
 
 typedef struct EventList{
- struct EventList *pPrev,*pNext;
- sEventBlock_t eventBlock;
+  struct EventList *pPrev,*pNext;
+  sEventBlock_t eventBlock;
 } sEventList;
 
 typedef struct TrackState_t{
  U32 currentTempo;		      // quaternote duration in ms, 500ms default
  U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
  U32 timeElapsedInt;		  // track elapsed time
-
  sEventList *currEventPtr;
- ePlayState playState;		  // STOP, PLAY, PAUSED
- ePlayMode playMode;	      // current play mode (loop, play_once, random)
+ U16 playState;                   // bitfield with sequence state
                               // sets the active track, by default 0
  BOOL bMute;			      // if TRUE track events aren't sent to external module
 } sTrackState_t;
@@ -67,7 +61,6 @@ typedef struct Sequence_t{
    U8 *pSequenceName;                       // NULL terminated string */
    U32 timeElapsedFrac;                     // sequence elapsed time
    U32 timeStep;                            // sequence time step
-   U32 eotThreshold;                        // see define EOT_SILENCE_THRESHOLD */
    U16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
    U16 ubNumTracks;                         // number of tracks 1->AMIDI_MAX_TRACKS */
    U16 ubActiveTrack;                       // range 0-(ubNumTracks-1) tracks */

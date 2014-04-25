@@ -46,8 +46,8 @@ if(seq!=0){
             pTrackState->timeElapsedInt=0L;
             pTrackState->bMute=FALSE;
             pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
-            pTrackState->playState = getGlobalConfig()->playState;
-            pTrackState->playMode = getGlobalConfig()->playMode;
+            pTrackState->playState = getGlobalConfig()->initialTrackState;
+
         }
     } 
   
@@ -112,9 +112,8 @@ U8 mode=0,data=0;
          pTrackState->currentBPM=DEFAULT_BPM;
          pTrackState->timeElapsedInt=0L;
          pTrackState->bMute=FALSE;
-         pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
-         pTrackState->playState = getGlobalConfig()->playState;
-         pTrackState->playMode = getGlobalConfig()->playMode;
+         pTrackState->currEventPtr=pTrack->pTrkEventList;               // set begining of event list
+         pTrackState->playState = getGlobalConfig()->initialTrackState;
      }
     } 
   
@@ -145,12 +144,13 @@ if(g_CurrentSequence){
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrackState=&(g_CurrentSequence->arTracks[activeTrack]->currentState);
 
-      if(pTrackState->playMode==S_PLAY_ONCE){
+      if(pTrackState->playState&TM_PLAY_ONCE){
           //reset set state to stopped
           //reset song position on all tracks
-          pTrackState->playState=PS_STOPPED;
-        }else if(pTrackState->playMode==S_PLAY_LOOP){
-          pTrackState->playState=PS_PLAYING;
+          pTrackState->playState&=(~(TS_PS_PLAYING|TS_PS_PAUSED));
+        }else { // loop
+          pTrackState->playState&=(~TS_PS_PAUSED);
+          pTrackState->playState|=TS_PS_PLAYING;
         }
 
         am_allNotesOff(16);
@@ -201,7 +201,7 @@ void updateStepSingle(){
  pActiveTrackState=&(pTrack->currentState);
 
  //check sequence state if paused do nothing
-  if(pActiveTrackState->playState==PS_PAUSED) {
+  if(pActiveTrackState->playState&TS_PS_PAUSED) {
     am_allNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
@@ -211,15 +211,15 @@ void updateStepSingle(){
     return;
   }
 
-  switch(pActiveTrackState->playState){
-    case PS_PLAYING:{
-      bStopped=FALSE;
-    }break;
-    case PS_STOPPED:{
-      //check sequence state if stopped reset position on all tracks
-      //and reset tempo to default, but only once
+  if(pActiveTrackState->playState&TS_PS_PLAYING){
+     bStopped=FALSE;
+  }
 
-      if(bStopped==FALSE){
+  if(!(pActiveTrackState->playState&TS_PS_PLAYING)){
+     //check sequence state if stopped reset position on all tracks
+     //and reset tempo to default, but only once
+
+     if(bStopped==FALSE){
           bStopped=TRUE;
           pActiveTrackState=0;
           pTrack=0;
@@ -244,15 +244,9 @@ void updateStepSingle(){
           while(pActiveTrackState->currEventPtr->pPrev!=0){
               pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pPrev;
           }
-
-          return;
-      }else{
-          //do nothing
-          return;
-      }
-
-    }break;
-  };
+     }
+    return;
+  }
 
   bStopped=FALSE; //we replaying, so we have to reset this flag
 
@@ -360,7 +354,7 @@ void updateStepMulti(){
     pActiveTrackState=&(pTrack->currentState);
 
     //check sequence state if paused do nothing
-     if(pActiveTrackState->playState==PS_PAUSED) {
+     if(pActiveTrackState->playState&TS_PS_PAUSED) {
        am_allNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
@@ -369,30 +363,28 @@ void updateStepMulti(){
        return;
      }
 
-     switch(pActiveTrackState->playState){
-       case PS_PLAYING:{
-         bStopped=FALSE;
-       }break;
-       case PS_STOPPED:{
-         //check sequence state if stopped reset position on all tracks
-         //and reset tempo to default, but only once
+     if(pActiveTrackState->playState&TS_PS_PLAYING){
+        bStopped=FALSE;
+     }
 
-         if(bStopped==FALSE){
+     if(!(pActiveTrackState->playState&TS_PS_PLAYING)){
+        //check sequence state if stopped reset position on all tracks
+        //and reset tempo to default, but only once
+
+        if(bStopped==FALSE){
              bStopped=TRUE;
              pActiveTrackState=0;
              pTrack=0;
 
-             //reset tracks
-             for(int i=0;i<numOfTracks;++i){
-                pTrack=g_CurrentSequence->arTracks[i];
+             //reset track
+             pTrack=g_CurrentSequence->arTracks[0];
 
-                if(pTrack){
+             if(pTrack){
                    pActiveTrackState=&(pTrack->currentState);
                    pActiveTrackState->currentTempo=DEFAULT_MPQN;
                    pActiveTrackState->currentBPM=DEFAULT_BPM;
                    pActiveTrackState->timeElapsedInt=0L;
-                 }
-             }
+              }
 
              g_CurrentSequence->timeElapsedFrac=0L;
              g_CurrentSequence->timeStep=0L;
@@ -400,17 +392,13 @@ void updateStepMulti(){
              //reset tempo to initial valueas taken during start(get them from main sequence?)
              g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-            flushMidiSendBuffer();
-#endif
-             return;
-         }else{
-             //do nothing
-             return;
-         }
-
-       }break;
-     };
+             //rewind to the first event
+             while(pActiveTrackState->currEventPtr->pPrev!=0){
+                 pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pPrev;
+             }
+        }
+       return;
+     }
 
      bStopped=FALSE; //we replaying, so we have to reset this flag
 
@@ -521,7 +509,7 @@ BOOL isSeqPlaying(void){
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-        if(pTrack->currentState.playState==PS_PLAYING)
+        if(pTrack->currentState.playState&TS_PS_PLAYING)
           return TRUE;
         else
           return FALSE;
@@ -539,8 +527,8 @@ void stopSeq(void){
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-        if(pTrack->currentState.playState!=PS_STOPPED){
-          pTrack->currentState.playState=PS_STOPPED;
+        if(pTrack->currentState.playState&TS_PS_PLAYING||(pTrack->currentState.playState&&TS_PS_PAUSED)){
+          pTrack->currentState.playState&=(~(TS_PS_PLAYING|TS_PS_PAUSED));
           printf("Stop sequence\n");
         }
     }
@@ -565,17 +553,25 @@ void pauseSeq(){
     // for one sequence( single / multichannel) we will check state of the first track only
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
-    
+
     if(pTrack){
-        switch(pTrack->currentState.playState){
-            case PS_PLAYING:{
-                pTrack->currentState.playState=PS_PAUSED;
-                printf("Pause sequence\n");
-            }break;
-            case PS_PAUSED:{
-                pTrack->currentState.playState=PS_PLAYING;
-            }break;
-        };
+         U16 state=pTrack->currentState.playState;
+
+         if((state&TS_PS_PLAYING)&&(!(state&TS_PS_PAUSED))){
+          pTrack->currentState.playState&=(~TS_PS_PLAYING);
+          pTrack->currentState.playState|=TS_PS_PAUSED;
+
+          // all notes off
+          am_allNotesOff(16);
+
+          printf("Pause sequence\n");
+          return;
+         }
+
+         if(!(state&TS_PS_PLAYING)&&(state&TS_PS_PAUSED) ){
+           pTrack->currentState.playState&=(~TS_PS_PAUSED); //unpause
+           pTrack->currentState.playState|=TS_PS_PLAYING;  //set playing state
+         }
     }
   }
   //all notes off
@@ -583,25 +579,26 @@ void pauseSeq(){
 }//pauseSeq
 
 void playSeq(void){
-
  if(g_CurrentSequence!=0){
     //set state
     U8 activeTrack=g_CurrentSequence->ubActiveTrack;
     sTrack_t *pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-        if(pTrack->currentState.playState==PS_STOPPED) {
-            pTrack->currentState.playState=PS_PLAYING;
+        U16 state=pTrack->currentState.playState;
+
+        if(!(state&TS_PS_PLAYING)) {
+
+            pTrack->currentState.playState&=(~(TS_PS_PAUSED));
+            pTrack->currentState.playState|=TS_PS_PLAYING;
+
             printf("Play sequence\t");
 
-            switch(pTrack->currentState.playMode){
-                case  S_PLAY_ONCE: printf("[ ONCE ]\n"); break;
-                case  S_PLAY_LOOP: printf("[ LOOP ]\n"); break;
-                case  S_PLAY_RANDOM: printf("[ RANDOM ]\n"); break;
-
-                default: printf("\n"); break;
-
-            };
+            if(pTrack->currentState.playState&TM_PLAY_ONCE){
+              printf("[ ONCE ]\n");
+            }else{
+              printf("[ LOOP ]\n");
+            }
         }
     }
 
@@ -622,18 +619,14 @@ void toggleReplayMode(void){
   if(g_CurrentSequence!=0){
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
+    U16 state=pTrack->currentState.playState;
 
-    if(pTrack){
-        switch(pTrack->currentState.playMode){
-          case S_PLAY_ONCE:{
-               pTrack->currentState.playMode=S_PLAY_LOOP;
-               printf("Set replay mode: [ LOOP ]\n");
-          }break;
-          case S_PLAY_LOOP:{
-                pTrack->currentState.playMode=S_PLAY_ONCE;
-                printf("Set replay mode: [ ONCE ]\n");
-          }break;
-        }
+    if(state&TM_PLAY_ONCE){
+       pTrack->currentState.playState&=(~TM_PLAY_ONCE);
+       printf("Set replay mode: [ LOOP ]\n");
+    }else{
+        pTrack->currentState.playState|=TM_PLAY_ONCE;
+        printf("Set replay mode: [ ONCE ]\n");
     }
   }
 }
@@ -677,7 +670,6 @@ if(g_CurrentSequence){
     printf("Td/PPQN: %u\n",g_CurrentSequence->timeDivision);
     printf("Time step: %lu\n",g_CurrentSequence->timeStep);
     printf("Time elapsedFrac: %lu\n",g_CurrentSequence->timeElapsedFrac);
-    printf("EOT threshold: %lu\n",g_CurrentSequence->eotThreshold);
 
     sTrack_t *pTrack=0;
 
@@ -693,8 +685,7 @@ if(g_CurrentSequence){
          printf("\tTime elapsed: %lu\n",pTrackState->timeElapsedInt);
          printf("\tCur BPM: %lu\n",pTrackState->currentBPM);
          printf("\tCur Tempo: %lu\n",pTrackState->currentTempo);
-         printf("\tPlay mode: %s\n",getPlayModeStr(pTrackState->playMode));
-         printf("\tPlay state: %s\n",getPlayStateStr(pTrackState->playState));
+         printf("\tCur Play state: %s\n",getPlayStateStr(pTrackState->playState));
          printf("\tMute: %d\n",pTrackState->bMute);
       }
     }break;
@@ -704,8 +695,7 @@ if(g_CurrentSequence){
 
         printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
         printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
-        printf("Play mode: %s\n",getPlayModeStr(pTrackState->playMode));
-        printf("Play state: %s\n",getPlayStateStr(pTrackState->playState));
+        printf("Cur Play state: %s\n",getPlayStateStr(pTrackState->playState));
         printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
         printf("Cur BPM: %lu\n",pTrackState->currentBPM);
 
@@ -736,8 +726,7 @@ if(g_CurrentSequence){
                 printf("Time elapsed: %lu\n",pTrackState->timeElapsedInt);
                 printf("Cur BPM: %lu\n",pTrackState->currentBPM);
                 printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
-                printf("Play mode: %s\n",getPlayModeStr(pTrackState->playMode));
-                printf("Play state: %s\n",getPlayStateStr(pTrackState->playState));
+                printf("Cur play state: %s\n",getPlayStateStr(pTrackState->playState));
                 printf("Mute: %d\n",pTrackState->bMute);
             }
         }
@@ -755,38 +744,17 @@ if(g_CurrentSequence){
 
 }
 
+const U8 *getPlayStateStr(const U16 state){
 
-const U8 *getPlayStateStr(const ePlayState state){
-
-    switch(state){
-        case PS_STOPPED:
-            return "Stopped";
-        break;
-        case PS_PLAYING:
-            return "Playing";
-        break;
-        case PS_PAUSED:
-            return "Paused";
-        break;
-        default:
-            return NULL;
+    if( !(state&TS_PS_PLAYING) && (state&TS_PS_PAUSED) ){
+       return "Paused";
+    }else if(state&TS_PS_PLAYING && !state&TS_PS_PAUSED){
+       return "Playing";
+    }else if(!(state&TS_PS_PLAYING)){
+       return "Stopped...";
     }
 }
 
-const U8 *getPlayModeStr(const ePlayMode mode){
-    switch(mode){
-        case S_PLAY_ONCE:
-            return "Play once";
-        break;
-        case S_PLAY_LOOP:
-            return "Loop";
-        break;
-        case S_PLAY_RANDOM:
-            return "Random";
-        break;
-        default:
-            return NULL;
-    }
-}
+
 
 

@@ -11,7 +11,6 @@
 #include "amidiseq.h"
 
 
-
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
 */
@@ -56,8 +55,6 @@ void am_destroySequence (sSequence_t **pPtr);
 /** Outputs current sequence state. */
 void printSequenceState();
 
-const U8 *getPlayModeStr(const ePlayMode mode);
-const U8 *getPlayStateStr(const ePlayState state);
-
+const U8 *getPlayStateStr(const U16 mode);
 
 #endif

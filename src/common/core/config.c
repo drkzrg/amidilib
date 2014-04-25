@@ -16,8 +16,8 @@
 //internal configuration
 static tAmidiConfig configuration;
 
-static const U16 CONFIG_VERSION = 3; 	//config version, changed default event memory pools for events
-
+static const U16 CONFIG_VERSION = 4; 	// config version, changed default event memory pools for events
+                                        // +1 removed EOT threshold, trackstate on bitfield, removed LZO from config
 static const U8 TRUE_TAG[] = "true";
 static const U8 FALSE_TAG[] = "false";
 
@@ -26,35 +26,37 @@ static const U8 versionTag[]={"ver"};
 static const U8 connectedDeviceTag[]={"deviceType"};
 static const U8 operationModeTag[]={"deviceOperationMode"};
 static const U8 midiChannelTag[]={"midiChannel"}; 
-static const U8 playModeTag[]={"defaultPlayMode"};
+static const U8 initialTrackStateTag[]={"defaultInitialTrackState"};
 static const U8 playStateTag[]={"defaultPlayState"};
+
+#ifdef EVENT_LINEAR_BUFFER
 static const U8 eventPoolSizeTag[]={"eventPoolSize"};
 static const U8 eventDataAllocatorSizeTag[]={"eventDataAllocatorSize"};   
+#endif
+
 static const U8 midiBufferSizeTag[]={"midiBufferSize"};
 static const U8 midiConnectionTimeoutTag[]={"midiConnectionTimeout"};
 static const U8 handshakeCommunicationEnabledTag[]={"handshakeEnabled"};
 static const U8 streamedTag[]={"streamingEnabled"};
 static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
-static const U8 silenceThresholdTag[]={"silenceThreshold"};
 
-//default values
+// default values
+#ifdef EVENT_LINEAR_BUFFER
 static const U32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
 static const U32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
-static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    //default operation mode (not used yet)
+#endif
 
-static const U16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    //default connected device
-static const U16 DEFAULT_MIDI_CHANNEL = 1; 	    //default midi channel
-static const U16 DEFAULT_OP_MODE = 0; 	    	    //default operation mode (not used yet)
-static const U16 DEFAULT_PLAY_MODE = S_PLAY_ONCE;
-static const U16 DEFAULT_PLAY_STATE = PS_STOPPED;
-static const U16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5; 	    //external midi module connection timeout
-static const U16 DEFAULT_MIDI_SILENCE_THRESHOLD = EOT_SILENCE_THRESHOLD;    //track silence threshold
+static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    // default operation mode (not used yet)
+
+static const U16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    // default connected device
+static const U16 DEFAULT_MIDI_CHANNEL = 1;                                      // default midi channel
+static const U16 DEFAULT_OP_MODE = 0;                                           // default operation mode //TODO: make it on strings / human readable
+static const U16 DEFAULT_TRACK_STATE = TM_PLAY_ONCE;
+static const U16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                           // external midi module connection timeout
 static const BOOL DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
-static const BOOL DEFAULT_USE_STREAMING = FALSE;
-static const BOOL DEFAULT_USE_LZO = FALSE;
+static const BOOL DEFAULT_USE_STREAMING = FALSE;                                // not used atm
 
 static const U16 CONFIG_SIZE = 512;		    //should be sufficient		 
-
 
 
 S32 parseConfig (const U8* pData, const tMEMSIZE bufferLenght);
@@ -71,16 +73,17 @@ S32 saveConfig(const U8 *configFileName){
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", operationModeTag,configuration.operationMode);
   
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiChannelTag,configuration.midiChannel);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playModeTag,configuration.playMode);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", playStateTag,configuration.playState);
+  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", initialTrackStateTag,configuration.initialTrackState);
+
+#ifdef EVENT_LINEAR_BUFFER
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %lu\r\n", eventPoolSizeTag,configuration.eventPoolSize);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %lu\r\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
+#endif
+
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", midiBufferSizeTag,configuration.midiBufferSize);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %ld\r\n", silenceThresholdTag,configuration.midiSilenceThreshold);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", lzoCompressionTag,configuration.useLZO?TRUE_TAG:FALSE_TAG);
   
   //save configuration state to file
   if(saveFile(configFileName,(void *)configData,length)>=0L){
@@ -126,16 +129,18 @@ void setDefaultConfig(){
   configuration.connectedDeviceType = DEFAULT_CONNECTED_DEVICE_TYPE; 	//default is CM32L output device with extra patches	
   configuration.operationMode=DEFAULT_OP_MODE;	
   configuration.midiChannel = DEFAULT_MIDI_CHANNEL;	
-  configuration.playMode = DEFAULT_PLAY_MODE;				//play once or in loop
-  configuration.playState = DEFAULT_PLAY_STATE;				//default play state: STOPPED or playing
+  configuration.initialTrackState = DEFAULT_TRACK_STATE;				// play once or in loop
+
+#ifdef EVENT_LINEAR_BUFFER
   configuration.eventPoolSize=DEFAULT_EVENT_POOL_SIZE;
   configuration.eventDataAllocatorSize=DEFAULT_EVENT_ALLOC_SIZE;
+#endif
+
   configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
   configuration.midiConnectionTimeOut=DEFAULT_MIDI_CONNECTION_TIMEOUT;	//5s by default
-  configuration.midiSilenceThreshold=DEFAULT_MIDI_SILENCE_THRESHOLD;	
   configuration.handshakeModeEnabled=DEFAULT_HANDSHAKEMODE_ENABLED;
   configuration.streamed=DEFAULT_USE_STREAMING;	
-  configuration.useLZO=DEFAULT_USE_LZO;		
+
 }
 
 //copies config
@@ -146,16 +151,18 @@ void setGlobalConfig(tAmidiConfig *newConfig){
   configuration.operationMode=newConfig->operationMode;	
   
   configuration.midiChannel=newConfig->midiChannel;	
-  configuration.playMode=newConfig->playMode;		
-  configuration.playState=newConfig->playState;		
+  configuration.initialTrackState=newConfig->initialTrackState;
+
+#ifdef EVENT_LINEAR_BUFFER
   configuration.eventPoolSize=newConfig->eventPoolSize;
   configuration.eventDataAllocatorSize=newConfig->eventDataAllocatorSize;
+#endif
+
   configuration.midiBufferSize=newConfig->midiBufferSize;
   configuration.midiConnectionTimeOut=newConfig->midiConnectionTimeOut;
-  configuration.midiSilenceThreshold=newConfig->midiSilenceThreshold;
   configuration.handshakeModeEnabled=newConfig->handshakeModeEnabled;
   configuration.streamed=newConfig->streamed;		
-  configuration.useLZO=newConfig->useLZO;		
+
 }
 
 const tAmidiConfig *getGlobalConfig(){
@@ -192,18 +199,14 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
     configuration.midiChannel=DEFAULT_MIDI_CHANNEL;
   }
   
-  iError=getUShortVal(playModeTag,pData,bufferLenght,&configuration.playMode);
-  if(iError<0){
-    configuration.playMode=DEFAULT_PLAY_MODE;
-  }
-  
-  
-  iError=getUShortVal(playStateTag,pData,bufferLenght,&configuration.playState);
+
+  iError=getUShortVal(initialTrackStateTag,pData,bufferLenght,&configuration.initialTrackState);
   
   if(iError<0){
-    configuration.playState=DEFAULT_PLAY_STATE;
+    configuration.initialTrackState=DEFAULT_TRACK_STATE;
   }
   
+#ifdef EVENT_LINEAR_BUFFER
   iError=getUIntVal(eventPoolSizeTag,pData,bufferLenght,&configuration.eventPoolSize);
   
   if(iError<0){
@@ -214,23 +217,18 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
   if(iError<0){
     configuration.eventDataAllocatorSize=DEFAULT_EVENT_ALLOC_SIZE;
   }
-  
+#endif
+
   iError=getIntVal(midiConnectionTimeoutTag,pData,bufferLenght,&configuration.midiConnectionTimeOut);
   
   if(iError<0){
     configuration.midiConnectionTimeOut=DEFAULT_MIDI_CONNECTION_TIMEOUT;
   }
   
-  iError=getIntVal(silenceThresholdTag,pData,bufferLenght,&configuration.midiSilenceThreshold);
-  
+  iError=getIntVal(midiBufferSizeTag,pData,bufferLenght,&configuration.midiBufferSize);
   if(iError<0){
-     configuration.midiSilenceThreshold=DEFAULT_MIDI_SILENCE_THRESHOLD;
+    configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
   }
-  
-     iError=getIntVal(midiBufferSizeTag,pData,bufferLenght,&configuration.midiBufferSize);
-      if(iError<0){
-        configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
-      }
 
   iError=getBoolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled); 
   if(iError<0){
@@ -241,11 +239,6 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
   
   if(iError<0){
     configuration.streamed=DEFAULT_USE_STREAMING;
-  }
-  
-  iError=getBoolVal(lzoCompressionTag,pData,bufferLenght,&configuration.useLZO); 
-  if(iError<0){
-    configuration.useLZO=DEFAULT_USE_LZO;
   }
   
   return iError;

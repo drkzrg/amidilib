@@ -42,4 +42,12 @@ typedef struct{
 
 sEvent *getTestSequenceChannel(U8 chNb);
 
+typedef enum{
+ S_PLAY_LOOP=0,
+ S_PLAY_ONCE=1,
+ PS_PAUSED=2,
+ PS_PLAYING=3,
+ PS_STOPPED=4
+}ePlayModeStates;
+
 #endif

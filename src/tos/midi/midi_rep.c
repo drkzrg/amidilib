@@ -44,9 +44,8 @@ if(seq!=0){
             pTrackState->currentTempo=DEFAULT_MPQN;
             pTrackState->currentBPM=DEFAULT_BPM;
             pTrackState->timeElapsedInt=0L;
-            pTrackState->bMute=FALSE;
             pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
-            pTrackState->playState = getGlobalConfig()->initialTrackState;
+            pTrackState->playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
 
         }
     } 
@@ -111,9 +110,8 @@ U8 mode=0,data=0;
          pTrackState->currentTempo=DEFAULT_MPQN;
          pTrackState->currentBPM=DEFAULT_BPM;
          pTrackState->timeElapsedInt=0L;
-         pTrackState->bMute=FALSE;
          pTrackState->currEventPtr=pTrack->pTrkEventList;               // set begining of event list
-         pTrackState->playState = getGlobalConfig()->initialTrackState;
+         pTrackState->playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
      }
     } 
   
@@ -607,7 +605,7 @@ void playSeq(void){
 
 void muteTrack(const U16 trackNb,const BOOL bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
-    g_CurrentSequence->arTracks[trackNb]->currentState.bMute=bMute;
+    g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
     printf("Mute track %d\n",trackNb);
   }
 }
@@ -686,7 +684,7 @@ if(g_CurrentSequence){
          printf("\tCur BPM: %lu\n",pTrackState->currentBPM);
          printf("\tCur Tempo: %lu\n",pTrackState->currentTempo);
          printf("\tCur Play state: %s\n",getPlayStateStr(pTrackState->playState));
-         printf("\tMute: %d\n",pTrackState->bMute);
+         printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
       }
     }break;
     case ST_MULTI:{
@@ -707,7 +705,7 @@ if(g_CurrentSequence){
                 printf("Track[%d]\t",i);
                 pTrackState=&(pTrack->currentState);
                 printf("\tTime elapsed: %lu\t",pTrackState->timeElapsedInt);
-                printf("\tMute: %d\n",pTrackState->bMute);
+                printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
             }
         }
     }break;
@@ -727,7 +725,7 @@ if(g_CurrentSequence){
                 printf("Cur BPM: %lu\n",pTrackState->currentBPM);
                 printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
                 printf("Cur play state: %s\n",getPlayStateStr(pTrackState->playState));
-                printf("Mute: %d\n",pTrackState->bMute);
+                printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
             }
         }
 

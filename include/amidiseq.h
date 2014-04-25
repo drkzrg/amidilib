@@ -28,7 +28,7 @@ typedef enum{
 typedef enum {
     // play mode
     TM_PLAY_ONCE  = 0b00000001, // play once if set, loop otherwise
-
+    TM_MUTE = 0b10000000,       // mute track if set
     // track state
     TS_PS_PLAYING = 0b00000010, // playing if set, stopped otherwise
     TS_PS_PAUSED  = 0b00000100, // paused if set
@@ -46,8 +46,7 @@ typedef struct TrackState_t{
  U32 timeElapsedInt;		  // track elapsed time
  sEventList *currEventPtr;
  U16 playState;                   // bitfield with sequence state
-                              // sets the active track, by default 0
- BOOL bMute;			      // if TRUE track events aren't sent to external module
+                                  // sets the active track, by default 0
 } sTrackState_t;
 
  typedef struct Track_t{

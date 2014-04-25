@@ -63,7 +63,7 @@ switch(fileTypeFlag){
       (*pCurSequence)->seqType=ST_SINGLE;
 
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -76,8 +76,7 @@ switch(fileTypeFlag){
         return NULL;
       }
 
-      //So coooooool......
-      pTempTrack->currentState.bMute=FALSE;
+
     }
     break;
      case T_MIDI1:{
@@ -88,7 +87,7 @@ switch(fileTypeFlag){
       /* add all of them to given track */
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -100,9 +99,6 @@ switch(fileTypeFlag){
       if(*iError<0) {
         return NULL;
       }
-
-      //So coooooool......
-      pTempTrack->currentState.bMute=FALSE;
 
       /* increase track counter */
       ++trackCounter;
@@ -136,7 +132,7 @@ switch(fileTypeFlag){
       /* add all of them to given track */
       sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
 
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState;
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
       pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM=DEFAULT_BPM;
 
@@ -148,9 +144,6 @@ switch(fileTypeFlag){
       if(*iError<0) {
         return NULL;
       }
-
-      //So coooooool......
-      pTempTrack->currentState.bMute=FALSE;
 
       /* increase track counter */
       ++trackCounter;

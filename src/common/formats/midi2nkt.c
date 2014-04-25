@@ -50,7 +50,6 @@ typedef struct sBufferInfo{
  U32 bufPos;
  U32 blocks_written;
  U32 bytes_written;
- BOOL bCompress;
  void *pCompWrkBuf; // working buffer used for compression
 } sBufferInfo_t;
 
@@ -547,55 +546,47 @@ BOOL error=FALSE;
 FILE* file=0;
 sNktHd nktHead;
 sBufferInfo_t BufferInfo;
+BOOL bCompressionEnabled=bCompress;
 
 if(pOutFileName){
    // create file header
-   amTrace("Writing NKT file to: %s\n",pOutFileName);
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
-
    file = fopen(pOutFileName, "rwb");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
+}else{
+    return -1;
 }
 
-BufferInfo.bCompress=bCompress;
 BufferInfo.pCompWrkBuf=0;
 
-if(bCompress!=FALSE){
+if(bCompressionEnabled!=FALSE){
  BufferInfo.pCompWrkBuf=amMallocEx(LZO1X_MEM_COMPRESS,PREFER_TT);
  amMemSet(BufferInfo.pCompWrkBuf,0,LZO1X_MEM_COMPRESS);
 
  if(BufferInfo.pCompWrkBuf==0){
   fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
-  BufferInfo.bCompress=FALSE;
+  bCompressionEnabled=FALSE;
  }
 
- if(BufferInfo.bCompress!=FALSE){
+ if(bCompressionEnabled!=FALSE){
      if(lzo_init()!=LZO_E_OK){
          fprintf(stderr,"Could't initialise LZO library. Turning off compression.\n");
-         BufferInfo.bCompress=FALSE;
      }else{
-         fprintf(stderr,"LZO init ok.\n");
+         fprintf(stderr,"[LZO] init ok.\n");
      }
  }
 
 }
 
 // process event and store them into file
+fprintf(stderr,"[MID->NKT] processing data ...\n");
 error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
 
-if(file){
-   fseek(file, 0, SEEK_SET);
-   // update header
-   nktHead.NbOfBlocks = BufferInfo.blocks_written;
-   nktHead.NbOfBytesData = BufferInfo.bytes_written;
-   fwrite(&nktHead, sizeof(sNktHd), 1, file);
- }
 
 // optional step LZO compression
-if(BufferInfo.bCompress!=FALSE){
-
+if(bCompressionEnabled!=FALSE){
     // read file beside the header
-    rewind(file);
+
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
 
     S32 fStart = ftell(file);
@@ -607,7 +598,7 @@ if(BufferInfo.bCompress!=FALSE){
     U8 *pData=amMallocEx(sizeOfBlock,PREFER_TT);
 
     rewind(file);
-    //fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
+    fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
 
     if(pData!=NULL){
         U32 read=fread((void *)pData,sizeOfBlock,1,file);
@@ -621,14 +612,14 @@ if(BufferInfo.bCompress!=FALSE){
             if(pTempBuf!=0){
              amMemSet(pTempBuf,0,sizeOfBlock/16);
 
-             if(lzo1x_1_compress(pData,sizeOfBlock,pTempBuf,&nbBytesPacked,BufferInfo.pCompWrkBuf)!=LZO_E_OK){
-                  fprintf(stderr,"[LZO] Compression error...\n");
-             }else{
+             if(lzo1x_1_compress(pData,sizeOfBlock,pTempBuf,&nbBytesPacked,BufferInfo.pCompWrkBuf)==LZO_E_OK){
+
                if (nbBytesPacked >= sizeOfBlock){
                   fprintf(stderr,"[LZO] Block contains incompressible data.\n");
                }else{
-                  fprintf(stderr,"[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock,nbBytesPacked);
+
 #if 0
+                  fprintf(stderr,"[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
                // buffer decompression test
                   fprintf(stderr,"[LZO] Decompressing ...\n");
 
@@ -639,50 +630,59 @@ if(BufferInfo.bCompress!=FALSE){
                       fprintf(stderr,"[LZO] Block decompressed: %lu, packed: %lu\n",sizeOfBlock,nbBytesPacked);
                   }
 #endif
+#ifdef DEBUG_BUILD
+                    amTrace("[CDATA] ");
+                        for(int j=0;j<nbBytesPacked;j++){
+                            amTrace("%x",pTempBuf[j]);
+                        }
+                    amTrace(" [/CDATA]\n");
+#endif
 
-                  // store compressed block
-                  fseek(file, 0, SEEK_SET);
-
-                  // update header
+                  fclose(file); file=0;
                   nktHead.bytesPacked = nbBytesPacked;
                   nktHead.bPacked = TRUE;
-                  fwrite(&nktHead, sizeof(sNktHd), 1, file);
+
+                  file = fopen(pOutFileName, "wb");
+                  fseek(file, sizeof(sNktBlock_t),SEEK_SET);
+
+                  // store compressed block
                   fwrite(pTempBuf,nbBytesPacked,1,file);
                }
+             }else{
+                 fprintf(stderr,"[LZO] Compression error...\n");
              }
+
+              amFree((void **)&pTempBuf);
+
             }else{
                 fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",BufferInfo.bufPos,nbBytesPacked);
             }
 
-        #ifdef DEBUG_BUILD
-            amTrace("[CDATA] ");
-            for(int j=0;j<nbBytesPacked;j++){
-                amTrace("0x%x ",pTempBuf[j]);
-            }
-            amTrace(" [/CDATA]\n");
-        #endif
-         amFree((void **)&pTempBuf);
-
         }else{
-             fprintf(stderr, "[LZO] read data error...\n");
+           fprintf(stderr, "[LZO] read data error...\n");
         }
        amFree((void **)&pData);
     }else{
       fprintf(stderr, "[LZO] Error: allocating temporary buffer failed\n");
     }
 
- fclose(file); file=0;
-
 } //end compression
 
+if(BufferInfo.pCompWrkBuf!=0){
+  amFree((void **)&BufferInfo.pCompWrkBuf);
+}
 
- if(BufferInfo.pCompWrkBuf!=0){
-   amFree((void **)&BufferInfo.pCompWrkBuf);
- }
 
  if(file){
-     fclose(file); file=0;
-     amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+    rewind(file);
+    // update header
+    nktHead.NbOfBlocks = BufferInfo.blocks_written;
+    nktHead.NbOfBytesData = BufferInfo.bytes_written;
+
+    fwrite(&nktHead, sizeof(sNktHd), 1, file);
+
+    fclose(file); file=0;
+    amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
 
 

@@ -34,7 +34,7 @@ U8 *filePath=0;
       filePath=argv[2];
 
   }else{
-      fprintf(stderr,"No specified mid/mus filename or bad parameters! Exiting ...\n");
+      fprintf(stderr,"No specified mid / mus filename or bad parameters! Exiting ...\n");
       deinitDebug();
       getchar();
       return 0;

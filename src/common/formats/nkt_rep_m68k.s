@@ -39,7 +39,7 @@ _replayNktTC:
 .send:
         ;slap data to d0
         move.w	(a0),d0	;get word
-        clr.w	(a0)+ 	;clear it
+        ;clr.w	(a0)+ 	;clear it
 
         move.w	d0,d2		;make copy
         andi.w	#$FF00,d2
@@ -109,7 +109,7 @@ _replayNktTB:
 .send:
       ; slap data to d0
       move.w	(a0),d0	;get word
-      clr.w	(a0)+ 	;clear it
+      ;clr.w	(a0)+ 	;clear it
 
       move.w	d0,d2		;make copy
       andi.w	#$FF00,d2

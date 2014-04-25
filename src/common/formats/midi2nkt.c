@@ -551,7 +551,7 @@ BOOL bCompressionEnabled=bCompress;
 if(pOutFileName){
    // create file header
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
-   file = fopen(pOutFileName, "rwb");
+   file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
 }else{
     return -1;

@@ -8,6 +8,8 @@
 #include "amlog.h"
 #include "rol_ptch.h"
 
+#include "minilzo.h" //lzo depack
+
 // nkt replay
 extern void replayNktTC(void);
 extern void replayNktTB(void);
@@ -192,7 +194,6 @@ void updateStepNkt(){
 
        //next event
        ++(g_CurrentNktSequence->currentBlockId);
-       //nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
        return;
    }
 
@@ -333,6 +334,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          return NULL;
     }
 
+
    pNewSeq->NbOfBlocks=tempHd.NbOfBlocks;
    pNewSeq->dataBufferSize=tempHd.NbOfBytesData;
    pNewSeq->timeDivision=tempHd.division;
@@ -408,45 +410,132 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     sNktBlk blk;
     BOOL bFinished=FALSE;
     int i=0;
-
     U8 *pTempPtr = pNewSeq->pEventDataBuffer;
 
-    while( (!feof(fp))&&(i<pNewSeq->NbOfBlocks)){
-            U32 tempDelta,delta=0;
-            U8 count=0;
+    // check if file is compressed
+    if(tempHd.bPacked!=FALSE){
+        fseek(fp,sizeof(sNktHd),SEEK_SET);
+        // allocate temp buffer for unpacked data
+        U32 destSize=tempHd.NbOfBlocks*sizeof(sNktBlock_t)+tempHd.NbOfBytesData;
 
-            fread(&tempDelta,sizeof(U32),1,fp);
-            delta=readVLQ((U8*)&tempDelta,&count);
-            amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+        fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n",tempHd.bytesPacked,destSize);
 
-            // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
-            fseek(fp,-(sizeof(U32)-count),1);
+        void *pDepackBuf=amMallocEx(tempHd.bytesPacked,PREFER_TT); //packed data buffer
+        void *pOutputBuf=amMallocEx(destSize,PREFER_TT);    // depacked midi data
+        void *pWrkBuffer=amMallocEx(destSize/16,PREFER_TT); // lzo work buffer
 
-            // read msg block
-            fread(&blk,sizeof(sNktBlk),1,fp);
-            pNewSeq->pEvents[i].delta=delta;
-            pNewSeq->pEvents[i].msgType=blk.msgType;
-            pNewSeq->pEvents[i].blockSize=blk.blockSize;
+        if(pDepackBuf!=0&&pOutputBuf!=0&&pWrkBuffer!=0){
+         amMemSet(pDepackBuf,0,tempHd.bytesPacked);
+         amMemSet(pOutputBuf,0,destSize);
+         amMemSet(pWrkBuffer,0,destSize/16);
 
-            amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
+         if(fread(pDepackBuf,tempHd.bytesPacked,1,fp)==1){
 
-            if(pNewSeq->pEvents[i].blockSize!=0){
+             // decompress data
+             fprintf(stderr,"[LZO] Decompressing ...\n");
 
-                // assign buffer memory pointer for data, size blk.blockSize
-                pNewSeq->pEvents[i].pData=pTempPtr;
-                pTempPtr+=blk.blockSize;
+                 if(lzo1x_decompress_safe(pDepackBuf,tempHd.bytesPacked,pOutputBuf,&destSize,pWrkBuffer)==LZO_E_OK){
+                     // process data
+                     fprintf(stderr,"[LZO] Block decompressed: %lu, packed: %lu\n",destSize,tempHd.bytesPacked);
+                     U8 *pData = pOutputBuf;
 
-                fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
+                     // process decompressed data directly from file
+                     while(i<pNewSeq->NbOfBlocks){
+                             U32 tempDelta,delta=0;
+                             U8 count=0;
 
-                /*if(blk.msgType==NKT_TEMPO_CHANGE){
-                       U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
-                       amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
-                }*/
-            }
-        ++i;
+                             delta=readVLQ(pData,&count);
+                             amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+                             pData+=count;
+
+                             // read msg block
+                             //  fread(&blk,sizeof(sNktBlk),1,fp);
+                             pNewSeq->pEvents[i].delta=delta;
+                             pNewSeq->pEvents[i].msgType=((sNktBlk *)pData)->msgType;
+                             pNewSeq->pEvents[i].blockSize=((sNktBlk *)pData)->blockSize;
+
+                             pData+=sizeof(sNktBlk);
+                             amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
+
+                             if(pNewSeq->pEvents[i].blockSize!=0){
+
+                                 // assign buffer memory pointer for data, size blk.blockSize
+                                 pNewSeq->pEvents[i].pData=pTempPtr;
+                                 pTempPtr+=blk.blockSize;
+
+                                 amMemCpy(pNewSeq->pEvents[i].pData,pData,blk.blockSize);
+                                 pData+=blk.blockSize;
+
+                                 /*if(blk.msgType==NKT_TEMPO_CHANGE){
+                                        U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
+                                        amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
+                                 }*/
+                             }
+                         ++i;
+                     }
+
+
+
+                     fprintf(stderr,"[LZO] OK\n");
+
+                 }else{
+                     fprintf(stderr,"[LZO] Data decompression error.\n");
+                 }
+            }else{
+             fprintf(stderr,"[LZO] Data read failed ..\n");
+          }
+
+        // deallocate temp buffers
+            amFree((void**)&pWrkBuffer);
+            amFree((void**)&pOutputBuf);
+            amFree((void**)&pDepackBuf);
+
+            getchar();
+            return NULL;
+        }else{
+            fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
+            getchar();
+            return NULL;
+        }
+    }else{
+        // process decompressed data directly from file
+        while( (!feof(fp))&&(i<pNewSeq->NbOfBlocks)){
+                U32 tempDelta,delta=0;
+                U8 count=0;
+
+                fread(&tempDelta,sizeof(U32),1,fp);
+                delta=readVLQ((U8*)&tempDelta,&count);
+                amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+
+                // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
+                fseek(fp,-(sizeof(U32)-count),1);
+
+                // read msg block
+                fread(&blk,sizeof(sNktBlk),1,fp);
+                pNewSeq->pEvents[i].delta=delta;
+                pNewSeq->pEvents[i].msgType=blk.msgType;
+                pNewSeq->pEvents[i].blockSize=blk.blockSize;
+
+                amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
+
+                if(pNewSeq->pEvents[i].blockSize!=0){
+
+                    // assign buffer memory pointer for data, size blk.blockSize
+                    pNewSeq->pEvents[i].pData=pTempPtr;
+                    pTempPtr+=blk.blockSize;
+
+                    fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
+
+                    /*if(blk.msgType==NKT_TEMPO_CHANGE){
+                           U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
+                           amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
+                    }*/
+                }
+            ++i;
+        }
+
+        fclose(fp);fp=0;
     }
-
-    fclose(fp);fp=0;
 
 #ifdef LOAD_TEST
 for (U32 i=0;i<pNewSeq->NbOfBlocks;++i){
@@ -459,12 +548,11 @@ for (U32 i=0;i<pNewSeq->NbOfBlocks;++i){
            amTrace("0x%02x ",data[j]);
        }
        amTrace(" [/DATA]\n");
-
 }
 #endif
 //
 
-    return pNewSeq;
+ return pNewSeq;
 }
 
 void destroySequence(sNktSeq *pSeq){

@@ -6,6 +6,7 @@
 #include "fmio.h"           // disc i/o
 #include "amlog.h"          // logging
 #include "midi.h"           // midi
+#include "midi2nkt.h"
 
 #define MIDI_OUT_TEMP (72*1024) // temporary buffer for MUS->MID conversion
 

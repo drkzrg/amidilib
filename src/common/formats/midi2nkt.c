@@ -601,9 +601,9 @@ if(bCompressionEnabled!=FALSE){
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
 
     if(pData!=NULL){
-        U32 read=fread((void *)pData,sizeOfBlock,1,file);
+        U32 read=fread((void *)pData,1,sizeOfBlock,file);
          fprintf(stderr, "[LZO] read data %lu bytes.\n",read);
-        if(read==1){
+        if(read==sizeOfBlock){
             U32 nbBytesPacked=0;
 
             // allocate temp buffer
@@ -617,10 +617,9 @@ if(bCompressionEnabled!=FALSE){
                if (nbBytesPacked >= sizeOfBlock){
                   fprintf(stderr,"[LZO] Block contains incompressible data.\n");
                }else{
-
-#if 0
+#if 1
                   fprintf(stderr,"[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
-               // buffer decompression test
+                  // buffer decompression test
                   fprintf(stderr,"[LZO] Decompressing ...\n");
 
                   //lzo1x_decompress()
@@ -643,10 +642,11 @@ if(bCompressionEnabled!=FALSE){
                   nktHead.bPacked = TRUE;
 
                   file = fopen(pOutFileName, "wb");
-                  fseek(file, sizeof(sNktBlock_t),SEEK_SET);
+                  fseek(file, sizeof(sNktHd),SEEK_SET);
 
                   // store compressed block
-                  fwrite(pTempBuf,nbBytesPacked,1,file);
+                  U32 writ=fwrite(pTempBuf,1,nbBytesPacked,file);
+                  fprintf(stderr,"[LZO] compressed data block: %lu bytes written\n",writ);
                }
              }else{
                  fprintf(stderr,"[LZO] Compression error...\n");
@@ -679,8 +679,8 @@ if(BufferInfo.pCompWrkBuf!=0){
     nktHead.NbOfBlocks = BufferInfo.blocks_written;
     nktHead.NbOfBytesData = BufferInfo.bytes_written;
 
-    fwrite(&nktHead, sizeof(sNktHd), 1, file);
-
+    U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
+    fprintf(stderr,"Header data block: %lu bytes written\n",writ);
     fclose(file); file=0;
     amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }

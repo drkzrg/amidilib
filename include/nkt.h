@@ -62,7 +62,7 @@ typedef struct __attribute__((packed)) NktHd{
     U32 id;            // always ID_NKT
     U32 NbOfBlocks;    // nb of event blocks in file
     U32 NbOfBytesData; // nb of bytes for data in event blocks
-    BOOL bPacked;      // blocks, are data blocks LZO packed?
+    BOOL bPacked;      // blocks, are data LZO packed?
     U32 bytesPacked;   // bytes packed if (bPacked==TRUE)
     U16 division;      // timeDivision
     U16 version;       // format version

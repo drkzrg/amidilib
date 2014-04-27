@@ -304,8 +304,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     if(pFilePath){
          // create file header
-         printf("Opening NKT file: %s\n",pFilePath);
-         amTrace("Opening NKT file: %s\n",pFilePath);
+         printf("Loading NKT file: %s\n",pFilePath);
+         amTrace("Loading NKT file: %s\n",pFilePath);
 
          fp = fopen(pFilePath, "rb"); //read only
 
@@ -414,22 +414,24 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     // check if file is compressed
     if(tempHd.bPacked!=FALSE){
+        rewind(fp);
         fseek(fp,sizeof(sNktHd),SEEK_SET);
+
         // allocate temp buffer for unpacked data
-        U32 destSize=tempHd.NbOfBlocks*sizeof(sNktBlock_t)+tempHd.NbOfBytesData;
+        U32 destSize=tempHd.NbOfBlocks * sizeof(sNktBlock_t) + tempHd.NbOfBytesData;
 
-        fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n",tempHd.bytesPacked,destSize);
+        fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n", tempHd.bytesPacked, destSize);
 
-        void *pDepackBuf=amMallocEx(tempHd.bytesPacked,PREFER_TT); //packed data buffer
-        void *pOutputBuf=amMallocEx(destSize,PREFER_TT);    // depacked midi data
-        void *pWrkBuffer=amMallocEx(destSize/16,PREFER_TT); // lzo work buffer
+        void *pDepackBuf = amMallocEx(tempHd.bytesPacked,PREFER_TT); //packed data buffer
+        void *pOutputBuf = amMallocEx(destSize,PREFER_TT);    // depacked midi data
+        void *pWrkBuffer = amMallocEx(destSize/16,PREFER_TT); // lzo work buffer
 
         if(pDepackBuf!=0&&pOutputBuf!=0&&pWrkBuffer!=0){
          amMemSet(pDepackBuf,0,tempHd.bytesPacked);
          amMemSet(pOutputBuf,0,destSize);
          amMemSet(pWrkBuffer,0,destSize/16);
 
-         if(fread(pDepackBuf,tempHd.bytesPacked,1,fp)==1){
+         if(fread(pDepackBuf,1,tempHd.bytesPacked,fp)==tempHd.bytesPacked){
 
              // decompress data
              fprintf(stderr,"[LZO] Decompressing ...\n");
@@ -437,11 +439,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                  if(lzo1x_decompress_safe(pDepackBuf,tempHd.bytesPacked,pOutputBuf,&destSize,pWrkBuffer)==LZO_E_OK){
                      // process data
                      fprintf(stderr,"[LZO] Block decompressed: %lu, packed: %lu\n",destSize,tempHd.bytesPacked);
-                     U8 *pData = pOutputBuf;
+                     U8 *pData = (U8 *)pOutputBuf;
 
                      // process decompressed data directly from file
-                     while(i<pNewSeq->NbOfBlocks){
-                             U32 tempDelta,delta=0;
+                     while(pData!=(pData+destSize)&&i<pNewSeq->NbOfBlocks){
+                             U32 delta=0;
                              U8 count=0;
 
                              delta=readVLQ(pData,&count);
@@ -450,21 +452,22 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                              // read msg block
                              //  fread(&blk,sizeof(sNktBlk),1,fp);
+                             sNktBlk *pTemp=(sNktBlk *)pData;
                              pNewSeq->pEvents[i].delta=delta;
-                             pNewSeq->pEvents[i].msgType=((sNktBlk *)pData)->msgType;
-                             pNewSeq->pEvents[i].blockSize=((sNktBlk *)pData)->blockSize;
+                             pNewSeq->pEvents[i].msgType=pTemp->msgType;
+                             pNewSeq->pEvents[i].blockSize=pTemp->blockSize;
 
                              pData+=sizeof(sNktBlk);
-                             amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
+                             amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, pTemp->msgType, pTemp->blockSize );
 
                              if(pNewSeq->pEvents[i].blockSize!=0){
 
                                  // assign buffer memory pointer for data, size blk.blockSize
                                  pNewSeq->pEvents[i].pData=pTempPtr;
-                                 pTempPtr+=blk.blockSize;
+                                 pTempPtr+=pTemp->blockSize;
 
-                                 amMemCpy(pNewSeq->pEvents[i].pData,pData,blk.blockSize);
-                                 pData+=blk.blockSize;
+                                 amMemCpy(pNewSeq->pEvents[i].pData,pData,pTemp->blockSize);
+                                 pData+=pTemp->blockSize;
 
                                  /*if(blk.msgType==NKT_TEMPO_CHANGE){
                                         U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
@@ -490,8 +493,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             amFree((void**)&pOutputBuf);
             amFree((void**)&pDepackBuf);
 
-            getchar();
-            return NULL;
         }else{
             fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
             getchar();

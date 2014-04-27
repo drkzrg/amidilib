@@ -617,7 +617,7 @@ if(bCompressionEnabled!=FALSE){
                if (nbBytesPacked >= sizeOfBlock){
                   fprintf(stderr,"[LZO] Block contains incompressible data.\n");
                }else{
-#if 1
+#ifdef DEBUG_BUILD
                   fprintf(stderr,"[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
                   // buffer decompression test
                   fprintf(stderr,"[LZO] Decompressing ...\n");

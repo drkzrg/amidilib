@@ -20,7 +20,7 @@ void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
-static inline void onEndSequence(){
+static void onEndSequence(){
 
 if(g_CurrentNktSequence){
 
@@ -146,8 +146,8 @@ void updateStepNkt(){
   }
 
   if(!(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)){
-    //check sequence state if stopped reset position
-    //and tempo to default, but only once
+    // check sequence state if stopped reset position
+    // and tempo to default, but only once
 
    if(bStopped==FALSE){
       bStopped=TRUE;
@@ -273,7 +273,8 @@ void updateStepNkt(){
    //check if we have end of sequence
    //on all tracks
    if(nktBlk->msgType&NKT_END){
-     onEndSequence();
+
+      onEndSequence();
    }
 
 } //end updateStepNkt()
@@ -468,11 +469,12 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                                  amMemCpy(pNewSeq->pEvents[i].pData,pData,pTemp->blockSize);
                                  pData+=pTemp->blockSize;
-
-                                 /*if(blk.msgType==NKT_TEMPO_CHANGE){
+#ifdef DEBUG_BUILD
+                                 if(blk.msgType&NKT_TEMPO_CHANGE){
                                         U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
                                         amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
-                                 }*/
+                                 }
+#endif
                              }
                          ++i;
                      }

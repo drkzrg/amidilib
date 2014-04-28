@@ -53,9 +53,6 @@ src/common/midi/midiseq.c
 src/common/timing/miditim.c
 src/common/twisterm.c
 src/common/ym2149.c
-src/memory/linalloc.c
-src/memory/memory.c
-src/memory/stack.c
 src/tos/discio/fmio.c
 src/tos/memory/memory.c
 src/tos/midi/midi_rep.c

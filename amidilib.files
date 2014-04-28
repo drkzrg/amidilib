@@ -98,3 +98,4 @@ minimal/nktreplay.sh
 minimal/SConscript.nktreplay
 minimal/SConstruct
 minimal/SConscript.nktconvert
+minimal/makeMinimalLib.sh

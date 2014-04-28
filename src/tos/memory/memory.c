@@ -27,6 +27,9 @@ U32 getFreeMem(eMemoryFlag memFlag){
 
 
 #ifdef DEBUG_BUILD
+static U32 g_memAlloc=0;
+static U32 g_memAllocTT=0;
+static U32 g_memDealloc=0;
 
 void memoryCheck(void){
     U32 mem=0;

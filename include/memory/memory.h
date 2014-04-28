@@ -159,27 +159,8 @@ U32 getFreeMem(const eMemoryFlag memFlag);
 #ifdef DEBUG_BUILD
 /** function logs amount of all types of memory present in the system   
  */
-static U32 g_memAlloc=0;
-static U32 g_memAllocTT=0;
-static U32 g_memDealloc=0;
 
-void memoryCheck(void){
-    U32 mem=0;
-    amTrace((const U8*)"System memory check:\n");
-
-    /* mem tst */
-    mem=getFreeMem(ST_RAM);
-    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
-
-    mem=getFreeMem(TT_RAM);
-    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
-
-    mem=getFreeMem(PREFER_ST);
-    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
-
-    mem=getFreeMem(PREFER_TT);
-    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
-}
+void memoryCheck(void);
 
 #endif
 

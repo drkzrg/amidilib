@@ -201,6 +201,8 @@ lzo_src = ["./src/minilzo.c"]
 env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_conv_src + lzo_src)
 
 # strip symbols for release
-# TODO
+if(int(debug)==0):
+    print "Release build. Stripping binaries."
+    Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
 
 

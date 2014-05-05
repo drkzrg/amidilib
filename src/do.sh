@@ -15,8 +15,14 @@ base_dir='/home/saulot/'
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
 
-debug_level=1
+debug_level=0
+cross=1
+
+##########################################################################################################################################
+
 deb_str="";
+cross_prefix="";
+cross_str="";
 
 case $debug_level in
     0)
@@ -33,9 +39,14 @@ case $debug_level in
         ;;
 esac
 
-build_options="cross=y target=f030 prefix=$tools_prefix ikbd_direct=yes "$deb_str
+if [ $cross -eq 1 ] ; then
+    cross_prefix="m68k-atari-mint-"
+    cross_str="cross=y"
+else
+    cross_str="cross=n"
+fi
 
-
+build_options="target=f030 prefix=$tools_prefix ikbd_direct=yes $cross_str $deb_str"
 copy_to_shared_dir=0
 shared_dir='/home/saulot/Pulpit/shared/amidilib'
 
@@ -72,20 +83,20 @@ REMOTE_PATH='/c/amidilib/'
 
 function process(){
 
-if [ -f ../bin/$MIDISEQ_BIN ];
+if [ -f ../bin/$1 ];
 then
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$1 --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$1
+   $tools_prefix$cross_prefix"stack" ../bin/$1 --size=$stack_size
+   $tools_prefix$cross_prefix"flags" -S ../bin/$1
 
    if [ $debug_level -eq 0 ]
    then
-        echo Stripping symbols from $MIDISEQ_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$1
+        echo Stripping symbols from $1
+        $tools_prefix$cross_prefix"strip" -s ../bin/$1
    fi
 
     if [ $send_to_native_machine -eq 1 ]
     then
-        echo Sending $MIDISEQ_BIN to $REMOTE_MACHINE
+        echo Sending $1 to $REMOTE_MACHINE
         curl -H "Expect:" --request POST --data-binary "@../bin/$1" $REMOTE_MACHINE$REMOTE_PATH$1
     fi
 

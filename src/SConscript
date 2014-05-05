@@ -222,10 +222,3 @@ env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) +
 env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_replay_src) + env.Object(["common/core/c_vars.c","common/core/amlog.c"]) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
 env.Program(MID2NKT_EXE, [mid2nkt_src + env.Object(nkt_conv_src) + env.Object(discio_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
-
-# TODO if release strip symbols, pack with executable packer
-if(debug=='none' or (int(debug)==0)):
-    print "Stripping symbols"
-    print "Packing executable"
-    print "Creating release archive"
-    

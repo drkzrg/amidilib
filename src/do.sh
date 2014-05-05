@@ -14,12 +14,34 @@ base_dir='/home/saulot/'
 #linux
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
-build_options="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes"
+
+debug_level=0
+deb_str="";
+
+case $debug_level in
+    0)
+        echo 'Release build'
+        deb_str="debug=0"
+        ;;
+    1)
+        echo 'Debug level 0'
+        deb_str="debug=1"
+        ;;
+    2)
+        echo 'Debug level 1'
+        deb_str="debug=2"
+        ;;
+esac
+
+build_options="cross=y target=f030 prefix=$tools_prefix ikbd_direct=yes "$deb_str
+
+
 copy_to_shared_dir=0
+shared_dir='/home/saulot/Pulpit/shared/amidilib'
 
 # hatari
 # if copy_to_emu_dir=1 copy binaries to emulator directory
-copy_to_emu_dir=0
+copy_to_emu_dir=1
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
@@ -41,7 +63,7 @@ MID2NKT_BIN='mid2nkt.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
-send_to_native_machine=1
+send_to_native_machine=0
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
@@ -95,6 +117,13 @@ if [ -f ../bin/$MIDIREP_BIN ];
 then 
    $tools_prefix"m68k-atari-mint-stack" "../bin/"$MIDIREP_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDIREP_BIN
+
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $MIDIREP_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDIREP_BIN
+   fi
+
    if [ $send_to_native_machine -eq 1 ]
    then
        echo Sending $MIDIREP_BIN to $REMOTE_MACHINE
@@ -111,6 +140,12 @@ then
    $tools_prefix"m68k-atari-mint-stack" ../bin/$YM2149_TEST_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$YM2149_TEST_BIN
 
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $YM2149_TEST_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$YM2149_TEST_BIN
+   fi
+
    if [ $send_to_native_machine -eq 1 ]
    then
    echo Sending $YM2149_TEST_BIN to $REMOTE_MACHINE
@@ -126,6 +161,12 @@ if [ -f ../bin/$MIDIOUT_BIN ];
 then 
    $tools_prefix"m68k-atari-mint-stack" ../bin/$MIDIOUT_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDIOUT_BIN
+
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $MIDIOUT_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDIOUT_BIN
+   fi
 
    if [ $send_to_native_machine -eq 1 ]
    then
@@ -144,6 +185,12 @@ then
    $tools_prefix"m68k-atari-mint-stack" ../bin/$MIDISEQ_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDISEQ_BIN
 
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $MIDISEQ_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDISEQ_BIN
+   fi
+
     if [ $send_to_native_machine -eq 1 ]
     then
         echo Sending $MIDISEQ_BIN to $REMOTE_MACHINE
@@ -161,11 +208,17 @@ then
    $tools_prefix"m68k-atari-mint-stack" ../bin/$NKTREP_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$NKTREP_BIN
 
-    if [ $send_to_native_machine -eq 1 ]
-    then
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $NKTREP_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$NKTREP_BIN
+   fi
+
+   if [ $send_to_native_machine -eq 1 ]
+   then
         echo Sending $NKTREP_BIN to $REMOTE_MACHINE
         curl -H "Expect:" --request POST --data-binary "@../bin/$NKTREP_BIN" $REMOTE_MACHINE$REMOTE_PATH$NKTREP_BIN
-    fi
+   fi
 
    if [ $copy_to_emu_dir -eq 1 ]
    then
@@ -177,6 +230,13 @@ if [ -f ../bin/$MID2NKT_BIN ];
 then
    $tools_prefix"m68k-atari-mint-stack" ../bin/$MID2NKT_BIN --size=$stack_size
    $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MID2NKT_BIN
+
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $MID2NKT_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MID2NKT_BIN
+   fi
+
 
     if [ $send_to_native_machine -eq 1 ]
     then
@@ -194,8 +254,8 @@ fi
 #copy binaries to shared dir
 if [ $copy_to_shared_dir -eq 1 ]
 then
-    cp -v ../bin/*.tos /home/saulot/Pulpit/shared/amidilib
-    cp -v ../bin/*.ttp /home/saulot/Pulpit/shared/amidilib
+    cp -v ../bin/*.tos $shared_dir
+    cp -v ../bin/*.ttp $shared_dir
 fi
 
 #launch emulator after build

@@ -15,7 +15,7 @@ base_dir='/home/saulot/'
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
 
-debug_level=0
+debug_level=1
 deb_str="";
 
 case $debug_level in
@@ -70,32 +70,48 @@ remote_parm=''
 REMOTE_MACHINE='192.168.0.8'
 REMOTE_PATH='/c/amidilib/'
 
+function process(){
+
+if [ -f ../bin/$MIDISEQ_BIN ];
+then
+   $tools_prefix"m68k-atari-mint-stack" ../bin/$1 --size=$stack_size
+   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$1
+
+   if [ $debug_level -eq 0 ]
+   then
+        echo Stripping symbols from $MIDISEQ_BIN
+        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$1
+   fi
+
+    if [ $send_to_native_machine -eq 1 ]
+    then
+        echo Sending $MIDISEQ_BIN to $REMOTE_MACHINE
+        curl -H "Expect:" --request POST --data-binary "@../bin/$1" $REMOTE_MACHINE$REMOTE_PATH$1
+    fi
+
+   if [ $copy_to_emu_dir -eq 1 ]
+   then
+        cp -v ../bin/$1 $install_dir
+   fi
+fi
+
+}
+
+function delete_if_exists(){
+if [ -f ../bin/$1 ];
+then
+   rm ../bin/$1
+fi
+}
+
 # delete binaries if they exist
 echo "############################# Cleaning build .. "
-if [ -f ../bin/$MIDIREP_BIN ];
-then 
-   rm ../bin/$MIDIREP_BIN
-fi
-if [ -f ../bin/$YM2149_TEST_BIN ];
-then 
-   rm ../bin/$YM2149_TEST_BIN
-fi
-if [ -f ../bin/$MIDIOUT_BIN ];
-then 
-   rm ../bin/$MIDIOUT_BIN
-fi
-if [ -f ../bin/$MIDISEQ_BIN ];
-then 
-   rm ../bin/$MIDISEQ_BIN
-fi
-if [ -f ../bin/$NKTREP_BIN ];
-then
-   rm ../bin/$NKTREP_BIN
-fi
-if [ -f ../bin/$MID2NKT_BIN ];
-then
-   rm ../bin/$MID2NKT_BIN
-fi
+delete_if_exists $MIDIREP_BIN
+delete_if_exists $YM2149_TEST_BIN
+delete_if_exists $MIDIOUT_BIN
+delete_if_exists $MIDISEQ_BIN
+delete_if_exists $NKTREP_BIN
+delete_if_exists $MID2NKT_BIN
 
 #clean all stuff
 scons $build_options -c
@@ -113,143 +129,13 @@ fi
 #copy binaries to install dir
 
 echo "############################# Installation .. "
-if [ -f ../bin/$MIDIREP_BIN ];
-then 
-   $tools_prefix"m68k-atari-mint-stack" "../bin/"$MIDIREP_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDIREP_BIN
 
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $MIDIREP_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDIREP_BIN
-   fi
-
-   if [ $send_to_native_machine -eq 1 ]
-   then
-       echo Sending $MIDIREP_BIN to $REMOTE_MACHINE
-       curl -H "Expect:" --request POST --data-binary "@../bin/$MIDIREP_BIN" $REMOTE_MACHINE$REMOTE_PATH$MIDIREP_BIN
-   fi
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-   cp -v ../bin/$MIDIREP_BIN $install_dir
-   fi
-fi
-
-if [ -f ../bin/$YM2149_TEST_BIN ];
-then 
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$YM2149_TEST_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$YM2149_TEST_BIN
-
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $YM2149_TEST_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$YM2149_TEST_BIN
-   fi
-
-   if [ $send_to_native_machine -eq 1 ]
-   then
-   echo Sending $YM2149_TEST_BIN to $REMOTE_MACHINE
-   curl -H "Expect:" --request POST --data-binary "@../bin/$YM2149_TEST_BIN" $REMOTE_MACHINE$REMOTE_PATH$YM2149_TEST_BIN
-   fi
-
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-   cp -v ../bin/$YM2149_TEST_BIN $install_dir
-   fi
-fi
-if [ -f ../bin/$MIDIOUT_BIN ];
-then 
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$MIDIOUT_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDIOUT_BIN
-
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $MIDIOUT_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDIOUT_BIN
-   fi
-
-   if [ $send_to_native_machine -eq 1 ]
-   then
-        echo Sending $MIDIOUT_BIN to $REMOTE_MACHINE
-        curl -H "Expect:" --request POST --data-binary "@../bin/$MIDIOUT_BIN" $REMOTE_MACHINE$REMOTE_PATH$MIDIOUT_BIN
-   fi
-
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-        cp -v ../bin/$MIDIOUT_BIN $install_dir
-   fi
-
-fi
-if [ -f ../bin/$MIDISEQ_BIN ];
-then 
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$MIDISEQ_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MIDISEQ_BIN
-
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $MIDISEQ_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MIDISEQ_BIN
-   fi
-
-    if [ $send_to_native_machine -eq 1 ]
-    then
-        echo Sending $MIDISEQ_BIN to $REMOTE_MACHINE
-        curl -H "Expect:" --request POST --data-binary "@../bin/$MIDISEQ_BIN" $REMOTE_MACHINE$REMOTE_PATH$MIDISEQ_BIN
-    fi
-
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-        cp -v ../bin/$MIDISEQ_BIN $install_dir
-   fi
-fi
-
-if [ -f ../bin/$NKTREP_BIN ];
-then
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$NKTREP_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$NKTREP_BIN
-
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $NKTREP_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$NKTREP_BIN
-   fi
-
-   if [ $send_to_native_machine -eq 1 ]
-   then
-        echo Sending $NKTREP_BIN to $REMOTE_MACHINE
-        curl -H "Expect:" --request POST --data-binary "@../bin/$NKTREP_BIN" $REMOTE_MACHINE$REMOTE_PATH$NKTREP_BIN
-   fi
-
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-        cp -v ../bin/$NKTREP_BIN $install_dir
-   fi
-fi
-
-if [ -f ../bin/$MID2NKT_BIN ];
-then
-   $tools_prefix"m68k-atari-mint-stack" ../bin/$MID2NKT_BIN --size=$stack_size
-   $tools_prefix"m68k-atari-mint-flags" -S ../bin/$MID2NKT_BIN
-
-   if [ $debug_level -eq 0 ]
-   then
-        echo Stripping symbols from $MID2NKT_BIN
-        $tools_prefix"m68k-atari-mint-strip" -s ../bin/$MID2NKT_BIN
-   fi
-
-
-    if [ $send_to_native_machine -eq 1 ]
-    then
-        echo Sending $MID2NKT_BIN to $REMOTE_MACHINE
-        curl -H "Expect:" --request POST --data-binary "@../bin/$MID2NKT_BIN" $REMOTE_MACHINE$REMOTE_PATH$MID2NKT_BIN
-    fi
-
-   if [ $copy_to_emu_dir -eq 1 ]
-   then
-        cp -v ../bin/$MID2NKT_BIN $install_dir
-   fi
-fi
-
+process $MIDIREP_BIN
+process $YM2149_TEST_BIN
+process $MIDIOUT_BIN
+process $MIDISEQ_BIN
+process $NKTREP_BIN
+process $MID2NKT_BIN
 
 #copy binaries to shared dir
 if [ $copy_to_shared_dir -eq 1 ]

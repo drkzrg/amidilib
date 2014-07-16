@@ -26,6 +26,9 @@ target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
 LIBRARYNAME = 'nktrep'
 
+CROSS=0
+CROSS_PREFIX=''
+
 #to indicate that we are cross compiling
 if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
   CROSS=0
@@ -33,14 +36,14 @@ if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
 elif ((cross=='yes')or (cross=='y')):
   CROSS=1
   if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+	CROSS_PREFIX = prefix + '/bin/' + 'm68k-atari-mint-'
   else:
 	CROSS_PREFIX = 'm68k-atari-mint-'
 else:
   print "No compilation parameter set. Assuming cross compilation for Atari target."
   CROSS=1
   if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+	CROSS_PREFIX = prefix + '/bin/'+'m68k-atari-mint-'
   else:
 	CROSS_PREFIX = 'm68k-atari-mint-'
 	
@@ -200,9 +203,13 @@ lzo_src = ["./src/minilzo.c"]
 # build library
 env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + lzo_src)
 
+# ranlib
+Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['RANLIB'] + " ${SOURCE}"] )
+
 # strip symbols for release
 if(int(debug)==0):
-    print "Release build. Stripping binaries."
-    Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
+	print "Release build. Stripping binaries."
+#	Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
+
 
 

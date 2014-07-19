@@ -10,10 +10,6 @@
 
 #include "minilzo.h" //lzo depack
 
-// nkt replay
-extern void replayNktTC(void);
-extern void replayNktTB(void);
-
 static sNktSeq *g_CurrentNktSequence=0;
 
 void getCurrentSequence(sNktSeq **pSeq){
@@ -80,8 +76,7 @@ if(pSeq!=0){
     amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif
 
-  //installReplayRout(mode, data, replayNktTC);
-  installReplayRout(mode, data, replayNktTB);
+  NktInstallReplayRout(mode, data, MFP_TiC);
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();
@@ -263,7 +258,7 @@ void updateStepNkt(){
 
    if(TimeAdd>1) TimeAdd=1;
 
-   //add time elapsed
+   // add time elapsed
    if(bSend!=FALSE){
      g_CurrentNktSequence->timeElapsedInt=0;
    }else{
@@ -273,7 +268,6 @@ void updateStepNkt(){
    //check if we have end of sequence
    //on all tracks
    if(nktBlk->msgType&NKT_END){
-
       onEndSequence();
    }
 
@@ -282,7 +276,6 @@ void updateStepNkt(){
 
 
 sNktSeq *loadSequence(const U8 *pFilePath){
-
     // create header
     sNktSeq *pNewSeq=amMallocEx(sizeof(sNktSeq),PREFER_TT);
 

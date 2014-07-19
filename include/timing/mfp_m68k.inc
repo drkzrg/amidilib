@@ -16,3 +16,9 @@ MFP_DEL50	equ	%1100  ;delay 50
 MFP_DEL64	equ	%1101  ;delay 64
 MFP_DEL100	equ	%1110  ;delay 100
 MFP_DEL200	equ	%1111  ;delay 200;
+
+; ! see mfp.h and eTimerType enums has to match!
+
+MFP_TiA       equ     0
+MFP_TiB       equ     1
+MFP_TiC       equ     2

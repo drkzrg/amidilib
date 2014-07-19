@@ -8,12 +8,12 @@
 
 #general
 #cygwin
-tools_prefix='/opt/cross-mint'
-base_dir='/home/saulot/'
+#tools_prefix='/opt/cross-mint'
+#base_dir='/home/saulot/'
 
 #linux
-#tools_prefix='/usr'
-#base_dir='/home/saulot/'
+tools_prefix='/usr'
+base_dir='/home/saulot/'
 
 build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes"
 

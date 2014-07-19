@@ -1,57 +1,75 @@
 ;================================================
-;    Copyright 2007-2012 Pawel Goralski
+;    Copyright 2007-2014 Pawel Goralski
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
 ;================================================
 
   include "common_m68k.inc"
+  include "timing/mfp_m68k.inc"
 
-; deinstalls MIDI replay on timer B 
-_installReplayRout:
-	movem.l	  d0-d7/a0-a6,-(sp)
-        move.l	$40(sp),d1  	;mode
-        move.l  $44(sp),d0  	;data
-        move.l	$48(sp),update  ;interrupt routine ptr
-        
-	bsr.w	  _super_on
-	move.w	sr,-(sp)	;save status register
-	or.w	#$0700,sr	;turn off all interupts
-        
-	move.b	d1,_tbMode  	;save parameters for later
-	move.b	d0,_tbData
-        
-	clr.b     $fffffa1b	;turn off tb
-	
-	move.l	  $120,oldTB	
-	move.l    update,$120		;slap interrupt
-	
-	move.b    d0,$fffffa21		;put data 
-	move.b    d1,$fffffa1b		;put mode 
-	bset.b    #0,$fffffa07
-	bset.b    #0,$fffffa13
-	
-	move.w 	  (sp)+,sr 		;restore Status Register
-	bsr.w	  _super_off
-	movem.l (sp)+,d0-d7/a0-a6	;restore registers
-	rts
+; installs / deinstalls interrupt routine on timer B (used in demos, probably this pair should be removed at some point)
 
-_deinstallReplayRout:
-	movem.l	  d0-d7/a0-a6,-(sp)
-	bsr.w	_super_on
+_installReplayRoutGeneric:
+        movem.l	  d0-d7/a0-a6,-(sp)
+        move.l	$40(sp),d1  	; mode
+        move.l  $44(sp),d0  	; data
+        move.l	$48(sp),update  ; interrupt routine ptr
 
-	move.w	sr,-(a7)		;save status register
-	or.w	#$0700,sr
+        bsr.w	  _super_on
+        move.w	sr,-(sp)	;save status register
+        or.w	#$0700,sr	;turn off all interupts
 
-	clr.b     $fffffa1b	;turn off tb
-	move.l	 oldTB,$120	;save old tb
-	
+        move.b	d1,tMode  	;save parameters for later
+        move.b	d0,tData
+
+        clr.b     $fffffa1b	;turn off tb
+
+        move.l	  $120,oldVector
+        move.l    update,$120		;slap interrupt
+
+        move.b    d0,$fffffa21		;put data
+        move.b    d1,$fffffa1b		;put mode
+        bset.b    #0,$fffffa07
+        bset.b    #0,$fffffa13
+
+        move.w 	  (sp)+,sr 		;restore Status Register
+        bsr.w	  _super_off
+        movem.l (sp)+,d0-d7/a0-a6	;restore registers
+        rts
+
+_deinstallReplayRoutGeneric:
+        movem.l	  d0-d7/a0-a6,-(sp)
+        bsr.w	_super_on
+
+        move.w	sr,-(a7)		;save status register
+        or.w	#$0700,sr
+
+        clr.b     $fffffa1b	;turn off tb
+        move.l	 oldVector,$120	;save old tb
+
         move.w	(sp)+,sr	;restore Status Register
 
-	bsr.w	_super_off
-	movem.l (sp)+,d0-d7/a0-a6
-	rts
+        bsr.w	_super_off
+        movem.l (sp)+,d0-d7/a0-a6
+        rts
 
+
+
+
+;custom TiC vector
+; calls standard vector
+vectorTiC:
+
+;check if we want to update
+        jsr update
+
+        jsr oldVector
+        rte
+
+
+
+; ####################################################################
 _turnOffKeyclick:
       bsr.w	_super_on
       bclr	#0,$484.w
@@ -136,19 +154,26 @@ _redirectToSerial:
 	trap #1
 	addq.l #6,sp
 	RTS
-
-	
 	
 	  BSS
           align 4
 old_ssp:		ds.l	1
 update:			ds.l	1
-oldTB:			ds.l	1
-_tbData:		ds.b	1
+
+; Timer data
+oldVector:		ds.l	1
+tData:                  ds.b	1       ; current timer data
 dummy1:			ds.b	1	
-_tbMode:		ds.b	1
+tMode:                  ds.b	1       ; current timer mode
 dummy2:			ds.b	1
-_MIDIbytesToSend:	ds.w	1	;nb of bytes to send
+
+isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single track replay is installed
+timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
+
+; only for TimerC based replay,
+midiIntCounter:        ds.w    1        ; counts 200hz ticks, at certain point value is reset and midi update function is called
+
+_MIDIbytesToSend:	ds.w	1	; nb of bytes to send
 _midiOutEnabled:	ds.l	1	;
 _ymOutEnabled:		ds.l	1	;
 _bTempoChanged:		ds.l	1

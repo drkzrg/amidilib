@@ -62,7 +62,7 @@ S16 iError=0;
         destroySequence(pNktSeq);
         pNktSeq=0;
 
-        deinstallReplayRout();
+        NktDeinstallReplayRout();
 
         NktDeinit();
 

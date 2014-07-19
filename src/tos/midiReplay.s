@@ -9,11 +9,12 @@
     include "timing/mfp_m68k.inc"
     include "common_m68k.inc"
     
-    xdef _replaySingleTB   ; custom sequence replay handler on timerB
-    xdef _replaySingleTC   ; custom sequence replay handler on timerC
-    xdef _replayMultiTB    ; custom sequence replay handler on timerB (multi track)
-    xdef _replayMultiTC    ; custom sequence replay handler on timerC (multi track)
+    xdef replaySingleTB   ; custom sequence replay handler on timerB
+    xdef replaySingleTC   ; custom sequence replay handler on timerC
+    xdef replayMultiTB    ; custom sequence replay handler on timerB (multi track)
+    xdef replayMultiTC    ; custom sequence replay handler on timerC (multi track)
 
+; update callbacks
     xref _updateStepSingle ; our sequence update routine (single track)
     xref _updateStepMulti  ; our sequence update routine (multi track)
 
@@ -21,7 +22,7 @@
 
 	TEXT
 ; ############## single track
-_replaySingleTB:
+replaySingleTB:
         or.w    #$2700,sr               ;disable interrupts
 	movem.l   d0-7/a0-6,-(a7)	;save registers
 
@@ -73,8 +74,8 @@ _replaySingleTB:
 	endif
 	; prepare next tick
         move.l    update,$120		;slap interrupt 
-	move.b    _tbData,$fffffa21	;set data
-	move.b    _tbMode,$fffffa1b	;div mode
+        move.b    tData,$fffffa21	;set data
+        move.b    tMode,$fffffa1b	;div mode
         bset.b    #0,$fffffa07		;go!
         bset.b    #0,$fffffa13
 .finish:	
@@ -84,7 +85,7 @@ _replaySingleTB:
         rte
 
 
-_replaySingleTC:
+replaySingleTC:
         or.w    #$2700,sr
         movem.l   d0-7/a0-6,-(a7)	;save registers
 
@@ -140,8 +141,8 @@ _replaySingleTC:
         endif
 ; prepare next tick
         move.l    update,$114		;slap interrupt
-        move.b    _tbData,$fffffa25.w	;set TiC data
-        move.b    _tbMode,d0
+        move.b    tData,$fffffa25.w	;set TiC data
+        move.b    tMode,d0
         lsl.b     #4,d0
         ori.b     #$3f,d0
         and.b     d0,$fffffa1d.w       ;set div mode (4,5,6 bits TiC, 0,1,2 TiB)
@@ -155,7 +156,7 @@ _replaySingleTC:
         rte
 
 ; ################ multi track
-_replayMultiTB:
+replayMultiTB:
         or.w    #$2700,sr               ;disable interrupts
         movem.l   d0-7/a0-6,-(a7)	;save registers
 
@@ -207,8 +208,8 @@ _replayMultiTB:
         endif
         ; prepare next tick
         move.l    update,$120		;slap interrupt
-        move.b    _tbData,$fffffa21	;set data
-        move.b    _tbMode,$fffffa1b	;div mode
+        move.b    tData,$fffffa21	;set data
+        move.b    tMode,$fffffa1b	;div mode
         bset.b    #0,$fffffa07		;go!
         bset.b    #0,$fffffa13
 .finish:
@@ -218,7 +219,7 @@ _replayMultiTB:
         rte
 
 
-_replayMultiTC:
+replayMultiTC:
         or.w    #$2700,sr
         movem.l   d0-7/a0-6,-(a7)	;save registers
 
@@ -274,8 +275,8 @@ _replayMultiTC:
         endif
 ; prepare next tick
         move.l    update,$114		;slap interrupt
-        move.b    _tbData,$fffffa25.w	;set TiC data
-        move.b    _tbMode,d0
+        move.b    tData,$fffffa25.w	;set TiC data
+        move.b    tMode,d0
         lsl.b     #4,d0
         ori.b     #$3f,d0
         and.b     d0,$fffffa1d.w       ;set div mode (4,5,6 bits TiC, 0,1,2 TiB)
@@ -288,4 +289,64 @@ _replayMultiTC:
         move.w    #$2300,sr
         rte
 
+; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
 
+; MFP_TiC     - installs / deinstalls replayRout on TiC
+;             note: this non intrusive, steals original TiC vector and adds special jumptable
+;             which launches music update routine if needed and after that runs old Timer C handler
+; MFP_TiB     - standard custom vector
+; MFP_TiA     - * unimplemented *
+
+; #####################################################################################
+
+_installReplayRout:
+        movem.l	d0-d7/a0-a6,-(sp)
+        move.l	$40(sp),d1  	; mode         ; MFP interrupt mode
+        move.l  $44(sp),d0  	; data         ; MFP interrupt data
+        move.w	$48(sp), isMultitrackReplay    ; interrupt routine type multitrack / singletrack
+        move.w  $52(sp), timerReplayType       ; timer type
+
+        move.w  #0,midiIntCounter
+
+        bsr.w	_super_on
+        move.w	sr,-(sp)	;save status register
+        or.w	#$0700,sr	;turn off all interupts
+
+; TODO handle single/multitrack
+; handle various timer versions
+; MFP_TiB
+        move.b	d1,tMode  	;save parameters for later
+        move.b	d0,tData
+        move.l  #replaySingleTB,update
+        clr.b   $fffffa1b	;turn off tb
+
+        move.l	  $120,oldVector
+        move.l    update,$120		;slap interrupt
+
+        move.b    d0,$fffffa21		;put data
+        move.b    d1,$fffffa1b		;put mode
+        bset.b    #0,$fffffa07
+        bset.b    #0,$fffffa13
+
+        move.w 	  (sp)+,sr 		;restore Status Register
+        bsr.w	  _super_off
+        movem.l (sp)+,d0-d7/a0-a6	;restore registers
+        rts
+
+_deinstallReplayRout:
+        movem.l	  d0-d7/a0-a6,-(sp)
+        bsr.w	_super_on
+
+        move.w	sr,-(a7)		;save status register
+        or.w	#$0700,sr
+
+; TODO handle various timer versions deinstallation
+
+; deinstall MFP_TiB
+        clr.b     $fffffa1b	;turn off tb
+        move.l	 oldVector,$120	;save old tb
+        move.w	(sp)+,sr	;restore Status Register
+
+        bsr.w	_super_off
+        movem.l (sp)+,d0-d7/a0-a6
+        rts

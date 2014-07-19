@@ -72,12 +72,5 @@ typedef struct Sequence_t{
 
 } sSequence_t;
 
-// timer type on which update will be executed
-typedef enum{
-  MFP_TiA=0,
-  MFP_TiB,
-  MFP_TiC
-} eTimerType;
-
 #endif
 

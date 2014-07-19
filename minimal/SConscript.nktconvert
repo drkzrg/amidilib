@@ -194,6 +194,7 @@ Command("./include/memory/memory.h", inc_dir+'memory/memory.h', [ Delete("$TARGE
 Command("./include/mdevtype.h", inc_dir+'mdevtype.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/timing/miditim.h", inc_dir+'timing/miditim.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/timing/mfp.h", inc_dir+'timing/mfp.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/amlog.h", inc_dir+'amlog.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/events.h", inc_dir+'events.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])

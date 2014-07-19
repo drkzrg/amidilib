@@ -8,12 +8,12 @@
 
 #general
 #cygwin
-tools_prefix='/opt/cross-mint'
-base_dir='/home/saulot/'
+#tools_prefix='/opt/cross-mint'
+#base_dir='/home/saulot/'
 
 #linux
-#tools_prefix='/usr'
-#base_dir='/home/saulot/'
+tools_prefix='/usr'
+base_dir='/home/saulot/'
 
 debug_level=0
 cross=1
@@ -56,9 +56,9 @@ copy_to_emu_dir=1
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
-#emu_dir=$base_dir'Pulpit/HD/'
+emu_dir=$base_dir'Pulpit/HD/'
 #emu_dir='/cygdrive/k/Emulatory/TwardzielST/C/'
-emu_dir='/cygdrive/h/atari/HATARI/HD/'
+#emu_dir='/cygdrive/h/atari/HATARI/HD/'
 
 install_dir=$emu_dir'AMIDIDEV/'
 
@@ -78,7 +78,7 @@ send_to_native_machine=0
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
-REMOTE_MACHINE='192.168.0.8'
+REMOTE_MACHINE='192.168.0.3'
 REMOTE_PATH='/c/amidilib/'
 
 function process(){

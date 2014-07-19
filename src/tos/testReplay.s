@@ -67,8 +67,8 @@ _customSeqReplay:
 	
 	;prepare next tick
         move.l    update,$120		;slap interrupt 
-	move.b    _tbData,$fffffa21	;set data
-	move.b    _tbMode,$fffffa1b	;div mode
+        move.b    tData,$fffffa21	;set data
+        move.b    tMode,$fffffa1b	;div mode
 	bset.b    #0,$fffffa07		;go!
 	bset.b    #0,$fffffa13
 .finish:	

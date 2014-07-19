@@ -157,7 +157,7 @@ int main(void){
   flushMidiSendBuffer();
   
   ymSoundOff();
-  deinstallReplayRout();   
+  deinstallReplayRoutGeneric();
 
   /* Uninstall our asm handler */
   Supexec(IkbdUninstall);
@@ -363,7 +363,7 @@ int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSe
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
   //install replay routine 
-  installReplayRout(mode, data, replayRout);
+  installReplayRoutGeneric(mode, data, replayRout);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2014 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -27,13 +27,25 @@
 #define MFP_DEL100	0b00001110  /* delay 100 */
 #define MFP_DEL200	0b00001111  /* delay 200 */
 
+// timer type on which update will be executed
+typedef enum{
+  MFP_TiA = 0,
+  MFP_TiB = 1,
+  MFP_TiC = 2
+} eTimerType;
 
-/** installs sequence replay routine (hooked to timer B atm) */
-extern void installReplayRout(U8 mode,U8 data,VOIDFUNCPTR func);
+/** installs update sequence, single/multitrack variant hooked to selected timer type */
+extern void installReplayRout(const U8 mode, const U8 data, const BOOL isMultitrack, const eTimerType updateHandlerType);
 
-/** deinstalls sequence replay routine (hooked to timer B atm) */
+/** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void deinstallReplayRout(void);
 
+/** installs sequence replay routine (hooked to timer B atm) [to remove] */
+extern void installReplayRoutGeneric(U8 mode,U8 data,VOIDFUNCPTR func);
+
+/** deinstalls sequence replay routine (hooked to timer B atm) */
+extern void deinstallReplayRoutGeneric(void);
+/* ***** */
 
 /* calculates settings for MFP timers for given frequency of tick */
 static const U8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };

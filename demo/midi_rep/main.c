@@ -15,7 +15,7 @@
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
 #include "fmio.h"           // disc i/o
-#include "timing/mfp.h"           // disc i/o
+#include "timing/mfp.h"
 #include "timing/miditim.h"
 
 // nkt conversion

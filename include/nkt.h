@@ -5,6 +5,8 @@
 #include "memory/linalloc.h"
 #include "mdevtype.h" //device types
 
+#include "timing/mfp.h"
+
 typedef enum{
     // play mode
     NKT_PLAY_ONCE  = 0b00000001, // play once if set, loop otherwise
@@ -78,6 +80,12 @@ typedef struct __attribute__((packed)) NktBlk{
 
 void NktInit(const eMidiDeviceType devType, const U8 channel);
 void NktDeinit();
+
+/** installs update sequence, single/multitrack variant hooked to selected timer type */
+extern void NktInstallReplayRout(const U8 mode, const U8 data, const eTimerType updateHandlerType);
+
+/** deinstalls sequence replay routine installed with installReplayRout()  */
+extern void NktDeinstallReplayRout(void);
 
 void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq, U16 initialState);

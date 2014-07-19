@@ -10,12 +10,7 @@
 
 #include "timing/miditim.h"
 #include "list/list.h"
-
-// external replay routine callbacks
-extern void replaySingleTB(void);
-extern void replaySingleTC(void);
-extern void replayMultiTB(void);
-extern void replayMultiTC(void);
+#include <assert.h>
 
 static sSequence_t *g_CurrentSequence=0;
 
@@ -67,26 +62,14 @@ if(seq!=0){
 #endif
     
     if(seq->seqType==ST_SINGLE){
-        //install replay routine
-        switch(timerType){
-            case MFP_TiC:
-                installReplayRout(mode, data, replaySingleTC);
-            case MFP_TiB:
-            default:
-                installReplayRout(mode, data, replaySingleTB);
-            break;
-        };
+        installReplayRout(mode, data, FALSE, timerType);
     }else if(seq->seqType==ST_MULTI){
-        //install replay routine
-        switch(timerType){
-            case MFP_TiC:
-                installReplayRout(mode, data, replayMultiTC);
-            case MFP_TiB:
-            default:
-                installReplayRout(mode, data, replayMultiTB);
-            break;
-        };
-    };
+        installReplayRout(mode, data, TRUE, timerType);
+    }else{
+        // Houston, we have a problem!
+        assert(0);
+    }
+
   } //endif
  return;
 }
@@ -118,7 +101,6 @@ U8 mode=0,data=0;
 #ifdef IKBD_MIDI_SEND_DIRECT
         flushMidiSendBuffer();
 #endif
-
     seq->timeElapsedFrac=0L;
     seq->timeStep=0L;    
     seq->timeStep=am_calculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);

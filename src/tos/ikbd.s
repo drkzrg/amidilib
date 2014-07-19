@@ -130,7 +130,6 @@ ikbd:
 	beq.s	ikbd_endit
 
 	movem.l	d0-d1/a0,-(sp)
-
 	move.b	$fffffc02.w,d0
 
 	; Joystick packet ?

@@ -38,6 +38,10 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _bTempoChanged		;flags indicating tempo and time signature change
 
 ;timer related, internal data
+    xdef vectorTiC
+    xdef stopTiB
+    xdef updateTiB
+
     xdef tData                  ; Timer mode / data
     xdef tMode                  ;
 

@@ -64,6 +64,19 @@ vectorTiC:
         jsr oldVector
         rte
 
+;TiB helpers
+stopTiB:
+        clr.b     $fffffa1b             ; stop TiB
+        RTS
+
+updateTiB:
+; prepare next tick
+        move.l    update,$120		;slap interrupt
+        move.b    tData,$fffffa21	;set data
+        move.b    tMode,$fffffa1b	;div mode
+        bset.b    #0,$fffffa07		;go!
+        bset.b    #0,$fffffa13
+        RTS
 
 
 ; ####################################################################
@@ -74,7 +87,7 @@ _turnOffKeyclick:
       bsr.w	_super_off
       rts
 
-;sends midi data directly to ikbd, plain m68k friendly
+; sends midi data directly to ikbd, plain m68k friendly
 _flushMidiSendBuffer:
       movem.l	d0-d1/a0,-(sp)
       bsr.w	_super_on

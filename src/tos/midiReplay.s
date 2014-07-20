@@ -73,7 +73,7 @@ replaySetupRoutine:
 	echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 
-        move.l  updateTimerPtr,a0
+        move.l  updateTimerPtr,a0   ;setup/update timer
         jsr   (a0)
 
 .finish:	
@@ -82,25 +82,12 @@ replaySetupRoutine:
         move.w    #$2300,sr             ;enable interrupts
         rte
 
-;TiB helpers
-stopTiB:
-        clr.b     $fffffa1b             ; stop TiB
-        RTS
-
-updateTiB:
-; prepare next tick
-        move.l    update,$120		;slap interrupt
-        move.b    tData,$fffffa21	;set data
-        move.b    tMode,$fffffa1b	;div mode
-        bset.b    #0,$fffffa07		;go!
-        bset.b    #0,$fffffa13
-        RTS
 
 ; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
 
 ; MFP_TiC     - installs / deinstalls replayRout on TiC
-;             note: this non intrusive, steals original TiC vector and adds special jumptable
-;             which launches music update routine if needed and after that runs old Timer C handler
+;               note: this non intrusive, steals original TiC vector and adds special jumptable
+;               which launches music update routine if needed and after that runs old Timer C handler
 ; MFP_TiB     - standard custom vector
 ; MFP_TiA     - * unimplemented *
 
@@ -119,26 +106,27 @@ _installReplayRout:
         move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
-; TODO handle single/multitrack
 ; handle various timer versions
 ; MFP_TiB
         move.b	d1,tMode  	;save parameters for later
         move.b	d0,tData
-        ;setup
+  ; setup
         move.l  #replaySetupRoutine, update
         move.l  #_updateStepSingle, updateRout
         move.l  #stopTiB, stopTimerPtr
         move.l  #updateTiB, updateTimerPtr
 
-        clr.b   $fffffa1b	;turn off tb
+;       ###############################################
+        ; TODO  setup based on requested timer
+        ; this for TiB
+        move.l    stopTimerPtr,a0
+        jsr     (a0)
 
         move.l	  $120,oldVector
-        move.l    update,$120		;slap interrupt
 
-        move.b    d0,$fffffa21		;put data
-        move.b    d1,$fffffa1b		;put mode
-        bset.b    #0,$fffffa07
-        bset.b    #0,$fffffa13
+        move.l    updateTimerPtr,a0
+        jsr       (a0)
+;       ##################################################
 
         move.w 	  (sp)+,sr 		;restore Status Register
         bsr.w	  _super_off
@@ -153,10 +141,11 @@ _deinstallReplayRout:
         or.w	#$0700,sr
 
 ; TODO handle various timer versions deinstallation
-
 ; deinstall MFP_TiB
-        clr.b     $fffffa1b	;turn off tb
-        move.l	 oldVector,$120	;save old tb
+        move.l    stopTimerPtr,a0
+        jsr     (a0)
+
+        move.l	 oldVector,$120	;restore old tb
         move.w	(sp)+,sr	;restore Status Register
 
         bsr.w	_super_off

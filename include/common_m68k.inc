@@ -38,18 +38,24 @@ MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
     xdef _bTempoChanged		;flags indicating tempo and time signature change
 
 ;timer related, internal data
-    xdef vectorTiC
+; TiB
     xdef stopTiB
     xdef updateTiB
+
+; TiC
+    xdef vectorTiC
+    xdef stopTiC
+    xdef updateTiC
 
     xdef tData                  ; Timer mode / data
     xdef tMode                  ;
 
     xdef updateRout             ; pointer to update routine (single / multitrack)
-    xdef stopTimerPtr           ;
-    xdef updateTimerPtr         ;
+    xdef stopTimerPtr           ; pointer to timer stop function
+    xdef updateTimerPtr         ; pointer to timer update / setup function
 
-    xdef isMultitrackReplay     ;flag indicates if multitrack / single track replay is installed
-    xdef timerReplayType:       ;currently installed midi sequence handler type (TiB/TiC etc.)
-    xdef oldVector              ;old timer vector replaced by us
-    xdef midiIntCounter         ;interruptCounter (used in TiC update variant)
+    xdef isMultitrackReplay     ; flag indicates if multitrack / single track replay is installed
+    xdef timerReplayType:       ; currently installed midi sequence handler type (TiB/TiC etc.)
+    xdef oldVector              ; old timer vector replaced by us
+    xdef midiIntCounter         ; interruptCounter (used in TiC update variant)
+    xdef midiIntHz              ; if(midiIntHz-1==midiIntCounter) midi internal buffer update is called (used in TiC only)

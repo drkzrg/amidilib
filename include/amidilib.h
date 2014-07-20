@@ -15,7 +15,7 @@
 #define AMIDI_INFO "(c)2007-2014 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
 
 #define AMIDI_MAJOR_VERSION 1
-#define AMIDI_MINOR_VERSION 1
+#define AMIDI_MINOR_VERSION 2
 #define AMIDI_PATCHLEVEL 0
 
 /* current version info struct */

@@ -247,7 +247,7 @@ void printInfoScreen(){
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once / loop mode \n");
-  printf("    [d] - dump sequence to nkt format.\n");
+  printf("    [d] - Convert sequence to NKT format.\n");
   printf("    [h] - show this help screen \n");
   printf("\n    [spacebar] - stop sequence replay \n");
   printf("    [Esc] - quit\n");

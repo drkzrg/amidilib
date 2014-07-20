@@ -102,7 +102,7 @@ _installReplayRout:
 
         move.w  #0,midiIntCounter
 
-        bsr.w	_super_on
+        jsr	_super_on
         move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
@@ -117,9 +117,8 @@ _installReplayRout:
         move.l  #updateTiB, updateTimerPtr
 
 ;       ###############################################
-        ; TODO  setup based on requested timer
-        ; this for TiB
-        move.l    stopTimerPtr,a0
+
+        move.l  stopTimerPtr,a0
         jsr     (a0)
 
         move.l	  $120,oldVector
@@ -129,13 +128,13 @@ _installReplayRout:
 ;       ##################################################
 
         move.w 	  (sp)+,sr 		;restore Status Register
-        bsr.w	  _super_off
+        jsr	  _super_off
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
         rts
 
 _deinstallReplayRout:
         movem.l	  d0-d7/a0-a6,-(sp)
-        bsr.w	_super_on
+        jsr	_super_on
 
         move.w	sr,-(a7)		;save status register
         or.w	#$0700,sr
@@ -148,6 +147,6 @@ _deinstallReplayRout:
         move.l	 oldVector,$120	;restore old tb
         move.w	(sp)+,sr	;restore Status Register
 
-        bsr.w	_super_off
+        jsr	_super_off
         movem.l (sp)+,d0-d7/a0-a6
         rts

@@ -17,12 +17,12 @@
         even
 
 replayNkt:
-        movem.l   d0-7/a0-6,-(a7)	;save registers
+        movem.l   d0-7/a0-6,-(a7)	; save registers
         move.w    sr,-(a7)
 
         or.w        #$0700,sr           ; disable interrupts
 
-        move.l    stopTimerPtr,a0       ;stop timer
+        move.l    stopTimerPtr,a0       ; stop timer
         jsr     (a0)
 
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
@@ -84,8 +84,8 @@ replayNkt:
 ; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
 
 ; MFP_TiC     - installs / deinstalls replayRout on TiC
-;             note: this non intrusive, steals original TiC vector and adds special jumptable
-;             which launches music update routine if needed and after that runs old Timer C handler
+;               note: this non intrusive, steals original TiC vector and adds special jumptable
+;               which launches music update routine if needed and after that runs old Timer C handler
 ; MFP_TiB     - standard custom vector
 ; MFP_TiA     - * unimplemented *
 
@@ -94,37 +94,43 @@ _NktInstallReplayRout:
         movem.l	d0-d7/a0-a6,-(sp)
         move.l	$40(sp),d1  	; mode         ; MFP interrupt mode
         move.l  $44(sp),d0  	; data         ; MFP interrupt data
-        move.w	$48(sp),timerReplayType       ; timer type
+        move.l	$48(sp),d2
+        move.w  d2,timerReplayType        ; timer type
 
         move.w  #0,isMultitrackReplay
         move.w  #0,midiIntCounter
+
+        bsr.w	_super_on       ; super on
+        move.w	sr,-(sp)	;save status register
+        or.w	#$0700,sr	;turn off all interupts
 
         ; setup
         move.b	d1,tMode                ;save parameters for later
         move.b	d0,tData
 
-        move.l  #replayNkt, update
+        move.l  #replayNkt, update      ;
+
+        move.w  timerReplayType,d0
+        cmpi.w  #MFP_TiB, d0
+        bne.s   .checkTiC
+
+        move.l	$120,oldVector            ;save TiB
         move.l  #stopTiB, stopTimerPtr
         move.l  #updateTiB, updateTimerPtr
+        bra.s   .done
 
-        bsr.w	_super_on
-        move.w	sr,-(sp)                ;save status register
-        or.w	#$0700,sr               ;turn off all interupts
+        cmpi.w  #MFP_TiC, d0
+        bne.s   .done
+.checkTiC:
+        move.l	$114,oldVector            ;save TiC
+        move.l  #stopTiC, stopTimerPtr
+        move.l  #updateTiC, updateTimerPtr
 
-; TODO check timerReplay type parameter
-
-        ; MFP_TiB
-;       ###############################################
-        ; TODO  setup based on requested timer
-        ; this for TiB
+.done:
         move.l    stopTimerPtr,a0
-        jsr     (a0)
-
-        move.l	  $120,oldVector
-
+        jsr       (a0)
         move.l    updateTimerPtr,a0
         jsr       (a0)
-;       ##################################################
 
         move.w 	  (sp)+,sr 		;restore Status Register
         bsr.w	  _super_off
@@ -137,12 +143,25 @@ _NktDeinstallReplayRout:
 
         move.w	sr,-(a7)		;save status register
         or.w	#$0700,sr
-; MFP_TiB
+
         move.l    stopTimerPtr,a0
         jsr     (a0)
-        move.l	 oldVector,$120	;restore old vector
 
-; MFP_TiC todo
+        ;check timer type and deinstall
+        move.w timerReplayType,d0
+
+; check timers
+        cmpi.w  #MFP_TiB,d0
+        bne.s   .checkTiC
+        move.l  oldVector,$120.w
+        bra.s   .done
+
+ .checkTiC:
+        cmpi.w  #MFP_TiC,d0
+        bne.s   .done
+        move.l  oldVector,$114.w
+
+.done:
         move.w	(sp)+,sr	;restore Status Register
 
         bsr.w	_super_off

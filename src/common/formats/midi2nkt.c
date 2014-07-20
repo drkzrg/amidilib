@@ -680,7 +680,6 @@ if(BufferInfo.pCompWrkBuf!=0){
     nktHead.NbOfBytesData = BufferInfo.bytes_written;
 
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
-    fprintf(stderr,"Header data block: %lu bytes written\n",writ);
     fclose(file); file=0;
     amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }

@@ -78,6 +78,14 @@ updateTiB:
         bset.b    #0,$fffffa13
         RTS
 
+;TiC helpers
+stopTiC:
+        RTS
+
+updateTiC:
+; prepare next tick
+        RTS
+
 
 ; ####################################################################
 _turnOffKeyclick:
@@ -168,7 +176,7 @@ _redirectToSerial:
 	  BSS
           align 4
 old_ssp:		ds.l	1
-update:			ds.l	1
+update:			ds.l	1       ;pointer to interrupt executing midi update routine and setting up next interrupt
 
 ; Timer data
 oldVector:		ds.l	1
@@ -184,7 +192,7 @@ isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single 
 timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
 
 ; only for TimerC based replay,
-midiIntCounter:        ds.w    1        ; counts 200hz ticks, at certain point value is reset and midi update function is called
+midiIntCounter:        ds.w    1        ; counts 200hz ticks, at certain point value is reset and midi update function is called (used in TiC only)
 
 _MIDIbytesToSend:	ds.w	1	; nb of bytes to send
 _midiOutEnabled:	ds.l	1	;

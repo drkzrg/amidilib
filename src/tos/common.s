@@ -54,9 +54,6 @@ _deinstallReplayRoutGeneric:
         movem.l (sp)+,d0-d7/a0-a6
         rts
 
-
-
-
 ;custom TiC vector
 ; calls standard vector
 vectorTiC:
@@ -167,6 +164,9 @@ dummy1:			ds.b	1
 tMode:                  ds.b	1       ; current timer mode
 dummy2:			ds.b	1
 
+updateRout:             ds.l    1       ; pointer to update routine (single / multitrack)
+stopTimerPtr:           ds.l    1       ;
+updateTimerPtr:         ds.l    1
 isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single track replay is installed
 timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
 

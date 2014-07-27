@@ -76,7 +76,7 @@ if(pSeq!=0){
     amTrace("calculated mode: %d, data: %d\n",mode,data);
 #endif
 
-  NktInstallReplayRout(mode, data, MFP_TiB);
+  NktInstallReplayRout(mode, data, MFP_TiC);
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();

@@ -23,7 +23,7 @@ replaySetupRoutine:
         or.w    #$2700,sr               ; disable interrupts
         movem.l   d0-7/a0-6,-(a7)	; save registers
 
-        move.l  stopTimerPtr,a0         ; stop timer
+        move.l  stopTimerIntPtr,a0         ; stop timer
         jsr     (a0)
 
         move.l  updateRout,a0           ; update sequence state and send events / copy events to internal send buffer
@@ -73,7 +73,7 @@ replaySetupRoutine:
 	echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 
-        move.l  updateTimerPtr,a0   ;setup/update timer
+        move.l  updateTimerIntPtr,a0   ;setup/update timer
         jsr   (a0)
 
 .finish:	
@@ -113,17 +113,17 @@ _installReplayRout:
   ; setup
         move.l  #replaySetupRoutine, update
         move.l  #_updateStepSingle, updateRout
-        move.l  #stopTiB, stopTimerPtr
-        move.l  #updateTiB, updateTimerPtr
+        move.l  #stopTiB, stopTimerIntPtr
+        move.l  #updateTiB, updateTimerIntPtr
 
 ;       ###############################################
 
-        move.l  stopTimerPtr,a0
+        move.l  stopTimerIntPtr,a0
         jsr     (a0)
 
         move.l	  $120,oldVector
 
-        move.l    updateTimerPtr,a0
+        move.l    updateTimerIntPtr,a0
         jsr       (a0)
 ;       ##################################################
 
@@ -141,7 +141,7 @@ _deinstallReplayRout:
 
 ; TODO handle various timer versions deinstallation
 ; deinstall MFP_TiB
-        move.l    stopTimerPtr,a0
+        move.l    stopTimerIntPtr,a0
         jsr     (a0)
 
         move.l	 oldVector,$120	;restore old tb

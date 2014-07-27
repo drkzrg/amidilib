@@ -22,7 +22,7 @@ replayNkt:
 
         or.w        #$0700,sr           ; disable interrupts
 
-        move.l    stopTimerPtr,a0       ; stop timer
+        move.l    stopTimerIntPtr,a0       ; stop timer
         jsr     (a0)
 
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
@@ -71,11 +71,13 @@ replayNkt:
         echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 
-        move.l  updateTimerPtr,a0   ;setup/update timer
+        move.l  updateTimerIntPtr,a0   ;setup/update timer
         jsr   (a0)
 
 .finish:
-        bclr.b	  #0,$fffffa0f  	;clear IRQ in service bit TiB
+        move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
+        jsr   (a0)
+
         move.w    (a7)+,sr             ;restore sr
         movem.l   (a7)+,d0-7/a0-6	;restore registers
         rte
@@ -115,21 +117,23 @@ _NktInstallReplayRout:
         bne.s   .checkTiC
 
         move.l	$120,oldVector            ;save TiB
-        move.l  #stopTiB, stopTimerPtr
-        move.l  #updateTiB, updateTimerPtr
+        move.l  #stopTiB, stopTimerIntPtr
+        move.l  #updateTiB, updateTimerIntPtr
+        move.l  #finishTiB, finishTimerIntPtr
         bra.s   .done
 
         cmpi.w  #MFP_TiC, d0
         bne.s   .done
 .checkTiC:
         move.l	$114,oldVector            ;save TiC
-        move.l  #stopTiC, stopTimerPtr
-        move.l  #updateTiC, updateTimerPtr
-
+        move.l  #stopTiC, stopTimerIntPtr
+        move.l  #updateTiC, updateTimerIntPtr
+        move.l  #finishTiC, finishTimerIntPtr
+        move.l  #vectorTiC, $114.w
 .done:
-        move.l    stopTimerPtr,a0
+        move.l    stopTimerIntPtr,a0
         jsr       (a0)
-        move.l    updateTimerPtr,a0
+        move.l    updateTimerIntPtr,a0
         jsr       (a0)
 
         move.w 	  (sp)+,sr 		;restore Status Register
@@ -144,7 +148,7 @@ _NktDeinstallReplayRout:
         move.w	sr,-(a7)		;save status register
         or.w	#$0700,sr
 
-        move.l    stopTimerPtr,a0
+        move.l    stopTimerIntPtr,a0
         jsr     (a0)
 
         ;check timer type and deinstall

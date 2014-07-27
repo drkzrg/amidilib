@@ -57,12 +57,15 @@ _deinstallReplayRoutGeneric:
 ;custom TiC vector
 ; calls standard vector
 vectorTiC:
+        movem.l	  d0-d7/a0-a6,-(sp)
 
-;check if we want to update
-        jsr update
+        move.l  update,a0
+        jsr  (a0)
 
-        jsr oldVector
-        rte
+        movem.l (sp)+,d0-d7/a0-a6	;restore registers
+        jsr oldVector                   ;call old vector
+
+        rte     ;this rte will be not called
 
 ;TiB helpers
 stopTiB:
@@ -78,12 +81,26 @@ updateTiB:
         bset.b    #0,$fffffa13
         RTS
 
+finishTiB:                              ;signalise end of an TiB interrupt
+        bclr.b	  #0,$fffffa0f  	;clear IRQ in service bit TiB
+        RTS
+
 ;TiC helpers
 stopTiC:
+        bclr.b    #5,$fffffa15.w        ;set interrupt mask B
         RTS
 
 updateTiC:
-; prepare next tick
+; always 200Hz update
+        move.l    update,$114.w		;slap interrupt
+        move.b    #246,$fffffa21.w	; set data
+        ori.b     #80,$fffffa1b.w	; div mode
+        bset.b    #5,$fffffa09.w        ; enable TiC
+        bset.b    #5,$fffffa15.w        ; set interrupt mask B
+        RTS
+
+finishTiC:                             ;signalise end of TiC interrupt
+        bclr    #5, $fffffa11.w
         RTS
 
 
@@ -186,8 +203,10 @@ tMode:                  ds.b	1       ; current timer mode
 dummy2:			ds.b	1
 
 updateRout:             ds.l    1       ; pointer to update routine (single / multitrack)
-stopTimerPtr:           ds.l    1       ;
-updateTimerPtr:         ds.l    1
+stopTimerIntPtr:        ds.l    1       ; stop interrupt function pointer
+updateTimerIntPtr:      ds.l    1       ; update on given interrupt function pointer
+finishTimerIntPtr:      ds.l    1       ; for signalising end of interrupt function pointer
+
 isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single track replay is installed
 timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
 

@@ -75,7 +75,7 @@ S16 iError=0;
 
 void printInfoScreen(){
 
-  printf("\n===== NKT replay demo v.1.0 =============\n");
+  printf("\n===== NKT replay demo v.1.1 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");

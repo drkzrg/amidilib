@@ -122,20 +122,21 @@ _NktInstallReplayRout:
         move.l  #finishTiB, finishTimerIntPtr
         bra.s   .done
 
-        cmpi.w  #MFP_TiC, d0
-        bne.s   .done
 .checkTiC:
-        move.l	$114,oldVector            ;save TiC
+        cmpi.w  #MFP_TiC, d0
+        bne.s   .error
+
+        move.l	$114,oldVector            ; save TiC
         move.l  #stopTiC, stopTimerIntPtr
         move.l  #updateTiC, updateTimerIntPtr
         move.l  #finishTiC, finishTimerIntPtr
-        move.l  #vectorTiC, $114.w
+        move.l  #vectorTiC, $114.w        ; install custom vector
 .done:
         move.l    stopTimerIntPtr,a0
         jsr       (a0)
         move.l    updateTimerIntPtr,a0
         jsr       (a0)
-
+.error:
         move.w 	  (sp)+,sr 		;restore Status Register
         bsr.w	  _super_off
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
@@ -162,12 +163,13 @@ _NktDeinstallReplayRout:
 
  .checkTiC:
         cmpi.w  #MFP_TiC,d0
-        bne.s   .done
+        bne.s   .error
         move.l  oldVector,$114.w
 
 .done:
-        move.w	(sp)+,sr	;restore Status Register
+.error:
 
+        move.w	(sp)+,sr	;restore Status Register
         bsr.w	_super_off
         movem.l (sp)+,d0-d7/a0-a6
         rts

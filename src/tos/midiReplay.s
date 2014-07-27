@@ -1,5 +1,5 @@
 
-;    Copyright 2007-2012 Pawel Goralski
+;    Copyright 2007-2014 Pawel Goralski
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
@@ -76,9 +76,11 @@ replaySetupRoutine:
         move.l  updateTimerIntPtr,a0   ;setup/update timer
         jsr   (a0)
 
-.finish:	
-	movem.l   (a7)+,d0-7/a0-6	;restore registers
-        bclr.b	  #0,$fffffa0f  	;clear IRQ in service bit
+.finish:
+        move.l    finishTimerIntPtr,a0   ;finish timer
+        jsr       (a0)
+
+        movem.l   (a7)+,d0-7/a0-6	;restore registers
         move.w    #$2300,sr             ;enable interrupts
         rte
 
@@ -95,38 +97,60 @@ replaySetupRoutine:
 
 _installReplayRout:
         movem.l	d0-d7/a0-a6,-(sp)
-        move.l	$40(sp),d1  	; mode         ; MFP interrupt mode
-        move.l  $44(sp),d0  	; data         ; MFP interrupt data
-        move.w	$48(sp), isMultitrackReplay    ; interrupt routine type multitrack / singletrack
-        move.w  $52(sp), timerReplayType       ; timer type
+        move.l	$40(sp),d1  	; mode MFP interrupt mode
+        move.l  $44(sp),d0  	; data MFP interrupt data
+        move.l	$48(sp),d2      ; interrupt routine type multitrack / singletrack
+        move.l  $4c(sp),d3      ; timer type
 
         move.w  #0,midiIntCounter
+
+        move.w  d2,isMultitrackReplay
+        move.w  d3,timerReplayType
 
         jsr	_super_on
         move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
 
-; handle various timer versions
-; MFP_TiB
         move.b	d1,tMode  	;save parameters for later
         move.b	d0,tData
-  ; setup
+
         move.l  #replaySetupRoutine, update
+
+; check single / multitrack replay
+        cmpi.w  #0,d2
+        bne.s   .installMultiTrack
         move.l  #_updateStepSingle, updateRout
+        bra.s   .checkIntType
+
+.installMultiTrack:
+        move.l  #_updateStepMulti, updateRout
+
+.checkIntType:
+        ; handle various timer versions
+        cmpi.w  #MFP_TiB, d3
+        bne.s   .checkTiC
+  ; setup
+        move.l	$120,oldVector
         move.l  #stopTiB, stopTimerIntPtr
         move.l  #updateTiB, updateTimerIntPtr
+        move.l  #finishTiB, finishTimerIntPtr
+        bra.s   .done
 
-;       ###############################################
+.checkTiC:
+        cmpi.w  #MFP_TiC, d3
+        bne.s   .error
 
+        move.l	$114,oldVector            ;save TiC
+        move.l  #stopTiC, stopTimerIntPtr
+        move.l  #updateTiC, updateTimerIntPtr
+        move.l  #finishTiC, finishTimerIntPtr
+        move.l  #vectorTiC, $114.w
+.done:
         move.l  stopTimerIntPtr,a0
         jsr     (a0)
-
-        move.l	  $120,oldVector
-
         move.l    updateTimerIntPtr,a0
         jsr       (a0)
-;       ##################################################
-
+.error:
         move.w 	  (sp)+,sr 		;restore Status Register
         jsr	  _super_off
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
@@ -139,14 +163,25 @@ _deinstallReplayRout:
         move.w	sr,-(a7)		;save status register
         or.w	#$0700,sr
 
-; TODO handle various timer versions deinstallation
-; deinstall MFP_TiB
-        move.l    stopTimerIntPtr,a0
+        move.l  stopTimerIntPtr,a0
         jsr     (a0)
 
-        move.l	 oldVector,$120	;restore old tb
-        move.w	(sp)+,sr	;restore Status Register
+        ;check timer type and deinstall
+        move.w timerReplayType,d0
 
+        cmpi.w  #MFP_TiB,d0
+        bne.s   .checkTiC
+        move.l  oldVector,$120.w
+        bra.s   .done
+
+ .checkTiC:
+        cmpi.w  #MFP_TiC,d0
+        bne.s   .error
+        move.l  oldVector,$114.w
+
+.done:
+.error:
+        move.w	(sp)+,sr	;restore Status Register
         jsr	_super_off
         movem.l (sp)+,d0-d7/a0-a6
         rts

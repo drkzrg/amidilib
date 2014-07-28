@@ -174,6 +174,9 @@ if './include/lzo' and not os.path.exists('./include/lzo'):
 Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/rol_ptch.c", src_dir+'common/roland/rol_ptch.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/linalloc.c", src_dir+'common/memory/linalloc.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/common.s", src_dir+'tos/common.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/memory.c", src_dir+'tos/memory/memory.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
 # external minilzo
 Command("./include/lzo/minilzo.h", inc_dir+'lzo/minilzo.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
@@ -197,7 +200,7 @@ Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET
 Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
-nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c"]
+nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 lzo_src = ["./src/minilzo.c"]
 
 # build library

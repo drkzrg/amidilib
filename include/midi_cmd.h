@@ -313,7 +313,7 @@ static INLINE void omni_on(const U8 channel){
  * sends MONO MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void mono(const U8 channel,const U8 numberOfMono){
+static INLINE void mono_mode(const U8 channel,const U8 numberOfMono){
 #ifdef IKBD_MIDI_SEND_DIRECT
 	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_MONO;
@@ -331,7 +331,7 @@ static INLINE void mono(const U8 channel,const U8 numberOfMono){
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void poly(const U8 channel,const U8 numberOfPoly){
+static INLINE void poly_mode(const U8 channel,const U8 numberOfPoly){
 #ifdef IKBD_MIDI_SEND_DIRECT
 	MIDIsendBuffer[MIDIbytesToSend++]=(EV_CONTROLLER<<4)|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_POLY;

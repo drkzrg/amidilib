@@ -587,11 +587,14 @@ void VLQtest(void){
     amTrace((const U8*)"VLQ decoding test\n");
     
     for (iCounter=0;iCounter<10;iCounter++)   {
-        pValPtr=(U8 *)(&val[iCounter]);
-        while((*pValPtr)==0x00)
-        {pValPtr++;}
-        valsize=0;result=0;
-        result= readVLQ(pValPtr,&valsize);
+        valsize=0;
+		result=0;
+ 		
+		pValPtr=(U8 *)(&val[iCounter]);
+        
+		while((*pValPtr)==0x00){pValPtr++;}
+        
+		result = readVLQ(pValPtr,&valsize);
      	amTrace((const U8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
 	
     }

@@ -491,6 +491,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         }else{
             fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
             getchar();
+			fclose(fp);fp=0;
             return NULL;
         }
     }else{

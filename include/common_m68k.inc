@@ -13,6 +13,8 @@ MIDI_SENDBUFFER_SIZE 	equ	32*1024
 MIDI_CLOCK_BYTE		equ 	$F8	;one byte MIDI realtime message (MIDI CLOCK)
 MIDI_START		equ 	$FA	;one byte MIDI realtime message (starts MIDI clock sync)
 MIDI_STOP		equ 	$FC	;one byte MIDI realtime message (stops MIDI clock sync)
+AUTO_INT_ENABLE		equ	1	;enable auto interrupts
+
 
 ; export symbols
 

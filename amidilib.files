@@ -99,3 +99,5 @@ minimal/SConscript.nktreplay
 minimal/SConstruct
 minimal/SConscript.nktconvert
 minimal/makeMinimalLib.sh
+gendoc.sh
+src/do.sh

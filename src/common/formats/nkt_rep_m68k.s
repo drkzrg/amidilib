@@ -20,7 +20,7 @@ replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
         move.w    sr,-(a7)
 
-        or.w        #$0700,sr           ; disable interrupts
+	move.w        #$2700,sr           ; disable interrupts
 
         move.l    stopTimerIntPtr,a0       ; stop timer
         jsr     (a0)
@@ -28,7 +28,7 @@ replayNkt:
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
         if (IKBD_MIDI_SEND_DIRECT==1)
-        echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT ENABLED"
+	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 
         move.w	#0,d1
         move.l 	#_MIDIsendBuffer,a0
@@ -68,15 +68,18 @@ replayNkt:
 .done:
         move.w	#0,_MIDIbytesToSend
         else
-        echo	"[midiReplay.s] IKBD MIDI DATA SEND DIRECT DISABLED"
+	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 
         move.l  updateTimerIntPtr,a0   ;setup/update timer
         jsr   (a0)
-
+	if(AUTO_INT_ENABLE==1)
+.finish:
+	else
 .finish:
         move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
         jsr   (a0)
+	endif
 
         move.w    (a7)+,sr             ;restore sr
         movem.l   (a7)+,d0-7/a0-6	;restore registers
@@ -102,9 +105,14 @@ _NktInstallReplayRout:
         move.w  #0,isMultitrackReplay
         move.w  #0,midiIntCounter
 
-        bsr.w	_super_on       ; super on
-        move.w	sr,-(sp)	;save status register
+	bsr.w	_super_on       ; super on
+	move.w	sr,-(sp)	;save status register
         or.w	#$0700,sr	;turn off all interupts
+
+	if(AUTO_INT_ENABLE==1)
+	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
+	bclr.b	#3,$fffffa17.w
+	endif
 
         ; setup
         move.b	d1,tMode                ;save parameters for later
@@ -119,7 +127,14 @@ _NktInstallReplayRout:
         move.l	$120,oldVector            ;save TiB
         move.l  #stopTiB, stopTimerIntPtr
         move.l  #updateTiB, updateTimerIntPtr
+
+	if(AUTO_INT_ENABLE==1)
+	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
+	move.l  #0, finishTimerIntPtr
+	else
         move.l  #finishTiB, finishTimerIntPtr
+	endif
+
         bra.s   .done
 
 .checkTiC:
@@ -129,8 +144,15 @@ _NktInstallReplayRout:
         move.l	$114,oldVector            ; save TiC
         move.l  #stopTiC, stopTimerIntPtr
         move.l  #updateTiC, updateTimerIntPtr
-        move.l  #finishTiC, finishTimerIntPtr
-        move.l  #vectorTiC, $114.w        ; install custom vector
+
+	if(AUTO_INT_ENABLE==1)
+	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
+	move.l  #0, finishTimerIntPtr
+	else
+	move.l  #finishTiC, finishTimerIntPtr
+	endif
+
+	move.l  #vectorTiC, $114.w	; install custom vector
 .done:
         move.l    stopTimerIntPtr,a0
         jsr       (a0)
@@ -138,13 +160,18 @@ _NktInstallReplayRout:
         jsr       (a0)
 .error:
         move.w 	  (sp)+,sr 		;restore Status Register
-        bsr.w	  _super_off
+	bsr.w	  _super_off
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
         rts
 
 _NktDeinstallReplayRout:
         movem.l	  d0-d7/a0-a6,-(sp)
         bsr.w	_super_on
+
+	if(AUTO_INT_ENABLE==1)
+	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
+	bset.b	#3,$fffffa17.w		;reenable software end int
+	endif
 
         move.w	sr,-(a7)		;save status register
         or.w	#$0700,sr

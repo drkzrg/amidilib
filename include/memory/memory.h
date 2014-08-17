@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2010 Pawel Goralski
+/**  Copyright 2007-2014 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,14 +8,16 @@
 #ifndef __AMEMORY_TOS_H__
 #define __AMEMORY_TOS_H__
 
-
+#if !defined(FORCE_MALLOC)
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
-#include "amlog.h"
-#include "c_vars.h"
+#endif
 
 #include <string.h>
 #include <stdlib.h>
+
+#include "amlog.h"
+#include "c_vars.h"
 
 /* memory allocation preference */
 
@@ -29,73 +31,20 @@ typedef enum {
   PREFER_RADEON = PREFER_TT+3	   //f030 only, not used atm
 } eMemoryFlag;
 
-static inline void *amMallocEx(const tMEMSIZE amount,const  U16 flag){
-void *pMem=0;
 
 #if defined (FORCE_MALLOC)
-  pMem = malloc(amount);
+
+#define amMallocEx(amount, flag) malloc((amount));
+#define amMalloc(amount) malloc((amount));
+#define amFree(memPtr) if( (memPtr) != NULL ) free (memPtr); (memPtr) = NULL;
+
 #else
-  //TODO: check gemdos version and use Malloc() if needed for plain ST/e compatibility
-  // make word alignment
 
-  //TODO: add memory alignment build option on word, long boundary
+#define amMallocEx(amount, flag) Mxalloc((amount),(flag));
+#define amMalloc(amount) Malloc((amount));
+#define amFree(memPtr) if( (memPtr) != NULL ) Mfree (memPtr); (memPtr) = NULL;
 
-  pMem= (void *)Mxalloc(amount,flag);
 #endif
-
-  #ifdef DEBUG_MEM
-    if(pMem==0) {
-      amTrace((const U8 *)"\tamMallocEx() Memory allocation error, returned NULL pointer! memory flag: %x\n",flag);
-    }else {
-      g_memAllocTT++;
-      amTrace((const U8 *)"\tamMallocEx() allocated %ld bytes at %p, mem flag: %x\n[AltAlloc nb: %d][memory left: %d]\n",amount,pMem,flag, g_memAllocTT, getFreeMem(flag) );
-    }
-  #endif
-
-  return (void *)pMem;
-}
-
-static inline void *amMalloc(const tMEMSIZE amount){
-void *pMem=0;
-
-//TODO: add memory alignment build option on word, long boundary
-
-#if defined (FORCE_MALLOC)
-  pMem= malloc(amount);
-#else
-  pMem=(void *)Malloc(amount);
-#endif
-
-  #ifdef DEBUG_MEM
-    if(pMem==0) {
-      amTrace((const U8 *)"\tamMalloc() Memory allocation error,\n returned NULL pointer!!!!!\n");
-    }
-    else {
-      g_memAlloc++;
-      amTrace((const U8 *)"\tamMalloc() allocated %ld bytes at %p.\n[alloc nb: %d][memory left: %d]\n",amount,pMem,g_memAlloc,getFreeMem(PREFER_ST));
-    }
-  #endif
- return pMem;
-}
-
-static inline void amFree(void **pPtr){
-
-  #ifdef DEBUG_MEM
-    if(*pPtr==0) {
-      amTrace((const U8 *)"\tamFree() WARING: NULL pointer passed. \n");
-    }
-    else {
-      g_memDealloc++;
-      amTrace((const U8 *)"\tamFree() releasing memory at at %p [dealloc: %d]\n",*pPtr,g_memDealloc);
-    }
-  #endif
-
- #if defined (FORCE_MALLOC)
-  free(*pPtr); *pPtr=0;
- #else
-    Mfree(*pPtr); *pPtr=0;
- #endif
-}
 
 static inline int amMemCmp ( void *pSrc1, void *pSrc2, const tMEMSIZE iNum){
   return memcmp(pSrc1,pSrc2,iNum);
@@ -123,12 +72,12 @@ static inline void *amMemCpy (void *pDest, void *pSrc,const tMEMSIZE iSize){
 static inline void *amMemSet ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
 void *pPtr=0;
 
-  pPtr= memset(pSrc,iCharacter,iNum);
+  pPtr=memset(pSrc,iCharacter,iNum);
 
   #ifdef DEBUG_MEM
     if(pPtr!=pSrc) amTrace((const U8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
     else{
-      amTrace((const U8 *)"\tamMemSet() memory: %p, %d x value written: %x!\n",pSrc,iNum,iCharacter);
+      amTrace((const U8 *)"\tamMemSet() memory: %p, %d value written: %x!\n",pSrc,iNum,iCharacter);
     }
   #endif
 

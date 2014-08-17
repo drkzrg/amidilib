@@ -145,7 +145,6 @@ const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNu
 static inline U32 readVLQ(U8 *pChar,U8 *ubSize){
 // TODO: rewrite this in assembly
 U32 value=0;
-U8 c=0;
 (*ubSize)=0;
 value = (*pChar);
 
@@ -155,17 +154,15 @@ if ( (value & 0x80) ){
 /* get next byte */
 pChar++;
 (*ubSize)++;
-
+  U8 c=0;
        do{
-         value = (value << 7);
+	     value = (value << 7);
          c = (*pChar);
          value = value + (c&0x7F);
-
-         pChar++;
+          pChar++;
           (*ubSize)++;
        } while (c & 0x80);
-    }
-    else{
+    }else{
      (*ubSize)++;
     }
 
@@ -176,11 +173,12 @@ return(value);
 // TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
 static inline U32 ReadVarLen(S8* buffer){
 U32 value;
-U8 c;
 
 if ((value = *buffer++) & 0x80) {
   value &= 0x7f;
+  U8 c;
   do  {
+	  
     value = (value << 7) + ((c = *buffer++) & 0x7f);
   } while (c & 0x80);
  }

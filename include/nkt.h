@@ -2,10 +2,10 @@
 #define NKT_H
 
 #include <c_vars.h>
-#include "memory/linalloc.h"
-#include "mdevtype.h" //device types
 
+#include "mdevtype.h"            // device types
 #include "timing/mfp.h"
+#include "memory/linalloc.h"
 
 typedef enum{
     // play mode
@@ -27,6 +27,15 @@ typedef enum{
   NKT_MAX_EVENT = 5
 } eNktMsgType;
 
+// Midi events update interval
+typedef enum {
+    NKT_U25HZ=0,
+    NKT_U50HZ,
+    NKT_U100HZ,
+    NKT_U200HZ,
+    NKT_UMAX
+} eNktUpdateFreq;
+
 // Nkt structure in memory
 typedef struct NktBlock_t{
   U32 delta;
@@ -35,12 +44,17 @@ typedef struct NktBlock_t{
   U8 *pData;
 } sNktBlock_t;
 
+typedef struct NktTempo{
+  U32 tempo;                    // quaternote duration in ms, 500ms default
+  U32 tuTable[NKT_UMAX];        // precalculated timesteps for 50, 100, 200hz updates for given tempo
+} sNktTempo;                    // to avoid timestep calculation during runtime
+
 typedef struct NktSeq{
     U16 version;               // version
-    U16 timeDivision;          // time division
-    U32 defaultTempo;		   // quaternote duration in ms, 500ms default
-    U32 lastTempo;             // quaternote duration in ms, 500ms default
-    U32 currentBPM;	           // beats per minute (60 000000 / currentTempo)
+    U16 timeDivision;          // track time division
+    U16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval (TODO maybe we move it to global space / engine space)
+    sNktTempo defaultTempo;	   // initial tempo, quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
+    sNktTempo currentTempo;    // current tempo: quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
     U32 timeElapsedFrac;	   // track elapsed time
     U32 timeElapsedInt;		   // track elapsed time
     U32 timeStep;              // current track's timestep
@@ -48,7 +62,6 @@ typedef struct NktSeq{
     U32 dataBufferSize;        // nb of bytes used for data buffer
     U8 *pEventDataBuffer;
     tLinearBuffer dataBuffer;  // custom data buffer info
-
     U32 NbOfBlocks;            // nb of event blocks
     U32 currentBlockId;        // currently replayed block id 0-xxxx
     sNktBlock_t *pEvents;      // eventStart
@@ -82,7 +95,7 @@ void NktInit(const eMidiDeviceType devType, const U8 channel);
 void NktDeinit();
 
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
-extern void NktInstallReplayRout(const U8 mode, const U8 data, const eTimerType updateHandlerType);
+extern void NktInstallReplayRout();
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void NktDeinstallReplayRout(void);

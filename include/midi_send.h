@@ -70,7 +70,8 @@ static void printMidiSendBufferState(){
     amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
 
     if(MIDIbytesToSend>0){
-        for(int i=0;i<MIDIbytesToSend;++i){
+        int i=0;
+        for(i;i<MIDIbytesToSend;++i){
             amTrace("0x%02x ",MIDIsendBuffer[i]);
         }
 

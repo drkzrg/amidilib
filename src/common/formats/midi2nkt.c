@@ -7,12 +7,16 @@
 #include "midi.h"
 #include "lzo/minilzo.h"
 
+
+U16 g_TD; //evil global!!!
+
 void Nkt_CreateHeader(sNktHd* header, const sMThd *pMidiHeader, const BOOL bCompress){
     WriteInt(&header->id,ID_NKT);
     WriteInt(&header->NbOfBlocks, 0);
     WriteShort(&header->division, pMidiHeader->division);
     WriteShort(&header->bPacked, bCompress);
     WriteShort(&header->version, 1);
+    g_TD=pMidiHeader->division;
 }
 
 
@@ -280,7 +284,7 @@ metaLenght=readVLQ((*pMidiData),&size);
      *bEOT=TRUE;
     }break;
     case MT_SET_TEMPO:{
-        stBlock.blockSize=sizeof(U32);
+        stBlock.blockSize=5*sizeof(U32);   //U32 tempo value + 4*U32 values (25,50,100,200hz timesteps)
         stBlock.msgType=NKT_TEMPO_CHANGE;
 
         U8 ulVal[3]={0};   /* for retrieving set tempo info */
@@ -303,6 +307,59 @@ metaLenght=readVLQ((*pMidiData),&size);
            bufferInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
            bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
            bufferInfo->bytes_written+=fwrite(&val1,sizeof(U32),1,*file);
+
+           U32 precalc[NKT_UMAX]={0L};
+           U32 td=g_TD;
+           U32 bpm = 60000000UL / val1;
+           U32 tempPPU = bpm * td;
+
+          amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
+           // precalculate valuies for different update steps
+           for(int i=0;i<NKT_UMAX;++i){
+
+                switch(i){
+                    case NKT_U25HZ:{
+                        if(tempPPU<0x10000){
+                            precalc[i]=((tempPPU*0x10000)/60)/25;
+                        }else{
+                            precalc[i]=((tempPPU/60)*0x10000)/25;
+                        }
+                        amTrace("Update step for 25hz: %ld\n",precalc[i]);
+                    } break;
+                    case NKT_U50HZ:{
+                        if(tempPPU<0x10000){
+                            precalc[i]=((tempPPU*0x10000)/60)/50;
+                        }else{
+                            precalc[i]=((tempPPU/60)*0x10000)/50;
+                        }
+                         amTrace("Update step for 50hz: %ld\n",precalc[i]);
+                    } break;
+                    case NKT_U100HZ:{
+                        if(tempPPU<0x10000){
+                            precalc[i]=((tempPPU*0x10000)/60)/100;
+                        }else{
+                            precalc[i]=((tempPPU/60)*0x10000)/100;
+                        }
+                         amTrace("Update step for 100hz: %ld\n",precalc[i]);
+                    } break;
+                    case NKT_U200HZ:{
+                        if(tempPPU<0x10000){
+                            precalc[i]=((tempPPU*0x10000)/60)/200;
+                        }else{
+                            precalc[i]=((tempPPU/60)*0x10000)/200;
+                        }
+                         amTrace("Update step for 200hz: %ld\n",precalc[i]);
+                    } break;
+                    default:{
+                        assert(0);
+                        amTrace((const U8*)"[Error] Invalid timer update value %d\n", i);
+                    } break;
+                };
+
+           } //end for
+
+           // write precalculated values
+           bufferInfo->bytes_written+=fwrite(&precalc,NKT_UMAX*sizeof(U32),1,*file);
          }
         ++(bufferInfo->blocks_written);
     }break;
@@ -652,7 +709,7 @@ if(bCompressionEnabled!=FALSE){
                  fprintf(stderr,"[LZO] Compression error...\n");
              }
 
-              amFree((void **)&pTempBuf);
+              amFree(pTempBuf);
 
             }else{
                 fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",BufferInfo.bufPos,nbBytesPacked);
@@ -661,7 +718,7 @@ if(bCompressionEnabled!=FALSE){
         }else{
            fprintf(stderr, "[LZO] read data error...\n");
         }
-       amFree((void **)&pData);
+       amFree(pData);
     }else{
       fprintf(stderr, "[LZO] Error: allocating temporary buffer failed\n");
     }
@@ -669,9 +726,8 @@ if(bCompressionEnabled!=FALSE){
 } //end compression
 
 if(BufferInfo.pCompWrkBuf!=0){
-  amFree((void **)&BufferInfo.pCompWrkBuf);
+  amFree(BufferInfo.pCompWrkBuf);
 }
-
 
  if(file){
     rewind(file);
@@ -681,7 +737,7 @@ if(BufferInfo.pCompWrkBuf!=0){
 
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     fclose(file); file=0;
-    amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+    fprintf(stderr, "Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
 
 

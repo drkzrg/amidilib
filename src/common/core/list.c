@@ -179,29 +179,29 @@ amTrace((const U8 *)"destroyList()\n");
 
 	      case T_META_MARKER:{
 		sMarker_EventBlock_t *pTemp=(sMarker_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree((void **)&(pTemp->pMarkerName));
+        amFree(pTemp->pMarkerName);
 	      }break;
 	      
 	      case T_META_CUEPOINT:{
 		sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree((void **)&(pTemp->pCuePointName));
+        amFree(pTemp->pCuePointName);
 	      }break;
 
 	      case T_SYSEX:{
 		sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-		amFree((void **)&(pTemp->pBuffer));
+        amFree(pTemp->pBuffer);
 	      }break;
 	    };
 	    //release event block itself
-	    amFree(&(pCurrentPtr->eventBlock.dataPtr));
+        amFree(pCurrentPtr->eventBlock.dataPtr);
 	  }
 
-	  amFree((void **)&(pCurrentPtr->pNext));
+      amFree(pCurrentPtr->pNext);
 	  pCurrentPtr=pCurrentPtr->pPrev;
 	}
 	/* we are at first element */
 	/* remove it */
-	amFree((void **)listPtr);
+    amFree(listPtr);
 	
     #endif
   }
@@ -210,12 +210,12 @@ return 0;
 
 void printEventList(const sEventList *listPtr){
 	sEventList *pTemp=NULL;	
-	U32 counter=0;
 		
 	if(listPtr!=NULL){
 		/* iterate through list */
 		pTemp=(sEventList *)listPtr;
-		
+		U32 counter=0;
+	
 		while(pTemp!=NULL){
 		/* print */
 		  const sEventBlockPtr_t pBlock=(const sEventBlockPtr_t)&pTemp->eventBlock;

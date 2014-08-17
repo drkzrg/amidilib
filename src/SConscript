@@ -41,7 +41,7 @@ else:
   print "No compilation parameter set. Assuming cross compilation for Atari target."
   CROSS=1
   if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+	CROSS_PREFIX = prefix + '/bin/' +'m68k-atari-mint-'
   else:
 	CROSS_PREFIX = 'm68k-atari-mint-'
 	
@@ -149,11 +149,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' '
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER' + ' '
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER' + '-DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT -DEVENT_LINEAR_BUFFER'
   
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS  
@@ -192,11 +192,10 @@ memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linal
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
-rand_src = ["common/twisterm.c"]
 lzo_src = ["common/lzo/minilzo.c"]
  
 # main library 
-amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src # + rand_src
+amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)

@@ -35,11 +35,11 @@ float  am_calculateTimeStepFlt(const U16 qpm,const U16 ppq,const U16 ups){
 */
 
 U16 am_decodeTimeDivisionInfo(U16 timeDivision){
-  U8 subframe=0;
   
   if(timeDivision&0x8000){
     
     /* SMPTE */
+	U8 subframe=0;
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
     amTrace((const U8*)"Timing (SMPTE): %x, %u\n", subframe,(timeDivision&0x00FF));

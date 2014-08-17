@@ -110,7 +110,7 @@ U32 cfgLen=0;
       printf("Configuration loaded.\n");
     }
     
-    amFree(&cfgData);
+    amFree(cfgData);
     return 0L;
   }
   else{ 
@@ -312,7 +312,7 @@ S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S3
 	}
     } 
     
-  amTrace("entry '%s' was not found,\n", tagName);  return -1;
+  amTrace("entry '%s' was not found,\n", tagName);  
   return -1;
 }
 
@@ -334,7 +334,7 @@ S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght,
 	}
     } 
   
-  amTrace("entry '%s' was not found,\n", tagName); return -1;
+  amTrace("entry '%s' was not found,\n", tagName); 
   return -1;
 }
 
@@ -356,7 +356,7 @@ S32 getShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, 
 	
     } 
     
-  amTrace("config entry '%s' was not found,\n", tagName); return -1;
+  amTrace("config entry '%s' was not found,\n", tagName); 
   return -1;
 }
 

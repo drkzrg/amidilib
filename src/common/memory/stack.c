@@ -90,7 +90,7 @@ BOOL isStackEmpty(tStack *pPtr){
 
 void deinitStack(tStack *pPtr){
   
-  amFree(&pPtr->stack);
+  amFree(pPtr->stack);
   
   pPtr->top=0;  
   pPtr->elementSize=0;

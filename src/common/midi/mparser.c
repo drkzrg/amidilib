@@ -72,7 +72,7 @@ switch(fileTypeFlag){
 
       startPtr=processMIDItrackEvents(*pCurSequence,&startPtr,(const void *)end,ppTrack, iError );
 
-      if(iError<0) {
+      if(*iError<0) {
         return NULL;
       }
 
@@ -211,7 +211,7 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 void *processMIDItrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, sTrack_t **pCurTrack, S16 *iError ){
 U8 usSwitch=0;
 U16 recallStatus=0;
-U32 delta=0L;
+
 BOOL bEOF=FALSE;
 
     /* execute as long we are on the end of file or EOT meta occured,
@@ -221,7 +221,7 @@ BOOL bEOF=FALSE;
     U8 ubSize=0;
 
     while ( ((pCmd!=endAddr)&&(bEOF!=TRUE)&&(*iError>=0)) ){
-
+	  U32 delta=0L;
       /*read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
 
@@ -714,7 +714,6 @@ S16 am_ChannelAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t 
 {
 sEventBlock_t tempEvent;
 
-U8 channel=0;
 U8 param=0;
 sChannelAft_EventBlock_t *pEvntBlock=NULL;
 tempEvent.dataPtr=0;

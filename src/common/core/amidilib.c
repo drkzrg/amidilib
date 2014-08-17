@@ -100,10 +100,9 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
     S16 iError=0;
     U16 iTimeDivision=0;
     void *startPtr=pMidiPtr;
-    void *endPtr=0L;
     
     (*pSequence)=0;
-    (*pSequence)=(sSequence_t *)amMallocEx(sizeof(sSequence_t),PREFER_TT);
+    (*pSequence)=(sSequence_t *) amMallocEx( sizeof(sSequence_t), PREFER_TT);
     
     if((*pSequence)==0){
       amTrace((const U8*)"Error: Cannot allocate memory for sequence.\n");
@@ -120,7 +119,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 #ifdef EVENT_LINEAR_BUFFER
    if(createLinearBuffer(&((*pSequence)->eventBuffer), memSize, PREFER_TT)<0){
        fprintf(stderr, "Error: Cannot allocate memory for sequence internal event buffer...\n");
-       amFree((void **)&(*pSequence));
+       amFree((*pSequence));
        return -1;
    }
 #endif
@@ -288,13 +287,14 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
       char tempName[128]={0};
       U32 len=0;
 
-      char *pTempPtr=0;
 
       // allocate 64kb working buffer for midi output
       pOut=amMallocEx(64*1024,PREFER_TT);
 
      // set midi output name
      if(pFileName){
+	     char *pTempPtr=0;
+
          strncpy(tempName,pFileName,strlen(pFileName));
          pTempPtr=strrchr(tempName,'.');
          memcpy(pTempPtr+1,"mid",4);
@@ -344,7 +344,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
            }
           }
           // free up working buffer
-          if(pOut) amFree((void **)&pOut);pOut=0;
+          amFree(pOut);
 
 	  return(0);
 	  
@@ -380,10 +380,10 @@ S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
 
      case T_XMIDI:{
         /*TODO: ! not implemented */
-    sIFF_Chunk *pXmidiInfo=0;
-	U32 ulNextChunk=0;
-	U32 ulChunkOffset=0;
-	U8 *Ptr=NULL;
+    //sIFF_Chunk *pXmidiInfo=0;
+	
+	
+	
 
 	return -1;
      }
@@ -516,10 +516,9 @@ void getDeviceInfoResponse(U8 channel){
   //TODO: rework it
   static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
-  BOOL bFlag=FALSE;
-  BOOL bTimeout=FALSE;
-  U32 data=0;
   
+  BOOL bTimeout=FALSE;
+
   /* calculate checksum */
   getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
   getInfoSysEx[5]=channel;
@@ -534,7 +533,10 @@ void getDeviceInfoResponse(U8 channel){
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
 #endif    
-//  getTimeStamp(); // get current timestamp
+//   BOOL bFlag=FALSE;
+//   U32 data=0;
+  
+//getTimeStamp(); // get current timestamp
 	
 //    /* get reply or there was timeout */
 //    while((MIDI_DATA_READY&&(getTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
@@ -580,15 +582,16 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
 void VLQtest(void){
 /* VLQ test */
     U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
-    U32 result=0,iCounter;
-    U8 *pValPtr=NULL;
+    U32 iCounter;
+    
     U8 valsize;
     
     amTrace((const U8*)"VLQ decoding test\n");
     
     for (iCounter=0;iCounter<10;iCounter++)   {
-        valsize=0;
-		result=0;
+        U8 *pValPtr=NULL;
+		valsize=0;
+		U32 result=0;
  		
 		pValPtr=(U8 *)(&val[iCounter]);
         
@@ -596,7 +599,6 @@ void VLQtest(void){
         
 		result = readVLQ(pValPtr,&valsize);
      	amTrace((const U8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
-	
     }
     /* End of VLQ test */
 }

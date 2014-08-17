@@ -126,7 +126,6 @@ S32 temp=0;
 S32 channel_volume[MIDI_MAXCHANNELS] = {0};
 S32 bytes_written = 0;
 S32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
-U8 last_status = 0;
 
 // read the mus header
 amMemCpy(&header, cur, sizeof(MUSheader_t));
@@ -183,13 +182,15 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	out = WriteByte(out, 127);
 
 	// Main Loop
-    U8 channel;
-    U8 event;
+    
+    
     U8 temp_buffer[32];	// temp buffer for current iterator
     U8 *out_local=0;
-    U8 status=0, bit1=0, bit2=0, bitc = 2;
-
+    
 	while (cur < end) {
+    U8 event;
+	U8 channel=0;
+	U8 status=0, bit1=0, bit2=0, bitc = 2;
 
     status=0, bit1=0, bit2=0, bitc = 2;
     out_local = temp_buffer;

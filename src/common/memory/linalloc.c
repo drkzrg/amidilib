@@ -48,7 +48,7 @@ void destroyLinearBuffer(tLinearBuffer *buf){
 #else
       if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
 #endif 
-      if(buf->pMemPtr!=0) amFree((void **)&buf->pMemPtr);
+      if(buf->pMemPtr!=0) amFree(buf->pMemPtr);
     }break;
     case PREFER_DSP:
     case PREFER_SUPERVIDEL:

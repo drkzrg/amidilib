@@ -1,14 +1,16 @@
 
 #include "nkt.h"
-#include "timing/mfp.h"
 #include "memory.h"
-#include "midi_cmd.h"
-#include "timing/miditim.h"
-#include "midi.h"
 #include "amlog.h"
+
+#include "timing/mfp.h"
+#include "timing/miditim.h"
+
+#include "midi.h"
+#include "midi_cmd.h"
 #include "rol_ptch.h"
 
-#include "minilzo.h" //lzo depack
+#include "minilzo.h" //lzo depack, TODO add flag to remove lzo during compilation time
 
 static sNktSeq *g_CurrentNktSequence=0;
 
@@ -34,12 +36,11 @@ if(g_CurrentNktSequence){
   g_CurrentNktSequence->timeElapsedInt=0L;
   g_CurrentNktSequence->timeElapsedFrac=0L;
 
-  g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
-  g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
+  g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
   g_CurrentNktSequence->currentBlockId=0;
 
   // reset all tracks state
-  g_CurrentNktSequence->timeStep=am_calculateTimeStep(g_CurrentNktSequence->currentBPM, g_CurrentNktSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+  g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   flushMidiSendBuffer();
@@ -54,29 +55,74 @@ void initSequence(sNktSeq *pSeq, U16 initialState){
  g_CurrentNktSequence=0;
 
 if(pSeq!=0){
-    U8 mode=0,data=0;
     g_CurrentNktSequence=pSeq;
 
-    pSeq->lastTempo=pSeq->defaultTempo;
-    pSeq->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
+    pSeq->currentUpdateFreq=NKT_U200HZ;
+    pSeq->currentTempo.tempo = DEFAULT_MPQN;
+
+    U32 td=pSeq->timeDivision;
+    U32 bpm = DEFAULT_BPM;
+    U32 tempPPU = bpm * td;
+
+    // precalc tempo table
+    amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
+     // precalculate valuies for different update steps
+
+     for(int i=0;i<NKT_UMAX;++i){
+
+          switch(i){
+              case NKT_U25HZ:{
+                  if(tempPPU<0x10000){
+                      pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/25;
+                  }else{
+                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/25;
+                  }
+                  amTrace("Update step for 25hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+              } break;
+              case NKT_U50HZ:{
+                  if(tempPPU<0x10000){
+                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/50;
+                  }else{
+                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/50;
+                  }
+                   amTrace("Update step for 50hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+              } break;
+              case NKT_U100HZ:{
+                  if(tempPPU<0x10000){
+                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/100;
+                  }else{
+                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/100;
+                  }
+                   amTrace("Update step for 100hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+              } break;
+              case NKT_U200HZ:{
+                  if(tempPPU<0x10000){
+                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/200;
+                  }else{
+                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/200;
+                  }
+                   amTrace("Update step for 200hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+              } break;
+              default:{
+                  assert(0);
+                  amTrace((const U8*)"[Error] Invalid timer update value %d\n", i);
+              } break;
+          };
+
+     } //end for
+
     pSeq->timeElapsedInt=0UL;
     pSeq->timeElapsedFrac=0UL;
     pSeq->currentBlockId=0;
-    pSeq->timeStep=am_calculateTimeStep(pSeq->currentBPM, pSeq->timeDivision, SEQUENCER_UPDATE_HZ);
+    pSeq->timeStep=pSeq->defaultTempo.tuTable[pSeq->currentUpdateFreq];
+
     pSeq->sequenceState = initialState;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     clearMidiOutputBuffer();
 #endif
 
-    getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
-
-#ifdef DEBUG_BUILD
-    amTrace("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,pSeq->timeStep);
-    amTrace("calculated mode: %d, data: %d\n",mode,data);
-#endif
-
-  NktInstallReplayRout(mode, data, MFP_TiC);
+  Supexec(NktInstallReplayRout);
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();
@@ -94,12 +140,13 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
   U8 mode=0,data=0;
   g_CurrentNktSequence=pSeq;
 
-  pSeq->lastTempo = pSeq->defaultTempo;
-  pSeq->currentBPM = DEFAULT_BPM;
+  pSeq->currentTempo.tempo = pSeq->defaultTempo.tempo;
+
   pSeq->timeElapsedInt = 0UL;
   pSeq->timeElapsedFrac = 0UL;
   pSeq->currentBlockId = 0;
-  pSeq->timeStep = am_calculateTimeStep(pSeq->currentBPM, pSeq->timeDivision, SEQUENCER_UPDATE_HZ);
+
+  pSeq->timeStep = pSeq->currentTempo.tuTable[pSeq->currentUpdateFreq];
   pSeq->sequenceState = state;
 
   #ifdef IKBD_MIDI_SEND_DIRECT
@@ -121,7 +168,6 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 volatile static BOOL bSend=FALSE;
 volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
-volatile static U32 tempPPU=0;
 volatile static sNktBlock_t *nktBlk=0;
 
 // single track handler
@@ -147,20 +193,21 @@ void updateStepNkt(){
    if(bStopped==FALSE){
       bStopped=TRUE;
 
-      g_CurrentNktSequence->lastTempo=g_CurrentNktSequence->defaultTempo;
-      g_CurrentNktSequence->currentBPM=60000000/g_CurrentNktSequence->defaultTempo;
-      g_CurrentNktSequence->timeElapsedInt=0L;
-      g_CurrentNktSequence->timeElapsedFrac=0L;
+      g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
+
+      //copy/update precalculated tempo data
+      for (int i=0;i<NKT_UMAX;++i){
+          g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
+      }
+
+      //g_CurrentNktSequence->timeElapsedInt=0L;
+      //g_CurrentNktSequence->timeElapsedFrac=0L;
+     // TimeAdd = 0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
-      // calculate new timestep
-      tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
+      // get precalculated timestep
 
-      if(tempPPU<0x10000){
-        g_CurrentNktSequence->timeStep=((tempPPU*0x10000)/60)/SEQUENCER_UPDATE_HZ;
-      }else{
-        g_CurrentNktSequence->timeStep=((tempPPU/60)*0x10000)/SEQUENCER_UPDATE_HZ;
-      }
+      g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
       //rewind to the first event
       g_CurrentNktSequence->currentBlockId=0;
@@ -172,20 +219,13 @@ void updateStepNkt(){
   nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
 
    if(nktBlk!=0 && (nktBlk->msgType&NKT_TEMPO_CHANGE)){
-       //set new tempo
-       g_CurrentNktSequence->lastTempo=*((U32 *)nktBlk->pData);
+       // set new tempo
+       U32 *pData = (U32 *)nktBlk->pData;
+       g_CurrentNktSequence->currentTempo.tempo=*pData;
+       pData++;
 
-       //amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->lastTempo);
-
-       // calculate new timestep
-       g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
-       tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
-
-       if(tempPPU<0x10000){
-           g_CurrentNktSequence->timeStep=((tempPPU*0x10000)/60)/SEQUENCER_UPDATE_HZ;
-       }else{
-           g_CurrentNktSequence->timeStep=((tempPPU/60)*0x10000)/SEQUENCER_UPDATE_HZ;
-       }
+       // get precalculated timestep
+       g_CurrentNktSequence->timeStep=pData[g_CurrentNktSequence->currentUpdateFreq];
 
        //next event
        ++(g_CurrentNktSequence->currentBlockId);
@@ -200,26 +240,18 @@ void updateStepNkt(){
    if( (!(nktBlk->msgType&NKT_END)) && bSend!=FALSE){
 
        if(nktBlk->msgType&NKT_TEMPO_CHANGE){
-              //set new tempo
-              g_CurrentNktSequence->lastTempo=*((U32 *)nktBlk->pData);
 
-              //amTrace("[NKT_TEMPO_CHANGE] Set tempo: %lu\n",g_CurrentNktSequence->lastTempo);
+        //set new tempo
+        U32 *pData = (U32 *)nktBlk->pData;
+        //g_CurrentNktSequence->currentTempo.tempo=*pData;
+        ++pData;
 
-              // calculate new timestep
-              g_CurrentNktSequence->currentBPM=60000000UL/g_CurrentNktSequence->lastTempo;
-              tempPPU=g_CurrentNktSequence->currentBPM*g_CurrentNktSequence->timeDivision;
-
-              if(tempPPU<0x10000){
-                  g_CurrentNktSequence->timeStep=((tempPPU*0x10000)/60)/SEQUENCER_UPDATE_HZ;
-              }else{
-                  g_CurrentNktSequence->timeStep=((tempPPU/60)*0x10000)/SEQUENCER_UPDATE_HZ;
-              }
-
-              //next event
-              ++(g_CurrentNktSequence->currentBlockId);
-              nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-
-          }
+        // get precalculated timestep
+        g_CurrentNktSequence->timeStep=pData[g_CurrentNktSequence->currentUpdateFreq];
+        //next event
+        ++(g_CurrentNktSequence->currentBlockId);
+        nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+       }
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
@@ -256,11 +288,13 @@ void updateStepNkt(){
    TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
    g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
 
-   if(TimeAdd>1) TimeAdd=1;
+   if(TimeAdd>1) TimeAdd=1; //probably evil
 
    // add time elapsed
    if(bSend!=FALSE){
+     TimeAdd=0;
      g_CurrentNktSequence->timeElapsedInt=0;
+     g_CurrentNktSequence->timeElapsedFrac=0;
    }else{
      g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
    }
@@ -288,9 +322,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
-    pNewSeq->defaultTempo=DEFAULT_MPQN;
-    pNewSeq->lastTempo=DEFAULT_MPQN;
-    pNewSeq->currentBPM=DEFAULT_BPM;
+    pNewSeq->defaultTempo.tempo=DEFAULT_MPQN;
+    pNewSeq->currentTempo.tempo=DEFAULT_MPQN;
     pNewSeq->timeDivision=DEFAULT_PPQN;
 
     //get nb of blocks from file
@@ -305,13 +338,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
          if(fp==NULL){
              printf("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
-             amFree((void **)&pNewSeq);
+             amFree(pNewSeq);
              return NULL;
          }
       }else{
         printf("Error: empty file path\n");
         amTrace("Error: empty file path\n");
-        amFree((void **)&pNewSeq);
+        amFree(pNewSeq);
         return NULL;
       }
 
@@ -324,10 +357,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          printf("Error: File %s isn't valid!\n",pFilePath);
          fclose(fp); fp=0;
 
-         amFree((void **)&pNewSeq);
+         amFree(pNewSeq);
          return NULL;
     }
-
 
    pNewSeq->NbOfBlocks=tempHd.NbOfBlocks;
    pNewSeq->dataBufferSize=tempHd.NbOfBytesData;
@@ -337,7 +369,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
         printf("Error: File %s has no data or event blocks!\n",pFilePath);
         fclose(fp);fp=0;
-        amFree((void **)&pNewSeq);
+        amFree(pNewSeq);
         return NULL;
    }else{
         amTrace("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
@@ -349,7 +381,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
 
             fclose(fp); fp=0;
-            amFree((void **)&pNewSeq);
+            amFree(pNewSeq);
             return NULL;
          }
 
@@ -361,7 +393,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
              fclose(fp); fp=0;
-             amFree((void **)&pNewSeq);
+             amFree(pNewSeq);
              return NULL;
          }
 
@@ -375,7 +407,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
              // destroy block buffer
              destroyLinearBuffer(&(pNewSeq->eventBuffer));
-             amFree((void **)&pNewSeq);
+             amFree(pNewSeq);
 
              return NULL;
          }
@@ -394,7 +426,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
            destroyLinearBuffer(&(pNewSeq->dataBuffer));
 
            fclose(fp); fp=0;
-           amFree((void **)&pNewSeq);
+           amFree(pNewSeq);
            return NULL;
        }
 
@@ -441,10 +473,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                              U8 count=0;
 
                              delta=readVLQ(pData,&count);
-                             amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+                             amTrace("[R] delta:[%lu] byte count:[%d]\t",delta, count);
                              pData+=count;
 
-                             // read msg block
+                             //  read msg block
                              //  fread(&blk,sizeof(sNktBlk),1,fp);
                              sNktBlk *pTemp=(sNktBlk *)pData;
                              pNewSeq->pEvents[i].delta=delta;
@@ -452,27 +484,23 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                              pNewSeq->pEvents[i].blockSize=pTemp->blockSize;
 
                              pData+=sizeof(sNktBlk);
-                             amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, pTemp->msgType, pTemp->blockSize );
+                             amTrace("[RB] delta: [%lu] type:[%d] size:[%u] bytes\n", delta, pTemp->msgType, pTemp->blockSize );
 
                              if(pNewSeq->pEvents[i].blockSize!=0){
-
                                  // assign buffer memory pointer for data, size blk.blockSize
                                  pNewSeq->pEvents[i].pData=pTempPtr;
                                  pTempPtr+=pTemp->blockSize;
 
                                  amMemCpy(pNewSeq->pEvents[i].pData,pData,pTemp->blockSize);
                                  pData+=pTemp->blockSize;
-#ifdef DEBUG_BUILD
-                                 if(blk.msgType&NKT_TEMPO_CHANGE){
-                                        U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
-                                        amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
+
+                                 if(pTemp->msgType&NKT_TEMPO_CHANGE){
+                                    U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
+                                    amTrace("[Tempo block] tempo %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
                                  }
-#endif
                              }
                          ++i;
                      }
-
-
 
                      fprintf(stderr,"[LZO] OK\n");
 
@@ -484,9 +512,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
           }
 
         // deallocate temp buffers
-            amFree((void**)&pWrkBuffer);
-            amFree((void**)&pOutputBuf);
-            amFree((void**)&pDepackBuf);
+            amFree(pWrkBuffer);
+            amFree(pOutputBuf);
+            amFree(pDepackBuf);
 
         }else{
             fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
@@ -502,7 +530,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                 fread(&tempDelta,sizeof(U32),1,fp);
                 delta=readVLQ((U8*)&tempDelta,&count);
-                amTrace("READ delta byte count:[%d] decoded delta:[%lu] \n", count,delta );
+                amTrace("[RB] delta:[%lu], byte count:[%d]\t", count,delta );
 
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
                 fseek(fp,-(sizeof(U32)-count),1);
@@ -513,7 +541,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 pNewSeq->pEvents[i].msgType=blk.msgType;
                 pNewSeq->pEvents[i].blockSize=blk.blockSize;
 
-                amTrace("READ delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
+                amTrace("[RB] delta [%lu] type:[%d] size:[%u] bytes\n", delta, blk.msgType, blk.blockSize );
 
                 if(pNewSeq->pEvents[i].blockSize!=0){
 
@@ -523,10 +551,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                     fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
 
-                    /*if(blk.msgType==NKT_TEMPO_CHANGE){
+                    if(blk.msgType==NKT_TEMPO_CHANGE){
                            U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
-                           amTrace("Read tempo: %lu, blocksize: %d\n",(U32)(*pTempo),blk.blockSize);
-                    }*/
+                           pTempo++;amTrace(" Update step 25hz: %ld\n",(U32)(*pTempo));
+                           pTempo++;amTrace(" Update step 50hz: %ld\n",(U32)(*pTempo));
+                           pTempo++;amTrace(" Update step 100hz: %ld\n",(U32)(*pTempo));
+                           pTempo++;amTrace(" Update step 200hz: %ld\n",(U32)(*pTempo));
+                    }
                 }
             ++i;
         }
@@ -558,7 +589,7 @@ void destroySequence(sNktSeq *pSeq){
 
     if(pSeq->NbOfBlocks==0){
         amMemSet(pSeq,0,sizeof(sNktSeq));
-        amFree((void**)&pSeq);
+        amFree(pSeq);
         return;
     }else{
 
@@ -568,7 +599,7 @@ void destroySequence(sNktSeq *pSeq){
 
         //clear struct
         amMemSet(pSeq,0,sizeof(sNktSeq));
-        amFree((void**)&pSeq);
+        amFree(pSeq);
         return;
     }
 }
@@ -580,7 +611,7 @@ BOOL isSequencePlaying(void){
 
  if(g_CurrentNktSequence!=0){
      U16 state=g_CurrentNktSequence->sequenceState;
-     if(state&NKT_PS_PLAYING&&!(state&NKT_PS_PAUSED))
+     if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED)))
         return TRUE;
        else
         return FALSE;
@@ -592,11 +623,11 @@ BOOL isSequencePlaying(void){
 
 void stopSequence(void){
  if(g_CurrentNktSequence!=0){
-
-    if((g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)||(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED)){
+  U16 state=g_CurrentNktSequence->sequenceState;
+  if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED)){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
        printf("Stop sequence\n");
-    }
+  }
 
     //all notes off
     am_allNotesOff(16);
@@ -610,7 +641,7 @@ void stopSequence(void){
 void pauseSequence(){
 
      if(g_CurrentNktSequence!=0){
-     U16 state=g_CurrentNktSequence->sequenceState;
+        U16 state=g_CurrentNktSequence->sequenceState;
 
           if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED))){
            g_CurrentNktSequence->sequenceState&=(~NKT_PS_PLAYING);
@@ -691,7 +722,7 @@ static const U8 *getSequenceStateStr(const U16 state){
 
  if( !(state&NKT_PS_PLAYING) && (state&NKT_PS_PAUSED) ){
     return "Paused";
- }else if(state&NKT_PS_PLAYING && !state&NKT_PS_PAUSED){
+ }else if(state&NKT_PS_PLAYING && (!(state&NKT_PS_PAUSED))){
     return "Playing";
  }else if(!(state&NKT_PS_PLAYING)){
     return "Stopped...";
@@ -706,9 +737,8 @@ if(g_CurrentNktSequence){
     printf("Time step: %lu\n",g_CurrentNktSequence->timeStep);
     printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
     printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
-    printf("\tCur BPM: %lu\n",g_CurrentNktSequence->currentBPM);
-    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo);
-    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->lastTempo);
+    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo.tempo);
+    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->currentTempo.tempo);
     printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 

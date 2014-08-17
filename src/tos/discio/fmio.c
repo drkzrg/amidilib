@@ -226,26 +226,29 @@ const U8 *getGemdosError(S16 iErr)
 void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 S32 fileHandle;
 _DTA *pDTA=NULL;
-void *pData=NULL;
-S16 iRet=0;
-U32 lRet=0L;
+
+
+
 
     fileHandle = Fopen( szFileName, FO_READ );
     *fileLenght=0L;
 
     if((fileHandle)>0L){
+	S16 iRet=0;
+	
     pDTA=Fgetdta();
     iRet=Fsfirst( szFileName, 0 );
 
     if(iRet==0){
     /* file found */
+	void *pData=NULL;
 	 
     *fileLenght=pDTA->dta_size;
     /* allocate buffer */
      pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
      
      if(pData!=NULL){
-       
+      U32 lRet=0L;
       amMemSet(pData,0,(*fileLenght)+1);
 
       lRet=Fread( (int)fileHandle, (tMEMSIZE)(*fileLenght), pData );
@@ -282,11 +285,12 @@ U32 lRet=0L;
 
 S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){
 S32 fileHandle=0L;
-S32 iRet=0;
+
 
     fileHandle = Fcreate( szFileName, 0 );
     
     if(fileHandle>0L){
+	 S32 iRet=0;
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
        
      if(iRet==memBlockSize){

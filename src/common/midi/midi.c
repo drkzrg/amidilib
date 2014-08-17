@@ -285,7 +285,7 @@ U8 gm_MasterVolumeSysEX[8]={0xF0,0x7E,0x7F,0x04,0x01, 0x00, 0x00, 0xF7};
 
 
 const U8 *getMidiNoteName(const U8 noteNb){
-    if((noteNb>=0&&noteNb<=127)) /* 0-127 range check */
+    if((noteNb<=127)) /* 0-127 range check */
         return(arMIDI2key[noteNb]);
     else
       return NULL;
@@ -294,7 +294,7 @@ const U8 *getMidiNoteName(const U8 noteNb){
 //returns note name or rhytm part name if current channel is 9
 const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNumber){
     /* 0-127 range check */
-  if((noteNumber>=0&&noteNumber<=127)) {
+  if(noteNumber<=127) {
     if((currentChannel==9&&currentPN==128)){
       return(getCM32LRhythmName(noteNumber));
     }else{

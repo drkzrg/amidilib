@@ -20,7 +20,7 @@ replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
         move.w    sr,-(a7)
 
-	move.w        #$2700,sr           ; disable interrupts
+	move.w	 #$2700,sr           ; disable interrupts
 
         move.l    stopTimerIntPtr,a0       ; stop timer
         jsr     (a0)
@@ -38,8 +38,8 @@ replayNkt:
         beq.s   .done       ;if 0 bytes do nothing
 .send:
       ; slap data to d0
-      move.w	(a0)+,d0	;get word
-      ;clr.w	(a0)+ 	;clear it
+      move.w	(a0)+,d0 ;get word
+      ;clr.w	(a0)+ 	 ;clear it
 
       move.w	d0,d2		;make copy
       andi.w	#$FF00,d2
@@ -73,9 +73,15 @@ replayNkt:
 
         move.l  updateTimerIntPtr,a0   ;setup/update timer
         jsr   (a0)
+
+	;# interrupt will be called automatically next time
+	;# no need to reset if AUTO_INT_ENABLE==1, enabled AER mode
+
 	if(AUTO_INT_ENABLE==1)
+	echo	"[nkt_rep_m68k.s] AEI enabled"
 .finish:
 	else
+	echo	"[nkt_rep_m68k.s] AEI disabled"
 .finish:
         move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
         jsr   (a0)
@@ -97,49 +103,18 @@ replayNkt:
 ; #####################################################################################
 _NktInstallReplayRout:
         movem.l	d0-d7/a0-a6,-(sp)
-        move.l	$40(sp),d1  	; mode         ; MFP interrupt mode
-        move.l  $44(sp),d0  	; data         ; MFP interrupt data
-        move.l	$48(sp),d2
-        move.w  d2,timerReplayType        ; timer type
+	move.w	sr,-(sp)	;save status register
 
         move.w  #0,isMultitrackReplay
         move.w  #0,midiIntCounter
 
-	bsr.w	_super_on       ; super on
-	move.w	sr,-(sp)	;save status register
-        or.w	#$0700,sr	;turn off all interupts
-
+	or.w	#$0700,sr	;turn off all interupts
 	if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
 	bclr.b	#3,$fffffa17.w
 	endif
 
-        ; setup
-        move.b	d1,tMode                ;save parameters for later
-        move.b	d0,tData
-
         move.l  #replayNkt, update      ;
-
-        move.w  timerReplayType,d0
-        cmpi.w  #MFP_TiB, d0
-        bne.s   .checkTiC
-
-        move.l	$120,oldVector            ;save TiB
-        move.l  #stopTiB, stopTimerIntPtr
-        move.l  #updateTiB, updateTimerIntPtr
-
-	if(AUTO_INT_ENABLE==1)
-	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
-	move.l  #0, finishTimerIntPtr
-	else
-        move.l  #finishTiB, finishTimerIntPtr
-	endif
-
-        bra.s   .done
-
-.checkTiC:
-        cmpi.w  #MFP_TiC, d0
-        bne.s   .error
 
         move.l	$114,oldVector            ; save TiC
         move.l  #stopTiC, stopTimerIntPtr
@@ -160,43 +135,30 @@ _NktInstallReplayRout:
         jsr       (a0)
 .error:
         move.w 	  (sp)+,sr 		;restore Status Register
-	bsr.w	  _super_off
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
         rts
 
 _NktDeinstallReplayRout:
         movem.l	  d0-d7/a0-a6,-(sp)
-        bsr.w	_super_on
+	move.w	sr,-(sp)		;save status register
+
+	or.w	#$0700,sr
 
 	if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
 	bset.b	#3,$fffffa17.w		;reenable software end int
 	endif
 
-        move.w	sr,-(a7)		;save status register
-        or.w	#$0700,sr
+	;move.l    stopTimerIntPtr,a0
+	;jsr     (a0)
 
-        move.l    stopTimerIntPtr,a0
-        jsr     (a0)
-
-        ;check timer type and deinstall
-        move.w timerReplayType,d0
-
-; check timers
-        cmpi.w  #MFP_TiB,d0
-        bne.s   .checkTiC
-        move.l  oldVector,$120.w
-        bra.s   .done
-
- .checkTiC:
-        cmpi.w  #MFP_TiC,d0
-        bne.s   .error
-        move.l  oldVector,$114.w
-
-.done:
-.error:
+	move.l    oldVector,$114.w
+	move.b    #246,$fffffa21.w	; set data
+	ori.b     #80,$fffffa1b.w	; div mode
+	bset.b    #5,$fffffa09.w        ; enable TiC
+	bset.b    #5,$fffffa15.w        ; set interrupt mask B
 
         move.w	(sp)+,sr	;restore Status Register
-        bsr.w	_super_off
         movem.l (sp)+,d0-d7/a0-a6
         rts
+

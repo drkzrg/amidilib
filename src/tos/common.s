@@ -159,14 +159,18 @@ _flushMidiSendBuffer:
       movem.l (sp)+,d0-d1/a0
       rts
 
- ;enter supervisor mode
+ ; enter supervisor mode
+ ; but only when not in supervisor
+
 _super_on:
 	movem.l	d0-7/a0-a6,-(sp)
+
 	clr.l	-(sp)
 	move.w	#$20,-(sp)
 	trap	#1
 	addq.l	#6,sp
 	move.l	d0,old_ssp
+.skip:
 	movem.l	(sp)+,d0-7/a0-a6
 	RTS
 
@@ -218,6 +222,4 @@ _midiOutEnabled:	ds.l	1	;
 _ymOutEnabled:		ds.l	1	;
 _bTempoChanged:		ds.l	1
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
-
-
 

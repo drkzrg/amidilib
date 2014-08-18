@@ -642,7 +642,7 @@ void am_destroySequence (sSequence_t **pPtr){
    }
 
   //destroy sequence and nullify it
-  amFree(pPtr);
+  amFree(*pPtr);
   #ifdef DEBUG_BUILD
     amTrace((const U8 *)"am_destroySequence() done. \n");
   #endif

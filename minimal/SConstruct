@@ -1,2 +1,2 @@
-SConscript('SConscript.nktreplay', variant_dir='./nktreplay', duplicate=0, exports={'MODE':'release'})
-SConscript('SConscript.nktconvert', variant_dir='./nktconvert', duplicate=0, exports={'MODE':'release'})
+SConscript('SConscript.nktreplay', variant_dir='./nktreplay', duplicate=0, exports={'mode':'release'})
+SConscript('SConscript.nktconvert', variant_dir='./nktconvert', duplicate=0, exports={'mode':'release'})

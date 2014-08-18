@@ -78,7 +78,7 @@ int main(int argc, char *argv[]){
       iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
-      amFree(&pMidi);
+      amFree(pMidi);
 
       if(iError==0){
 

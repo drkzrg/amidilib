@@ -60,7 +60,7 @@ print "Cross tools path: " + prefix
 if ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
     ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -lm'
+    ST_LDFLAGS='-m68030 -Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -119,11 +119,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD' + ' -DUSE_INLINE' + ' -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DLOAD_TEST' + ' -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DLOAD_TEST' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT'
 
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS
@@ -205,9 +205,6 @@ lzo_src = ["./src/minilzo.c"]
 
 # build library
 env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + lzo_src)
-
-# ranlib
-Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['RANLIB'] + " ${SOURCE}"] )
 
 # strip symbols for release
 if(int(debug)==0):

@@ -10,7 +10,7 @@
 #include "midi_cmd.h"
 #include "rol_ptch.h"
 
-#include "minilzo.h" //lzo depack, TODO add flag to remove lzo during compilation time
+#include "minilzo.h" //lzo depack, TODO: add compilation flag to remove lzo during compilation time
 
 static sNktSeq *g_CurrentNktSequence=0;
 
@@ -65,43 +65,43 @@ if(pSeq!=0){
     U32 tempPPU = bpm * td;
 
     // precalc tempo table
-    amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
+    amTrace("Precalculating update step for Td: %d, Bpm: %d\n",td,bpm);
      // precalculate valuies for different update steps
 
      for(int i=0;i<NKT_UMAX;++i){
 
           switch(i){
               case NKT_U25HZ:{
-                  if(tempPPU<0x10000){
+                  if(tempPPU<65536){
                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/25;
                   }else{
                         pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/25;
                   }
-                  amTrace("Update step for 25hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+                  amTrace("Update 25hz: %ld  [0xlx]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
               } break;
               case NKT_U50HZ:{
-                  if(tempPPU<0x10000){
+                  if(tempPPU<65536){
                         pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/50;
                   }else{
                         pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/50;
                   }
-                   amTrace("Update step for 50hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+                   amTrace("Update 50hz: %ld [0xlx]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
               } break;
               case NKT_U100HZ:{
-                  if(tempPPU<0x10000){
+                  if(tempPPU<65536){
                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/100;
                   }else{
                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/100;
                   }
-                   amTrace("Update step for 100hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+                   amTrace("Update 100hz: %ld [0xlx]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
               } break;
               case NKT_U200HZ:{
-                  if(tempPPU<0x10000){
+                  if(tempPPU<65536){
                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/200;
                   }else{
                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/200;
                   }
-                   amTrace("Update step for 200hz: %ld\n",pSeq->currentTempo.tuTable[i]);
+                   amTrace("Update 200hz: %ld [0xlx]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
               } break;
               default:{
                   assert(0);
@@ -320,7 +320,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     }
 
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
-
+	
+	pNewSeq->currentUpdateFreq=NKT_U200HZ;
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
     pNewSeq->defaultTempo.tempo=DEFAULT_MPQN;
     pNewSeq->currentTempo.tempo=DEFAULT_MPQN;
@@ -484,7 +485,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                              pNewSeq->pEvents[i].blockSize=pTemp->blockSize;
 
                              pData+=sizeof(sNktBlk);
-                             amTrace("[RB] delta: [%lu] type:[%d] size:[%u] bytes\n", delta, pTemp->msgType, pTemp->blockSize );
+                             amTrace("[RB] delta: [%lu] type:[%d] block size:[%u] bytes\n", delta, pTemp->msgType, pTemp->blockSize );
 
                              if(pNewSeq->pEvents[i].blockSize!=0){
                                  // assign buffer memory pointer for data, size blk.blockSize
@@ -517,6 +518,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             amFree(pDepackBuf);
 
         }else{
+			amFree(pWrkBuffer);
+            amFree(pOutputBuf);
+            amFree(pDepackBuf);
+		
             fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
             getchar();
 			fclose(fp);fp=0;
@@ -530,7 +535,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                 fread(&tempDelta,sizeof(U32),1,fp);
                 delta=readVLQ((U8*)&tempDelta,&count);
-                amTrace("[RB] delta:[%lu], byte count:[%d]\t", count,delta );
+                amTrace("[R] delta:[%lu], byte count:[%d]\t", count,delta );
 
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
                 fseek(fp,-(sizeof(U32)-count),1);
@@ -561,8 +566,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 }
             ++i;
         }
-
-        fclose(fp);fp=0;
     }
 
 #ifdef LOAD_TEST
@@ -579,7 +582,7 @@ for (U32 i=0;i<pNewSeq->NbOfBlocks;++i){
 }
 #endif
 //
-
+ fclose(fp);fp=0;
  return pNewSeq;
 }
 

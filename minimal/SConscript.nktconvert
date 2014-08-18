@@ -118,11 +118,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD' + ' -DUSE_INLINE' + ' -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DLOAD_TEST' + ' -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DLOAD_TEST' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_FILE_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT'
 
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS
@@ -171,7 +171,6 @@ if './include/lzo' and not os.path.exists('./include/lzo'):
 
 
 # sources
-
 Command("./src/amlog.c", src_dir+'common/core/amlog.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/midi2nkt.c", src_dir+'common/formats/midi2nkt.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/mus2midi.c", src_dir+'common/formats/mus2midi.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
@@ -206,9 +205,6 @@ lzo_src = ["./src/minilzo.c"]
 
 # build library
 env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_conv_src + lzo_src)
-
-# ranlib
-Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['RANLIB'] + " ${SOURCE}"] )
 
 # strip symbols for release
 if(int(debug)==0):

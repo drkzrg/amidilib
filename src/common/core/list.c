@@ -201,7 +201,7 @@ amTrace((const U8 *)"destroyList()\n");
 	}
 	/* we are at first element */
 	/* remove it */
-    amFree(listPtr);
+    amFree(*listPtr);
 	
     #endif
   }

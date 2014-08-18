@@ -19,11 +19,7 @@
 replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
         move.w    sr,-(a7)
-
-	move.w	 #$2700,sr           ; disable interrupts
-
-        move.l    stopTimerIntPtr,a0       ; stop timer
-        jsr     (a0)
+	or.w	#$0700,sr		; disable interrupts
 
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
@@ -38,8 +34,8 @@ replayNkt:
         beq.s   .done       ;if 0 bytes do nothing
 .send:
       ; slap data to d0
-      move.w	(a0)+,d0 ;get word
-      ;clr.w	(a0)+ 	 ;clear it
+      move.w	(a0),d0  ; get word
+      clr.w	(a0)+ 	 ; clear it
 
       move.w	d0,d2		;make copy
       andi.w	#$FF00,d2
@@ -71,19 +67,18 @@ replayNkt:
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 
-        move.l  updateTimerIntPtr,a0   ;setup/update timer
-        jsr   (a0)
 
 	;# interrupt will be called automatically next time
 	;# no need to reset if AUTO_INT_ENABLE==1, enabled AER mode
 
 	if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AEI enabled"
-.finish:
 	else
 	echo	"[nkt_rep_m68k.s] AEI disabled"
-.finish:
-        move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
+	move.l  updateTimerIntPtr,a0	 ;setup/update timer
+	jsr   (a0)
+
+	move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
         jsr   (a0)
 	endif
 
@@ -93,12 +88,6 @@ replayNkt:
 
 
 ; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
-
-; MFP_TiC     - installs / deinstalls replayRout on TiC
-;               note: this non intrusive, steals original TiC vector and adds special jumptable
-;               which launches music update routine if needed and after that runs old Timer C handler
-; MFP_TiB     - standard custom vector
-; MFP_TiA     - * unimplemented *
 
 ; #####################################################################################
 _NktInstallReplayRout:
@@ -149,8 +138,8 @@ _NktDeinstallReplayRout:
 	bset.b	#3,$fffffa17.w		;reenable software end int
 	endif
 
-	;move.l    stopTimerIntPtr,a0
-	;jsr     (a0)
+	move.l  stopTimerIntPtr,a0
+	jsr     (a0)
 
 	move.l    oldVector,$114.w
 	move.b    #246,$fffffa21.w	; set data

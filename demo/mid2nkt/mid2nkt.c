@@ -8,7 +8,7 @@
 #include "midi.h"           // midi
 #include "midi2nkt.h"
 
-#define MIDI_OUT_TEMP (72*1024) // temporary buffer for MUS->MID conversion
+#define MIDI_OUT_TEMP (100*1024) // temporary buffer for MUS->MID conversion
 
 void printInfoScreen();
 
@@ -72,7 +72,7 @@ U8 *filePath=0;
            Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
-           amFree(&pMidi);
+           amFree(pMidi);
            pMidi=(void *)pOut;
        }
 
@@ -99,7 +99,7 @@ U8 *filePath=0;
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */
-       amFree(&pMidi);
+       amFree(pMidi);
 
     }
 

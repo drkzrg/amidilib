@@ -58,11 +58,12 @@ S16 iError=0;
         printInfoScreen();
         mainLoop(pNktSeq);
 
+        stopSequence();
+        Supexec(NktDeinstallReplayRout);
+
         // destroy sequence
         destroySequence(pNktSeq);
         pNktSeq=0;
-
-        NktDeinstallReplayRout();
 
         NktDeinit();
 
@@ -75,7 +76,7 @@ S16 iError=0;
 
 void printInfoScreen(){
 
-  printf("\n===== NKT replay demo v.1.1 =============\n");
+  printf("\n===== NKT replay demo v.1.2 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
@@ -95,7 +96,7 @@ void displayTuneInfo(){
 
   if(pPtr){
     printf("PPQN: %u\t",pPtr->timeDivision);
-    printf("Tempo default: %lu [ms] last: %lu [ms]\n",pPtr->defaultTempo, pPtr->lastTempo);
+    printf("Tempo default: %lu [ms] last: %lu [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
   }
 
 }

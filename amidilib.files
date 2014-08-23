@@ -101,3 +101,4 @@ minimal/SConscript.nktconvert
 minimal/makeMinimalLib.sh
 gendoc.sh
 src/do.sh
+include/m68k_defs.inc

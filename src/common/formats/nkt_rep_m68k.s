@@ -7,6 +7,7 @@
 
     include "timing/mfp_m68k.inc"
     include "common_m68k.inc"
+    include "m68k_defs.inc"
 
         xref    update
         xref    _updateStepNkt
@@ -32,6 +33,10 @@ replayNkt:
 
         cmpi.w   #0,d1
         beq.s   .done       ;if 0 bytes do nothing
+
+        ifne (__VASM & m68000)
+        echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
+
 .send:
       ; slap data to d0
       move.w	(a0),d0  ; get word
@@ -61,6 +66,28 @@ replayNkt:
       beq.s	.done
 
       bra.s	.send
+
+      else
+      echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
+
+.send:
+      ; slap data to d0
+      move.b	(a0),d0  ; get byte
+      clr.b	(a0)+ 	 ; clear it
+
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
+
+      bra.s	.send
+
+      endif  ;end 68030 part
+
 .done:
         move.w	#0,_MIDIbytesToSend
         else

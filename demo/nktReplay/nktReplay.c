@@ -104,9 +104,9 @@ void displayTuneInfo(){
 void mainLoop(sNktSeq *pSequence){
     BOOL bQuit=FALSE;
 #ifdef MANUAL_STEP
-    initSequenceManual(pSequence,NKT_PLAY_ONCE);
+    initSequenceManual(pSequence,NKT_PLAY_ONCE,TRUE);
 #else
-    initSequence(pSequence,NKT_PLAY_ONCE);
+    initSequence(pSequence,NKT_PLAY_ONCE,TRUE);
 #endif
 
     //install replay rout

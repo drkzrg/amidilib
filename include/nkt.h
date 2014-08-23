@@ -101,7 +101,7 @@ extern void NktInstallReplayRout();
 extern void NktDeinstallReplayRout(void);
 
 void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq, U16 initialState);
+void initSequence(sNktSeq *seq, U16 initialState, BOOL bInstallUpdate);
 
 sNktSeq *loadSequence(const U8 *filepath);
 void destroySequence(sNktSeq *pSeq);

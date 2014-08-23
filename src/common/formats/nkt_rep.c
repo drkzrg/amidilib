@@ -49,9 +49,8 @@ if(g_CurrentNktSequence){
 
 }
 
-
 // init sequence
-void initSequence(sNktSeq *pSeq, U16 initialState){
+void initSequence(sNktSeq *pSeq, U16 initialState, BOOL bInstallUpdate){
  g_CurrentNktSequence=0;
 
 if(pSeq!=0){
@@ -122,7 +121,7 @@ if(pSeq!=0){
     clearMidiOutputBuffer();
 #endif
 
-  Supexec(NktInstallReplayRout);
+if(bInstallUpdate!=FALSE) Supexec(NktInstallReplayRout);
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();
@@ -321,7 +320,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 	
-	pNewSeq->currentUpdateFreq=NKT_U200HZ;
+    pNewSeq->currentUpdateFreq=NKT_U200HZ;
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
     pNewSeq->defaultTempo.tempo=DEFAULT_MPQN;
     pNewSeq->currentTempo.tempo=DEFAULT_MPQN;

@@ -23,29 +23,29 @@ debug = ARGUMENTS.get('debug', 0)
 cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
-ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
 lzo = ARGUMENTS.get('lzo',0)
 
-LIBRARYNAME = 'nktconv'
+ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
+LIBRARYNAME = 'nktlib'
 
 CROSS=0
 CROSS_PREFIX=''
-  
+
 #to indicate that we are cross compiling
 if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
   CROSS=0
-  CROSS_PREFIX=''  
+  CROSS_PREFIX=''
 elif ((cross=='yes')or (cross=='y')):
   CROSS=1
   if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+	CROSS_PREFIX = prefix + '/bin/' + 'm68k-atari-mint-'
   else:
 	CROSS_PREFIX = 'm68k-atari-mint-'
 else:
   print "No compilation parameter set. Assuming cross compilation for Atari target."
   CROSS=1
   if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
+	CROSS_PREFIX = prefix + '/bin/'+'m68k-atari-mint-'
   else:
 	CROSS_PREFIX = 'm68k-atari-mint-'
 	
@@ -62,7 +62,7 @@ print "Cross tools path: " + prefix
 if ((target == "f030") or (target == "ataritt")):
     print "Building Atari Falcon 030/TT target..."
     ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format -lm'
+    ST_LDFLAGS='-m68030 -Wl,--traditional-format -lm'
     ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -100,6 +100,7 @@ env['RANLIB'] = CROSS_PREFIX + 'ranlib'
 env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
 env['STRIP'] = CROSS_PREFIX + 'strip -s'
 env['STACK'] = CROSS_PREFIX + 'stack'
+
   
 include_path=''
 lib_path=''
@@ -116,6 +117,8 @@ env["LIBPATH"] = [lib_path,'../bin/']
   
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
+
+
 
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
@@ -152,7 +155,6 @@ lib_dir='./lib/'
 
 # copy source files
 # make directories if they doesn't exist
-
 if './src' and not os.path.exists('./src'):
     os.makedirs('./src')
 
@@ -173,12 +175,18 @@ if './include/lzo' and not os.path.exists('./include/lzo'):
 
 
 # sources
+Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/rol_ptch.c", src_dir+'common/roland/rol_ptch.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/linalloc.c", src_dir+'common/memory/linalloc.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/common.s", src_dir+'tos/common.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./src/memory.c", src_dir+'tos/memory/memory.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+
 Command("./src/amlog.c", src_dir+'common/core/amlog.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/midi2nkt.c", src_dir+'common/formats/midi2nkt.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/mus2midi.c", src_dir+'common/formats/mus2midi.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/c_vars.c", src_dir+'common/core/c_vars.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/miditim.c", src_dir+'common/timing/miditim.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/memory.c", src_dir+'tos/memory/memory.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
 
 # external minilzo
@@ -193,24 +201,32 @@ Command("./include/c_vars.h", inc_dir+'c_vars.h', [ Delete("$TARGET"), Copy('$TA
 Command("./include/memory/linalloc.h", inc_dir+'memory/linalloc.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/memory/memory.h", inc_dir+'memory/memory.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/mdevtype.h", inc_dir+'mdevtype.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/timing/miditim.h", inc_dir+'timing/miditim.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/timing/mfp.h", inc_dir+'timing/mfp.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/timing/miditim.h", inc_dir+'timing/miditim.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/midi_cmd.h", inc_dir+'midi_cmd.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/midi_send.h", inc_dir+'midi_send.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/amlog.h", inc_dir+'amlog.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/events.h", inc_dir+'events.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+
+Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi2nkt.h", inc_dir+'midi2nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
-nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c", "./src/memory.c"]
+
+nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
+nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c"]
+
 lzo_src = ["./src/minilzo.c"]
 
 # build library
-env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_conv_src + lzo_src)
+env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + nkt_conv_src + lzo_src)
 
 # strip symbols for release
 if(int(debug)==0):
 	print "Release build. Stripping binaries."
 #	Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
+
 
 

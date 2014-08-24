@@ -1,2 +1,3 @@
 SConscript('SConscript.nktreplay', variant_dir='./nktreplay', duplicate=0, exports={'mode':'release'})
 SConscript('SConscript.nktconvert', variant_dir='./nktconvert', duplicate=0, exports={'mode':'release'})
+SConscript('SConscript.nktall', variant_dir='./nktall', duplicate=0, exports={'mode':'release'})

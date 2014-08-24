@@ -8,14 +8,15 @@
 
 #general
 #cygwin
-#tools_prefix='/opt/cross-mint'
-#base_dir='/home/saulot/'
-
-#linux
-tools_prefix='/usr'
+tools_prefix='/opt/cross-mint'
 base_dir='/home/saulot/'
 
-build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes"
+#linux
+#tools_prefix='/usr'
+#base_dir='/home/saulot/'
+
+build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes lzo=no"
+build_options_debug="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes lzo=no"
 
 #clean all stuff
 scons $build_options -c
@@ -23,3 +24,4 @@ scons $build_options -c
 #launch build
 echo "############################# Starting build ... "
 scons $build_options
+scons $build_options_debug

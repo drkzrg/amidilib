@@ -24,6 +24,8 @@ cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
+lzo = ARGUMENTS.get('lzo',0)
+
 LIBRARYNAME = 'nktrep'
 
 CROSS=0

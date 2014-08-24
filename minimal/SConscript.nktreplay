@@ -100,7 +100,6 @@ env['RANLIB'] = CROSS_PREFIX + 'ranlib'
 env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
 env['STRIP'] = CROSS_PREFIX + 'strip -s'
 env['STACK'] = CROSS_PREFIX + 'stack'
-
   
 include_path=''
 lib_path=''
@@ -171,7 +170,6 @@ if './include/timing' and not os.path.exists('./include/timing'):
 if './include/lzo' and not os.path.exists('./include/lzo'):
     os.makedirs('./include/lzo')
 
-
 # sources
 Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
@@ -204,7 +202,7 @@ Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy(
 
 Command("./include/common_m68k.inc", inc_dir+'common_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/m68k_defs.inc", inc_dir+'m68k_defs.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
+Command("./include/timing/mfp_m68k.inc", inc_dir+'timing/mfp_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 lzo_src = ["./src/minilzo.c"]

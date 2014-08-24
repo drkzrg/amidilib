@@ -213,10 +213,10 @@ Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy(
 
 Command("./include/common_m68k.inc", inc_dir+'common_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/m68k_defs.inc", inc_dir+'m68k_defs.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/timing/mfp_m68k.inc", inc_dir+'timing/mfp_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
 Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi2nkt.h", inc_dir+'midi2nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c"]

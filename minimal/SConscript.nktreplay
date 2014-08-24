@@ -202,6 +202,10 @@ Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET
 Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
+Command("./include/common_m68k.inc", inc_dir+'common_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/m68k_defs.inc", inc_dir+'m68k_defs.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+
+
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 lzo_src = ["./src/minilzo.c"]
 

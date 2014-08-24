@@ -211,6 +211,9 @@ Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET
 Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 
+Command("./include/common_m68k.inc", inc_dir+'common_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/m68k_defs.inc", inc_dir+'m68k_defs.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+
 Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi2nkt.h", inc_dir+'midi2nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 

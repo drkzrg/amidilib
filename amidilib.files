@@ -51,7 +51,6 @@ src/common/memory/linalloc.c
 src/common/memory/stack.c
 src/common/midi/midiseq.c
 src/common/timing/miditim.c
-src/common/twisterm.c
 src/common/ym2149.c
 src/tos/discio/fmio.c
 src/tos/memory/memory.c
@@ -102,3 +101,4 @@ minimal/makeMinimalLib.sh
 gendoc.sh
 src/do.sh
 include/m68k_defs.inc
+minimal/SConscript.nktall

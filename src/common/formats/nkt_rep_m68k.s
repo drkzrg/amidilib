@@ -14,14 +14,12 @@
 
         xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
         xdef _NktDeinstallReplayRout	; removes Nkt replay routine from system
-	xdef _MidiUpdateHook
+	xdef _NktMidiUpdateHook
 
         even
 
 replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
-        move.w    sr,-(a7)
-	or.w	#$0700,sr		; disable interrupts
 
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
@@ -31,6 +29,9 @@ replayNkt:
         move.w	#0,d1
         move.l 	#_MIDIsendBuffer,a0
         move.w	_MIDIbytesToSend,d1
+
+	move.w  sr,-(a7)
+	or.w	#$2300,sr		; disable some interrupts
 
         cmpi.w   #0,d1
         beq.s   .done       ;if 0 bytes do nothing
@@ -91,7 +92,9 @@ replayNkt:
 
 .done:
         move.w	#0,_MIDIbytesToSend
-        else
+	move.w    (a7)+,sr             ;restore sr
+
+	else
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 
@@ -109,15 +112,12 @@ replayNkt:
 	move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
 	jsr   (a0)
 	endif
-        move.w    (a7)+,sr             ;restore sr
         movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
 
 
-_MidiUpdateHook:
+_NktMidiUpdateHook:
 	movem.l   d0-7/a0-6,-(a7)	; save registers
-	move.w    sr,-(a7)
-	or.w	#$0700,sr		; disable interrupts
 
 	jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
@@ -128,44 +128,73 @@ _MidiUpdateHook:
 	move.l 	#_MIDIsendBuffer,a0
 	move.w	_MIDIbytesToSend,d1
 
+	move.w  sr,-(a7)
+	or.w	#$2300,sr		; disable interrupts, leave ikbd
+
 	cmpi.w   #0,d1
 	beq.s   .done       ;if 0 bytes do nothing
+	ifne (__VASM & m68000)
+	echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
+
 .send:
-	; slap data to d0
-	move.w	(a0),d0  ; get word
-	clr.w	(a0)+ 	 ; clear it
+      ; slap data to d0
+      move.w	(a0),d0  ; get word
+      clr.w	(a0)+ 	 ; clear it
 
-	move.w	d0,d2		;make copy
-	andi.w	#$FF00,d2
-	lsr.w	#8,d2
+      move.w	d0,d2		;make copy
+      andi.w	#$FF00,d2
+      lsr.w	#8,d2
 .wait1:
-	btst	#1,$fffffc04.w	;is data register empty?
-	beq.s	.wait1		;no, wait!
-	move.b	d2,$fffffc06.w	;write to MIDI data register
-	subq.w	#1,d1
-	cmpi.w	#0,d1
-	beq.s	.done
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait1		;no, wait!
+      move.b	d2,$fffffc06.w	;write to MIDI data register
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
 
-;not done
-	move.w	d0,d2
-	andi.w	#$00FF,d2
+      ;not done
+      move.w	d0,d2
+      andi.w	#$00FF,d2
 .wait2:
-	btst	#1,$fffffc04.w	;is data register empty?
-	beq.s	.wait2		;no, wait!
-	move.b	d2,$fffffc06.w	;write to MIDI data register
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait2		;no, wait!
+      move.b	d2,$fffffc06.w	;write to MIDI data register
 
-	subq.w	#1,d1
-	cmpi.w	#0,d1
-	beq.s	.done
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
 
-	bra.s	.send
+      bra.s	.send
+
+      else
+      echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
+
+.send:
+      ; slap data to d0
+      move.b	(a0),d0  ; get byte
+      clr.b	(a0)+ 	 ; clear it
+
+.wait:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait		;no, wait!
+      move.b	d0,$fffffc06.w	;write to MIDI data register
+
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
+
+      bra.s	.send
+
+      endif  ;end 68030>= part
 .done:
 	move.w	#0,_MIDIbytesToSend
+	move.w    (a7)+,sr             ;restore sr
+
 	else
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 
-	move.w    (a7)+,sr             ;restore sr
+
 	movem.l   (a7)+,d0-7/a0-6	;restore registers
 
 	rts

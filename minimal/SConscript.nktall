@@ -26,7 +26,7 @@ target = ARGUMENTS.get('target', 0)
 lzo = ARGUMENTS.get('lzo',0)
 
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
-LIBRARYNAME = 'nktlib'
+LIBRARYNAME = 'nkt'
 
 CROSS=0
 CROSS_PREFIX=''

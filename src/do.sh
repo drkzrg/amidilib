@@ -63,7 +63,7 @@ emu_dir=$base_dir'Pulpit/HD/'
 
 install_dir=$emu_dir'AMIDIDEV/'
 
-stack_size=8k
+stack_size=64k
 
 # output binaries
 MIDIREP_BIN='midiplay.ttp'

@@ -164,12 +164,10 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 }
 #endif
 
-volatile static BOOL bSend=FALSE;
 volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static sNktBlock_t *nktBlk=0;
 
-// single track handler
 void updateStepNkt(){
 
  if(g_CurrentNktSequence==0) return;
@@ -178,14 +176,65 @@ void updateStepNkt(){
  if(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
     am_allNotesOff(16);
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    flushMidiSendBuffer();
-#endif
-
+    #ifdef IKBD_MIDI_SEND_DIRECT
+        flushMidiSendBuffer();
+    #endif
     return;
   }
 
-  if(!(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)){
+  if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING){
+
+      bStopped=FALSE;   // we replaying, so we have to reset this flag
+
+      // get sequence block
+      nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+
+      // track end?
+      if(nktBlk->msgType&NKT_END){
+         onEndSequence();
+         return;
+     }
+
+     // update
+     g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
+     TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
+     g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
+
+     // timestep forward
+     g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
+
+     if( g_CurrentNktSequence->timeElapsedInt==nktBlk->delta||nktBlk->delta==0){
+         g_CurrentNktSequence->timeElapsedInt -= nktBlk->delta;
+
+         // tempo change ?
+         if(nktBlk->msgType&NKT_TEMPO_CHANGE){
+            // set new tempo
+            U32 *pData = (U32 *)nktBlk->pData;
+            g_CurrentNktSequence->currentTempo.tempo=*pData;
+            pData++;
+
+            // get precalculated timestep
+            g_CurrentNktSequence->timeStep=pData[g_CurrentNktSequence->currentUpdateFreq];
+
+            //next event
+            ++(g_CurrentNktSequence->currentBlockId);
+            nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
+        }
+
+  #ifdef IKBD_MIDI_SEND_DIRECT
+          amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
+          MIDIbytesToSend=nktBlk->blockSize;
+  #else
+          //send to xbios
+          amMidiSendData(nktBlk->blockSize,nktBlk->pData);
+  #endif
+
+          //go to next event
+          ++(g_CurrentNktSequence->currentBlockId);
+
+     } // end delta check
+
+  }else{
     // check sequence state if stopped reset position
     // and tempo to default, but only once
 
@@ -199,13 +248,12 @@ void updateStepNkt(){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
-      //g_CurrentNktSequence->timeElapsedInt=0L;
-      //g_CurrentNktSequence->timeElapsedFrac=0L;
-     // TimeAdd = 0;
+      g_CurrentNktSequence->timeElapsedInt=0L;
+      g_CurrentNktSequence->timeElapsedFrac=0L;
+      TimeAdd = 0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
       // get precalculated timestep
-
       g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
       //rewind to the first event
@@ -214,99 +262,7 @@ void updateStepNkt(){
    return;
   }
 
-  bStopped=FALSE;   // we replaying, so we have to reset this flag
-  nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-
-   if(nktBlk!=0 && (nktBlk->msgType&NKT_TEMPO_CHANGE)){
-       // set new tempo
-       U32 *pData = (U32 *)nktBlk->pData;
-       g_CurrentNktSequence->currentTempo.tempo=*pData;
-       pData++;
-
-       // get precalculated timestep
-       g_CurrentNktSequence->timeStep=pData[g_CurrentNktSequence->currentUpdateFreq];
-
-       //next event
-       ++(g_CurrentNktSequence->currentBlockId);
-       return;
-   }
-
-   //reset
-   bSend=FALSE;
-
-   if(nktBlk->delta==g_CurrentNktSequence->timeElapsedInt) bSend=TRUE;
-
-   if( (!(nktBlk->msgType&NKT_END)) && bSend!=FALSE){
-
-       if(nktBlk->msgType&NKT_TEMPO_CHANGE){
-
-        //set new tempo
-        U32 *pData = (U32 *)nktBlk->pData;
-        //g_CurrentNktSequence->currentTempo.tempo=*pData;
-        ++pData;
-
-        // get precalculated timestep
-        g_CurrentNktSequence->timeStep=pData[g_CurrentNktSequence->currentUpdateFreq];
-        //next event
-        ++(g_CurrentNktSequence->currentBlockId);
-        nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-       }
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-        amMemCpy(MIDIsendBuffer,nktBlk->pData, nktBlk->blockSize);
-        MIDIbytesToSend=nktBlk->blockSize;
-#else
-        //send to xbios
-        amMidiSendData(nktBlk->blockSize,nktBlk->pData);
-#endif
-
-   //go to next event
-    ++(g_CurrentNktSequence->currentBlockId);
-   nktBlk=&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-
-   //check if next events are null and pack buffer until first next non zero delta
-   while( (!(nktBlk->msgType&NKT_END)) && nktBlk->delta==0){
-        //handle event
-#ifdef IKBD_MIDI_SEND_DIRECT
-       amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],nktBlk->pData, nktBlk->blockSize);
-       MIDIbytesToSend+=nktBlk->blockSize;
-#else
-         //send to xbios
-        amMidiSendData(nktBlk->blockSize,nktBlk->pData);
-#endif
-
-       //go to next event
-        ++(g_CurrentNktSequence->currentBlockId);
-       nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
-    }
-
-  } //endif
-
-   // update
-   g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
-   TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
-   g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
-
-   if(TimeAdd>1) TimeAdd=1; //probably evil
-
-   // add time elapsed
-   if(bSend!=FALSE){
-     TimeAdd=0;
-     g_CurrentNktSequence->timeElapsedInt=0;
-     g_CurrentNktSequence->timeElapsedFrac=0;
-   }else{
-     g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
-   }
-
-   //check if we have end of sequence
-   //on all tracks
-   if(nktBlk->msgType&NKT_END){
-      onEndSequence();
-   }
-
 } //end updateStepNkt()
-
-
 
 sNktSeq *loadSequence(const U8 *pFilePath){
     // create header

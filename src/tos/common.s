@@ -57,14 +57,13 @@ _deinstallReplayRoutGeneric:
 ;custom TiC vector
 ; calls standard vector
 vectorTiC:
-
-        jsr oldVector                   ;call old vector
-
 	movem.l	  d0-d7/a0-a6,-(sp)
 	move.l  update,a0
 	jsr  (a0)
 	movem.l (sp)+,d0-d7/a0-a6	;restore registers
 
+	move.l	oldVector,a0
+	jsr     (a0)               ; call old vector
         rte     ;this rte will be not called
 
 ;TiB helpers

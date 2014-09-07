@@ -58,7 +58,6 @@ S16 iError=0;
         printInfoScreen();
         mainLoop(pNktSeq);
 
-        stopSequence();
         Supexec(NktDeinstallReplayRout);
 
         // destroy sequence

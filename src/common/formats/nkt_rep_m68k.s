@@ -209,8 +209,9 @@ _NktInstallReplayRout:
         move.w  #0,isMultitrackReplay
         move.w  #0,midiIntCounter
 
-	or.w	#$0700,sr	;turn off all interupts
-	if(AUTO_INT_ENABLE==1)
+        or.w	#$0700,sr	;turn off all interupts
+
+        if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
 	bclr.b	#3,$fffffa17.w
 	endif
@@ -258,7 +259,8 @@ _NktDeinstallReplayRout:
 	ori.b     #80,$fffffa1b.w	; div mode
 	bset.b    #5,$fffffa09.w        ; enable TiC
 	bset.b    #5,$fffffa15.w        ; set interrupt mask B
-
+        move.w 	  (sp)+,sr 		;restore Status Register
         movem.l (sp)+,d0-d7/a0-a6
+
         rts
 

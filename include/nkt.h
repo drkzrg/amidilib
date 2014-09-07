@@ -98,7 +98,7 @@ void NktDeinit();
 extern void NktInstallReplayRout();
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
-extern void NktDeinstallReplayRout(void);
+extern void NktDeinstallReplayRout();
 
 void getCurrentSequence(sNktSeq **pSeq);
 void initSequence(sNktSeq *seq, U16 initialState, BOOL bInstallUpdate);

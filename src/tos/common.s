@@ -114,8 +114,9 @@ _turnOffKeyclick:
 ; sends midi data directly to ikbd, plain m68k friendly
 _flushMidiSendBuffer:
       movem.l	d0-d1/a0,-(sp)
-      bsr.w	_super_on
-      
+;     bsr.w   _super_on
+      move.w  sr,-(sp)
+
       move.w  #0,d1
       move.l  #_MIDIsendBuffer,a0
       move.w _MIDIbytesToSend,d1
@@ -153,8 +154,10 @@ _flushMidiSendBuffer:
 
 .done:
       move.w 	#0,_MIDIbytesToSend
-      bsr.w	_super_off
-      
+
+      move.w	(sp)+,sr
+;      bsr.w	_super_off
+
       movem.l (sp)+,d0-d1/a0
       rts
 

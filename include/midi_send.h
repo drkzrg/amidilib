@@ -48,9 +48,13 @@ static INLINE U8 amMidiGetData(U8 deviceId){
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA amMidiGetData(DEV_MIDI)
 
-extern U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
-extern U16 MIDIbytesToSend;
+extern volatile U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
+extern volatile U16 MIDIbytesToSend;
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+extern void clearMidiOutputBuffer();
+extern void flushMidiSendBuffer();
+#else
 //clears custom midi output buffer
 static void clearMidiOutputBuffer(){
     MIDIbytesToSend=0;
@@ -64,6 +68,7 @@ static INLINE void flushMidiSendBuffer(){
 
     clearMidiOutputBuffer();
 }
+#endif
 
 #ifdef DEBUG_BUILD
 static void printMidiSendBufferState(){

@@ -25,11 +25,11 @@ if(g_CurrentNktSequence){
   if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
     // set state to stopped
     // reset song position on all tracks
-    g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
+    g_CurrentNktSequence->sequenceState&=(U16)(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
   }else{
     // loop
-    g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED);
-    g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
+    g_CurrentNktSequence->sequenceState&=(U16)(~NKT_PS_PAUSED);
+    g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
 
   am_allNotesOff(16);
@@ -65,7 +65,7 @@ if(pSeq!=0){
 
     // precalc tempo table
     amTrace("Precalculating update step for Td: %d, Bpm: %d\n",td,bpm);
-     // precalculate valuies for different update steps
+     // precalculate values for different update steps
 
      for(int i=0;i<NKT_UMAX;++i){
 
@@ -118,9 +118,10 @@ if(pSeq!=0){
     pSeq->sequenceState = initialState;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-    clearMidiOutputBuffer();
+    Supexec(clearMidiOutputBuffer);
 #endif
 
+    // install our interrupt handler
 if(bInstallUpdate!=FALSE) Supexec(NktInstallReplayRout);
 
 #ifdef DEBUG_BUILD
@@ -149,7 +150,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
   pSeq->sequenceState = state;
 
   #ifdef IKBD_MIDI_SEND_DIRECT
-  clearMidiOutputBuffer();
+   Supexec(clearMidiOutputBuffer);
   #endif
 
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
@@ -168,9 +169,32 @@ volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static sNktBlock_t *nktBlk=0;
 
+volatile static U8 currentMasterVolume;
+volatile static U8 requestedMasterVolume;
+
 void updateStepNkt(){
 
  if(g_CurrentNktSequence==0) return;
+
+ if(currentMasterVolume!=requestedMasterVolume){
+     currentMasterVolume=requestedMasterVolume;
+
+     // send master volume data
+     U8 setMasterVolMsg[8]={0xF0,0x7F,0x7F,0x04,0x01,0x00,0x00,0xF7};
+
+     setMasterVolMsg[5]=currentMasterVolume&0x0f; // 0xLL  Bits 0 to 6 of a 14-bit volume
+     setMasterVolMsg[6]=currentMasterVolume&0xf0; // 0xMM  Bits 7 to 13 of a 14-bit volume
+
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[0];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[1];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[2];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[3];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[4];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[5];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[6];
+     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[7];
+
+ }
 
  //check sequence state if paused do nothing
  if(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
@@ -186,11 +210,10 @@ void updateStepNkt(){
 
       bStopped=FALSE;   // we replaying, so we have to reset this flag
 
-      // get sequence block
       nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->pEvents[g_CurrentNktSequence->currentBlockId]);
 
       // track end?
-      if(nktBlk->msgType&NKT_END){
+      if(nktBlk->msgType&NKT_END||g_CurrentNktSequence->currentBlockId>=g_CurrentNktSequence->NbOfBlocks){
          onEndSequence();
          return;
      }
@@ -591,7 +614,7 @@ void stopSequence(void){
     am_allNotesOff(16);
 
     #ifdef IKBD_MIDI_SEND_DIRECT
-      flushMidiSendBuffer();
+      Supexec(flushMidiSendBuffer);
     #endif
   }
 }
@@ -661,13 +684,18 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
     // prepare device for receiving messages
 
      setupMidiDevice(devType,channel);
+     currentMasterVolume=64;
+     requestedMasterVolume=64;
+
+    //
+
 }
 
 
 void NktDeinit(){
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
-    flushMidiSendBuffer();
+    Supexec(flushMidiSendBuffer);
 #endif
 
     deinitDebug();
@@ -723,5 +751,16 @@ const U8 *getEventTypeName(U16 type){
     }
 }
 #endif
+
+void setMidiMasterVolume(U8 vol){
+    if(vol<=127){
+        requestedMasterVolume=vol;
+    }
+}
+
+U8 getMidiMasterVolume(){;
+    return currentMasterVolume;
+}
+
 
 

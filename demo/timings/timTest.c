@@ -47,7 +47,7 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr);
 BOOL isEndSeq(sEvent *pEvent);
 
 // plays sample sequence 
-int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
+int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
 void updateSequenceStep(); 
 void onEndSeq(); //end sequence handler
 void printHelpScreen();
@@ -94,7 +94,7 @@ int main(void){
   sEvent *ch2=getTestSequenceChannel(1);
   sEvent *ch3=getTestSequenceChannel(2);
 
-  initSequence(ch1,ch2,ch3,&g_CurrentState);
+  initSampleSequence(ch1,ch2,ch3,&g_CurrentState);
   
   /* Install our asm ikbd handler */
   Supexec(IkbdInstall);
@@ -154,7 +154,7 @@ int main(void){
   }//end while
 
   am_allNotesOff(16);
-  flushMidiSendBuffer();
+  Supexec(flushMidiSendBuffer);
   
   ymSoundOff();
   deinstallReplayRoutGeneric();
@@ -325,7 +325,7 @@ void INLINE printHelpScreen(){
 }
 
 // plays sample sequence 
-int initSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr){
+int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr){
   static BOOL bPlayModeInit=FALSE;
   U8 mode=0,data=0;
   handleTempoChange=FALSE;

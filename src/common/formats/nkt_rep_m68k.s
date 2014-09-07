@@ -15,7 +15,7 @@
         xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
         xdef _NktDeinstallReplayRout	; removes Nkt replay routine from system
 	xdef _NktMidiUpdateHook
-
+	xdef _clearMidiOutputBuffer	; clears MidiOutputBuffer
         even
 
 replayNkt:
@@ -264,3 +264,37 @@ _NktDeinstallReplayRout:
 
         rts
 
+_clearMidiOutputBuffer:
+	movem.l	  d0-d7/a0-a6,-(sp)
+	move.w	sr,-(sp)
+
+	or.w	#0700,sr
+
+	move.w	#0,_MIDIbytesToSend
+
+	move.l 	#_MIDIsendBuffer,a0
+	add.l	#1024*32,a0
+
+	move.l	#630-1,d7
+
+	move.l	#0,d0
+	move.l	#0,d1
+	move.l	#0,d2
+	move.l	#0,d3
+	move.l	#0,d4
+	move.l	#0,d5
+	move.l	#0,d6
+
+	move.l	#0,a1
+	move.l	#0,a2
+	move.l	#0,a3
+	move.l	#0,a4
+	move.l	#0,a5
+	move.l	#0,a6
+.cpy:
+	movem.l	d0-d6/a1-a6,-(a0)
+	dbra d7,.cpy
+
+	move.w	(sp)+,sr
+	movem.l (sp)+,d0-d7/a0-a6
+	rts

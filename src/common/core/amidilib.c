@@ -490,7 +490,7 @@ void am_deinit(){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
-    flushMidiSendBuffer();
+   Supexec(flushMidiSendBuffer);
 #endif
 
 #ifndef IKBD_MIDI_SEND_DIRECT
@@ -514,7 +514,9 @@ void am_deinit(){
 
 void getDeviceInfoResponse(U8 channel){
   //TODO: rework it
-  static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7}; 
+  return;
+
+  static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   
   BOOL bTimeout=FALSE;
@@ -528,7 +530,7 @@ void getDeviceInfoResponse(U8 channel){
   for(int i=0;i<10;i++){
     MIDIsendBuffer[MIDIbytesToSend++]=getInfoSysEx[i];
   }
-  flushMidiSendBuffer();
+  Supexec(flushMidiSendBuffer);
 #else
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 

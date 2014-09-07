@@ -51,7 +51,8 @@ S16 iError=0;
     // set GS / GM source, channel
     NktInit(devType,1);
 
-    flushMidiSendBuffer();
+    Supexec(flushMidiSendBuffer);
+
     pNktSeq=loadSequence(argv[1]);
 
     if(pNktSeq!=NULL){
@@ -160,7 +161,7 @@ void mainLoop(sNktSeq *pSequence){
             printNktSequenceState();
 
             // clear buffer after each update step
-            flushMidiSendBuffer();
+            Supexec(flushMidiSendBuffer);
 
           }break;
 #endif

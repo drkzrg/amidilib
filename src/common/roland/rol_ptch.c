@@ -241,7 +241,7 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
     }
 
  #ifdef IKBD_MIDI_SEND_DIRECT
-     flushMidiSendBuffer();	//
+     Supexec(flushMidiSendBuffer);
  #endif
 
 }

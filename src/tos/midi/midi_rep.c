@@ -29,7 +29,7 @@ if(seq!=0){
 
     g_CurrentSequence=seq;
 
-    clearMidiOutputBuffer();
+    Supexec(clearMidiOutputBuffer);
 
     for(int i=0;i<seq->ubNumTracks;++i){
         pTrack=seq->arTracks[i];
@@ -51,7 +51,7 @@ if(seq!=0){
     seq->timeStep=am_calculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-        flushMidiSendBuffer();
+        Supexec(flushMidiSendBuffer);
 #endif
 
     getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
@@ -99,7 +99,7 @@ void initSeqManual(sSequence_t *seq){
     } 
   
 #ifdef IKBD_MIDI_SEND_DIRECT
-        flushMidiSendBuffer();
+        Supexec(flushMidiSendBuffer);
 #endif
     seq->timeElapsedFrac=0L;
     seq->timeStep=0L;    
@@ -518,7 +518,7 @@ void stopSeq(void){
   am_allNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-  flushMidiSendBuffer();
+  Supexec(flushMidiSendBuffer);
 #endif
 
 }

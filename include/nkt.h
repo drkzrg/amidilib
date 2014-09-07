@@ -112,6 +112,8 @@ void stopSequence(void);
 void pauseSequence();
 void playSequence(void);
 void switchReplayMode(void);
+void setMidiMasterVolume(U8 vol);
+U8 getMidiMasterVolume();
 
 #ifdef DEBUG_BUILD
 //debug helpers

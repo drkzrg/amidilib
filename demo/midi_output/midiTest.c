@@ -79,7 +79,7 @@ void changeCurrentInstrument(U8 channel,U8 bank,U8 pn){
    }  
   
   #ifdef IKBD_MIDI_SEND_DIRECT
-    flushMidiSendBuffer();
+    Supexec(flushMidiSendBuffer);
   #endif
 }
 
@@ -118,7 +118,7 @@ int main(void) {
   if(iError!=1) return -1;
   
 #ifdef IKBD_MIDI_SEND_DIRECT
-    flushMidiSendBuffer();
+    Supexec(flushMidiSendBuffer);
 #endif
   
   currentChannel=getGlobalConfig()->midiChannel;  
@@ -356,7 +356,7 @@ int main(void) {
 				  
 				}
 			#ifdef IKBD_MIDI_SEND_DIRECT
-                 flushMidiSendBuffer();
+                 Supexec(flushMidiSendBuffer);
 			#endif
 				  	
 				
@@ -453,7 +453,7 @@ int main(void) {
 				};
 			  
 			  #ifdef IKBD_MIDI_SEND_DIRECT
-                  flushMidiSendBuffer();
+                  Supexec(flushMidiSendBuffer);
 			  #endif
 				  
 				

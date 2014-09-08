@@ -536,25 +536,21 @@ void pauseSeq(){
     if(pTrack){
          U16 state=pTrack->currentState.playState;
 
-         if((state&TS_PS_PLAYING)&&(!(state&TS_PS_PAUSED))){
-          pTrack->currentState.playState&=(~TS_PS_PLAYING);
-          pTrack->currentState.playState|=TS_PS_PAUSED;
-
-          // all notes off
-          am_allNotesOff(16);
+         if((state&TS_PS_PLAYING)&&(!(state&TS_PS_PAUSED)))
+         {
+          pTrack->currentState.playState&=(U16)(~TS_PS_PLAYING);
+          pTrack->currentState.playState|=(U16)TS_PS_PAUSED;
 
           printf("Pause sequence\n");
           return;
-         }
-
-         if(!(state&TS_PS_PLAYING)&&(state&TS_PS_PAUSED) ){
-           pTrack->currentState.playState&=(~TS_PS_PAUSED); //unpause
-           pTrack->currentState.playState|=TS_PS_PLAYING;  //set playing state
+         }else if( !(state&TS_PS_PLAYING)&&(state&TS_PS_PAUSED) ){
+           pTrack->currentState.playState&=(U16)(~TS_PS_PAUSED); //unpause
+           pTrack->currentState.playState|=(U16)TS_PS_PLAYING;  //set playing state
+           printf("Resume sequence\n");
          }
     }
   }
-  //all notes off
-  am_allNotesOff(16);
+
 }//pauseSeq
 
 void playSeq(void){

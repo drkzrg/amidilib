@@ -26,13 +26,18 @@ if(g_CurrentNktSequence){
     // set state to stopped
     // reset song position on all tracks
     g_CurrentNktSequence->sequenceState&=(U16)(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
+    am_allNotesOff(16);
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+  flushMidiSendBuffer();
+#endif
+
   }else{
     // loop
     g_CurrentNktSequence->sequenceState&=(U16)(~NKT_PS_PAUSED);
     g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
 
-  am_allNotesOff(16);
   g_CurrentNktSequence->timeElapsedInt=0L;
   g_CurrentNktSequence->timeElapsedFrac=0L;
 
@@ -42,9 +47,7 @@ if(g_CurrentNktSequence){
   // reset all tracks state
   g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  flushMidiSendBuffer();
-#endif
+
  }
 
 }
@@ -171,12 +174,15 @@ volatile static sNktBlock_t *nktBlk=0;
 
 volatile static U8 currentMasterVolume;
 volatile static U8 requestedMasterVolume;
+volatile static U16 sequenceState;
 
 void updateStepNkt(){
 
  if(g_CurrentNktSequence==0) return;
 
- if(currentMasterVolume!=requestedMasterVolume){
+ sequenceState=g_CurrentNktSequence->sequenceState;
+
+/* if(currentMasterVolume!=requestedMasterVolume){
      currentMasterVolume=requestedMasterVolume;
 
      // send master volume data
@@ -194,10 +200,10 @@ void updateStepNkt(){
      MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[6];
      MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[7];
 
- }
+ }*/
 
  //check sequence state if paused do nothing
- if(g_CurrentNktSequence->sequenceState&NKT_PS_PAUSED){
+ if(sequenceState&NKT_PS_PAUSED){
     am_allNotesOff(16);
 
     #ifdef IKBD_MIDI_SEND_DIRECT
@@ -206,7 +212,7 @@ void updateStepNkt(){
     return;
   }
 
-  if(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING){
+  if(sequenceState&NKT_PS_PLAYING){
 
       bStopped=FALSE;   // we replaying, so we have to reset this flag
 
@@ -631,9 +637,12 @@ void pauseSequence(){
            // all notes off
            am_allNotesOff(16);
 
+#ifdef IKBD_MIDI_SEND_DIRECT
+           Supexec(flushMidiSendBuffer);
+#endif
            printf("Pause sequence\n");
            return;
-          }else if(!(g_CurrentNktSequence->sequenceState&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
+          }else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
             g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
             g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;  //set playing state
           }

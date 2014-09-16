@@ -123,7 +123,7 @@ env['VASM'] = 'vasmm68k_mot'
 # skip writing directly to ikbd port completely
 if (tx_enable=="yes"):
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=1'
-else
+else:
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
 

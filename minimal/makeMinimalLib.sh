@@ -15,8 +15,8 @@ base_dir='/home/saulot/'
 #tools_prefix='/usr'
 #base_dir='/home/saulot/'
 
-build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes lzo=no"
-build_options_debug="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes lzo=no"
+build_options="cross=y target=f030 debug=0 prefix=$tools_prefix ikbd_direct=yes lzo=no tx_enable=no"
+build_options_debug="cross=y target=f030 debug=1 prefix=$tools_prefix ikbd_direct=yes lzo=no tx_enable=no"
 
 #clean all stuff
 scons $build_options -c

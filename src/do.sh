@@ -47,7 +47,7 @@ else
     cross_str="cross=n"
 fi
 
-build_options="target=f030 prefix=$tools_prefix ikbd_direct=yes $cross_str $deb_str"
+build_options="target=f030 prefix=$tools_prefix ikbd_direct=yes tx_enable=no $cross_str $deb_str"
 copy_to_shared_dir=0
 shared_dir='/home/saulot/Pulpit/shared/amidilib'
 

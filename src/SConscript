@@ -18,6 +18,7 @@ where name of 'target' can be: \n \
  'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
+ 'tx_enable' - skips writing to ACIA ikbd port, sending is via ikbd tx interrupt,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
@@ -25,6 +26,8 @@ cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
+tx_enable = ARGUMENTS.get('tx_enable', 0)
+
 LIBRARYNAME = 'amidi'
 
 #to indicate that we are cross compiling
@@ -95,6 +98,13 @@ elif (target == "ct60"):
     LIB_POSTFIX='060'
 else:
     print "Unknown target...["+target+"] Terminating build. Type in 'scons --help' from commandline for a list of options" 
+
+# skip writing directly to ikbd port completely
+if (tx_enable=="yes"):
+    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=1'
+else:
+    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
+
 
 # output executable name
 OUTPUT_DIR='../bin/'

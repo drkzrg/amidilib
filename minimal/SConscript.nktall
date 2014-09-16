@@ -17,6 +17,7 @@ where name of 'target' can be: \n \
  'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
+ 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
@@ -24,8 +25,9 @@ cross = ARGUMENTS.get('cross', 0)
 prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 lzo = ARGUMENTS.get('lzo',0)
-
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
+tx_enable = ARGUMENTS.get('tx_enable', 0)
+
 LIBRARYNAME = 'nkt'
 
 CROSS=0
@@ -118,7 +120,11 @@ env["LIBPATH"] = [lib_path,'../bin/']
 # VASM settings
 env['VASM'] = 'vasmm68k_mot'
 
-
+# skip writing directly to ikbd port completely
+if (tx_enable=="yes"):
+    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=1'
+else:
+    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
@@ -229,7 +235,7 @@ env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + nkt_conv_src +
 # strip symbols for release
 if(int(debug)==0):
 	print "Release build. Stripping binaries."
-#	Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
+	Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
 
 
 

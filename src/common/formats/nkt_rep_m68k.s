@@ -23,6 +23,8 @@ replayNkt:
 
         jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
 
+	if	(TX_ENABLE==0)
+
         if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 
@@ -33,6 +35,7 @@ replayNkt:
 	move.w  sr,-(a7)
 	or.w	#$2300,sr		; disable some interrupts
 
+
         cmpi.w   #0,d1
         beq.s   .done       ;if 0 bytes do nothing
 
@@ -41,8 +44,7 @@ replayNkt:
 
 .send:
       ; slap data to d0
-      move.w	(a0),d0  ; get word
-      clr.w	(a0)+ 	 ; clear it
+      move.w	(a0)+,d0  ; get word
 
       move.w	d0,d2		;make copy
       andi.w	#$FF00,d2
@@ -74,8 +76,7 @@ replayNkt:
 
 .send:
       ; slap data to d0
-      move.b	(a0),d0  ; get byte
-      clr.b	(a0)+ 	 ; clear it
+      move.b	(a0)+,d0  ; get byte
 
 .wait:
       btst	#1,$fffffc04.w	;is data register empty?
@@ -98,6 +99,10 @@ replayNkt:
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
         endif
 
+	else
+	echo	"[nkt_rep_m68k.s] ACIA WRITE SKIP"
+	endif
+
 
 	;# interrupt will be called automatically next time
 	;# no need to reset if AUTO_INT_ENABLE==1, enabled AER mode
@@ -112,6 +117,8 @@ replayNkt:
 	move.l    finishTimerIntPtr,a0   ;signal end of and interrupt whatever it might be
 	jsr   (a0)
 	endif
+
+
         movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
 
@@ -131,17 +138,19 @@ _NktMidiUpdateHook:
 	move.w  sr,-(a7)
 	or.w	#$2300,sr		; disable interrupts, leave ikbd
 
+	if	(TX_ENABLE==0)
+
 	cmpi.w   #0,d1
 	beq.s   .done       ;if 0 bytes do nothing
+
 	ifne (__VASM & m68000)
 	echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
 
 .send:
       ; slap data to d0
-      move.w	(a0),d0  ; get word
-      clr.w	(a0)+ 	 ; clear it
+      move.w	(a0)+,d0  ; get word
 
-      move.w	d0,d2		;make copy
+      move.w	d0,d2		; make copy
       andi.w	#$FF00,d2
       lsr.w	#8,d2
 .wait1:
@@ -188,14 +197,16 @@ _NktMidiUpdateHook:
       endif  ;end 68030>= part
 .done:
 	move.w	#0,_MIDIbytesToSend
-	move.w    (a7)+,sr             ;restore sr
-
 	else
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 
+	else
+	echo	"[nkt_rep_m68k.s] ACIA WRITE SKIP"
+	endif
 
-	movem.l   (a7)+,d0-7/a0-6	;restore registers
+	move.w    (a7)+,sr              ; restore sr
+	movem.l   (a7)+,d0-7/a0-6	; restore registers
 
 	rts
 
@@ -259,7 +270,8 @@ _NktDeinstallReplayRout:
 	ori.b     #80,$fffffa1b.w	; div mode
 	bset.b    #5,$fffffa09.w        ; enable TiC
 	bset.b    #5,$fffffa15.w        ; set interrupt mask B
-        move.w 	  (sp)+,sr 		;restore Status Register
+
+	move.w 	  (sp)+,sr 		;restore Status Register
         movem.l (sp)+,d0-d7/a0-a6
 
         rts

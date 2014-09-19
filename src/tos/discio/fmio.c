@@ -286,7 +286,6 @@ _DTA *pDTA=NULL;
 S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){
 S32 fileHandle=0L;
 
-
     fileHandle = Fcreate( szFileName, 0 );
     
     if(fileHandle>0L){

@@ -23,8 +23,10 @@ In addition, the Doom 3 BFG Edition Source Code is also subject to certain addit
 If you have questions concerning this license or the applicable additional terms, you may contact in writing id Software LLC, c/o ZeniMax Media Inc., Suite 120, Rockville, Maryland 20850 USA.
 ===========================================================================
 
-m68k/ atari/ cleanup/ customisation: Pawel Goralski
+/|\ m68k / atari version / cleanup / customisation:
+Copyright (C) 2013-2014 Pawel Goralski [nokturnal@nokturnal.pl]
 
+===========================================================================
 */
 
 #include <assert.h>
@@ -35,6 +37,7 @@ m68k/ atari/ cleanup/ customisation: Pawel Goralski
 #include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
+
 
 #define MUSEVENT_KEYOFF	0
 #define MUSEVENT_KEYON	1
@@ -92,8 +95,8 @@ U8 MidiMap[] = {
 
 // The MUS data is stored in little-endian, m68k is big endian
 U16 LittleToNative(const U16 value){
-U16 val=value;
-U16 result;
+    U16 val=value;
+    U16 result;
   
   result=value<<8;
   val=val>>8;
@@ -139,13 +142,22 @@ header.instrCnt = LittleToNative( header.instrCnt );
 header.dummy = LittleToNative( header.dummy );
 
 // only 15 supported
-if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
+if (header.channels > MIDI_MAXCHANNELS - 1) {
 
- amTrace("ScoreLen 0x%x\n",header.scoreLen);
- amTrace("ScoreStart 0x%x\n",header.scoreStart);
- amTrace("channels 0x%x\n",header.channels);
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"[Error] Too many channels, only 15 is supported.\n");
+#endif
+
+    amTrace("[Error] Too many channels, only 15 is supported.\n");
+    return 0;
+}
+
+ amTrace("MUS info:\n");
+ amTrace("Score length 0x%x\n",header.scoreLen);
+ amTrace("Score start 0x%x\n",header.scoreStart);
+ amTrace("Nb of channels 0x%x\n",header.channels);
  amTrace("sec_channels 0x%x\n",header.sec_channels);
- amTrace("instrCnt 0x%x\n",header.instrCnt);
+ amTrace("Nb of instruments: 0x%x\n",header.instrCnt);
 
   // Map channel 15 to 9(percussions)
   for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
@@ -182,8 +194,6 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	out = WriteByte(out, 127);
 
 	// Main Loop
-    
-    
     U8 temp_buffer[32];	// temp buffer for current iterator
     U8 *out_local=0;
     
@@ -274,6 +284,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 		// Write it out
 		out_local = WriteByte(out_local, status);
 		out_local = WriteByte(out_local, bit1);
+
         if (bitc == 2) out_local = WriteByte(out_local, bit2);
 
 		// Write out temp stuff
@@ -302,15 +313,37 @@ if (header.channels > MIDI_MAXCHANNELS - 1) return 0;
 	// Store length written
 	*len = bytes_written;
 
+#ifndef SUPRESS_CON_OUTPUT
+       fprintf(stderr,"bytes written %d\n",*len);
+#endif
+
     amTrace("bytes written %d\n",*len);
 
      if(pOutMidName){
-        amTrace("Writing MIDI output to file: %s\n",pOutMidName);
+
+#ifndef SUPRESS_CON_OUTPUT
+       fprintf(stderr,"Writing MIDI output to file: %s\n", pOutMidName);
+#endif
+
+        amTrace("Writing MIDI output to file: %s\n", pOutMidName);
+#ifdef NATIVE_IO
+
+#else
         FILE* file = fopen(pOutMidName, "wb");
         fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
         fclose(file);
+#endif
+
+
+#ifndef SUPRESS_CON_OUTPUT
+       fprintf(stderr,"Written %d bytes\n",bytes_written);
+#endif
         amTrace("Written %d bytes\n",bytes_written);
       }
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr, "Done. [OK]\n");
+#endif
 
  amTrace("Done. OK\n");
  return 1;

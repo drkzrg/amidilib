@@ -19,6 +19,8 @@ where name of 'target' can be: \n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
  'tx_enable' - skips writing to ACIA ikbd port, sending is via ikbd tx interrupt,\n \
+ 'conout' - disable/enable console output,\n \
+ 'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
@@ -27,6 +29,8 @@ prefix = ARGUMENTS.get('prefix', 0)
 target = ARGUMENTS.get('target', 0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
 tx_enable = ARGUMENTS.get('tx_enable', 0)
+conout_enable = ARGUMENTS.get('conout', 0)
+gemdos_io_enable=ARGUMENTS.get('gemdos_io', 0)
 
 LIBRARYNAME = 'amidi'
 
@@ -105,6 +109,9 @@ if (tx_enable=="yes"):
 else:
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
+if (conout_enable=="no"):
+    print "Silent mode. Console output disabled."
+    ST_CFLAGS=ST_CFLAGS + ' -DSUPRESS_CON_OUTPUT '
 
 # output executable name
 OUTPUT_DIR='../bin/'

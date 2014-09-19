@@ -1,6 +1,6 @@
 #    Copyright 2007-2014 Pawel Goralski
 #    e-mail: pawel.goralski@nokturnal.pl
-#    This file is part of AMIDILIB.
+#    This file is part of AMIDILIB/BadMood.
 #    See license.txt for licensing information.
 
 import sys
@@ -18,6 +18,8 @@ where name of 'target' can be: \n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
  'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
+ 'conout' - disable/enable console output,\n \
+ 'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
@@ -27,6 +29,8 @@ target = ARGUMENTS.get('target', 0)
 lzo = ARGUMENTS.get('lzo',0)
 ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
 tx_enable = ARGUMENTS.get('tx_enable', 0)
+conout_enable = ARGUMENTS.get('conout', 0)
+gemdos_io_enable=ARGUMENTS.get('gemdos_io', 0)
 
 LIBRARYNAME = 'nkt'
 
@@ -102,7 +106,6 @@ env['RANLIB'] = CROSS_PREFIX + 'ranlib'
 env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
 env['STRIP'] = CROSS_PREFIX + 'strip -s'
 env['STACK'] = CROSS_PREFIX + 'stack'
-
   
 include_path=''
 lib_path=''
@@ -126,6 +129,11 @@ if (tx_enable=="yes"):
 else:
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
+if (conout_enable=="no"):
+    print "Silent mode. Console output disabled."
+    ST_CFLAGS=ST_CFLAGS + ' -DSUPRESS_CON_OUTPUT '
+
+
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
@@ -136,10 +144,10 @@ if ( (debug != 'none') and (int(debug)>0)):
     ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT'
 
   LIB_POSTFIX = LIB_POSTFIX+'d'
-  ST_CFLAGS= ST_CFLAGS
+  ST_CFLAGS= ST_CFLAGS + ' -DENABLE_GEMDOS_IO' + ' -DEXTERN_MEM_FUNCTIONS'
 else:
     print "Release build... Code optimisation is turned on."
-    ST_CFLAGS= ST_CFLAGS + ' -O2' + ' -DUSE_INLINE'
+    ST_CFLAGS= ST_CFLAGS + ' -O2' + ' -DUSE_INLINE' + ' -DENABLE_GEMDOS_IO ' + ' -DEXTERN_MEM_FUNCTIONS'
 
 if(ikbd_direct=="yes"):
     print "Sending data directly via IKBD ENABLED"
@@ -231,11 +239,5 @@ lzo_src = ["./src/minilzo.c"]
 
 # build library
 env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + nkt_conv_src + lzo_src)
-
-# strip symbols for release
-if(int(debug)==0):
-	print "Release build. Stripping binaries."
-	Command( target =  'lib'+LIBRARYNAME + LIB_POSTFIX+'.a' , source = lib_dir + 'lib'+LIBRARYNAME + LIB_POSTFIX+'.a',  action = [ env['STRIP'] + " ${SOURCE}"] )
-
 
 

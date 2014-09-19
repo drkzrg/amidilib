@@ -126,7 +126,10 @@ replayNkt:
 _NktMidiUpdateHook:
 	movem.l   d0-7/a0-6,-(a7)	; save registers
 
+
 	jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
+
+	if	(TX_ENABLE==0)
 
 	if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
@@ -138,7 +141,7 @@ _NktMidiUpdateHook:
 	move.w  sr,-(a7)
 	or.w	#$2300,sr		; disable interrupts, leave ikbd
 
-	if	(TX_ENABLE==0)
+
 
 	cmpi.w   #0,d1
 	beq.s   .done       ;if 0 bytes do nothing
@@ -201,11 +204,13 @@ _NktMidiUpdateHook:
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT DISABLED"
 	endif
 
+	move.w    (a7)+,sr              ; restore sr
+
 	else
 	echo	"[nkt_rep_m68k.s] ACIA WRITE SKIP"
 	endif
 
-	move.w    (a7)+,sr              ; restore sr
+
 	movem.l   (a7)+,d0-7/a0-6	; restore registers
 
 	rts

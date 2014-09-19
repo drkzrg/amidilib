@@ -1,5 +1,11 @@
 
-// converts sequence to custom nok, binary format
+// converts sequence to custom nkt, binary format
+
+/**  Copyright 2007-2014 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
 
 #include "nkt.h"
 #include "seq2nkt.h"

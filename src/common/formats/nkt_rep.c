@@ -1,4 +1,10 @@
 
+/**  Copyright 2007-2014 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include "nkt.h"
 #include "memory.h"
 #include "amlog.h"
@@ -12,12 +18,18 @@
 
 #include "minilzo.h" //lzo depack, TODO: add compilation flag to remove lzo during compilation time
 
+#ifdef ENABLE_GEMDOS_IO
+#include "fmio.h"
+#endif
+
 static sNktSeq *g_CurrentNktSequence=0;
 
 void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
+
+// this is called when sequence ends in TiC callback
 static void onEndSequence(){
 
 if(g_CurrentNktSequence){
@@ -299,7 +311,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     if(pNewSeq==0){
       amTrace("Error: Couldn't allocate memory for sequence header.\n");
-      printf("Error: Couldn't allocate memory for sequence header.\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: Couldn't allocate memory for sequence header.\n");
+#endif
+
       return NULL;
     }
 
@@ -312,22 +328,40 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     pNewSeq->timeDivision=DEFAULT_PPQN;
 
     //get nb of blocks from file
+#ifdef ENABLE_GEMDOS_IO
+    S32 fh=GDOS_INVALID_HANDLE;
+#else
     FILE *fp=0;
+#endif
+
 
     if(pFilePath){
          // create file header
-         printf("Loading NKT file: %s\n",pFilePath);
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Loading NKT file: %s\n",pFilePath);
+#endif
          amTrace("Loading NKT file: %s\n",pFilePath);
-
+#ifdef ENABLE_GEMDOS_IO
+       fh=Fopen(pFilePath,);
+#else
          fp = fopen(pFilePath, "rb"); //read only
-
+#endif
          if(fp==NULL){
-             printf("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
+#endif
+
              amFree(pNewSeq);
              return NULL;
          }
       }else{
-        printf("Error: empty file path\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: empty file path\n");
+#endif
+
         amTrace("Error: empty file path\n");
         amFree(pNewSeq);
         return NULL;
@@ -339,7 +373,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     fread(&tempHd,sizeof(sNktHd),1,fp);
 
     if(tempHd.id!=ID_NKT){
-         printf("Error: File %s isn't valid!\n",pFilePath);
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: File %s isn't valid!\n",pFilePath);
+#endif
+
          fclose(fp); fp=0;
 
          amFree(pNewSeq);
@@ -352,7 +390,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
    if(pNewSeq->NbOfBlocks==0 || pNewSeq->dataBufferSize==0){
         amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
-        printf("Error: File %s has no data or event blocks!\n",pFilePath);
+
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: File %s has no data or event blocks!\n",pFilePath);
+#endif
+
         fclose(fp);fp=0;
         amFree(pNewSeq);
         return NULL;
@@ -362,7 +404,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
         // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
         if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
-            printf("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+            fprintf(stderr,"Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
+#endif
+
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
 
             fclose(fp); fp=0;
@@ -374,7 +420,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          pNewSeq->pEvents=(sNktBlock_t *)linearBufferAlloc(&(pNewSeq->eventBuffer), pNewSeq->NbOfBlocks*sizeof(sNktBlock_t));
 
          if(pNewSeq->pEvents==0){
-             printf("Error: loadSequence() Linear buffer out of memory.\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+            fprintf(stderr,"Error: loadSequence() Linear buffer out of memory.\n");
+#endif
+
              amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
              fclose(fp); fp=0;
@@ -385,7 +435,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          amTrace("Allocated %lu kb for event block buffer\n",(pNewSeq->NbOfBlocks*sizeof(sNktBlock_t))/1024);
 
          if(createLinearBuffer(&(pNewSeq->dataBuffer),pNewSeq->dataBufferSize,PREFER_TT)<0){
-             printf("Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
+#ifndef SUPRESS_CON_OUTPUT
+    fprintf(stderr,"Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
+#endif
+
              amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
 
              fclose(fp); fp=0;
@@ -403,7 +456,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
        amTrace("Allocated %lu kb for event data buffer\n",(pNewSeq->dataBufferSize)/1024);
 
        if(pNewSeq->pEventDataBuffer==0){
-           printf("Error: loadSequence() Linear buffer out of memory.\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+           fprintf(stderr,"Error: loadSequence() Linear buffer out of memory.\n");
+#endif
+
            amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
            // destroy block buffer
@@ -431,7 +488,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         // allocate temp buffer for unpacked data
         U32 destSize=tempHd.NbOfBlocks * sizeof(sNktBlock_t) + tempHd.NbOfBytesData;
 
+#ifndef SUPRESS_CON_OUTPUT
         fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n", tempHd.bytesPacked, destSize);
+#endif
 
         void *pDepackBuf = amMallocEx(tempHd.bytesPacked,PREFER_TT); //packed data buffer
         void *pOutputBuf = amMallocEx(destSize,PREFER_TT);    // depacked midi data
@@ -445,11 +504,16 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          if(fread(pDepackBuf,1,tempHd.bytesPacked,fp)==tempHd.bytesPacked){
 
              // decompress data
+#ifndef SUPRESS_CON_OUTPUT
              fprintf(stderr,"[LZO] Decompressing ...\n");
-
+#endif
                  if(lzo1x_decompress_safe(pDepackBuf,tempHd.bytesPacked,pOutputBuf,&destSize,pWrkBuffer)==LZO_E_OK){
                      // process data
+
+#ifndef SUPRESS_CON_OUTPUT
                      fprintf(stderr,"[LZO] Block decompressed: %lu, packed: %lu\n",destSize,tempHd.bytesPacked);
+#endif
+
                      U8 *pData = (U8 *)pOutputBuf;
 
                      // process decompressed data directly from file
@@ -486,14 +550,19 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                              }
                          ++i;
                      }
-
+#ifndef SUPRESS_CON_OUTPUT
                      fprintf(stderr,"[LZO] OK\n");
+#endif
 
                  }else{
+#ifndef SUPRESS_CON_OUTPUT
                      fprintf(stderr,"[LZO] Data decompression error.\n");
+#endif
                  }
             }else{
+#ifndef SUPRESS_CON_OUTPUT
              fprintf(stderr,"[LZO] Data read failed ..\n");
+#endif
           }
 
         // deallocate temp buffers
@@ -505,9 +574,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 			amFree(pWrkBuffer);
             amFree(pOutputBuf);
             amFree(pDepackBuf);
-		
+
+#ifndef SUPRESS_CON_OUTPUT
             fprintf(stderr,"[LZO] Error: Couldn't allocate work buffers.\n");
             getchar();
+#endif
 			fclose(fp);fp=0;
             return NULL;
         }
@@ -526,6 +597,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                 // read msg block
                 fread(&blk,sizeof(sNktBlk),1,fp);
+
                 pNewSeq->pEvents[i].delta=delta;
                 pNewSeq->pEvents[i].msgType=blk.msgType;
                 pNewSeq->pEvents[i].blockSize=blk.blockSize;
@@ -613,7 +685,11 @@ void stopSequence(void){
   U16 state=g_CurrentNktSequence->sequenceState;
   if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED)){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
-       printf("Stop sequence\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+       fprintf(stderr,"Stop sequence\n");
+#endif
+
   }
 
     //all notes off
@@ -640,7 +716,11 @@ void pauseSequence(){
 #ifdef IKBD_MIDI_SEND_DIRECT
            Supexec(flushMidiSendBuffer);
 #endif
-           printf("Pause sequence\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+           fprintf(stderr,"Pause sequence\n");
+#endif
+
            return;
           }else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
             g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
@@ -660,13 +740,21 @@ if(g_CurrentNktSequence!=0){
          g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
          g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
 
-         printf("Play sequence\t");
+#ifndef SUPRESS_CON_OUTPUT
+         fprintf(stderr,"Play sequence\t");
+
 
          if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
-           printf("[ ONCE ]\n");
+
+           fprintf(stderr,"[ ONCE ]\n");
+
          }else{
-           printf("[ LOOP ]\n");
+
+           fprintf(stderr,"[ LOOP ]\n");
+
          }
+#endif
+
       }
  }
 }
@@ -676,10 +764,18 @@ void switchReplayMode(void){
  if(g_CurrentNktSequence!=0){
      if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
         g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
-        printf("Set replay mode: [ LOOP ]\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+        fprintf(stderr,"Set replay mode: [ LOOP ]\n");
+#endif
+
      }else{
         g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
-        printf("Set replay mode: [ ONCE ]\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+        fprintf(stderr,"Set replay mode: [ ONCE ]\n");
+#endif
+
      }
   }
 }
@@ -727,17 +823,22 @@ static const U8 *getSequenceStateStr(const U16 state){
 
 void printNktSequenceState(){
 
+#ifndef SUPRESS_CON_OUTPUT
+
 if(g_CurrentNktSequence){
-    printf("Td/PPQN: %u\n",g_CurrentNktSequence->timeDivision);
-    printf("Time step: %lu\n",g_CurrentNktSequence->timeStep);
-    printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
-    printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
-    printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo.tempo);
-    printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->currentTempo.tempo);
-    printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
+    fprintf(stderr,"Td/PPQN: %u\n",g_CurrentNktSequence->timeDivision);
+    fprintf(stderr,"Time step: %lu\n",g_CurrentNktSequence->timeStep);
+    fprintf(stderr,"Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
+    fprintf(stderr,"\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
+    fprintf(stderr,"\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo.tempo);
+    fprintf(stderr,"\tLast Tempo: %lu\n",g_CurrentNktSequence->currentTempo.tempo);
+    fprintf(stderr,"\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 
  printMidiSendBufferState();
+
+#endif
+
 }
 
 static const U8* _arNktEventName[NKT_MAX_EVENT]={

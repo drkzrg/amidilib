@@ -1,4 +1,10 @@
 
+/**  Copyright 2007-2014 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include "nkt.h"
 
 #include "events.h"
@@ -47,7 +53,7 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 }
 
 //
-#define OUT_BUFFER_SIZE 256   // should be sufficient if there are no big SysEx messages
+#define OUT_BUFFER_SIZE 512   // should be sufficient if there are no big SysEx messages
                               // TODO: make it configurable
 typedef struct sBufferInfo{
  U8 buffer[OUT_BUFFER_SIZE];
@@ -234,7 +240,13 @@ amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
 
 }
 
+
+#ifdef ENABLE_GEMDOS_IO
+U32 processMetaEvent( U32 delta, U8 **pMidiData, U16 fileHandle, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+#else
 U32 processMetaEvent( U32 delta, U8 **pMidiData, FILE **file, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+#endif
+
 U8 size=0;
 U32 metaLenght=0;
 sNktBlk stBlock;
@@ -392,8 +404,12 @@ amMemCpy(&bufferInfo->buffer[bufferInfo->bufPos],pDataPtr,ulCount);
 }
 
 //
-
-U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,FILE** file, BOOL *bEOF){
+#ifdef ENABLE_GEMDOS_IO
+U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,U16 fileHandle, BOOL *bEOF)
+#else
+U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,FILE** file, BOOL *bEOF)
+#endif
+{
  U8 usSwitch=0;
  U8 ubSize=0;
  U32 iError=0;
@@ -621,22 +637,22 @@ if(bCompressionEnabled!=FALSE){
  amMemSet(BufferInfo.pCompWrkBuf,0,LZO1X_MEM_COMPRESS);
 
  if(BufferInfo.pCompWrkBuf==0){
-  fprintf(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
+  amTrace(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
   bCompressionEnabled=FALSE;
  }
 
  if(bCompressionEnabled!=FALSE){
      if(lzo_init()!=LZO_E_OK){
-         fprintf(stderr,"Could't initialise LZO library. Turning off compression.\n");
+         amTrace(stderr,"Could't initialise LZO library. Turning off compression.\n");
      }else{
-         fprintf(stderr,"[LZO] init ok.\n");
+         amTrace(stderr,"[LZO] init ok.\n");
      }
  }
 
 }
 
 // process event and store them into file
-fprintf(stderr,"[MID->NKT] processing data ...\n");
+amTrace(stderr,"[MID->NKT] processing data ...\n");
 error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
 
 
@@ -650,16 +666,17 @@ if(bCompressionEnabled!=FALSE){
     fseek(file, 0, SEEK_END); // set end
     S32 fEnd = ftell(file);
     U32 sizeOfBlock = fEnd - fStart;
-    fprintf(stderr, "[LZO] allocating %lu bytes for temporary buffer.\n",sizeOfBlock);
+    amTrace("[LZO] allocating %lu bytes for temporary buffer.\n",sizeOfBlock);
 
     U8 *pData=amMallocEx(sizeOfBlock,PREFER_TT);
 
     rewind(file);
+
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
 
     if(pData!=NULL){
         U32 read=fread((void *)pData,1,sizeOfBlock,file);
-         fprintf(stderr, "[LZO] read data %lu bytes.\n",read);
+         amTrace("[LZO] read data %lu bytes.\n",read);
         if(read==sizeOfBlock){
             U32 nbBytesPacked=0;
 
@@ -672,18 +689,18 @@ if(bCompressionEnabled!=FALSE){
              if(lzo1x_1_compress(pData,sizeOfBlock,pTempBuf,&nbBytesPacked,BufferInfo.pCompWrkBuf)==LZO_E_OK){
 
                if (nbBytesPacked >= sizeOfBlock){
-                  fprintf(stderr,"[LZO] Block contains incompressible data.\n");
+                  amTrace("[LZO] Block contains incompressible data.\n");
                }else{
 #ifdef DEBUG_BUILD
-                  fprintf(stderr,"[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
+                  amTrace("[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
                   // buffer decompression test
-                  fprintf(stderr,"[LZO] Decompressing ...\n");
+                  amTrace("[LZO] Decompressing ...\n");
 
                   //lzo1x_decompress()
                   if(lzo1x_decompress_safe(pTempBuf,nbBytesPacked,pData,&sizeOfBlock,BufferInfo.pCompWrkBuf)!=LZO_E_OK){
-                      fprintf(stderr,"[LZO] Data decompression error.\n");
+                      amTrace("[LZO] Data decompression error.\n");
                   }else{
-                      fprintf(stderr,"[LZO] Block decompressed: %lu, packed: %lu\n",sizeOfBlock,nbBytesPacked);
+                      amTrace("[LZO] Block decompressed: %lu, packed: %lu\n",sizeOfBlock,nbBytesPacked);
                   }
 #endif
 #ifdef DEBUG_BUILD
@@ -712,15 +729,15 @@ if(bCompressionEnabled!=FALSE){
               amFree(pTempBuf);
 
             }else{
-                fprintf(stderr,"Couldn't allocate memory for temporary compression buffer.\n",BufferInfo.bufPos,nbBytesPacked);
+                amTrace("Couldn't allocate memory for temporary compression buffer.\n",BufferInfo.bufPos,nbBytesPacked);
             }
 
         }else{
-           fprintf(stderr, "[LZO] read data error...\n");
+           amTrace("[LZO] read data error...\n");
         }
        amFree(pData);
     }else{
-      fprintf(stderr, "[LZO] Error: allocating temporary buffer failed\n");
+      amTrace("[LZO] Error: allocating temporary buffer failed\n");
     }
 
 } //end compression
@@ -737,7 +754,7 @@ if(BufferInfo.pCompWrkBuf!=0){
 
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     fclose(file); file=0;
-    fprintf(stderr, "Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+    amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
 
 

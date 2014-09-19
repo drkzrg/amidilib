@@ -31,6 +31,19 @@ typedef enum {
   PREFER_RADEON = PREFER_TT+3	   //f030 only, not used atm
 } eMemoryFlag;
 
+#if defined (EXTERN_MEM_FUNCTIONS)
+#warning "Extern memory functions enabled"
+
+#define PU_STATIC		1
+
+extern void     Z_Free (void* ptr);
+extern void*	Z_Malloc (int size, int tag, void *ptr);
+
+#define amMallocEx(amount, flag) Z_Malloc((amount),PU_STATIC, NULL);
+#define amMalloc(amount) Z_Malloc((amount),PU_STATIC, NULL);
+#define amFree(memPtr) if( (memPtr) != NULL ) Z_Free(memPtr); (memPtr) = NULL;
+
+#else
 
 #if defined (FORCE_MALLOC)
 
@@ -43,6 +56,8 @@ typedef enum {
 #define amMallocEx(amount, flag) Mxalloc((amount),(flag));
 #define amMalloc(amount) Malloc((amount));
 #define amFree(memPtr) if( (memPtr) != NULL ) Mfree (memPtr); (memPtr) = NULL;
+
+#endif // not extern mem functions
 
 #endif
 
@@ -96,6 +111,8 @@ static inline void *amCalloc(const tMEMSIZE nelements,const tMEMSIZE elementSize
 static inline void *amRealloc( void *pPtr, const tMEMSIZE newSize){
  return realloc(pPtr,newSize);
 }
+
+
 
 /**
  * gets amount of free preferred memory type (ST/TT RAM).

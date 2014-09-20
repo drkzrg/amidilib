@@ -133,7 +133,7 @@ void deinitDebug(){
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-    FClose(fh);
+    Fclose(fh);
 #else
     fflush(ofp);
     fclose(ofp);

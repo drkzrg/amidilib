@@ -71,8 +71,14 @@ void logd(const char *mes,...){
 #endif
 
 #ifdef DEBUG_FILE_OUTPUT
+
+#ifdef ENABLE_GEMDOS_IO
+    Fwrite(fh,strlen(ofp),buffer);
+#else
     fprintf(ofp,buffer);
-     fflush(ofp);
+    fflush(ofp);
+#endif
+
 #endif
  return;
 }
@@ -106,7 +112,7 @@ void initDebug(const char *pFilename){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=FOpen(pFilename,FO_WRITE);
+    fh=Fopen(pFilename,2);
 
     if(fh<0){
         fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);

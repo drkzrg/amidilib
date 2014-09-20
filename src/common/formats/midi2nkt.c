@@ -704,10 +704,9 @@ if(pOutFileName){
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
 
 #ifdef ENABLE_GEMDOS_IO
-   S32 fileHandle=Fopen(pOutFileName, FO_READ|FO_WRITE);
+   S32 fileHandle=Fopen(pOutFileName, 2);
    BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
 #else
-
    file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
 #endif
@@ -834,7 +833,7 @@ if(bCompressionEnabled!=FALSE){
                   nktHead.bPacked = TRUE;
 
 #ifdef ENABLE_GEMDOS_IO
-                  fileHandle=Fopen(pOutFileName,FO_READ|FO_WRITE);
+                  fileHandle=Fopen(pOutFileName,2);
                   Fseek(sizeof(sNktHd),fileHandle,0);
 #else
                   file = fopen(pOutFileName, "wb");
@@ -893,7 +892,6 @@ if(file!=0){
 #ifdef ENABLE_GEMDOS_IO
     U32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
     Fclose(fileHandle); fileHandle=-1;
-
 #else
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     fclose(file); file=0;

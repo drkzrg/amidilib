@@ -347,34 +347,32 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
          amTrace("Loading NKT file: %s\n",pFilePath);
 #ifdef ENABLE_GEMDOS_IO
-       fh=Fopen(pFilePath,FO_READ|FO_WRITE);
-
-#warning TODO: Add error checking
-
+       fh=Fopen(pFilePath,2);
 #else
        fp = fopen(pFilePath, "rb"); //read only
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
-       if(fh>0){
+       if(fh<0){
 #else
        if(fp==NULL){
-
 #endif
 
-#ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
-#endif
-             amFree(pNewSeq);
-             return NULL;
+            #ifndef SUPRESS_CON_OUTPUT
+                fprintf(stderr,"Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
+            #endif
+
+            amTrace("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
+            amFree(pNewSeq);
+            return NULL;
          }
       }else{
 
-#ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"Error: empty file path\n");
-#endif
+        #ifndef SUPRESS_CON_OUTPUT
+        fprintf(stderr,"Error: empty file path. Exiting...\n");
+        #endif
 
-        amTrace("Error: empty file path\n");
+        amTrace("Error: empty file path. Exiting...\n");
         amFree(pNewSeq);
         return NULL;
       }
@@ -384,7 +382,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amMemSet(&tempHd,0,sizeof(sNktHd));
 
 #ifdef ENABLE_GEMDOS_IO
-    Fread(fh,sizeof(sNktHd),&tempHd );
+    Fread(fh,sizeof(sNktHd),&tempHd);
 #else
     fread(&tempHd,sizeof(sNktHd),1,fp);
 #endif
@@ -392,40 +390,43 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     if(tempHd.id!=ID_NKT){
 
-#ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"Error: File %s isn't valid!\n",pFilePath);
-#endif
+        #ifndef SUPRESS_CON_OUTPUT
+            fprintf(stderr,"Error: File %s isn't valid!\n",pFilePath);
+        #endif
+        amTrace("Error: File %s isn't valid!/. Exiting...\n",pFilePath);
 
-#ifdef ENABLE_GEMDOS_IO
-    Fclose(fh); fh=-1;
-#else
-    fclose(fp); fp=0;
-#endif
+        #ifdef ENABLE_GEMDOS_IO
+            Fclose(fh); fh=-1;
+        #else
+            fclose(fp); fp=0;
+        #endif
 
-         amFree(pNewSeq);
-         return NULL;
-    }
+     amFree(pNewSeq);
+     return NULL;
+   }
 
    pNewSeq->NbOfBlocks=tempHd.NbOfBlocks;
    pNewSeq->dataBufferSize=tempHd.NbOfBytesData;
    pNewSeq->timeDivision=tempHd.division;
 
    if(pNewSeq->NbOfBlocks==0 || pNewSeq->dataBufferSize==0){
-        amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
 
-#ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"Error: File %s has no data or event blocks!\n",pFilePath);
-#endif
+    #ifndef SUPRESS_CON_OUTPUT
+        fprintf(stderr,"Error: File %s has no data or event blocks!\n",pFilePath);
+    #endif
 
-#ifdef ENABLE_GEMDOS_IO
-    Fclose(fh); fh=-1;
-#else
-    fclose(fp); fp=0;
-#endif
+    amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
+
+    #ifdef ENABLE_GEMDOS_IO
+        Fclose(fh); fh=-1;
+    #else
+        fclose(fp); fp=0;
+    #endif
 
 
-        amFree(pNewSeq);
-        return NULL;
+    amFree(pNewSeq);
+    return NULL;
+
    }else{
         amTrace("Blocks in sequence: %lu\n",pNewSeq->NbOfBlocks);
         amTrace("Data in bytes: %lu\n",pNewSeq->dataBufferSize);
@@ -433,16 +434,16 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         // allocate contigous/linear memory for pNewSeq->NbOfBlocks events
         if(createLinearBuffer(&(pNewSeq->eventBuffer),pNewSeq->NbOfBlocks*sizeof(sNktBlock_t),PREFER_TT)<0){
 
-#ifndef SUPRESS_CON_OUTPUT
+            #ifndef SUPRESS_CON_OUTPUT
             fprintf(stderr,"Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
-#endif
+            #endif
 
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
 
             #ifdef ENABLE_GEMDOS_IO
-            Fclose(fh); fh=-1;
+                Fclose(fh); fh=-1;
             #else
-            fclose(fp); fp=0;
+                fclose(fp); fp=0;
             #endif
 
             amFree(pNewSeq);
@@ -473,16 +474,17 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          amTrace("Allocated %lu kb for event block buffer\n",(pNewSeq->NbOfBlocks*sizeof(sNktBlock_t))/1024);
 
          if(createLinearBuffer(&(pNewSeq->dataBuffer),pNewSeq->dataBufferSize,PREFER_TT)<0){
-#ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
-#endif
+
+            #ifndef SUPRESS_CON_OUTPUT
+                fprintf(stderr,"Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
+            #endif
 
              amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
 
             #ifdef ENABLE_GEMDOS_IO
-            Fclose(fh); fh=-1;
+                Fclose(fh); fh=-1;
             #else
-            fclose(fp); fp=0;
+                fclose(fp); fp=0;
             #endif
 
              // destroy block buffer
@@ -499,9 +501,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
        if(pNewSeq->pEventDataBuffer==0){
 
-#ifndef SUPRESS_CON_OUTPUT
-           fprintf(stderr,"Error: loadSequence() Linear buffer out of memory.\n");
-#endif
+           #ifndef SUPRESS_CON_OUTPUT
+                fprintf(stderr,"Error: loadSequence() Linear buffer out of memory.\n");
+           #endif
 
            amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
@@ -530,21 +532,20 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     // check if file is compressed
     if(tempHd.bPacked!=FALSE){
 
-#ifdef ENABLE_GEMDOS_IO
-        Fseek(0,fh,0);
-        Fseek(sizeof(sNktHd),fh,0);
-#else
-        fseek(fp,0,SEEK_SET);
-        fseek(fp,sizeof(sNktHd),SEEK_SET);
-#endif
-
+        #ifdef ENABLE_GEMDOS_IO
+            Fseek(0,fh,0);
+            Fseek(sizeof(sNktHd),fh,0);
+        #else
+            fseek(fp,0,SEEK_SET);
+            fseek(fp,sizeof(sNktHd),SEEK_SET);
+        #endif
 
         // allocate temp buffer for unpacked data
         U32 destSize=tempHd.NbOfBlocks * sizeof(sNktBlock_t) + tempHd.NbOfBytesData;
 
-#ifndef SUPRESS_CON_OUTPUT
-        fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n", tempHd.bytesPacked, destSize);
-#endif
+        #ifndef SUPRESS_CON_OUTPUT
+            fprintf(stderr,"[LZO] packed: %lu, unpacked: %lu\n", tempHd.bytesPacked, destSize);
+        #endif
 
         void *pDepackBuf = amMallocEx(tempHd.bytesPacked,PREFER_TT); //packed data buffer
         void *pOutputBuf = amMallocEx(destSize,PREFER_TT);    // depacked midi data

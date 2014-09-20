@@ -114,7 +114,7 @@ U8 *filePath=0;
 
 
 void printInfoScreen(){
-    printf("\n== MID / MUS to NKT converter v.1.00 =========\n");
+    printf("\n== MID / MUS to NKT converter v.1.1 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");
 }

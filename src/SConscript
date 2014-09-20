@@ -170,7 +170,7 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
   elif(int(debug)==2):
     ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
   elif(int(debug)==3):

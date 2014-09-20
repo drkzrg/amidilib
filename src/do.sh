@@ -8,14 +8,14 @@
 
 #general
 #cygwin
-#tools_prefix='/opt/cross-mint'
-#base_dir='/home/saulot/'
-
-#linux
-tools_prefix='/usr'
+tools_prefix='/opt/cross-mint'
 base_dir='/home/saulot/'
 
-debug_level=0
+#linux
+#tools_prefix='/usr'
+#base_dir='/home/saulot/'
+
+debug_level=1
 cross=1
 
 ##########################################################################################################################################
@@ -53,7 +53,7 @@ shared_dir='/home/saulot/Pulpit/shared/amidilib'
 
 # hatari
 # if copy_to_emu_dir=1 copy binaries to emulator directory
-copy_to_emu_dir=1
+copy_to_emu_dir=0
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
@@ -75,7 +75,7 @@ MID2NKT_BIN='mid2nkt.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
-send_to_native_machine=0
+send_to_native_machine=1
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''

@@ -531,8 +531,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     if(tempHd.bPacked!=FALSE){
 
 #ifdef ENABLE_GEMDOS_IO
-        Fseek(fh,0,0);
-        Fseek(fh,sizeof(sNktHd),0);
+        Fseek(0,fh,0);
+        Fseek(sizeof(sNktHd),fh,0);
 #else
         fseek(fp,0,SEEK_SET);
         fseek(fp,sizeof(sNktHd),SEEK_SET);
@@ -674,7 +674,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
 #ifdef ENABLE_GEMDOS_IO
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
-                Fseek(fh,-(sizeof(U32)-count),1);
+                Fseek(-(sizeof(U32)-count),fh,1);
 
                 // read msg block
                 Fread(fh, sizeof(sNktBlk), &blk);

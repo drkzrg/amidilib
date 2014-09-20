@@ -675,7 +675,7 @@ FILE* file=0;
 
 #ifdef ENABLE_GEMDOS_IO
     if(fh>0){
-       Fseek(fh, 0, SEEK_SET);
+       Fseek(0, fh, SEEK_SET);
        // update header
        Fwrite(fh, sizeof(sNktHd), &nktHead);
 

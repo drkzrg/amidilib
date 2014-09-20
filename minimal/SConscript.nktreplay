@@ -130,6 +130,10 @@ if (tx_enable=="yes"):
 else:
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
+if(gemdos_io_enable=="yes")
+    print "Use GEMDOS for file I/O not libc functions."
+    ST_CFLAGS=ST_CFLAGS + ' -DENABLE_GEMDOS_IO '
+
 
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."

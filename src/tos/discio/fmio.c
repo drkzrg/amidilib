@@ -12,7 +12,7 @@
 
 #include "fmio.h"
 
-S16 g_lastGDOSerror=0;
+static S16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 
   "No error.",\
@@ -226,9 +226,6 @@ const U8 *getGemdosError(S16 iErr)
 void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 S32 fileHandle;
 _DTA *pDTA=NULL;
-
-
-
 
     fileHandle = Fopen( szFileName, FO_READ );
     *fileLenght=0L;

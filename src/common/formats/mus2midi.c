@@ -38,6 +38,11 @@ Copyright (C) 2013-2014 Pawel Goralski [nokturnal@nokturnal.pl]
 #include <midi.h> 
 #include <memory/memory.h>
 
+#ifdef ENABLE_GEMDOS_IO
+#include <mint/ostruct.h>
+#include <mint/osbind.h>
+#endif
+
 
 #define MUSEVENT_KEYOFF	0
 #define MUSEVENT_KEYON	1

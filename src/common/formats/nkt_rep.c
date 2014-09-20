@@ -132,6 +132,9 @@ if(pSeq!=0){
 
     pSeq->sequenceState = initialState;
 
+
+    setMidiMasterVolume(64);
+
 #ifdef IKBD_MIDI_SEND_DIRECT
     Supexec(clearMidiOutputBuffer);
 #endif
@@ -183,6 +186,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static sNktBlock_t *nktBlk=0;
+volatile static U8 MasterVolume;
 
 volatile static U8 currentMasterVolume;
 volatile static U8 requestedMasterVolume;

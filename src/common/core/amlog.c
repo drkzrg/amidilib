@@ -6,13 +6,23 @@
 
 #include <mint/osbind.h>
 
+#ifdef ENABLE_GEMDOS_IO
+#include <mint/ostruct.h>
+#endif
+
 #include "amlog.h"
 
 // debugging OUTPUT settings
 #define OUTPUT_BUFFER_SIZE 1024  // output buffer size
 
 #if defined(DEBUG_FILE_OUTPUT)
+
+#ifdef ENABLE_GEMDOS_IO
+static S32 fh=0;
+#else
 static FILE *ofp=0;
+#endif
+
 #endif
 
 #define DEBUG_LOG "LOG.TXT"
@@ -94,12 +104,23 @@ void serialLog(const char *mes,...){
 void initDebug(const char *pFilename){
 
 #ifdef DEBUG_FILE_OUTPUT
+
+#ifdef ENABLE_GEMDOS_IO
+    fh=FOpen(pFilename,FO_WRITE);
+
+    if(fh<0){
+        fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);
+    }
+
+#else
     ofp=NULL;
     ofp=fopen(pFilename,"w");
 
     if(ofp==NULL){
         fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);
     }
+#endif
+
 #endif
 
 #ifdef DEBUG_SERIAL_OUTPUT
@@ -110,8 +131,14 @@ void initDebug(const char *pFilename){
 
 void deinitDebug(){
 #if defined(DEBUG_FILE_OUTPUT)
+
+#ifdef ENABLE_GEMDOS_IO
+    FClose(fh);
+#else
     fflush(ofp);
     fclose(ofp);
+#endif
+
 #endif
  return;
 }

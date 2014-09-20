@@ -278,7 +278,6 @@ _NktDeinstallReplayRout:
 
 	move.w 	  (sp)+,sr 		;restore Status Register
         movem.l (sp)+,d0-d7/a0-a6
-
         rts
 
 _clearMidiOutputBuffer:

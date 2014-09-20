@@ -18,7 +18,7 @@ where name of 'target' can be: \n \
  'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
  'prefix' - prefix path to cross tools (optional) \n \
  'debug' - enables/disables build of debug version of library with additional tracing options,\n \
- 'tx_enable' - skips writing to ACIA ikbd port, sending is via ikbd tx interrupt,\n \
+ 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
  'conout' - disable/enable console output,\n \
  'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
  set to '0' by default")
@@ -113,6 +113,10 @@ if (conout_enable=="no"):
     print "Silent mode. Console output disabled."
     ST_CFLAGS=ST_CFLAGS + ' -DSUPRESS_CON_OUTPUT '
 
+if (gemdos_io_enable=="yes"):
+    print "Use GEMDOS for file I/O not libc functions."
+    ST_CFLAGS=ST_CFLAGS + ' -DENABLE_GEMDOS_IO '
+
 # output executable name
 OUTPUT_DIR='../bin/'
 AMIDI_TEST_EXE='midiplay' + EXE_EXT_2
@@ -166,11 +170,11 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE' + ' -DDEBUG_SERIAL_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'
   elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER' + '-DDEBUG_SERIAL_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
   elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DDEBUG_SERIAL_OUTPUT -DEVENT_LINEAR_BUFFER'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
   
   LIB_POSTFIX = LIB_POSTFIX+'d'
   ST_CFLAGS= ST_CFLAGS  

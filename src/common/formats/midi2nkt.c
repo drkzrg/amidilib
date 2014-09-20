@@ -13,6 +13,10 @@
 #include "midi.h"
 #include "lzo/minilzo.h"
 
+#ifdef ENABLE_GEMDOS_IO
+#include <mint/ostruct.h>
+#include <mint/osbind.h>
+#endif
 
 U16 g_TD; //evil global!!!
 

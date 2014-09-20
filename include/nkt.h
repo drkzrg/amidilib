@@ -115,6 +115,9 @@ void switchReplayMode(void);
 void setMidiMasterVolume(U8 vol);
 U8 getMidiMasterVolume();
 
+void setMidiMasterVolume (U8 volume);
+U8 getMidiMasterVolume();
+
 #ifdef DEBUG_BUILD
 //debug helpers
 #ifdef MANUAL_STEP

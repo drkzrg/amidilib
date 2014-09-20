@@ -246,7 +246,7 @@ amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
 
 
 #ifdef ENABLE_GEMDOS_IO
-U32 processMetaEvent( U32 delta, U8 **pMidiData, U16 fileHandle, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+U32 processMetaEvent( U32 delta, U8 **pMidiData, S32 fileHandle, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 #else
 U32 processMetaEvent( U32 delta, U8 **pMidiData, FILE **file, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 #endif
@@ -287,24 +287,36 @@ metaLenght=readVLQ((*pMidiData),&size);
      stBlock.msgType=NKT_END;
 
      //write block to file
+ #ifdef ENABLE_GEMDOS_IO
+     if(fileHandle>0){
+ #else
      if(file!=NULL){
+ #endif
          // write VLQ data
          U32 VLQdeltaTemp=0;
          S32 count=0;
          count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
+
+#ifdef ENABLE_GEMDOS_IO
+         bufferInfo->bytes_written+=Fwrite(fileHandle,count,&VLQdeltaTemp);
+         bufferInfo->bytes_written+=Fwrite(fileHandle,sizeof(stBlock),&stBlock);
+#else
          bufferInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
          bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
+#endif
          //no data to write
      }
      ++(bufferInfo->blocks_written);
      *bEOT=TRUE;
     }break;
     case MT_SET_TEMPO:{
-        stBlock.blockSize=5*sizeof(U32);   //U32 tempo value + 4*U32 values (25,50,100,200hz timesteps)
+
+        stBlock.blockSize = 5 * sizeof(U32);   //U32 tempo value + 4*U32 values (25,50,100,200hz timesteps)
+
         stBlock.msgType=NKT_TEMPO_CHANGE;
 
         U8 ulVal[3]={0};   /* for retrieving set tempo info */
-        U32 val1,val2,val3;
+        U32 val1=0,val2=0,val3=0;
         amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(U8) );
 
         val1=ulVal[0],val2=ulVal[1],val3=ulVal[2];
@@ -316,16 +328,28 @@ metaLenght=readVLQ((*pMidiData),&size);
         val1=val1|val2|val3;
         amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 
+#ifdef ENABLE_GEMDOS_IO
+        if(fileHandle>0){
+#else
         if(*file!=NULL){
-          // write VLQ delta
+#endif
+
+           // write VLQ delta
            U32 VLQdeltaTemp=0;
            S32 count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
-           bufferInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
-           bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-           bufferInfo->bytes_written+=fwrite(&val1,sizeof(U32),1,*file);
+
+#ifdef ENABLE_GEMDOS_IO
+           bufferInfo->bytes_written += Fwrite(fileHandle,count,&VLQdeltaTemp);
+           bufferInfo->bytes_written += Fwrite(fileHandle,sizeof(stBlock),&stBlock);
+           bufferInfo->bytes_written += Fwrite(fileHandle,sizeof(U32),&val1);
+#else
+           bufferInfo->bytes_written += fwrite(&VLQdeltaTemp,count,1,*file);
+           bufferInfo->bytes_written += fwrite(&stBlock,sizeof(stBlock),1,*file);
+           bufferInfo->bytes_written += fwrite(&val1,sizeof(U32),1,*file);
+#endif
 
            U32 precalc[NKT_UMAX]={0L};
-           U32 td=g_TD;
+           U32 td = g_TD ;
            U32 bpm = 60000000UL / val1;
            U32 tempPPU = bpm * td;
 
@@ -367,7 +391,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                          amTrace("Update step for 200hz: %ld\n",precalc[i]);
                     } break;
                     default:{
-                        assert(0);
+                        //assert(0);
                         amTrace((const U8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };
@@ -375,8 +399,14 @@ metaLenght=readVLQ((*pMidiData),&size);
            } //end for
 
            // write precalculated values
+#ifdef ENABLE_GEMDOS_IO
+           bufferInfo->bytes_written+=Fwrite(fileHandle,NKT_UMAX*sizeof(U32),&precalc);
+#else
            bufferInfo->bytes_written+=fwrite(&precalc,NKT_UMAX*sizeof(U32),1,*file);
-         }
+
+#endif
+
+        }
         ++(bufferInfo->blocks_written);
     }break;
 
@@ -470,7 +500,12 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
              break;
              case EV_META:
               amTrace("delta: %lu META\t", delta);
-               iError=processMetaEvent(delta, pCmd, file, rs, bufferInfo, bEOF);
+#ifdef ENABLE_GEMDOS_IO
+              iError=processMetaEvent(delta, pCmd, fileHandle, rs, bufferInfo, bEOF);
+#else
+              iError=processMetaEvent(delta, pCmd, file, rs, bufferInfo, bEOF);
+#endif
+
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
                amTrace("delta: %lu SYSEX\n", delta);
@@ -517,7 +552,16 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
  return iError;
 }
 
+#ifdef ENABLE_GEMDOS_IO
+
+U32 midiTrackDataToFile(void *pMidiData, S32 fileHandle, sBufferInfo_t *pBufInfo){
+
+#else
+
 U32 midiTrackDataToFile(void *pMidiData, FILE **file, sBufferInfo_t *pBufInfo){
+
+#endif
+
 
 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
 sChunkHeader *pTrackHd=0;
@@ -560,13 +604,23 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
 
+#ifdef ENABLE_GEMDOS_IO
+  iError=processMidiEvent(delta, &pCmd, &rs, pBufInfo ,fileHandle,&bEOF);   // todo check error
+#else
   iError=processMidiEvent(delta, &pCmd, &rs, pBufInfo ,&(*file),&bEOF);   // todo check error
+#endif
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
 
   while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)){
     pCmd+=ubSize;
+
+#ifdef ENABLE_GEMDOS_IO
+    iError=processMidiEvent(0,&pCmd, &rs, pBufInfo ,fileHandle,&bEOF);
+#else
     iError=processMidiEvent(0,&pCmd, &rs, pBufInfo ,&(*file),&bEOF);
+#endif
+
     currentDelta = readVLQ(pCmd,&ubSize);
   }
 
@@ -588,18 +642,33 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
 
       // write block to file
-
+#ifdef ENABLE_GEMDOS_IO
+      if(fileHandle>0){
+#else
       if(file!=NULL){
+#endif
         // write VLQ delta
         S32 count=0;
         U32 VLQdeltaTemp=0;
 
         count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
+#ifdef ENABLE_GEMDOS_IO
+        pBufInfo->bytes_written+=Fwrite(fileHandle,count,&VLQdeltaTemp);
+
+        amTrace("Write block: \t");
+        pBufInfo->bytes_written+=Fwrite(fileHandle, sizeof(sNktBlk), &stBlock);
+        pBufInfo->bytes_written+=Fwrite(fileHandle,stBlock.blockSize,&(pBufInfo->buffer[0]));
+
+#else
         pBufInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
 
         amTrace("Write block: \t");
         pBufInfo->bytes_written+=fwrite(&stBlock, sizeof(sNktBlk), 1, *file);
         pBufInfo->bytes_written+=fwrite(&(pBufInfo->buffer[0]),stBlock.blockSize,1,*file);
+
+#endif
+
+
       }
 
       ++(pBufInfo->blocks_written);
@@ -620,16 +689,31 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 S32 Midi2Nkt(void *pMidiData, const U8 *pOutFileName, const BOOL bCompress){
 
 BOOL error=FALSE;
-FILE* file=0;
 sNktHd nktHead;
 sBufferInfo_t BufferInfo;
 BOOL bCompressionEnabled=bCompress;
 
+#ifdef ENABLE_GEMDOS_IO
+S32 fileHandle=-1;
+#else
+FILE* file=0;
+#endif
+
 if(pOutFileName){
    // create file header
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
+
+#ifdef ENABLE_GEMDOS_IO
+   S32 fileHandle=Fopen(pOutFileName, FO_READ|FO_WRITE);
+   BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
+#else
+
    file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
+#endif
+
+    #warning TODO add FOpen() error check!!!!
+
 }else{
     return -1;
 }
@@ -637,15 +721,16 @@ if(pOutFileName){
 BufferInfo.pCompWrkBuf=0;
 
 if(bCompressionEnabled!=FALSE){
- BufferInfo.pCompWrkBuf=amMallocEx(LZO1X_MEM_COMPRESS,PREFER_TT);
- amMemSet(BufferInfo.pCompWrkBuf,0,LZO1X_MEM_COMPRESS);
 
- if(BufferInfo.pCompWrkBuf==0){
-  amTrace(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
-  bCompressionEnabled=FALSE;
- }
+    BufferInfo.pCompWrkBuf=amMallocEx(LZO1X_MEM_COMPRESS,PREFER_TT);
+    amMemSet(BufferInfo.pCompWrkBuf,0,LZO1X_MEM_COMPRESS);
 
- if(bCompressionEnabled!=FALSE){
+    if(BufferInfo.pCompWrkBuf==0){
+        amTrace(stderr,"Could't allocate buffer for compression. Turning off compression.\n");
+        bCompressionEnabled=FALSE;
+    }
+
+    if(bCompressionEnabled!=FALSE){
      if(lzo_init()!=LZO_E_OK){
          amTrace(stderr,"Could't initialise LZO library. Turning off compression.\n");
      }else{
@@ -657,31 +742,55 @@ if(bCompressionEnabled!=FALSE){
 
 // process event and store them into file
 amTrace(stderr,"[MID->NKT] processing data ...\n");
+#ifdef ENABLE_GEMDOS_IO
+    error = midiTrackDataToFile(pMidiData, fileHandle, &BufferInfo);
+#else
 error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
-
+#endif
 
 // optional step LZO compression
 if(bCompressionEnabled!=FALSE){
     // read file beside the header
 
+#ifdef ENABLE_GEMDOS_IO
+
+    Fseek(sizeof(sNktHd),fileHandle,0); //file start
+    S32 fStart=Fseek(0,fileHandle,1); //get current pos
+
+    Fseek(sizeof(sNktHd),fileHandle,2); //file end
+    S32 fEnd=Fseek(0,fileHandle,1);
+
+#else
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
 
     S32 fStart = ftell(file);
     fseek(file, 0, SEEK_END); // set end
     S32 fEnd = ftell(file);
+#endif
+
     U32 sizeOfBlock = fEnd - fStart;
     amTrace("[LZO] allocating %lu bytes for temporary buffer.\n",sizeOfBlock);
 
     U8 *pData=amMallocEx(sizeOfBlock,PREFER_TT);
 
-    rewind(file);
-
+#ifdef ENABLE_GEMDOS_IO
+    Fseek(0,fileHandle,0); //reset file pos
+    Fseek(sizeof(sNktHd),fileHandle,0); //set file pos after header
+#else
+    fseek(file, 0, SEEK_SET); // reset file pos
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
+#endif
 
     if(pData!=NULL){
+
+#ifdef ENABLE_GEMDOS_IO
+        U32 read=Fread(fileHandle,sizeOfBlock,(void *)pData);
+#else
         U32 read=fread((void *)pData,1,sizeOfBlock,file);
-         amTrace("[LZO] read data %lu bytes.\n",read);
-        if(read==sizeOfBlock){
+#endif
+        amTrace("[LZO] read data %lu bytes.\n",read);
+
+         if(read==sizeOfBlock){
             U32 nbBytesPacked=0;
 
             // allocate temp buffer
@@ -695,6 +804,7 @@ if(bCompressionEnabled!=FALSE){
                if (nbBytesPacked >= sizeOfBlock){
                   amTrace("[LZO] Block contains incompressible data.\n");
                }else{
+
 #ifdef DEBUG_BUILD
                   amTrace("[LZO] Block uncompressed: %lu compressed: %lu\n",sizeOfBlock, nbBytesPacked);
                   // buffer decompression test
@@ -715,15 +825,29 @@ if(bCompressionEnabled!=FALSE){
                     amTrace(" [/CDATA]\n");
 #endif
 
-                  fclose(file); file=0;
+#ifdef ENABLE_GEMDOS_IO
+                    Fclose(fileHandle); fileHandle=-1;
+#else
+                    fclose(file); file=0;
+#endif
                   nktHead.bytesPacked = nbBytesPacked;
                   nktHead.bPacked = TRUE;
 
+#ifdef ENABLE_GEMDOS_IO
+                  fileHandle=Fopen(pOutFileName,FO_READ|FO_WRITE);
+                  Fseek(sizeof(sNktHd),fileHandle,0);
+#else
                   file = fopen(pOutFileName, "wb");
                   fseek(file, sizeof(sNktHd),SEEK_SET);
+#endif
 
                   // store compressed block
+#ifdef ENABLE_GEMDOS_IO
+                  U32 writ=Fwrite(fileHandle,nbBytesPacked,pTempBuf);
+#else
                   U32 writ=fwrite(pTempBuf,1,nbBytesPacked,file);
+#endif
+
                   fprintf(stderr,"[LZO] compressed data block: %lu bytes written\n",writ);
                }
              }else{
@@ -750,14 +874,30 @@ if(BufferInfo.pCompWrkBuf!=0){
   amFree(BufferInfo.pCompWrkBuf);
 }
 
- if(file){
-    rewind(file);
+
+#ifdef ENABLE_GEMDOS_IO
+
+if(fileHandle>0){
+    Fseek(0,fileHandle,SEEK_SET);
+
+#else
+
+if(file!=0){
+    fseek(file,0,SEEK_SET);
+
+#endif
     // update header
     nktHead.NbOfBlocks = BufferInfo.blocks_written;
     nktHead.NbOfBytesData = BufferInfo.bytes_written;
 
+#ifdef ENABLE_GEMDOS_IO
+    U32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
+    Fclose(fileHandle); fileHandle=-1;
+
+#else
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     fclose(file); file=0;
+#endif
     amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
  }
 

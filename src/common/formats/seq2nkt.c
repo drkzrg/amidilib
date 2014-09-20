@@ -620,7 +620,7 @@ FILE* file=0;
     break;
     };
 
-
+#ifdef ENABLE_GEMDOS_IO
     if(file){
        fseek(file, 0, SEEK_SET);
        // update header
@@ -629,6 +629,19 @@ FILE* file=0;
        fclose(file); file=0;
        amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
      }
+#else
+    if(file){
+       fseek(file, 0, SEEK_SET);
+       // update header
+       fwrite(&nktHead, sizeof(sNktHd), 1, file);
+
+       fclose(file); file=0;
+       amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
+     }
+
+#endif
+
+
 
  if(error!=FALSE) return -1;
 

@@ -14,6 +14,9 @@
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
 
+#ifdef ENABLE_GEMDOS_IO
+#include "fmio.h"
+#endif
 
 void Nkt_CreateHeader(sNktHd* header, const sSequence_t *pSeqData, const BOOL bCompress){
     WriteInt(&header->id,ID_NKT);
@@ -621,7 +624,7 @@ BOOL error=FALSE;
 sNktHd nktHead;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fh=-1;
+S32 fh=GDOS_INVALID_HANDLE;
 #else
 FILE* file=0;
 #endif

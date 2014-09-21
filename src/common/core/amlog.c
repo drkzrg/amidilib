@@ -18,7 +18,7 @@
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-static S32 fh=0;
+static S32 fh=GDOS_INVALID_HANDLE;
 #else
 static FILE *ofp=0;
 #endif
@@ -116,6 +116,8 @@ void initDebug(const char *pFilename){
 
     if(fh<0){
         fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);
+    }else{
+      fprintf(stderr,(const char *)getGemdosError((S16)fh));
     }
 
 #else

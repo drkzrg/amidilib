@@ -382,7 +382,19 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amMemSet(&tempHd,0,sizeof(sNktHd));
 
 #ifdef ENABLE_GEMDOS_IO
-    Fread(fh,sizeof(sNktHd),&tempHd);
+    S32 read=Fread(fh,sizeof(sNktHd),&tempHd);
+
+    if(read<0){
+          //GEMDOS ERROR TODO, display error for now
+          amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+    }else{
+        if(read<sizeof(sNktHd)){
+            amTrace("[GEMDOS] Read error, unexpected EOF. Expected: %d, read: %d",sizeof(sNktHd),read);
+        }
+    }
+
+
+
 #else
     fread(&tempHd,sizeof(sNktHd),1,fp);
 #endif
@@ -665,7 +677,16 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 U32 tempDelta,delta=0;
                 U8 count=0;
 #ifdef ENABLE_GEMDOS_IO
-                Fread(fh,sizeof(U32),&tempDelta);
+                S32 read=Fread(fh,sizeof(U32),&tempDelta);
+
+                if(read<0){
+                      //GEMDOS ERROR TODO, display error for now
+                      amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+                }else{
+                    if(read!=sizeof(U32)){
+                        amTrace("[GEMDOS] Read error. Unexpected EOF. expected: %d, read: %d",sizeof(U32),read);
+                    }
+                }
 #else
                 fread(&tempDelta,sizeof(U32),1,fp);
 #endif
@@ -678,7 +699,16 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 Fseek(-(sizeof(U32)-count),fh,1);
 
                 // read msg block
-                Fread(fh, sizeof(sNktBlk), &blk);
+                read=Fread(fh, sizeof(sNktBlk), &blk);
+
+                if(read<0){
+                      //GEMDOS ERROR TODO, display error for now
+                      amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+                }else{
+                    if(read!=sizeof(sNktBlk)){
+                        amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",sizeof(sNktBlk),read);
+                    }
+                }
 
 #else
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
@@ -701,7 +731,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                     pNewSeq->pEvents[i].pData=pTempPtr;
                     pTempPtr+=blk.blockSize;
 #ifdef ENABLE_GEMDOS_IO
-                    Fread(fh,blk.blockSize,pNewSeq->pEvents[i].pData);
+                    read=Fread(fh,blk.blockSize,pNewSeq->pEvents[i].pData);
+
+                    if(read!=blk.blockSize){
+                        amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",blk.blockSize,read);
+                    }
 #else
                     fread(pNewSeq->pEvents[i].pData,blk.blockSize,1,fp);
 #endif

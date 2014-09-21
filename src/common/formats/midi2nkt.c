@@ -16,6 +16,7 @@
 #ifdef ENABLE_GEMDOS_IO
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+#include "fmio.h"
 #endif
 
 U16 g_TD; //evil global!!!
@@ -694,7 +695,7 @@ sBufferInfo_t BufferInfo;
 BOOL bCompressionEnabled=bCompress;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fileHandle=-1;
+S32 fileHandle=GDOS_INVALID_HANDLE;
 #else
 FILE* file=0;
 #endif
@@ -706,12 +707,13 @@ if(pOutFileName){
 #ifdef ENABLE_GEMDOS_IO
    S32 fileHandle=Fopen(pOutFileName, 2);
    BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
+
 #else
    file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
 #endif
 
-    #warning TODO add FOpen() error check!!!!
+
 
 }else{
     return -1;
@@ -744,7 +746,7 @@ amTrace(stderr,"[MID->NKT] processing data ...\n");
 #ifdef ENABLE_GEMDOS_IO
     error = midiTrackDataToFile(pMidiData, fileHandle, &BufferInfo);
 #else
-error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
+    error = midiTrackDataToFile(pMidiData, &file, &BufferInfo);
 #endif
 
 // optional step LZO compression
@@ -784,6 +786,11 @@ if(bCompressionEnabled!=FALSE){
 
 #ifdef ENABLE_GEMDOS_IO
         U32 read=Fread(fileHandle,sizeOfBlock,(void *)pData);
+
+        if(read!=sizeOfBlock){
+            amTrace("[GEMDOS] Read error, expected: %d, read: %d",sizeOfBlock,read);
+        }
+
 #else
         U32 read=fread((void *)pData,1,sizeOfBlock,file);
 #endif

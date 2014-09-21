@@ -235,6 +235,9 @@ nkt_replay_src= ["common/formats/nkt_rep.c", "common/formats/nkt_rep_m68k.s", "c
 ##################### nkt converters
 nkt_conv_src=["common/formats/midi2nkt.c","common/formats/mus2midi.c","common/core/c_vars.c","common/core/amlog.c","common/timing/miditim.c"]
 
+if (gemdos_io_enable=="yes"):
+    nkt_replay_src = nkt_replay_src + discio_src
+
 # build test programs and link them with amidilib
 env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])

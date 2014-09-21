@@ -250,32 +250,45 @@ _DTA *pDTA=NULL;
 
       lRet=Fread( (int)fileHandle, (tMEMSIZE)(*fileLenght), pData );
 
-      /* not all data being read */
-      if(lRet!=(*fileLenght)){
-	fprintf(stderr,(const char *)"Fatal error, Couldn't read the whole file.\n");
-	
-	/* so we have error, free up memory */
-	amFree(pData);
+      if(lRet<0){
+            //GEMDOS ERROR TODO, display error for now
+            amTrace("[GEMDOS] Error: %s",getGemdosError(lRet));
+      }else{
+          /* not all data being read */
+          if(lRet!=(*fileLenght)){
+            fprintf(stderr,(const char *)"Fatal error, Couldn't read the whole file.\n");
+            amTrace("[GEMDOS] Read error. Unexpected EOF.");
+
+            /* so we have error, free up memory */
+            amFree(pData);
+          }
+
       }
-        
-        Fclose((int)fileHandle);
-	return (pData);
+      Fclose((int)fileHandle);
+      return (pData);
      }
-     else{
+     else
+     {
       /*no memory available */
       fprintf(stderr,(const char *)"Not enough memory to load file.\n");
+      amTrace("Not enough memory to load file.\n");
       return NULL;
      }
     }else{
       Fclose((int)fileHandle);
       /* file not found */
+      fprintf(stderr,(const char *)"[GEMDOS] File not found.\n");
+      amTrace("[GEMDOS] File not found.\n");
+
       fprintf(stderr,(const char *)getGemdosError(iRet));
+      amTrace("[GEMDOS] Error: %s.\n",getGemdosError(iRet));
       return NULL;
      }
     }
     else{
         /* print GEMDOS error code */
         fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+        amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
         return NULL;
     }
 }

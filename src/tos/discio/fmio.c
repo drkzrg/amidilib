@@ -300,14 +300,16 @@ S32 fileHandle=0L;
     
     if(fileHandle>0L){
 	 S32 iRet=0;
+
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
        
      if(iRet==memBlockSize){
-	 fprintf(stderr,"\n%s saved [%ld bytes written].\n",szFileName,iRet);
+        fprintf(stderr,"\n%s saved [%ld bytes written].\n",szFileName,iRet);
       }else{
-	 /* print GEMDOS error code */
+        /* print GEMDOS error code */
         fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
       }
+
       Fclose(fileHandle); 
       return 0L;   
     }else{

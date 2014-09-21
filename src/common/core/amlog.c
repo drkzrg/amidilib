@@ -73,7 +73,11 @@ void logd(const char *mes,...){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    Fwrite(fh,strlen(ofp),buffer);
+
+    if(Fwrite(fh,strlen(ofp),buffer)<0){
+        fprintf(stderr,"[GEMDOS] Error: %s\n"(const char *)getGemdosError(fh));
+    }
+
 #else
     fprintf(ofp,buffer);
     fflush(ofp);

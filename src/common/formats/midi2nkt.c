@@ -296,11 +296,17 @@ metaLenght=readVLQ((*pMidiData),&size);
          // write VLQ data
          U32 VLQdeltaTemp=0;
          S32 count=0;
+         S32 bytesWritten=0;
+
          count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
 
 #ifdef ENABLE_GEMDOS_IO
-         bufferInfo->bytes_written+=Fwrite(fileHandle,count,&VLQdeltaTemp);
-         bufferInfo->bytes_written+=Fwrite(fileHandle,sizeof(stBlock),&stBlock);
+         bytesWritten=Fwrite(fileHandle,count,&VLQdeltaTemp);
+         bufferInfo->bytes_written+=bytesWritten;
+
+         bytesWritten=Fwrite(fileHandle,sizeof(stBlock),&stBlock);
+         bufferInfo->bytes_written+=bytesWritten;
+
 #else
          bufferInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
          bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
@@ -340,9 +346,17 @@ metaLenght=readVLQ((*pMidiData),&size);
            S32 count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
 
 #ifdef ENABLE_GEMDOS_IO
-           bufferInfo->bytes_written += Fwrite(fileHandle,count,&VLQdeltaTemp);
-           bufferInfo->bytes_written += Fwrite(fileHandle,sizeof(stBlock),&stBlock);
-           bufferInfo->bytes_written += Fwrite(fileHandle,sizeof(U32),&val1);
+           S32 bytesWritten=0;
+
+           bytesWritten = Fwrite(fileHandle,count,&VLQdeltaTemp);
+           bufferInfo->bytes_written += bytesWritten;
+
+           bytesWritten = Fwrite(fileHandle,sizeof(stBlock),&stBlock);
+           bufferInfo->bytes_written += bytesWritten;
+
+           bytesWritten = Fwrite(fileHandle,sizeof(U32),&val1);
+           bufferInfo->bytes_written += bytesWritten;
+
 #else
            bufferInfo->bytes_written += fwrite(&VLQdeltaTemp,count,1,*file);
            bufferInfo->bytes_written += fwrite(&stBlock,sizeof(stBlock),1,*file);
@@ -401,7 +415,8 @@ metaLenght=readVLQ((*pMidiData),&size);
 
            // write precalculated values
 #ifdef ENABLE_GEMDOS_IO
-           bufferInfo->bytes_written+=Fwrite(fileHandle,NKT_UMAX*sizeof(U32),&precalc);
+           bytesWritten=Fwrite(fileHandle,NKT_UMAX*sizeof(U32),&precalc);
+           bufferInfo->bytes_written+=bytesWritten;
 #else
            bufferInfo->bytes_written+=fwrite(&precalc,NKT_UMAX*sizeof(U32),1,*file);
 
@@ -654,11 +669,16 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
         count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
 #ifdef ENABLE_GEMDOS_IO
-        pBufInfo->bytes_written+=Fwrite(fileHandle,count,&VLQdeltaTemp);
+        S32 bytesWritten = Fwrite(fileHandle,count,&VLQdeltaTemp);
+        pBufInfo->bytes_written+= bytesWritten;
 
         amTrace("Write block: \t");
-        pBufInfo->bytes_written+=Fwrite(fileHandle, sizeof(sNktBlk), &stBlock);
-        pBufInfo->bytes_written+=Fwrite(fileHandle,stBlock.blockSize,&(pBufInfo->buffer[0]));
+
+        bytesWritten = Fwrite(fileHandle, sizeof(sNktBlk), &stBlock);
+        pBufInfo->bytes_written+= bytesWritten;
+
+        bytesWritten = Fwrite(fileHandle,stBlock.blockSize,&(pBufInfo->buffer[0]));;
+        pBufInfo->bytes_written+=bytesWritten;
 
 #else
         pBufInfo->bytes_written+=fwrite(&VLQdeltaTemp,count,1,*file);
@@ -884,8 +904,7 @@ if(BufferInfo.pCompWrkBuf!=0){
 #ifdef ENABLE_GEMDOS_IO
 
 if(fileHandle>0){
-    Fseek(0,fileHandle,SEEK_SET);
-
+    Fseek(0,fileHandle,0);
 #else
 
 if(file!=0){

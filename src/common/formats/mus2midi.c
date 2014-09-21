@@ -334,8 +334,11 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 
    #ifdef ENABLE_GEMDOS_IO
         S32 fileHandle = Fopen(pOutMidName, 1);
-        Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
-        Fclose(fileHandle);
+        S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
+
+        amTrace("Written: [%d] bytes\n", bytesWritten);
+
+        Fclose(fileHandle); fileHandle=-1;
    #else
         FILE* file = fopen(pOutMidName, "wb");
         fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);

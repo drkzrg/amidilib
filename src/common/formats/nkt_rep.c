@@ -386,10 +386,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     if(read<0){
           //GEMDOS ERROR TODO, display error for now
-          amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+          amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
     }else{
         if(read<sizeof(sNktHd)){
-            amTrace("[GEMDOS] Read error, unexpected EOF. Expected: %d, read: %d",sizeof(sNktHd),read);
+            amTrace("[GEMDOS] Read error, unexpected EOF. Expected: %d, read: %d\n",sizeof(sNktHd),read);
         }
     }
 
@@ -681,10 +681,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                 if(read<0){
                       //GEMDOS ERROR TODO, display error for now
-                      amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+                      amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
                 }else{
                     if(read!=sizeof(U32)){
-                        amTrace("[GEMDOS] Read error. Unexpected EOF. expected: %d, read: %d",sizeof(U32),read);
+                        amTrace("[GEMDOS] Read error. Unexpected EOF. expected: %d, read: %d\n",sizeof(U32),read);
                     }
                 }
 #else
@@ -703,7 +703,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                 if(read<0){
                       //GEMDOS ERROR TODO, display error for now
-                      amTrace("[GEMDOS] Error: %s",getGemdosError(read));
+                      amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
                 }else{
                     if(read!=sizeof(sNktBlk)){
                         amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",sizeof(sNktBlk),read);
@@ -742,10 +742,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                     if(blk.msgType==NKT_TEMPO_CHANGE){
                            U32 *pTempo=(U32 *)pNewSeq->pEvents[i].pData;
-                           pTempo++;amTrace(" Update step 25hz: %ld\n",(U32)(*pTempo));
-                           pTempo++;amTrace(" Update step 50hz: %ld\n",(U32)(*pTempo));
-                           pTempo++;amTrace(" Update step 100hz: %ld\n",(U32)(*pTempo));
-                           pTempo++;amTrace(" Update step 200hz: %ld\n",(U32)(*pTempo));
+                           pTempo++; amTrace(" Update step 25hz: %ld\n",(U32)(*pTempo));
+                           pTempo++; amTrace(" Update step 50hz: %ld\n",(U32)(*pTempo));
+                           pTempo++; amTrace(" Update step 100hz: %ld\n",(U32)(*pTempo));
+                           pTempo++; amTrace(" Update step 200hz: %ld\n",(U32)(*pTempo));
                     }
                 }
             ++i;

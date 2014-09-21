@@ -808,7 +808,7 @@ if(bCompressionEnabled!=FALSE){
         U32 read=Fread(fileHandle,sizeOfBlock,(void *)pData);
 
         if(read!=sizeOfBlock){
-            amTrace("[GEMDOS] Read error, expected: %d, read: %d",sizeOfBlock,read);
+            amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",sizeOfBlock,read);
         }
 
 #else

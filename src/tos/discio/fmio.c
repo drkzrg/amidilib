@@ -254,12 +254,12 @@ _DTA *pDTA=NULL;
 
       if(lRet<0){
             //GEMDOS ERROR TODO, display error for now
-            amTrace("[GEMDOS] Error: %s",getGemdosError(lRet));
+            amTrace("[GEMDOS] Error: %s\n",getGemdosError(lRet));
       }else{
           /* not all data being read */
           if(lRet!=(*fileLenght)){
             fprintf(stderr,(const char *)"Fatal error, unexpected end of file.\n");
-            amTrace("[GEMDOS] Read error. Unexpected EOF.");
+            amTrace("[GEMDOS] Read error. Unexpected EOF.\n");
 
             /* so we have error, free up memory */
             amFree(pData);

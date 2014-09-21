@@ -60,7 +60,7 @@ const U8 *getLastGemdosError(void)
     return((const U8 *)g_arGEMDOSerror[g_lastGDOSerror]);
 }
 
-const U8 *getGemdosError(S16 iErr)
+const U8 *getGemdosError(S32 iErr)
 {
     switch(iErr)
     {
@@ -224,8 +224,11 @@ const U8 *getGemdosError(S16 iErr)
 
 /* loads file to specified type memory */
 void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
-S32 fileHandle;
-_DTA *pDTA=NULL;
+
+    amTrace("[GEMDOS] load file: %s\n",szFileName);
+
+    S32 fileHandle=GDOS_OK;
+    _DTA *pDTA=NULL;
 
     fileHandle = Fopen( szFileName, S_READ );
     *fileLenght=0L;

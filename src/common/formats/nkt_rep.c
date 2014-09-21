@@ -333,7 +333,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     //get nb of blocks from file
 #ifdef ENABLE_GEMDOS_IO
-    S32 fh=GDOS_INVALID_HANDLE;
+    S32 fh=GDOS_OK;
 #else
     FILE *fp=0;
 #endif
@@ -702,12 +702,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 read=Fread(fh, sizeof(sNktBlk), &blk);
 
                 if(read<0){
-                      //GEMDOS ERROR TODO, display error for now
-                      amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
-                }else{
-                    if(read!=sizeof(sNktBlk)){
-                        amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",sizeof(sNktBlk),read);
-                    }
+                  //GEMDOS ERROR TODO, display error for now
+                  amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
+                }else if(read!=sizeof(sNktBlk)){
+                  amTrace("[GEMDOS] Read error, expected: %d, read: %d\n",sizeof(sNktBlk),read);
                 }
 
 #else

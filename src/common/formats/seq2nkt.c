@@ -648,7 +648,7 @@ BOOL error=FALSE;
 sNktHd nktHead;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fh=GDOS_INVALID_HANDLE;
+S32 fh=GDOS_OK;
 #else
 FILE* file=0;
 #endif
@@ -660,6 +660,12 @@ FILE* file=0;
       Nkt_CreateHeader(&nktHead, pSeq, bCompress);
 #ifdef ENABLE_GEMDOS_IO
       fh = Fopen(pOutFileName, S_WRITE);
+
+      if(fh<0){
+        amTrace("[GEMDOS] Couldn't open: %s file. Error: %s\n",getGemdosError(fh));
+      }
+
+
       bytes_written+=Fwrite(fh, sizeof(sNktHd),&nktHead);
 
 #else
@@ -702,7 +708,7 @@ FILE* file=0;
 
 #ifdef ENABLE_GEMDOS_IO
     if(fh>0){
-       Fseek(0, fh, SEEK_SET);
+       Fseek(0, fh, 0);
        // update header
        Fwrite(fh, sizeof(sNktHd), &nktHead);
 

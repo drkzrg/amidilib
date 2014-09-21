@@ -41,6 +41,7 @@ Copyright (C) 2013-2014 Pawel Goralski [nokturnal@nokturnal.pl]
 #ifdef ENABLE_GEMDOS_IO
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+#include "fmio.h"
 #endif
 
 
@@ -338,7 +339,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 
         amTrace("Written: [%d] bytes\n", bytesWritten);
 
-        Fclose(fileHandle); fileHandle=-1;
+        Fclose(fileHandle); fileHandle=GDOS_OK;
 
    #else
 

@@ -715,7 +715,7 @@ sBufferInfo_t BufferInfo;
 BOOL bCompressionEnabled=bCompress;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fileHandle=GDOS_INVALID_HANDLE;
+S32 fileHandle=GDOS_OK;
 #else
 FILE* file=0;
 #endif
@@ -725,9 +725,8 @@ if(pOutFileName){
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
 
 #ifdef ENABLE_GEMDOS_IO
-   S32 fileHandle=Fopen(pOutFileName, 2);
+   S32 fileHandle=Fopen(pOutFileName, S_READWRITE);
    BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
-
 #else
    file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);

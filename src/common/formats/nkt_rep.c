@@ -347,7 +347,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
          amTrace("Loading NKT file: %s\n",pFilePath);
 #ifdef ENABLE_GEMDOS_IO
-       fh=Fopen(pFilePath,2);
+       fh=Fopen(pFilePath,S_READWRITE);
 #else
        fp = fopen(pFilePath, "rb"); //read only
 #endif
@@ -918,7 +918,7 @@ void switchReplayMode(void){
 
 void NktInit(const eMidiDeviceType devType, const U8 channel){
 
-    initDebug("nktlog.log");
+    initDebug("NKTLOG.LOG");
 
     // now depending on the connected device type and chosen operation mode
     // set appropriate channel

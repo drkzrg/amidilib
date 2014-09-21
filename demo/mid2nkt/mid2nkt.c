@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
 BOOL bEnableCompression=FALSE;
 U8 *filePath=0;
 
-  initDebug("mid2nkt.log");
+  initDebug("MID2NKT.LOG");
 
   printInfoScreen();
 

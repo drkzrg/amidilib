@@ -227,20 +227,22 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 S32 fileHandle;
 _DTA *pDTA=NULL;
 
-    fileHandle = Fopen( szFileName, FO_READ );
+    fileHandle = Fopen( szFileName, S_READ );
     *fileLenght=0L;
 
-    if((fileHandle)>0L){
+    if((fileHandle)>0){
 	S16 iRet=0;
 	
     pDTA=Fgetdta();
     iRet=Fsfirst( szFileName, 0 );
 
     if(iRet==0){
+
     /* file found */
 	void *pData=NULL;
 	 
     *fileLenght=pDTA->dta_size;
+
     /* allocate buffer */
      pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
      
@@ -248,7 +250,7 @@ _DTA *pDTA=NULL;
       U32 lRet=0L;
       amMemSet(pData,0,(*fileLenght)+1);
 
-      lRet=Fread( (int)fileHandle, (tMEMSIZE)(*fileLenght), pData );
+      lRet=Fread(fileHandle, (*fileLenght), pData );
 
       if(lRet<0){
             //GEMDOS ERROR TODO, display error for now
@@ -256,7 +258,7 @@ _DTA *pDTA=NULL;
       }else{
           /* not all data being read */
           if(lRet!=(*fileLenght)){
-            fprintf(stderr,(const char *)"Fatal error, Couldn't read the whole file.\n");
+            fprintf(stderr,(const char *)"Fatal error, unexpected end of file.\n");
             amTrace("[GEMDOS] Read error. Unexpected EOF.");
 
             /* so we have error, free up memory */
@@ -275,19 +277,16 @@ _DTA *pDTA=NULL;
       return NULL;
      }
     }else{
-      Fclose((int)fileHandle);
+      Fclose(fileHandle);
       /* file not found */
-      fprintf(stderr,(const char *)"[GEMDOS] File not found.\n");
-      amTrace("[GEMDOS] File not found.\n");
 
-      fprintf(stderr,(const char *)getGemdosError(iRet));
-      amTrace("[GEMDOS] Error: %s.\n",getGemdosError(iRet));
+      fprintf(stderr,(const char *)getGemdosError(fileHandle));
+      amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
       return NULL;
      }
-    }
-    else{
+    }else{
         /* print GEMDOS error code */
-        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+        fprintf(stderr,(const char *)getGemdosError(fileHandle));
         amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
         return NULL;
     }

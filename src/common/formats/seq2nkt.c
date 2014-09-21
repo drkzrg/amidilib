@@ -659,7 +659,7 @@ FILE* file=0;
       amTrace("Writing NKT file to: %s\n",pOutFileName);
       Nkt_CreateHeader(&nktHead, pSeq, bCompress);
 #ifdef ENABLE_GEMDOS_IO
-      fh = Fopen(pOutFileName, FO_WRITE);
+      fh = Fopen(pOutFileName, S_WRITE);
       bytes_written+=Fwrite(fh, sizeof(sNktHd),&nktHead);
 
 #else

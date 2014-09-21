@@ -7,6 +7,7 @@
 #include <mint/osbind.h>
 
 #ifdef ENABLE_GEMDOS_IO
+#include "fmio.h"
 #include <mint/ostruct.h>
 #endif
 
@@ -74,8 +75,8 @@ void logd(const char *mes,...){
 
 #ifdef ENABLE_GEMDOS_IO
 
-    if(Fwrite(fh,strlen(ofp),buffer)<0){
-        fprintf(stderr,"[GEMDOS] Error: %s\n"(const char *)getGemdosError(fh));
+    if(Fwrite(fh,len,buffer)<0){
+        fprintf(stderr,"[GEMDOS] Error: %s\n",(const char *)getGemdosError(fh));
     }
 
 #else
@@ -116,10 +117,10 @@ void initDebug(const char *pFilename){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=Fopen(pFilename,2);
+    fh=Fopen(pFilename,S_WRITE);
 
     if(fh<0){
-        fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);
+        fprintf(stderr,"Can't init debug file output: %s\n",DEBUG_LOG);
     }else{
       fprintf(stderr,(const char *)getGemdosError((S16)fh));
     }

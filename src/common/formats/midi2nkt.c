@@ -860,7 +860,7 @@ if(bCompressionEnabled!=FALSE){
                   nktHead.bPacked = TRUE;
 
 #ifdef ENABLE_GEMDOS_IO
-                  fileHandle=Fopen(pOutFileName,2);
+                  fileHandle=Fopen(pOutFileName,S_WRITE);
                   Fseek(sizeof(sNktHd),fileHandle,0);
 #else
                   file = fopen(pOutFileName, "wb");

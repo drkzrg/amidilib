@@ -19,7 +19,7 @@
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-static S32 fh=GDOS_OK;
+static S16 fh=GDOS_OK;
 #else
 static FILE *ofp=0;
 #endif
@@ -117,10 +117,11 @@ void initDebug(const char *pFilename){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=Fopen(pFilename,S_WRITE);
+    fh=Fcreate(pFilename,0);
+    fh=Fopen(pFilename, S_WRITE);
 
     if(fh<0){
-        fprintf(stderr,"Can't init debug file output: %s\n",DEBUG_LOG);
+        fprintf(stderr,"Can't create debug file: %s\n",DEBUG_LOG);
         fprintf(stderr,getGemdosError(fh));
     }
 

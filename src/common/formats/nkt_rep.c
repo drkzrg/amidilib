@@ -333,7 +333,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     //get nb of blocks from file
 #ifdef ENABLE_GEMDOS_IO
-    S32 fh=GDOS_OK;
+    S16 fh=GDOS_OK;
 #else
     FILE *fp=0;
 #endif
@@ -347,7 +347,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
          amTrace("Loading NKT file: %s\n",pFilePath);
 #ifdef ENABLE_GEMDOS_IO
-       fh=Fopen(pFilePath,S_READWRITE);
+       fh=Fopen(pFilePath,S_READ);
 #else
        fp = fopen(pFilePath, "rb"); //read only
 #endif
@@ -545,8 +545,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     if(tempHd.bPacked!=FALSE){
 
         #ifdef ENABLE_GEMDOS_IO
-            Fseek(0,fh,0);
-            Fseek(sizeof(sNktHd),fh,0);
+            Fseek(0,fh,SEEK_SET);
+            Fseek(sizeof(sNktHd),fh,SEEK_SET);
         #else
             fseek(fp,0,SEEK_SET);
             fseek(fp,sizeof(sNktHd),SEEK_SET);
@@ -696,7 +696,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
 #ifdef ENABLE_GEMDOS_IO
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
-                Fseek(-(sizeof(U32)-count),fh,1);
+                Fseek(-(sizeof(U32)-count),fh,SEEK_CUR);
 
                 // read msg block
                 read=Fread(fh, sizeof(sNktBlk), &blk);

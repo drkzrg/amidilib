@@ -333,26 +333,44 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 
         amTrace("Writing MIDI output to file: %s\n", pOutMidName);
 
-   #ifdef ENABLE_GEMDOS_IO
-        S32 fileHandle = Fopen(pOutMidName, S_WRITE);
-        S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
+#ifdef ENABLE_GEMDOS_IO
+        S16 fileHandle = Fcreate(pOutMidName, 0);
 
-        amTrace("Written: [%d] bytes\n", bytesWritten);
+        fileHandle=Fopen(pOutMidName, S_READWRITE);
 
-        Fclose(fileHandle); fileHandle=GDOS_OK;
+        if(fileHandle>0){
+            S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
+            amTrace("Written: [%d] bytes\n", bytesWritten);
 
-   #else
+            Fclose(fileHandle); fileHandle=GDOS_OK;
+
+        #ifndef SUPRESS_CON_OUTPUT
+        fprintf(stderr,"Written %d bytes\n",bytes_written);
+        #endif
+        amTrace("Written %d bytes\n",bytes_written);
+
+        }else{
+            #ifndef SUPRESS_CON_OUTPUT
+                fprintf(stderr,"[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
+            #endif
+
+            amTrace("[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
+        }
+
+#else
 
         FILE* file = fopen(pOutMidName, "wb");
         fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
         fclose(file);
 
-  #endif
-
 #ifndef SUPRESS_CON_OUTPUT
        fprintf(stderr,"Written %d bytes\n",bytes_written);
 #endif
         amTrace("Written %d bytes\n",bytes_written);
+
+
+#endif
+
       }
 
 #ifndef SUPRESS_CON_OUTPUT

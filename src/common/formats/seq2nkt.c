@@ -149,7 +149,11 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
     default:
         // error not handled
         amTrace("Error: processSeqEvent() error not handled\n");
-        printf("Error: processSeqEvent() error not handled\n");
+
+#ifndef SUPRESS_CON_OUTPUT
+        sprintf(stderr,"Error: processSeqEvent() error not handled\n");
+#endif
+
         return;
         break;
   };
@@ -425,8 +429,12 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
     }; //end while end of sequence
 
-    printf("Event blocks written: %lu, total bytes of data written %lu\n",*blocksWritten,*bytesWritten);
- return 0;
+     amTrace(stderr,"Event blocks written: %lu, total bytes of data written %lu\n",*blocksWritten,*bytesWritten);
+
+#ifndef SUPRESS_CON_OUTPUT
+    sprintf(stderr,"Event blocks written: %lu, total bytes of data written %lu\n",*blocksWritten,*bytesWritten);
+#endif
+    return 0;
 }
 
 #ifdef ENABLE_GEMDOS_IO
@@ -648,7 +656,7 @@ BOOL error=FALSE;
 sNktHd nktHead;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fh=GDOS_OK;
+S16 fh=GDOS_OK;
 #else
 FILE* file=0;
 #endif
@@ -659,10 +667,10 @@ FILE* file=0;
       amTrace("Writing NKT file to: %s\n",pOutFileName);
       Nkt_CreateHeader(&nktHead, pSeq, bCompress);
 #ifdef ENABLE_GEMDOS_IO
-      fh = Fopen(pOutFileName, S_WRITE);
-
+      fh = Fcreate(pOutFileName, 0);
+      fh = Fopen(pOutFileName, S_READWRITE);
       if(fh<0){
-        amTrace("[GEMDOS] Couldn't open: %s file. Error: %s\n",getGemdosError(fh));
+        amTrace("[GEMDOS] Couldn't create: %s file. Error: %s\n",pOutFileName,getGemdosError(fh));
       }
 
 
@@ -708,11 +716,13 @@ FILE* file=0;
 
 #ifdef ENABLE_GEMDOS_IO
     if(fh>0){
-       Fseek(0, fh, 0);
+       Fseek(0, fh, SEEK_SET);
        // update header
        Fwrite(fh, sizeof(sNktHd), &nktHead);
 
-       Fclose(fh); fh=-1;
+       Fclose(fh); fh=GDOS_OK;
+
+       fprintf(stderr,"Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
        amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
      }
 #else

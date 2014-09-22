@@ -57,7 +57,7 @@
  #define GDOS_MOUNT_POINT_CROSSED -200  /*Mount point crossed*/
  
  
- const U8 *getGemdosError(S32 iErr);
+ const U8 *getGemdosError(const S16 iErr);
 
 /**
  * gets text description of last GEMDOS error that occured.

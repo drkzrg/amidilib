@@ -419,7 +419,6 @@ metaLenght=readVLQ((*pMidiData),&size);
            bufferInfo->bytes_written+=bytesWritten;
 #else
            bufferInfo->bytes_written+=fwrite(&precalc,NKT_UMAX*sizeof(U32),1,*file);
-
 #endif
 
         }
@@ -570,7 +569,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
 
 #ifdef ENABLE_GEMDOS_IO
 
-U32 midiTrackDataToFile(void *pMidiData, S32 fileHandle, sBufferInfo_t *pBufInfo){
+U32 midiTrackDataToFile(void *pMidiData, S16 fileHandle, sBufferInfo_t *pBufInfo){
 
 #else
 
@@ -715,7 +714,7 @@ sBufferInfo_t BufferInfo;
 BOOL bCompressionEnabled=bCompress;
 
 #ifdef ENABLE_GEMDOS_IO
-S32 fileHandle=GDOS_OK;
+S16 fileHandle=GDOS_OK;
 #else
 FILE* file=0;
 #endif
@@ -725,16 +724,25 @@ if(pOutFileName){
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
 
 #ifdef ENABLE_GEMDOS_IO
-   S32 fileHandle=Fopen(pOutFileName, S_READWRITE);
-   BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
+   //create file
+   S16 fileHandle=Fcreate(pOutFileName, 0);
+   fileHandle=Fopen(pOutFileName, S_READWRITE);
+
+   if(fileHandle>0){
+    BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
+   }else{
+       amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
+       fprintf(stderr,"[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
+   }
+
 #else
    file = fopen(pOutFileName, "w+b");
    BufferInfo.bytes_written+=fwrite(&nktHead, sizeof(sNktHd), 1, file);
 #endif
-
-
-
 }else{
+    amTrace("Midi2Nkt() output file name is empty.\n");
+    fprintf(stderr,"Midi2Nkt() output file name is empty.\n");
+
     return -1;
 }
 
@@ -774,11 +782,11 @@ if(bCompressionEnabled!=FALSE){
 
 #ifdef ENABLE_GEMDOS_IO
 
-    Fseek(sizeof(sNktHd),fileHandle,0); //file start
-    S32 fStart=Fseek(0,fileHandle,1); //get current pos
+    Fseek(sizeof(sNktHd),fileHandle,SEEK_SET); //file start
+    S32 fStart=Fseek(0,fileHandle,SEEK_CUR); //get current pos
 
-    Fseek(sizeof(sNktHd),fileHandle,2); //file end
-    S32 fEnd=Fseek(0,fileHandle,1);
+    Fseek(sizeof(sNktHd),fileHandle,SEEK_END); //file end
+    S32 fEnd=Fseek(0,fileHandle,SEEK_CUR);
 
 #else
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
@@ -794,8 +802,8 @@ if(bCompressionEnabled!=FALSE){
     U8 *pData=amMallocEx(sizeOfBlock,PREFER_TT);
 
 #ifdef ENABLE_GEMDOS_IO
-    Fseek(0,fileHandle,0); //reset file pos
-    Fseek(sizeof(sNktHd),fileHandle,0); //set file pos after header
+    Fseek(0,fileHandle,SEEK_SET);              //reset file pos
+    Fseek(sizeof(sNktHd),fileHandle,SEEK_SET); //set file pos after header
 #else
     fseek(file, 0, SEEK_SET); // reset file pos
     fseek(file, sizeof(sNktHd), SEEK_SET); // reset file pos
@@ -859,8 +867,15 @@ if(bCompressionEnabled!=FALSE){
                   nktHead.bPacked = TRUE;
 
 #ifdef ENABLE_GEMDOS_IO
-                  fileHandle=Fopen(pOutFileName,S_WRITE);
-                  Fseek(sizeof(sNktHd),fileHandle,0);
+                  fileHandle=Fopen(pOutFileName,S_READWRITE);
+
+                  if(fileHandle>0){
+                    Fseek(sizeof(sNktHd),fileHandle,SEEK_SET);
+                  }else{
+                    fprintf(stderr,"[GEMDOS] File %s open error. %s\n",pOutFileName, getGemdosError(fileHandle));
+                    amTrace("[GEMDOS] File %s open error. %s\n", pOutFileName, getGemdosError(fileHandle));
+                  }
+
 #else
                   file = fopen(pOutFileName, "wb");
                   fseek(file, sizeof(sNktHd),SEEK_SET);
@@ -903,7 +918,7 @@ if(BufferInfo.pCompWrkBuf!=0){
 #ifdef ENABLE_GEMDOS_IO
 
 if(fileHandle>0){
-    Fseek(0,fileHandle,0);
+    Fseek(0,fileHandle,SEEK_SET);
 #else
 
 if(file!=0){
@@ -916,13 +931,14 @@ if(file!=0){
 
 #ifdef ENABLE_GEMDOS_IO
     U32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
-    Fclose(fileHandle); fileHandle=-1;
+    Fclose(fileHandle); fileHandle=GDOS_OK;
 #else
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     fclose(file); file=0;
 #endif
     amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
- }
+    fprintf(stderr,"Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
+ }else{}
 
 
 }

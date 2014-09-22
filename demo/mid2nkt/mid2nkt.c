@@ -70,7 +70,7 @@ U8 *filePath=0;
            pTempPtr=strrchr(tempName,'.');
            memcpy(pTempPtr+1,"mid",4);
            printf("[Please Wait] [MUS->MID] Processing midi data..\n");
-           Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
+           Mus2Midi(pMidi,(unsigned char *)pOut,NULL,&len);
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
            amFree(pMidi);

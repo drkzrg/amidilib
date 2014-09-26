@@ -58,7 +58,7 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 }
 
 //
-#define OUT_BUFFER_SIZE 512   // should be sufficient if there are no big SysEx messages
+#define OUT_BUFFER_SIZE 256   // should be sufficient if there are no big SysEx messages
                               // TODO: make it configurable
 typedef struct sBufferInfo{
  U8 buffer[OUT_BUFFER_SIZE];
@@ -247,7 +247,7 @@ amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
 
 
 #ifdef ENABLE_GEMDOS_IO
-U32 processMetaEvent( U32 delta, U8 **pMidiData, S32 fileHandle, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+U32 processMetaEvent( U32 delta, U8 **pMidiData, S16 fileHandle, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 #else
 U32 processMetaEvent( U32 delta, U8 **pMidiData, FILE **file, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 #endif
@@ -288,12 +288,8 @@ metaLenght=readVLQ((*pMidiData),&size);
      stBlock.msgType=NKT_END;
 
      //write block to file
- #ifdef ENABLE_GEMDOS_IO
-     if(fileHandle>0){
- #else
-     if(file!=NULL){
- #endif
-         // write VLQ data
+
+     // write VLQ data
          U32 VLQdeltaTemp=0;
          S32 count=0;
          S32 bytesWritten=0;
@@ -312,7 +308,7 @@ metaLenght=readVLQ((*pMidiData),&size);
          bufferInfo->bytes_written+=fwrite(&stBlock,sizeof(stBlock),1,*file);
 #endif
          //no data to write
-     }
+
      ++(bufferInfo->blocks_written);
      *bEOT=TRUE;
     }break;
@@ -335,13 +331,7 @@ metaLenght=readVLQ((*pMidiData),&size);
         val1=val1|val2|val3;
         amTrace((const U8*)"%lu ms per quarter-note\n", val1);
 
-#ifdef ENABLE_GEMDOS_IO
-        if(fileHandle>0){
-#else
-        if(*file!=NULL){
-#endif
-
-           // write VLQ delta
+        // write VLQ delta
            U32 VLQdeltaTemp=0;
            S32 count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
 
@@ -421,7 +411,7 @@ metaLenght=readVLQ((*pMidiData),&size);
            bufferInfo->bytes_written+=fwrite(&precalc,NKT_UMAX*sizeof(U32),1,*file);
 #endif
 
-        }
+
         ++(bufferInfo->blocks_written);
     }break;
 
@@ -454,7 +444,7 @@ amMemCpy(&bufferInfo->buffer[bufferInfo->bufPos],pDataPtr,ulCount);
 
 //
 #ifdef ENABLE_GEMDOS_IO
-U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,U16 fileHandle, BOOL *bEOF)
+U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,S16 fileHandle, BOOL *bEOF)
 #else
 U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,FILE** file, BOOL *bEOF)
 #endif
@@ -588,7 +578,7 @@ void *endTrkPtr=0;
 pTrackHd=(sChunkHeader *)startTrkPtr;
 
 if(pTrackHd->id!=ID_MTRK){
- printf("Error: Cannot find MIDI track chunk. Exiting. \n");
+ fprintf(stderr, "Error: Cannot find MIDI track chunk. Exiting. \n");
  amTrace("Error: Cannot find MIDI track chunk. Exiting. \n");
  return 1;
 };
@@ -657,11 +647,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
 
       // write block to file
-#ifdef ENABLE_GEMDOS_IO
-      if(fileHandle>0){
-#else
-      if(file!=NULL){
-#endif
+
         // write VLQ delta
         S32 count=0;
         U32 VLQdeltaTemp=0;
@@ -687,9 +673,6 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
         pBufInfo->bytes_written+=fwrite(&(pBufInfo->buffer[0]),stBlock.blockSize,1,*file);
 
 #endif
-
-
-      }
 
       ++(pBufInfo->blocks_written);
 
@@ -719,20 +702,27 @@ S16 fileHandle=GDOS_OK;
 FILE* file=0;
 #endif
 
+amMemSet(BufferInfo,0,sizeof(sBufferInfo_t));
+amMemSet(&nktHead,0,sizeof(sNktHd));
+
+
 if(pOutFileName){
    // create file header
    Nkt_CreateHeader(&nktHead, (const sMThd *)pMidiData, FALSE);
 
 #ifdef ENABLE_GEMDOS_IO
    //create file
+   amTrace("[GEMDOS] Create file %s\n",pOutFileName);
+   fprintf(stderr,"[GEMDOS] Create file %s\n",pOutFileName);
+
    S16 fileHandle=Fcreate(pOutFileName, 0);
-   fileHandle=Fopen(pOutFileName, S_READWRITE);
 
    if(fileHandle>0){
-    BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
+        BufferInfo.bytes_written+=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
    }else{
        amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
        fprintf(stderr,"[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
+       return -1;
    }
 
 #else
@@ -746,7 +736,6 @@ if(pOutFileName){
     return -1;
 }
 
-BufferInfo.pCompWrkBuf=0;
 
 if(bCompressionEnabled!=FALSE){
 
@@ -914,17 +903,12 @@ if(BufferInfo.pCompWrkBuf!=0){
   amFree(BufferInfo.pCompWrkBuf);
 }
 
-
 #ifdef ENABLE_GEMDOS_IO
-
-if(fileHandle>0){
     Fseek(0,fileHandle,SEEK_SET);
 #else
-
-if(file!=0){
     fseek(file,0,SEEK_SET);
-
 #endif
+
     // update header
     nktHead.NbOfBlocks = BufferInfo.blocks_written;
     nktHead.NbOfBytesData = BufferInfo.bytes_written;
@@ -938,7 +922,5 @@ if(file!=0){
 #endif
     amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
     fprintf(stderr,"Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
- }else{}
-
 
 }

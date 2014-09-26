@@ -336,17 +336,16 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 #ifdef ENABLE_GEMDOS_IO
         S16 fileHandle = Fcreate(pOutMidName, 0);
 
-        fileHandle=Fopen(pOutMidName, S_READWRITE);
-
         if(fileHandle>0){
             S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
-            amTrace("Written: [%d] bytes\n", bytesWritten);
+            amTrace("Saved to file: [%d] bytes\n", bytesWritten);
 
             Fclose(fileHandle); fileHandle=GDOS_OK;
 
         #ifndef SUPRESS_CON_OUTPUT
         fprintf(stderr,"Written %d bytes\n",bytes_written);
         #endif
+
         amTrace("Written %d bytes\n",bytes_written);
 
         }else{

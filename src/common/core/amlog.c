@@ -117,12 +117,11 @@ void initDebug(const char *pFilename){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=Fcreate(pFilename,0);
-    fh=Fopen(pFilename, S_WRITE);
+    fh=Fcreate(pFilename,S_WRITE);
 
     if(fh<0){
         fprintf(stderr,"Can't create debug file: %s\n",DEBUG_LOG);
-        fprintf(stderr,getGemdosError(fh));
+        fprintf(stderr,"[GEMDOS] Error: %s\n",getGemdosError(fh));
     }
 
 #else

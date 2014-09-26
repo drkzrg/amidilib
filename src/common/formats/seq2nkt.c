@@ -16,6 +16,8 @@
 
 #ifdef ENABLE_GEMDOS_IO
 #include "fmio.h"
+#include <mint/ostruct.h>
+#include <mint/osbind.h>
 #endif
 
 void Nkt_CreateHeader(sNktHd* header, const sSequence_t *pSeqData, const BOOL bCompress){
@@ -226,6 +228,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
 #ifdef ENABLE_GEMDOS_IO
                 S32 bw=0;
+
                 bw = Fwrite(fh,count,&VLQdeltaTemp);
                 *bytesWritten+= bw;
 
@@ -668,7 +671,7 @@ FILE* file=0;
       Nkt_CreateHeader(&nktHead, pSeq, bCompress);
 #ifdef ENABLE_GEMDOS_IO
       fh = Fcreate(pOutFileName, 0);
-      fh = Fopen(pOutFileName, S_READWRITE);
+
       if(fh<0){
         amTrace("[GEMDOS] Couldn't create: %s file. Error: %s\n",pOutFileName,getGemdosError(fh));
       }

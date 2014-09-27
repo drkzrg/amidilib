@@ -702,7 +702,7 @@ S16 fileHandle=GDOS_OK;
 FILE* file=0;
 #endif
 
-amMemSet(BufferInfo,0,sizeof(sBufferInfo_t));
+amMemSet(&BufferInfo,0,sizeof(sBufferInfo_t));
 amMemSet(&nktHead,0,sizeof(sNktHd));
 
 

@@ -106,7 +106,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
     
     if((*pSequence)==0){
       amTrace((const U8*)"Error: Cannot allocate memory for sequence.\n");
-      fprintf(stderr, "Error: Cannot allocate memory for sequence.\n");
+      printf( "Error: Cannot allocate memory for sequence.\n");
       return -1;
     }
    
@@ -118,7 +118,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 
 #ifdef EVENT_LINEAR_BUFFER
    if(createLinearBuffer(&((*pSequence)->eventBuffer), memSize, PREFER_TT)<0){
-       fprintf(stderr, "Error: Cannot allocate memory for sequence internal event buffer...\n");
+       printf( "Error: Cannot allocate memory for sequence internal event buffer...\n");
        amFree((*pSequence));
        return -1;
    }
@@ -130,12 +130,12 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
    if(iRet==-1){
     /* not MIDI file, do nothing */
     amTrace((const U8*)"It's not valid MIDI file...\n");
-    fprintf(stderr, "It's not valid MIDI file...\n");
+    printf( "It's not valid MIDI file...\n");
     return -1;
    } else if(iRet==-2){
     /* unsupported MIDI type format, do nothing*/
     amTrace((const U8*)"Unsupported MIDI file format...\n");
-    fprintf(stderr, "Unsupported MIDI file format...\n");
+    printf( "Unsupported MIDI file format...\n");
    return -1; 
    }
 
@@ -353,7 +353,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	default:{
 	  /* unknown error, do nothing */
 	  amTrace((const U8*)"Unknown error.\n");
-	  fprintf(stderr, "Unknown error ...\n");
+	  printf( "Unknown error ...\n");
         
 	  return(-1);
 	}

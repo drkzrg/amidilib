@@ -23,7 +23,7 @@ U8 *filePath=0;
 
   // check parameters for compression
   if(argc==2 && argv[1]!='\0'){
-      fprintf(stderr,"Trying to load %s\n",argv[1]);
+      printf("Trying to load %s\n",argv[1]);
       filePath=argv[1];
 
   }else if(argc==3&&argv[1]!='\0'&&argv[2]!='\0'){
@@ -32,11 +32,11 @@ U8 *filePath=0;
        bEnableCompression=TRUE;
       }
 
-      fprintf(stderr,"Trying to load %s\n",argv[2]);
+      printf("Trying to load %s\n",argv[2]);
       filePath=argv[2];
 
   }else{
-      fprintf(stderr,"No specified mid / mus filename or bad parameters! Exiting ...\n");
+      printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
       deinitDebug();
       getchar();
       return 0;
@@ -46,6 +46,7 @@ U8 *filePath=0;
   U32 iError=0;
   U32 ulFileLenght=0L;
   void *pMidi=0;
+  char tempName[128];
 
   pMidi=loadFile(filePath, PREFER_TT, &ulFileLenght);
 
@@ -64,13 +65,15 @@ U8 *filePath=0;
            pOut=amMallocEx(MIDI_OUT_TEMP, PREFER_TT);
 
            // set midi output name
-           char tempName[128]={0};
-           char *pTempPtr=0;
+           U8 *pTempPtr=0;
+           amMemSet(tempName,0,sizeof(U8)*128);
+
            strncpy(tempName,filePath,strlen(filePath));
            pTempPtr=strrchr(tempName,'.');
-           memcpy(pTempPtr+1,"mid",4);
+           amMemCpy(pTempPtr+1,"mid",4);
+
            printf("[Please Wait] [MUS->MID] Processing midi data..\n");
-           Mus2Midi(pMidi,(unsigned char *)pOut,NULL,&len);
+           Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
            amFree(pMidi);
@@ -81,22 +84,23 @@ U8 *filePath=0;
 
        // check mid 0, no quit
        if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
-           fprintf(stderr,"Midi file loaded, size: %lu bytes.\n", ulFileLenght);
+           printf("Midi file loaded, size: %lu bytes.\n", ulFileLenght);
 
-           char tempName[128]={0};
-           char *pTempPtr=0;
+           U8 *pTempPtr=0;
+           amMemSet(tempName,0,sizeof(U8)*128);
+
            strncpy(tempName,filePath,strlen(filePath));
            pTempPtr=strrchr(tempName,'.');
-           memcpy(pTempPtr+1,"nkt",4);
+           amMemCpy(pTempPtr+1,"nkt",4);
 
-           fprintf(stderr,"[ Please wait ] Converting MID to %s. Compress: %s\n",tempName,bEnableCompression?"YES":"NO");
+           printf("[ Please wait ] Converting MID to %s. Compress: %s\n",tempName,bEnableCompression?"YES":"NO");
 
            // convert
            iError = Midi2Nkt(pMidi,tempName, bEnableCompression);
 
            //TODO: add errorcheck
        }else{
-           fprintf(stderr,"File is not in MIDI 0 format. Exiting... \n");
+           printf("File is not in MIDI 0 format. Exiting... \n");
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */
@@ -106,7 +110,7 @@ U8 *filePath=0;
 
   //done..
    deinitDebug();
-   fprintf(stderr,"\nDone. Press any key... \n");
+   printf("\nDone. Press any key... \n");
 
    getchar();
    return 0;

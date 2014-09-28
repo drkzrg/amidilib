@@ -57,9 +57,9 @@ int main(int argc, char *argv[]){
     iError=am_init();
     
     if(argc>=1&&argv[1]!='\0'){
-      fprintf(stderr,"Trying to load %s\n",argv[1]);
+      printf("Trying to load %s\n",argv[1]);
     }else{
-      fprintf(stderr,"No specified midi filename! exiting\n");
+      printf("No specified midi filename! exiting\n");
       am_deinit();
       return 0;
     }
@@ -69,11 +69,11 @@ int main(int argc, char *argv[]){
     pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL){
-     fprintf(stderr,"Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
      /* check midi header */
-      fprintf(stderr,"Please wait...\n");
+      printf("Please wait...\n");
 
       iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
 
@@ -82,9 +82,9 @@ int main(int argc, char *argv[]){
 
       if(iError==0){
 
-	  fprintf(stderr,"Sequence name: %s\n",pMidiTune->pSequenceName);
-	  fprintf(stderr,"Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-      fprintf(stderr,"PPQN: %u\n",pMidiTune->timeDivision);
+	  printf("Sequence name: %s\n",pMidiTune->pSequenceName);
+	  printf("Nb of tracks: %d\n",pMidiTune->ubNumTracks);
+      printf("PPQN: %u\n",pMidiTune->timeDivision);
 	  
 	  #ifdef MIDI_PARSER_TEST
         //output loaded midi file to screen/log
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
      
     }else{ /* MIDI loading failed */
       amTrace((const U8*)"Error: Couldn't read %s file...\n",argv[1]);
-      fprintf(stderr, "Error: Couldn't read %s file...\n",argv[1]);
+      printf( "Error: Couldn't read %s file...\n",argv[1]);
       am_deinit();	//deinit our stuff
       return(-1);
     }

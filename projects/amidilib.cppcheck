@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="1">
     <includedir>
-        <dir name="H:/atari/amidilib/include/"/>
+        <dir name="D:/projekty/atari/amidilib/include/"/>
     </includedir>
     <defines>
-        <define name="EVENT_LINEAR_BUFFER, IKBD_MIDI_SEND_DIRECT, USE_INLINE"/>
+        <define name="EVENT_LINEAR_BUFFER USE_INLINE DEBUG_FILE_OUTPUT DEBUG_CONSOLE_OUTPUT"/>
     </defines>
     <paths>
-        <dir name="H:/atari/amidilib/src"/>
-        <dir name="H:/atari/amidilib/demo"/>
+        <dir name="D:/projekty/atari/amidilib/src"/>
     </paths>
-    <libraries>
-        <library>posix</library>
-    </libraries>
 </project>

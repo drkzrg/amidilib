@@ -55,7 +55,7 @@ extern void*	Z_Malloc (int size, int tag, void *ptr);
 
 #define amMallocEx(amount, flag) Mxalloc((amount),(flag));
 #define amMalloc(amount) Malloc((amount));
-#define amFree(memPtr) if( (memPtr) != NULL ) Mfree (memPtr); (memPtr) = NULL;
+#define amFree(memPtr) if( (memPtr) != NULL ) Mfree(memPtr); (memPtr) = NULL;
 
 #endif // not extern mem functions
 

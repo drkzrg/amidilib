@@ -659,7 +659,7 @@ BOOL error=FALSE;
 sNktHd nktHead;
 
 #ifdef ENABLE_GEMDOS_IO
-S16 fh=GDOS_OK;
+S16 fh=GDOS_INVALID_HANDLE;
 #else
 FILE* file=0;
 #endif
@@ -668,14 +668,15 @@ FILE* file=0;
  if(pOutFileName){
       // create file header
       amTrace("Writing NKT file to: %s\n",pOutFileName);
+
       Nkt_CreateHeader(&nktHead, pSeq, bCompress);
 #ifdef ENABLE_GEMDOS_IO
       fh = Fcreate(pOutFileName, 0);
 
       if(fh<0){
-        amTrace("[GEMDOS] Couldn't create: %s file. Error: %s\n",pOutFileName,getGemdosError(fh));
+        amTrace("[GEMDOS] Couldn't create: %s file. Error: %s\n", pOutFileName, getGemdosError(fh));
+        return -1;
       }
-
 
       bytes_written+=Fwrite(fh, sizeof(sNktHd),&nktHead);
 
@@ -725,7 +726,7 @@ FILE* file=0;
 
        Fclose(fh); fh=GDOS_OK;
 
-       fprintf(stderr,"Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
+       printf("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
        amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
      }
 #else

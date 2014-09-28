@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+
 #include <mint/osbind.h>
 
 #ifdef ENABLE_GEMDOS_IO
@@ -42,7 +43,7 @@ static char buffer[OUTPUT_BUFFER_SIZE];
 #if (defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
 void logd(const char *mes,...){
 
-#if (defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_CONSOLE_OUTPUT))
+#if (defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_CONSOLE_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
     int bBytesNotSent=1;
     int bytesSent=0;
     int len=0;
@@ -53,12 +54,12 @@ void logd(const char *mes,...){
     vsprintf(buffer,(const char *)mes,va);
     va_end(va);
 
-#if (defined(DEBUG_CONSOLE_OUTPUT)||defined(DEBUG_SERIAL_OUTPUT))
+#if (defined(DEBUG_CONSOLE_OUTPUT)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
     len=strlen(buffer);
 #endif
 
 #ifdef DEBUG_CONSOLE_OUTPUT
-    fprintf(stderr,buffer);
+    if(len) printf(buffer);
 #endif
 
 #ifdef DEBUG_SERIAL_OUTPUT
@@ -75,9 +76,11 @@ void logd(const char *mes,...){
 
 #ifdef ENABLE_GEMDOS_IO
 
+if(len){
     if(Fwrite(fh,len,buffer)<0){
-        fprintf(stderr,"[GEMDOS] Error: %s\n",(const char *)getGemdosError(fh));
+        printf("[GEMDOS] Error: %s\n",getGemdosError(fh));
     }
+}
 
 #else
     fprintf(ofp,buffer);
@@ -117,11 +120,11 @@ void initDebug(const char *pFilename){
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=Fcreate(pFilename,S_WRITE);
+    fh=Fcreate(pFilename,0);
 
     if(fh<0){
-        fprintf(stderr,"Can't create debug file: %s\n",DEBUG_LOG);
-        fprintf(stderr,"[GEMDOS] Error: %s\n",getGemdosError(fh));
+        printf("Can't create debug file: %s\n",DEBUG_LOG);
+        printf("[GEMDOS] Error: %s\n",getGemdosError(fh));
     }
 
 #else
@@ -129,7 +132,7 @@ void initDebug(const char *pFilename){
     ofp=fopen(pFilename,"w");
 
     if(ofp==NULL){
-        fprintf(stderr,"Can't init file output: %s\n",DEBUG_LOG);
+        printf("Can't init file output: %s\n",DEBUG_LOG);
     }
 #endif
 

@@ -81,7 +81,7 @@ unsigned char* Midi_WriteTempo(unsigned char* buffer){
 }
 
 
-U8 MidiMap[] = {
+static const U8 MidiMap[] = {
     0,		//      prog change
     0,		//      bank sel
     1,      //2		// mod pot
@@ -151,7 +151,7 @@ header.dummy = LittleToNative( header.dummy );
 if (header.channels > MIDI_MAXCHANNELS - 1) {
 
 #ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr,"[Error] Too many channels, only 15 is supported.\n");
+    printf("[Error] Too many channels, only 15 is supported.\n");
 #endif
 
     amTrace("[Error] Too many channels, only 15 is supported.\n");
@@ -320,7 +320,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-       fprintf(stderr,"bytes written %d\n",*len);
+       printf("bytes written %d\n",*len);
 #endif
 
     amTrace("bytes written %d\n",*len);
@@ -328,7 +328,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
      if(pOutMidName){
 
 #ifndef SUPRESS_CON_OUTPUT
-       fprintf(stderr,"Writing MIDI output to file: %s\n", pOutMidName);
+       printf("Writing MIDI output to file: %s\n", pOutMidName);
 #endif
 
         amTrace("Writing MIDI output to file: %s\n", pOutMidName);
@@ -338,19 +338,21 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 
         if(fileHandle>0){
             S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
-            amTrace("Saved to file: [%d] bytes\n", bytesWritten);
+            amTrace("Saved to file: [%d] bytes to gemdos handle %d. \n", bytesWritten,fileHandle);
 
-            Fclose(fileHandle); fileHandle=GDOS_OK;
+            amTrace("Closing gemdos handle %d \n", fileHandle);
+            Fclose(fileHandle);
+            fileHandle=GDOS_INVALID_HANDLE;
 
-        #ifndef SUPRESS_CON_OUTPUT
-        fprintf(stderr,"Written %d bytes\n",bytes_written);
-        #endif
+#ifndef SUPRESS_CON_OUTPUT
+        printf("Written %d bytes\n",bytes_written);
+#endif
 
         amTrace("Written %d bytes\n",bytes_written);
 
         }else{
             #ifndef SUPRESS_CON_OUTPUT
-                fprintf(stderr,"[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
+                printf("[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
             #endif
 
             amTrace("[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
@@ -363,17 +365,17 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         fclose(file);
 
 #ifndef SUPRESS_CON_OUTPUT
-       fprintf(stderr,"Written %d bytes\n",bytes_written);
+       printf("Written %ld bytes\n",bytes_written);
 #endif
         amTrace("Written %d bytes\n",bytes_written);
 
 
 #endif
 
-      }
+      }// end of midi output file write
 
 #ifndef SUPRESS_CON_OUTPUT
-    fprintf(stderr, "Done. [OK]\n");
+    printf( "Done. [OK]\n");
 #endif
 
  amTrace("Done. OK\n");

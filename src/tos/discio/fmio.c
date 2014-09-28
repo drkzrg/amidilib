@@ -227,7 +227,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 
     amTrace("[GEMDOS] load file: %s\n",szFileName);
 
-    S16 fileHandle=GDOS_OK;
+    S16 fileHandle=GDOS_INVALID_HANDLE;
     _DTA *pDTA=NULL;
 
     fileHandle = Fopen( szFileName, S_READWRITE );
@@ -242,7 +242,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
     if(iRet==0){
 
     /* file found */
-	void *pData=NULL;
+    void *pData=NULL;
 	 
     *fileLenght=pDTA->dta_size;
 
@@ -257,11 +257,11 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 
       if(lRet<0){
             //GEMDOS ERROR TODO, display error for now
-            amTrace("[GEMDOS] Error: %s\n",getGemdosError(lRet));
+            amTrace("[GEMDOS] Error: %s\n",getGemdosError((S16)lRet));
       }else{
           /* not all data being read */
           if(lRet!=(*fileLenght)){
-            fprintf(stderr,(const char *)"Fatal error, unexpected end of file.\n");
+            printf((const char *)"Fatal error, unexpected end of file.\n");
             amTrace("[GEMDOS] Read error. Unexpected EOF.\n");
 
             /* so we have error, free up memory */
@@ -269,13 +269,13 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
           }
 
       }
-      Fclose((int)fileHandle);
+      Fclose(fileHandle);
       return (pData);
      }
      else
      {
       /*no memory available */
-      fprintf(stderr,(const char *)"Not enough memory to load file.\n");
+      printf("Not enough memory to load file.\n");
       amTrace("Not enough memory to load file.\n");
       return NULL;
      }
@@ -283,22 +283,21 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
       Fclose(fileHandle);
       /* file not found */
 
-      fprintf(stderr,(const char *)getGemdosError(fileHandle));
-      amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
+      printf("[GEMDOS] Error: %s\n", getGemdosError(fileHandle));
+      amTrace("[GEMDOS] Error: %s \n", getGemdosError(fileHandle));
       return NULL;
      }
     }else{
         /* print GEMDOS error code */
-        fprintf(stderr,(const char *)getGemdosError(fileHandle));
-        amTrace("[GEMDOS] Error: %s.\n",getGemdosError(fileHandle));
+        printf("[GEMDOS] Error: %s \n", getGemdosError(fileHandle));
+        amTrace("[GEMDOS] Error: %s \n",getGemdosError(fileHandle));
         return NULL;
     }
 }
 
 S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){
-S16 fileHandle=0L;
 
-    fileHandle = Fcreate( szFileName, 0 );
+  S16 fileHandle = Fcreate( szFileName, 0 );
     
     if(fileHandle>0){
 	 S32 iRet=0;
@@ -306,17 +305,17 @@ S16 fileHandle=0L;
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
        
      if(iRet==memBlockSize){
-        fprintf(stderr,"\n%s saved [%ld bytes written].\n",szFileName,iRet);
+        printf("\n%s saved [%ld bytes written].\n",szFileName,iRet);
       }else{
         /* print GEMDOS error code */
-        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+        printf("[GEMDOS] Error: %s\n", getGemdosError(fileHandle));
       }
 
       Fclose(fileHandle); 
       return 0L;   
     }else{
        /* print GEMDOS error code */
-        fprintf(stderr,(const char *)getGemdosError((S16)fileHandle));
+        printf("[GEMDOS] Error: %s\n", getGemdosError((S16)fileHandle));
 	return -1L;  
     }
  

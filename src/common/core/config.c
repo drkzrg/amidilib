@@ -104,7 +104,7 @@ U32 cfgLen=0;
   if(cfgData!=NULL){ 
     if(parseConfig(cfgData, cfgLen)<0){
       //not ok reset to defaults
-      printf("Invalid configuration. Resetting to defaults.\n");
+      printf("Invalid configuration. Reset to defaults.\n");
       setDefaultConfig();
     }else{
       printf("Configuration loaded.\n");
@@ -115,7 +115,8 @@ U32 cfgLen=0;
   }
   else{ 
     setDefaultConfig();
-    return -1L; //fuck up!
+    printf("Configuration couldn't be loaded. Setting defaults...\n");
+    return 0L; //fuck up!
   }
 }
 

@@ -17,9 +17,9 @@ sNktSeq *pNktSeq=0;
 S16 iError=0;
 
    if(argc>=1&&argv[1]!='\0'){
-        fprintf(stderr,"Trying to load %s\n",argv[1]);
+        printf("Trying to load %s\n",argv[1]);
     }else{
-        fprintf(stderr,"No specified nkt filename! exiting\n");
+        printf("No specified nkt filename! exiting\n");
         NktDeinit();
         return 0;
     }
@@ -28,23 +28,23 @@ S16 iError=0;
 
     switch(devType){
         case DT_LA_SOUND_SOURCE:{
-            fprintf(stderr,"Configuring MT-32 compatible midi device.\n");
+            printf("Configuring MT-32 compatible midi device.\n");
         }break;     /* native MT32 */
         case DT_LA_SOUND_SOURCE_EXT:{
-            fprintf(stderr,"Configuring extended MT-32 compatible midi device(CM-32L/CM-64).\n");
+            printf("Configuring extended MT-32 compatible midi device(CM-32L/CM-64).\n");
         }break;   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
         case DT_GS_SOUND_SOURCE:{
-             fprintf(stderr,"Configuring GS compatible midi device.\n");
+             printf("Configuring GS compatible midi device.\n");
         }break;       /* for pure GS/GM sound source */
         case DT_LA_GS_MIXED:{
-              fprintf(stderr,"Configuring GS compatible midi device with LA module.\n");
+              printf("Configuring GS compatible midi device with LA module.\n");
         }break;           /* if both LA/GS sound sources are available, like in CM-500 */
         case DT_MT32_GM_EMULATION:{
-              fprintf(stderr,"Configuring MT-32 compatible midi device with GM instrument patch set.\n");
+              printf("Configuring MT-32 compatible midi device with GM instrument patch set.\n");
         }break;     /* before loading midi data MT32 sound banks has to be patched */
         case DT_XG_GM_YAMAHA:
         default:{
-               fprintf(stderr,"Configuring Generic GM/GS compatible midi device.\n");
+               printf("Configuring Generic GM/GS compatible midi device.\n");
         }break;
     }
 
@@ -68,7 +68,7 @@ S16 iError=0;
         NktDeinit();
 
     }else{
-        fprintf(stderr,"Error: Loading %s failed.\n", argv[1]);
+        printf("Error: Loading %s failed.\n", argv[1]);
     }
 
   return 0;

@@ -133,7 +133,7 @@ if (conout_enable=="no"):
     print "Silent mode. Console output disabled."
     ST_CFLAGS=ST_CFLAGS + ' -DSUPRESS_CON_OUTPUT '
 
-if(gemdos_io_enable=="yes")
+if(gemdos_io_enable=="yes"):
     print "Use GEMDOS for file I/O not libc functions."
     ST_CFLAGS=ST_CFLAGS + ' -DENABLE_GEMDOS_IO '
 
@@ -239,10 +239,10 @@ Command("./include/midi2nkt.h", inc_dir+'midi2nkt.h', [ Delete("$TARGET"), Copy(
 # gemdos i/o
 gemdos_src=""
 
-if(gemdos_io_enable=="yes")
+if(gemdos_io_enable=="yes"):
     Command("./include/fmio.h", inc_dir+'fmio.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-    Command("./src/fmio.c", src_dir+'discio/fmio.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-    gemdos_src = "./src/fmio.c"
+    Command("./src/fmio.c", src_dir+'tos/discio/fmio.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+    gemdos_src = ["./src/fmio.c"]
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c"]

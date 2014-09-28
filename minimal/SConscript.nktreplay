@@ -130,7 +130,7 @@ if (tx_enable=="yes"):
 else:
     ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
 
-if(gemdos_io_enable=="yes")
+if(gemdos_io_enable=="yes"):
     print "Use GEMDOS for file I/O not libc functions."
     ST_CFLAGS=ST_CFLAGS + ' -DENABLE_GEMDOS_IO '
 
@@ -225,8 +225,16 @@ Command("./include/timing/mfp_m68k.inc", inc_dir+'timing/mfp_m68k.inc', [ Delete
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 lzo_src = ["./src/minilzo.c"]
 
+# gemdos i/o
+gemdos_src=""
+
+if(gemdos_io_enable=="yes"):
+    Command("./include/fmio.h", inc_dir+'fmio.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+    Command("./src/fmio.c", src_dir+'tos/discio/fmio.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+    gemdos_src = ["./src/fmio.c"]
+
 # build library
-env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + lzo_src)
+env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + lzo_src + gemdos_src)
 
 
 

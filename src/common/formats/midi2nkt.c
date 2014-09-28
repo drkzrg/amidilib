@@ -892,7 +892,7 @@ if(bCompressionEnabled!=FALSE){
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
-                    Fclose(fileHandle); fileHandle=-1;
+                    Fclose(fileHandle); fileHandle=GDOS_INVALID_HANDLE;
 #else
                     fclose(file); file=0;
 #endif
@@ -952,14 +952,17 @@ if(BufferInfo.pCompWrkBuf!=0){
 }
 
 #ifdef ENABLE_GEMDOS_IO
-    fileHandle=Fopen(pOutFileName,S_READWRITE);
+    fileHandle=Fopen(pOutFileName, S_READWRITE);
 
-    printf("[GEMDOS] File opened: %s, gemdos handle: %d. %s\n", pOutFileName, fileHandle);
-    amTrace("[GEMDOS] File opened: %s, gemdos handle: %d. %s\n", pOutFileName, fileHandle);
-
+    if(fileHandle>0){
+      printf("[GEMDOS] File opened: %s, gemdos handle: %d. %s\n", pOutFileName, fileHandle);
+      amTrace("[GEMDOS] File opened: %s, gemdos handle: %d. %s\n", pOutFileName, fileHandle);
+    }else{
+        printf("[GEMDOS] Couldn't open file: %s. Error: %s\n", pOutFileName, getGemdosError(fileHandle));
+    }
 
 #else
-    fseek(file,0,SEEK_SET);
+    file = fopen(pOutFileName, "w+);
 #endif
 
     // update header

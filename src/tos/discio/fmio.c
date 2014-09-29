@@ -269,7 +269,15 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
           }
 
       }
-      Fclose(fileHandle);
+
+      amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
+
+      S16 err=Fclose(fileHandle);
+
+      if(err!=GDOS_OK){
+        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+      }
+
       return (pData);
      }
      else
@@ -280,7 +288,14 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
       return NULL;
      }
     }else{
-      Fclose(fileHandle);
+      amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
+
+      S16 err=Fclose(fileHandle);
+
+      if(err!=GDOS_OK){
+        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+      }
+
       /* file not found */
 
       printf("[GEMDOS] Error: %s\n", getGemdosError(fileHandle));
@@ -311,7 +326,14 @@ S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize)
         printf("[GEMDOS] Error: %s\n", getGemdosError(fileHandle));
       }
 
-      Fclose(fileHandle); 
+     amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
+
+      S16 err=Fclose(fileHandle);
+
+      if(err!=GDOS_OK){
+        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+      }
+
       return 0L;   
     }else{
        /* print GEMDOS error code */

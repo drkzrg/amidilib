@@ -723,8 +723,13 @@ FILE* file=0;
        Fseek(0, fh, SEEK_SET);
        // update header
        Fwrite(fh, sizeof(sNktHd), &nktHead);
+       amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
 
-       Fclose(fh); fh=GDOS_OK;
+       S16 err=Fclose(fh);
+
+       if(err!=GDOS_OK){
+         amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+       }
 
        printf("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);
        amTrace("Stored %d event blocks, %lu kb(%lu bytes) of data.\n",nktHead.NbOfBlocks,nktHead.NbOfBytesData/1024,nktHead.NbOfBytesData);

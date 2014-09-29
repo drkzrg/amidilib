@@ -22,6 +22,7 @@
 U16 g_TD; //evil global!!!
 
 void Nkt_CreateHeader(sNktHd* header, const sMThd *pMidiHeader, const BOOL bCompress){
+
     WriteInt(&header->id,ID_NKT);
     WriteInt(&header->NbOfBlocks, 0);
     WriteShort(&header->division, pMidiHeader->division);
@@ -738,10 +739,10 @@ S16 fileHandle=GDOS_INVALID_HANDLE;
 FILE* file=0;
 #endif
 
-amMemSet(&BufferInfo,0,sizeof(sBufferInfo_t));
-amMemSet(&nktHead,0,sizeof(sNktHd));
+amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
+amMemSet(&nktHead, 0L, sizeof(sNktHd));
 
-if(pOutFileName==0||strlen(pOutFileName)==0){
+if(pOutFileName==0 || strlen(pOutFileName)==0){
     amTrace("Midi2Nkt() output file name is empty.\n");
     printf("Midi2Nkt() output file name is empty. \n");
 
@@ -759,7 +760,7 @@ if(pOutFileName==0||strlen(pOutFileName)==0){
    fileHandle=Fcreate(pOutFileName, 0);
 
    if(fileHandle>0){
-       amTrace("Create file, gemdos handle: %d",fileHandle);
+       amTrace("Create file, gemdos handle: %d\n",fileHandle);
 
        bytesWritten=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
 
@@ -892,7 +893,15 @@ if(bCompressionEnabled!=FALSE){
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
-                    Fclose(fileHandle); fileHandle=GDOS_INVALID_HANDLE;
+
+                    amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
+
+                    S16 err = Fclose(fileHandle);
+
+                    if(err!=GDOS_OK){
+                      amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+                    }
+
 #else
                     fclose(file); file=0;
 #endif
@@ -914,8 +923,10 @@ if(bCompressionEnabled!=FALSE){
                   }
 
 #else
+
                   file = fopen(pOutFileName, "wb");
                   fseek(file, sizeof(sNktHd),SEEK_SET);
+
 #endif
 
                   // store compressed block
@@ -945,11 +956,13 @@ if(bCompressionEnabled!=FALSE){
       amTrace("[LZO] Error: allocating temporary buffer failed\n");
     }
 
+    if(BufferInfo.pCompWrkBuf!=0){
+      amFree(BufferInfo.pCompWrkBuf);
+    }
+
+
 } //end compression
 
-if(BufferInfo.pCompWrkBuf!=0){
-  amFree(BufferInfo.pCompWrkBuf);
-}
 
 #ifdef ENABLE_GEMDOS_IO
     fileHandle=Fopen(pOutFileName, S_READWRITE);
@@ -962,7 +975,7 @@ if(BufferInfo.pCompWrkBuf!=0){
     }
 
 #else
-    file = fopen(pOutFileName, "w+");
+    file = fopen(pOutFileName, "w+b");
 #endif
 
     // update header
@@ -970,11 +983,23 @@ if(BufferInfo.pCompWrkBuf!=0){
     nktHead.NbOfBytesData = BufferInfo.bytes_written;
 
 #ifdef ENABLE_GEMDOS_IO
+    amTrace("[GEMDOS] NKT header update\n");
     U32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
-    Fclose(fileHandle); fileHandle=GDOS_OK;
+
+    if(writ!=sizeof(sNktHd)){
+        amTrace("[GEMDOS] Write error, expected: %d, written: %d\n", sizeof(sNktHd), writ);
+    }
+
+    amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
+    S16 err=Fclose(fileHandle);
+
+    if(err!=GDOS_OK){
+        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+    }
+
 #else
     U32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
-    fclose(file); file=0;
+    fclose(file);
 #endif
     amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
     printf("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);

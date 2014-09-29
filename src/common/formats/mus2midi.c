@@ -341,8 +341,11 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
             amTrace("Saved to file: [%d] bytes to gemdos handle %d. \n", bytesWritten,fileHandle);
 
             amTrace("Closing gemdos handle %d \n", fileHandle);
-            Fclose(fileHandle);
-            fileHandle=GDOS_INVALID_HANDLE;
+            S16 err=Fclose(fileHandle);
+
+            if(err!=GDOS_OK){
+              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+            }
 
 #ifndef SUPRESS_CON_OUTPUT
         printf("Written %d bytes\n",bytes_written);

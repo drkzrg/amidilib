@@ -408,7 +408,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         amTrace("Error: File %s isn't valid!/. Exiting...\n",pFilePath);
 
         #ifdef ENABLE_GEMDOS_IO
-            Fclose(fh); fh=-1;
+            amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+            S16 err=Fclose(fh);
+
+            if(err!=GDOS_OK){
+              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+            }
+
         #else
             fclose(fp); fp=0;
         #endif
@@ -430,7 +436,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
 
     #ifdef ENABLE_GEMDOS_IO
-        Fclose(fh); fh=-1;
+        amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+        S16 err=Fclose(fh);
+
+        if(err!=GDOS_OK){
+          amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+        }
+
     #else
         fclose(fp); fp=0;
     #endif
@@ -453,7 +465,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
 
             #ifdef ENABLE_GEMDOS_IO
-                Fclose(fh); fh=-1;
+                amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
+                S16 err=Fclose(fh);
+
+                if(err!=GDOS_OK){
+                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                }
+
             #else
                 fclose(fp); fp=0;
             #endif
@@ -474,7 +493,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
             #ifdef ENABLE_GEMDOS_IO
-                Fclose(fh); fh=-1;
+                amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
+                S16 err=Fclose(fh);
+
+                if(err!=GDOS_OK){
+                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                }
+
             #else
                 fclose(fp); fp=0;
             #endif
@@ -494,7 +520,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
 
             #ifdef ENABLE_GEMDOS_IO
-                Fclose(fh); fh=-1;
+                amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
+                S16 err=Fclose(fh);
+
+                if(err!=GDOS_OK){
+                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                }
+
             #else
                 fclose(fp); fp=0;
             #endif
@@ -524,7 +557,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
            destroyLinearBuffer(&(pNewSeq->dataBuffer));
 
            #ifdef ENABLE_GEMDOS_IO
-            Fclose(fh); fh=-1;
+            amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
+            S16 err=Fclose(fh);
+
+            if(err!=GDOS_OK){
+                amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+            }
+
            #else
             fclose(fp); fp=0;
            #endif
@@ -653,7 +693,12 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
-            Fclose(fh);fh=-1;
+            S16 err=Fclose(fh);
+
+            if(err!=GDOS_OK){
+              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+            }
+
 #else
             fclose(fp);fp=0;
 #endif
@@ -766,7 +811,14 @@ for (U32 i=0;i<pNewSeq->NbOfBlocks;++i){
 //
 
 #ifdef ENABLE_GEMDOS_IO
-Fclose(fh);fh=-1;
+
+    amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+    S16 err=Fclose(fh);
+
+    if(err!=GDOS_OK){
+        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+    }
+
 #else
 fclose(fp);fp=0;
 #endif

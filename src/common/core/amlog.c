@@ -129,7 +129,7 @@ void initDebug(const char *pFilename){
 
 #else
     ofp=NULL;
-    ofp=fopen(pFilename,"w");
+    ofp=fopen(pFilename,"w+b");
 
     if(ofp==NULL){
         printf("Can't init file output: %s\n",DEBUG_LOG);
@@ -148,7 +148,14 @@ void deinitDebug(){
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-    Fclose(fh);
+    amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
+    S16 err=Fclose(fh);
+
+    if(err!=GDOS_OK){
+      amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+    }
+
 #else
     fflush(ofp);
     fclose(ofp);

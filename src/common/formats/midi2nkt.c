@@ -962,7 +962,7 @@ if(BufferInfo.pCompWrkBuf!=0){
     }
 
 #else
-    file = fopen(pOutFileName, "w+);
+    file = fopen(pOutFileName, "w+");
 #endif
 
     // update header

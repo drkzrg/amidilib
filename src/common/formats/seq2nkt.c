@@ -674,8 +674,11 @@ FILE* file=0;
       fh = Fcreate(pOutFileName, 0);
 
       if(fh<0){
+
         amTrace("[GEMDOS] Couldn't create: %s file. Error: %s\n", pOutFileName, getGemdosError(fh));
         return -1;
+      }else{
+          amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fh);
       }
 
       bytes_written+=Fwrite(fh, sizeof(sNktHd),&nktHead);

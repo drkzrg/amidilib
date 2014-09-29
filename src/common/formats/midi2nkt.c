@@ -760,7 +760,7 @@ if(pOutFileName==0 || strlen(pOutFileName)==0){
    fileHandle=Fcreate(pOutFileName, 0);
 
    if(fileHandle>0){
-       amTrace("Create file, gemdos handle: %d\n",fileHandle);
+       amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
 
        bytesWritten=Fwrite(fileHandle,sizeof(sNktHd),&nktHead);
 

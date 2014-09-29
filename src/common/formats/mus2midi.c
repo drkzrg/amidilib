@@ -337,6 +337,8 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         S16 fileHandle = Fcreate(pOutMidName, 0);
 
         if(fileHandle>0){
+            amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
+
             S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
             amTrace("Saved to file: [%d] bytes to gemdos handle %d. \n", bytesWritten,fileHandle);
 

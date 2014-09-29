@@ -125,6 +125,8 @@ void initDebug(const char *pFilename){
     if(fh<0){
         printf("Can't create debug file: %s\n",DEBUG_LOG);
         printf("[GEMDOS] Error: %s\n",getGemdosError(fh));
+    }else{
+        printf("Init debug [%d]\n",fh);
     }
 
 #else
@@ -148,12 +150,12 @@ void deinitDebug(){
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-    amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+    printf("Deinit debug: [%d] \n", fh);
 
     S16 err=Fclose(fh);
 
     if(err!=GDOS_OK){
-      amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+      printf("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
     }
 
 #else

@@ -316,6 +316,7 @@ S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize)
     
     if(fileHandle>0){
 	 S32 iRet=0;
+     amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
 
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
        

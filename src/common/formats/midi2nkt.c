@@ -684,21 +684,30 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
         count=WriteVarLen((S32)delta, (U8 *)&VLQdeltaTemp);
 #ifdef ENABLE_GEMDOS_IO
-        amTrace("[WB]: ");
+        amTrace("Write block: \t");
 
         S32 bytesWritten = Fwrite(fileHandle,count,&VLQdeltaTemp);
-        amTrace("[%ld]",bytesWritten);
-        Fseek(bytesWritten,fileHandle,SEEK_CUR);
+
+        if(bytesWritten!=count){
+          amTrace("[WR] %ld bytes [W] %ld bytes\n",count, bytesWritten);
+        }
+
         pBufInfo->bytes_written+= bytesWritten;
 
         bytesWritten = Fwrite(fileHandle, sizeof(sNktBlk), &stBlock);
-        amTrace("[%ld]",bytesWritten);
-        Fseek(bytesWritten,fileHandle,SEEK_CUR);
+
+        if(bytesWritten!=sizeof(sNktBlk)){
+          amTrace("[WR] %ld bytes [W] %ld bytes\n",sizeof(sNktBlk), bytesWritten);
+        }
+
         pBufInfo->bytes_written+= bytesWritten;
 
         bytesWritten = Fwrite(fileHandle,stBlock.blockSize,&(pBufInfo->buffer[0]));;
-        amTrace("[%ld]\r\n",bytesWritten);
-        Fseek(bytesWritten,fileHandle,SEEK_CUR);
+
+        if(bytesWritten!=stBlock.blockSize){
+          amTrace("[WR] %ld bytes [W] %ld bytes\n",stBlock.blockSize, bytesWritten);
+        }
+
         pBufInfo->bytes_written+=bytesWritten;
 
 #else
@@ -716,7 +725,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 
       //clear buffer
       pBufInfo->bufPos=0;
-      amMemSet(&(pBufInfo->buffer[0]),0,OUT_BUFFER_SIZE);
+      amMemSet(&(pBufInfo->buffer[0]),0L,OUT_BUFFER_SIZE);
   }
 
  } /*end of decode events loop */
@@ -984,10 +993,12 @@ if(bCompressionEnabled!=FALSE){
 
 #ifdef ENABLE_GEMDOS_IO
     amTrace("[GEMDOS] NKT header update\n");
-    U32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
+    Fseek(0,fileHandle,SEEK_SET);
 
-    if(writ!=sizeof(sNktHd)){
-        amTrace("[GEMDOS] Write error, expected: %d, written: %d\n", sizeof(sNktHd), writ);
+    S32 writ=Fwrite(fileHandle, sizeof(sNktHd), &nktHead);
+
+    if(writ!=(S32)sizeof(sNktHd)){
+        amTrace("[GEMDOS] Write error to gemdos file handle [%d], expected: %d, written: %d\n", fileHandle,sizeof(sNktHd), writ);
     }
 
     amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);

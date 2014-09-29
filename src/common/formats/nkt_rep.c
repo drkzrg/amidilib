@@ -585,10 +585,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     if(tempHd.bPacked!=FALSE){
 
         #ifdef ENABLE_GEMDOS_IO
-            Fseek(0,fh,SEEK_SET);
-            Fseek(sizeof(sNktHd),fh,SEEK_SET);
+        S32 offset=Fseek(sizeof(sNktHd),fh,SEEK_SET);
+
+            if(offset<0){
+                amTrace("[GEMDOS] Fseek error, %s",getGemdosError((S16)offset));
+            }
+
         #else
-            fseek(fp,0,SEEK_SET);
             fseek(fp,sizeof(sNktHd),SEEK_SET);
         #endif
 
@@ -693,10 +696,12 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
+            amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
+
             S16 err=Fclose(fh);
 
             if(err!=GDOS_OK){
-              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+              amTrace("[GEMDOS] Error closing file handle : [%d], %s \n", fh, getGemdosError(err));
             }
 
 #else
@@ -741,7 +746,12 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
 #ifdef ENABLE_GEMDOS_IO
                 // rewind depending how many bytes were read from VLQ (size of former read - count of bytes read)
-                Fseek(-(sizeof(U32)-count),fh,SEEK_CUR);
+                S32 offset = Fseek(-(sizeof(U32)-count),fh,SEEK_CUR);
+
+                if(offset<0){
+                    amTrace("[GEMDOS] Fseek error, %s",getGemdosError((S16)offset));
+                }
+
 
                 // read msg block
                 read=Fread(fh, sizeof(sNktBlk), &blk);

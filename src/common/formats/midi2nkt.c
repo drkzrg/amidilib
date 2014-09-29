@@ -1002,11 +1002,14 @@ if(bCompressionEnabled!=FALSE){
     }
 
 #else
+    fseek(file,0,SEEK_SET);
+
     S32 writ=fwrite(&nktHead, 1, sizeof(sNktHd), file);
     amTrace("Writing nb of blocks %lu, bytes: %lu\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
 
     fclose(file);
 #endif
+
     amTrace("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
     printf("Saved %d event blocks, %lu kb(%lu bytes) of data.\n", nktHead.NbOfBlocks, nktHead.NbOfBytesData/1024, nktHead.NbOfBytesData);
 

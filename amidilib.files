@@ -102,3 +102,5 @@ gendoc.sh
 src/do.sh
 include/m68k_defs.inc
 minimal/SConscript.nktall
+src/common/formats/midiInfo.c
+include/nkt_util.h

@@ -8,8 +8,8 @@
 */
 
 #include "nkt.h"
+#include "nkt_util.h"
 #include "seq2nkt.h"
-
 #include "midi_cmd.h"
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
@@ -20,13 +20,6 @@
 #include <mint/osbind.h>
 #endif
 
-void Nkt_CreateHeader(sNktHd* header, const sSequence_t *pSeqData, const BOOL bCompress){
-    WriteInt(&header->id,ID_NKT);
-    WriteInt(&header->NbOfBlocks, 0);
-    WriteShort(&header->division, pSeqData->timeDivision);
-    WriteShort(&header->bPacked, bCompress);
-    WriteShort(&header->version, 1);
-}
 
 void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSize){
     // write data to out data block
@@ -153,7 +146,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         amTrace("Error: processSeqEvent() error not handled\n");
 
 #ifndef SUPRESS_CON_OUTPUT
-        sprintf(stderr,"Error: processSeqEvent() error not handled\n");
+        printf("Error: processSeqEvent() error not handled\n");
 #endif
 
         return;
@@ -185,7 +178,8 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, S16 
 static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file,U32 *blocksWritten, U32 *bytesWritten)
 #endif
 {
-
+//TODO
+    /*
     printf("Processing single track ...\n");
     U8 tempBuffer[32 * 1024]={0};
 
@@ -431,7 +425,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
         }; // end while
 
     }; //end while end of sequence
-
+*/
 
     return 0;
 }
@@ -653,7 +647,7 @@ U32 bytes_written = 0;
 U32 blocks_written = 0;
 BOOL error=FALSE;
 sNktHd nktHead;
-
+/*
 #ifdef ENABLE_GEMDOS_IO
 S16 fh=GDOS_INVALID_HANDLE;
 #else
@@ -697,8 +691,7 @@ FILE* file=0;
 #else
         handleSingleTrack(pSeq, bCompress,&file,&blocks_written,&bytes_written);
 #endif
-        nktHead.NbOfBlocks=blocks_written;
-        nktHead.NbOfBytesData=bytes_written;
+
     break;
     case ST_MULTI:
         // handle multi track sequence
@@ -707,8 +700,7 @@ FILE* file=0;
 #else
         handleMultiTrack(pSeq, bCompress,&file,&blocks_written,&bytes_written);
 #endif
-        nktHead.NbOfBlocks=blocks_written;
-        nktHead.NbOfBytesData=bytes_written;
+
     break;
 
     case ST_MULTI_SUB:
@@ -717,6 +709,12 @@ FILE* file=0;
     break;
     };
 
+    // update header info
+    nktHead.nbOfBlocks=blocks_written;
+    nktHead.eventsBlockBufSize=nktHead.nbOfBlocks*sizeof(sNktBlock_t);
+    nktHead.eventDataBufSize=bytes_written;
+
+       // update header
 #ifdef ENABLE_GEMDOS_IO
 
        if(fh>0){
@@ -754,7 +752,7 @@ FILE* file=0;
 
 
  if(error!=FALSE) return -1;
-
+*/
  return 0;
 }
 

@@ -84,7 +84,7 @@ static inline void *amMemCpy (void *pDest, void *pSrc,const tMEMSIZE iSize){
   return memcpy(pDest,pSrc,iSize);
 }
 
-static inline void *amMemSet ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
+static inline void *amMemSet ( void *pSrc, const S32 iCharacter,const tMEMSIZE iNum){
 void *pPtr=0;
 
   pPtr=memset(pSrc,iCharacter,iNum);

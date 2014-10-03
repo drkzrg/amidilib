@@ -96,9 +96,15 @@ U8 *filePath=0;
            printf("[ Please wait ] Converting MID to %s. Compress: %s\n",tempName,bEnableCompression?"YES":"NO");
 
            // convert
-           iError = Midi2Nkt(pMidi,tempName, bEnableCompression);
+           sNktSeq* pSeq = Midi2Nkt(pMidi,tempName, bEnableCompression);
 
-           //TODO: add errorcheck
+           if(pSeq){
+                // release sequence
+                destroySequence(pSeq);
+           }else{
+               printf("[MID->NKT] conversion error. Exiting.\n");
+           }
+
        }else{
            printf("File is not in MIDI 0 format. Exiting... \n");
        }
@@ -118,7 +124,7 @@ U8 *filePath=0;
 
 
 void printInfoScreen(){
-    printf("\n== MID / MUS to NKT converter v.1.1 =========\n");
+    printf("\n== MID / MUS to NKT converter v.1.2 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");
 }

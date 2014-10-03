@@ -11,10 +11,10 @@
 #include "c_vars.h"
 #include "memory/memory.h"
 
-//event linear buffer
+// event linear buffer
 typedef struct _LinearBuffer{
   U8 *pMemPtr;          // linear memory pointer start
-  U32 totalSize;	// total linear memory size in bytes
+  U32 totalSize;        // total linear memory size in bytes
   U32 offset;
   eMemoryFlag memType;  // memory type
 } tLinearBuffer;

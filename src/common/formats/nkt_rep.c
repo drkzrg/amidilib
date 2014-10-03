@@ -647,8 +647,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         // load decompressed data directly from file
 
         // load event block
+        tMEMSIZE amount = pNewSeq->eventsBlockBufferSize;
+
 #ifdef ENABLE_GEMDOS_IO
-         tMEMSIZE amount = pNewSeq->eventsBlockBufferSize;
 
          S32 read=Fread(fh,amount,(void *)pNewSeq->eventBlocksPtr);
 
@@ -659,12 +660,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          }
 
 #else
-;
+        fread((void *)pNewSeq->eventBlocksPtr,amount,1,fp);
 #endif
+
+        amount = pNewSeq->dataBufferSize;
 
         // load data block
 #ifdef ENABLE_GEMDOS_IO
-        amount = pNewSeq->dataBufferSize;
 
         read=Fread(fh,amount,(void *)pNewSeq->eventDataPtr);
 
@@ -674,7 +676,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             return NULL;
         }
 #else
-;
+        fread((void *)pNewSeq->eventDataPtr,amount,1,fp);
 #endif
     }
 
@@ -979,6 +981,43 @@ U8 getMidiMasterVolume(){;
 }
 
 
+U32 saveEventDataBlocks(S16 fh,sNktSeq *pSeq){
+ S32 written=0;
+        // save event block
+        amTrace("[MID2NKT] Saving event block.[%ld bytes] \n",pSeq->eventsBlockBufferSize);
+
+        written = Fwrite(fh,pSeq->eventsBlockBufferSize,(void *)pSeq->eventBlocksPtr);
+
+        if(written<pSeq->eventsBlockBufferSize){
+           amTrace("[GEMDOS]Fatal error: Events block write error, written: %ld , expected %ld bytes\n", written, pSeq->eventsBlockBufferSize);
+           amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+
+           return -1;
+        }else{
+            amTrace("[GEMDOS] written: %ld bytes\n", written);
+
+        }
+
+        // save data block
+        amTrace("[MID2NKT] Saving data block.[%ld bytes] \n",pSeq->dataBufferSize);
+
+        written=Fwrite(fh,pSeq->dataBufferSize,(void *)pSeq->eventDataPtr);
+
+        if(written<pSeq->dataBufferSize)
+        {
+           amTrace("[GEMDOS]Fatal error: Event data block write error, written: %ld , expected %ld bytes\n", written, pSeq->dataBufferSize);
+           amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+
+           return -1;
+        }else{
+            amTrace("[GEMDOS] written: %ld bytes\n", written);
+        }
+
+    return 0;
+}
+
+
+
 U32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompress){
 
 
@@ -1010,9 +1049,7 @@ setNktHeader(&nktHd, pSeq, bCompress);
      return -1;
  }
 
-
-
-     if(bCompress){
+     if(bCompress!=FALSE){
 
           amTrace("[MID2NKT] LZO compression ...\n");
 
@@ -1020,13 +1057,16 @@ setNktHeader(&nktHd, pSeq, bCompress);
          // allocate work buffers
          // compress data (events block, data block)
          // save header
-         // save compressed events block
-         // save compressed data block
 
-         // deallocate work buffers
-         // TODO
+          // deallocate work buffers
+          // TODO
 
-         return -1;
+          // write compressed data / event blocks
+          if(saveEventDataBlocks(fh,pSeq)<0){
+              return -1;
+          }
+
+         return 0;
      }else{
 
          S32 written=0;
@@ -1044,34 +1084,9 @@ setNktHeader(&nktHd, pSeq, bCompress);
              amTrace("[GEMDOS] written: %ld bytes\n", written);
          }
 
-         // save event block
-         amTrace("[MID2NKT] Saving event block.[%ld bytes] \n",pSeq->eventsBlockBufferSize);
-
-         written = Fwrite(fh,pSeq->eventsBlockBufferSize,(void *)pSeq->eventBlocksPtr);
-
-         if(written<pSeq->eventsBlockBufferSize){
-            amTrace("[GEMDOS]Fatal error: Events block write error, written: %ld , expected %ld bytes\n", written, pSeq->eventsBlockBufferSize);
-            amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
-
-            return -1;
-         }else{
-             amTrace("[GEMDOS] written: %ld bytes\n", written);
-
-         }
-
-         // save data block
-         amTrace("[MID2NKT] Saving data block.[%ld bytes] \n",pSeq->dataBufferSize);
-
-         written=Fwrite(fh,pSeq->dataBufferSize,(void *)pSeq->eventDataPtr);
-
-         if(written<pSeq->dataBufferSize)
-         {
-            amTrace("[GEMDOS]Fatal error: Event data block write error, written: %ld , expected %ld bytes\n", written, pSeq->dataBufferSize);
-            amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
-
-            return -1;
-         }else{
-             amTrace("[GEMDOS] written: %ld bytes\n", written);
+         // write data / event blocks
+         if(saveEventDataBlocks(fh,pSeq)<0){
+             return -1;
          }
 
      }
@@ -1103,6 +1118,7 @@ FILE *file;
 
  return 0;
 }
+
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq, const BOOL bCompress){
 

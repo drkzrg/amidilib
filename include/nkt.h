@@ -67,8 +67,10 @@ typedef struct NktSeq{
     U32 nbOfBlocks;            // nb of event blocks
     U32 currentBlockId;        // currently replayed block id 0-xxxx
 
-    U32 eventsBlockBufferSize; // nb of bytes used for event data buffer
-    U32 dataBufferSize;        // nb of bytes used for event data buffer
+    U32 eventsBlockBufferSize; // nb of bytes used for events buffer
+    U32 dataBufferSize;        // nb of bytes used for event's data buffer
+    BOOL bPacked;              // indicates if sequence is packed
+
     U8 *eventBlocksPtr;        // pointer to start of events block
     U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
     U8 *eventDataPtr;          // pointer to start of event's data block

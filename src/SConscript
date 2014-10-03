@@ -199,8 +199,7 @@ env['VASM_FLAGS'] = ST_VASM_FLAGS
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
-nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep.c","common/formats/nkt_rep_m68k.s"]
-
+nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
 midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 
@@ -229,19 +228,16 @@ ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
 nktReplay_src = ["../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = ["../demo/mid2nkt/mid2nkt.c"]
 
-##################### nkt replay code
-nkt_replay_src= ["common/formats/nkt_rep.c", "common/formats/nkt_rep_m68k.s", "common/roland/rol_ptch.c"]
-
-##################### nkt converters
-nkt_conv_src=["common/formats/midi2nkt.c","common/formats/mus2midi.c","common/core/c_vars.c","common/core/amlog.c","common/timing/miditim.c"]
+##################### nkt
+nkt_src=["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
 
 if (gemdos_io_enable=="yes"):
-    nkt_replay_src = nkt_replay_src + discio_src
+    nkt_src = nkt_src + discio_src
 
 # build test programs and link them with amidilib
 env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
 env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_replay_src) + env.Object(["common/core/c_vars.c","common/core/amlog.c"]) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
-env.Program(MID2NKT_EXE, [mid2nkt_src + env.Object(nkt_conv_src) + env.Object(discio_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
+env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);

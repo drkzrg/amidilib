@@ -192,6 +192,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 
 volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
+volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
 volatile static U8 MasterVolume;
 
@@ -239,7 +240,7 @@ void updateStepNkt(){
   if(sequenceState&NKT_PS_PLAYING){
 
       bStopped=FALSE;   // we replaying, so we have to reset this flag
-      U32 addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
+      addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
       U8 count=0;
 
       // read VLQ delta
@@ -248,7 +249,7 @@ void updateStepNkt(){
       pEventPtr+=count;
 
       // get event block
-      sNktBlock_t *nktBlk=(sNktBlock_t *)(pEventPtr);
+      nktBlk=(sNktBlock_t *)(pEventPtr);
 
       // track end?
       if(nktBlk->msgType&NKT_END||g_CurrentNktSequence->currentBlockId>=g_CurrentNktSequence->nbOfBlocks){
@@ -270,23 +271,31 @@ void updateStepNkt(){
          // tempo change ?
          if(nktBlk->msgType&NKT_TEMPO_CHANGE){
             // set new tempo
-            U32 tempoAddr=((U32)g_CurrentNktSequence->eventDataPtr)+nktBlk->bufferOffset;
-            U32 *pMidiDataStartAdr=(U32 *)(tempoAddr);
+            addr=((U32)g_CurrentNktSequence->eventDataPtr)+nktBlk->bufferOffset;
+            U32 *pMidiDataStartAdr=(U32 *)(addr);
 
             g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
             pMidiDataStartAdr++;
 
-            // get precalculated timestep
+            // get precalculated timestep from data buffer
             g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
 
             //next event
             g_CurrentNktSequence->eventsBlockOffset+=count;
             g_CurrentNktSequence->eventsBlockOffset+=sizeof(sNktBlock_t);
-
             ++(g_CurrentNktSequence->currentBlockId);
 
-            //nktBlk=(sNktBlock_t *)&(g_CurrentNktSequence->eventBlocksPtr[g_CurrentNktSequence->currentBlockId]);
-            return;
+            // get next event block
+            addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
+            U8 count=0;
+
+            // read VLQ delta
+            U8 *pEventPtr=(U8 *)(addr);
+            U32 currentDelta=readVLQ(pEventPtr,&count);
+            pEventPtr+=count;
+
+            // get event block
+            nktBlk=(sNktBlock_t *)(pEventPtr);
         }
 
          U32 *pMidiDataStartAdr=(U32 *)(((U32)g_CurrentNktSequence->eventDataPtr)+nktBlk->bufferOffset);

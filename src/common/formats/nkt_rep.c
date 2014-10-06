@@ -1062,15 +1062,107 @@ setNktHeader(&nktHd, pSeq, bCompress);
 
           amTrace("[MID2NKT] LZO compression ...\n");
 
-         // save header
-         // allocate work buffers
-         // compress data (events block, data block)
-         // save header
+         if(lzo_init()!=LZO_E_OK){
+           amTrace("Error: Could't initialise LZO library. \n");
+           return -1;
+         }
 
-          // deallocate work buffers
-          // TODO
+          amTrace("[LZO] init ok.\n");
 
-          // write compressed data / event blocks
+          // allocate work buffers
+          amTrace("[LZO] Allocating work buffer.\n");
+
+          lzo_voidp workMem=(lzo_voidp)amMallocEx(LZO1X_1_MEM_COMPRESS,PREFER_TT); // lzo work buffer
+
+          if(workMem!=0){
+
+              amMemSet(workMem,0,LZO1X_1_MEM_COMPRESS);
+
+              amTrace("[LZO] Compressing events block.\n");
+              tMEMSIZE tempBufSize=pSeq->eventsBlockBufferSize+pSeq->eventsBlockBufferSize/16;
+              lzo_bytep tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
+
+              if(tempBuffer==NULL){
+                  amTrace("[LZO] Error, no memory for events block output buffer.\n");
+
+                  // free work mem
+                  amFree(workMem);
+                  return -1;
+              }else{
+                  amMemSet(tempBuffer,0,tempBufSize);
+              }
+
+              // compress
+              lzo_uint nbBytesPacked=0;
+              if(lzo1x_1_compress(pSeq->eventBlocksPtr,pSeq->eventsBlockBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
+                    amTrace("[LZO] Event data compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
+
+                    //copy output buffer with packed data
+                    pSeq->eventsBlockBufferSize=nbBytesPacked;
+                    amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
+
+              }else{
+                 amTrace("[LZO] Error: Compression failed.\n");
+              }
+
+              amFree(tempBuffer);
+
+              amTrace("[LZO] Compressing data block.\n");
+              tempBufSize=pSeq->dataBufferSize+pSeq->dataBufferSize/16;
+              tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
+
+              if(tempBuffer==NULL){
+                  amTrace("[LZO] Error, no memory for data block output buffer.\n");
+
+                  // free work mem
+                  amFree(workMem);
+                  return -1;
+              }else{
+                  amMemSet(tempBuffer,0,tempBufSize);
+              }
+
+              // compress data block
+              nbBytesPacked=0;
+              if(lzo1x_1_compress(pSeq->eventDataPtr,pSeq->dataBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
+                    amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
+
+                    //copy output buffer with packed data
+                    pSeq->dataBufferSize=nbBytesPacked;
+                    amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
+
+              }else{
+                 amTrace("[LZO] Error: Compression failed.\n");
+              }
+
+              pSeq->bPacked=TRUE;
+
+              //copy output buffer with packed data to
+              amFree(tempBuffer);
+
+              // free work mem
+              amFree(workMem);
+
+          }else{
+              amTrace("[LZO] Error couldn't allocate compression work memory.\n");
+              return -1;
+          }
+
+          // save header
+          S32 written=0;
+
+          // save header
+          amTrace("[MID2NKT] Saving header... \n");
+          written=Fwrite(fh, sizeof(sNktHd), &nktHd);
+
+          if(written<sizeof(sNktHd)){
+             amTrace("[GEMDOS]Fatal error: Header write error, written: %ld, expected %ld\n", written, sizeof(sNktHd));
+             amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+             return -1;
+          }else{
+              amTrace("[GEMDOS] written: %ld bytes\n", written);
+          }
+
+          // write data / event blocks
           if(saveEventDataBlocks(fh,pSeq)<0){
               return -1;
           }
@@ -1078,8 +1170,9 @@ setNktHeader(&nktHd, pSeq, bCompress);
          return 0;
      }else{
 
-         S32 written=0;
          amTrace("[GEMDOS] Created file handle: %d\n",fh);
+
+         S32 written=0;
 
          // save header
          amTrace("[MID2NKT] Saving header... \n");

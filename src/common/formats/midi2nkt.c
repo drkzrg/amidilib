@@ -20,8 +20,6 @@
 #include "fmio.h"
 #endif
 
-U16 g_TD; //evil global!!!
-
 // from mparser.c
 U8  isMidiChannelEvent(U8 byteEvent){
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))

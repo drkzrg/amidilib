@@ -514,6 +514,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         if(pNewSeq->bPacked!=FALSE){
 
             lzo_voidp pPackedEvents=0;
+            lzo_voidp pPackedEventsSource=0;
             lzo_voidp pPackedData=0;
             lzo_uint newEventSize=0;
             lzo_uint newDataSize=0;
@@ -523,49 +524,88 @@ sNktSeq *loadSequence(const U8 *pFilePath){
               return NULL;
             }
 
-            lzo_voidp workMem=(lzo_voidp)amMallocEx(LZO1X_1_MEM_COMPRESS,PREFER_TT); // lzo work buffer
-
-
-            if(workMem!=0){
-
-                // read compressed blocks
-
                 // unpack them to temp buffers
 
                 amTrace("[LZO] Allocating temp events buffer\n");
-                pPackedEvents=(lzo_voidp)amMallocEx(pNewSeq->eventsBlockBufferSize+pNewSeq->eventsBlockBufferSize/16+64+3,PREFER_TT);
+                U32 amount = pNewSeq->eventsBlockBufferSize*4;
 
-                if(pPackedEvents!=NULL){
+                pPackedEvents=(lzo_voidp)amMallocEx(amount,PREFER_TT);
+                pPackedEventsSource=(lzo_voidp)amMallocEx(pNewSeq->eventsBlockBufferSize,PREFER_TT);
+
+                if(pPackedEvents!=NULL&&pPackedEventsSource!=NULL){
+
+                    amMemSet(pPackedEvents,0,amount);
+                    amMemSet(pPackedEventsSource,0,pNewSeq->eventsBlockBufferSize);
+
+                    // fill buffer with packed data
+
+#ifdef ENABLE_GEMDOS_IO
+
+
+                    S32 read = Fread(fh, pNewSeq->eventsBlockBufferSize, pPackedEventsSource);
+
+                     amTrace("[GEMDOS] Read events buffer data %lu \n",read);
+#else
+
+#error TODO
+
+#endif
                     amTrace("[LZO] Decompressing events block...\n");
+                    int decResult=lzo1x_decompress(pPackedEventsSource,read,pPackedEvents,&newEventSize,LZO1X_MEM_DECOMPRESS);
 
-                    if(lzo1x_decompress_safe(pPackedEvents,pNewSeq->eventsBlockBufferSize,pPackedEvents,&newEventSize,workMem) == LZO_E_OK){
+                    if( decResult == LZO_E_OK){
                         amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->eventsBlockBufferSize,newEventSize);
+                        pNewSeq->eventsBlockBufferSize=newEventSize;
+
+                        //create linear buffer
+                        //reeserve mem
+
+                        //TODO: copy depacked data
+                        amMemCpy(pNewSeq->eventBlocksPtr,pPackedEvents,newEventSize);
+
+                    }else{
+                        amTrace("[LZO] Error: Events block decompression error: %d at %ld\n",decResult,newEventSize);
                     }
 
-                    //TODO: copy depacked data
 
 
                     amFree(pPackedEvents);
                 }
 
                 amTrace("[LZO] Allocating temp data buffer\n");
-                pPackedData=(lzo_voidp)amMallocEx(pNewSeq->dataBufferSize+pNewSeq->dataBufferSize/16+64+3,PREFER_TT);
+                amount = pNewSeq->dataBufferSize+(pNewSeq->dataBufferSize/16)+64+3;
+                pPackedData=(lzo_voidp)amMallocEx(amount,PREFER_TT);
 
                 if(pPackedData!=NULL){
-                    amTrace("[LZO] Decompressing data block...\n");
+                    amMemSet(pPackedData,0,amount);
 
-                    if(lzo1x_decompress(pPackedData,pNewSeq->dataBufferSize,pPackedData,&newDataSize,workMem) == LZO_E_OK){
+#ifdef ENABLE_GEMDOS_IO
+                    amTrace("[GEMDOS] Read events data buffer\n");
+                    S32 read=Fread(fh,pNewSeq->dataBufferSize,pPackedData);
+#else
+#error TODO
+
+#endif
+
+
+                    amTrace("[LZO] Decompressing data block...\n");
+                    int decResult = lzo1x_decompress(pNewSeq->eventDataPtr,read,pPackedData,&newDataSize,LZO1X_MEM_DECOMPRESS);
+
+                    if( decResult == LZO_E_OK){
                         amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->dataBufferSize,newDataSize);
+
+                        pNewSeq->dataBufferSize=newDataSize;
+
+
+                    }else{
+                         amTrace("[LZO] Error: Data block decompression error: %d at %ld\n",decResult,newDataSize);
                     }
-                    //TODO: copy depacked data
+
 
                     amFree(pPackedData);
                 }
 
-            }else{
-                amTrace("[LZO] Error, no memory for work buffer...\n");
-                return NULL;
-            }
+
 
 
 
@@ -700,6 +740,18 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
      }
 
+   // read raw data if file isn't packed
+   if(pNewSeq->bPacked!=FALSE){
+        // copy depacked data to buffers
+        amMemCpy(pNewSeq->eventBlocksPtr,pPackedEvents,newEventSize);
+        amMemCpy(pNewSeq->dataBufferSize,pPackedEvents,newEventSize);
+
+        //free buffers
+
+   }
+
+   // read raw data if file isn't packed
+   if(pNewSeq->bPacked==FALSE){
      // load decompressed data directly from file
      // load event block
         tMEMSIZE amount = pNewSeq->eventsBlockBufferSize;
@@ -731,7 +783,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #else
         fread((void *)pNewSeq->eventDataPtr,amount,1,fp);
 #endif
-
+ }
 
 #ifdef LOAD_TEST
     amTrace("[LOAD TEST]\n");
@@ -1135,10 +1187,17 @@ setNktHeader(&nktHd, pSeq, bCompress);
               if(lzo1x_1_compress(pSeq->eventBlocksPtr,pSeq->eventsBlockBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
                     amTrace("[LZO] Event data compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
 
+                    /* check for an incompressible block */
+                    if (nbBytesPacked >= pSeq->eventsBlockBufferSize){
+                            amTrace("[LZO] Error: Event block contains incompressible data.\n");
+                        return -1;
+                    }
+
                     //copy output buffer with packed data
                     //TODO: shrink existing buffer somehow
 
                     pSeq->eventsBlockBufferSize=nbBytesPacked;
+                    nktHd.eventsBlockBufSize=nbBytesPacked;
                     amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
 
               }else{
@@ -1166,10 +1225,17 @@ setNktHeader(&nktHd, pSeq, bCompress);
               if(lzo1x_1_compress(pSeq->eventDataPtr,pSeq->dataBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
                     amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
 
+                    /* check for an incompressible block */
+                      if (nbBytesPacked >= pSeq->dataBufferSize){
+                            amTrace("[LZO] Error: Data block contains incompressible data.\n");
+                        return -1;
+                      }
+
                     //copy output buffer with packed data
                     //TODO: shrink existing buffer somehow
                     pSeq->dataBufferSize=nbBytesPacked;
-                    amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
+                    nktHd.eventDataBufSize=nbBytesPacked;
+                    amMemCpy(pSeq->eventDataPtr,tempBuffer,nbBytesPacked);
 
               }else{
                  amTrace("[LZO] Error: Compression failed.\n");

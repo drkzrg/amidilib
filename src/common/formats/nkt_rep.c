@@ -470,6 +470,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
    amTrace("td: %u ", tempHd.division);
    amTrace("packed: %s ", tempHd.bPacked?"YES":"NO");
 
+   lzo_voidp pPackedEvents=0;
+   lzo_voidp pPackedData=0;
+   lzo_uint newEventSize=0;
+   lzo_uint newDataSize=0;
+
 
    if( tempHd.nbOfBlocks==0 || tempHd.eventsBlockBufSize==0 || tempHd.eventDataBufSize==0 ){
 
@@ -513,11 +518,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
         if(pNewSeq->bPacked!=FALSE){
 
-            lzo_voidp pPackedEvents=0;
+
             lzo_voidp pPackedEventsSource=0;
-            lzo_voidp pPackedData=0;
-            lzo_uint newEventSize=0;
-            lzo_uint newDataSize=0;
+
 
             if(lzo_init()!=LZO_E_OK){
               amTrace("Error: Could't initialise LZO library. Cannot depack data. \n");
@@ -540,11 +543,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                     // fill buffer with packed data
 
 #ifdef ENABLE_GEMDOS_IO
-
-
                     S32 read = Fread(fh, pNewSeq->eventsBlockBufferSize, pPackedEventsSource);
-
-                     amTrace("[GEMDOS] Read events buffer data %lu \n",read);
+                    amTrace("[GEMDOS] Read events buffer data %lu \n",read);
 #else
 
 #error TODO
@@ -586,8 +586,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #error TODO
 
 #endif
-
-
                     amTrace("[LZO] Decompressing data block...\n");
                     int decResult = lzo1x_decompress(pNewSeq->eventDataPtr,read,pPackedData,&newDataSize,LZO1X_MEM_DECOMPRESS);
 
@@ -604,10 +602,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
                     amFree(pPackedData);
                 }
-
-
-
-
 
         }
 

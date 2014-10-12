@@ -35,7 +35,7 @@ typedef struct sRunningStatus{
 } sRunningStatus_t;
 
 // helper function for determining amount of memory we need for data / events buffers
-U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo);
+U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq, const BOOL bCompress);
 U32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompressed);

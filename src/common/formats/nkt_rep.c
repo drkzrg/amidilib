@@ -33,7 +33,7 @@ void getCurrentSequence(sNktSeq **pSeq){
 }
 
 
-// this is called when sequence ends in TiC callback
+// this is called when sequence ends
 static void onEndSequence(){
 
 if(g_CurrentNktSequence){
@@ -42,14 +42,10 @@ if(g_CurrentNktSequence){
     // set state to stopped
     // reset song position on all tracks
     g_CurrentNktSequence->sequenceState&=(U16)(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
-    am_allNotesOff(16);
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-  flushMidiSendBuffer();
-#endif
 
   }else{
     // loop
+
     g_CurrentNktSequence->sequenceState&=(U16)(~NKT_PS_PAUSED);
     g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
@@ -64,6 +60,16 @@ if(g_CurrentNktSequence){
   // reset all tracks state
   g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
+  am_allNotesOff(16);
+
+  // reset all controllers
+  for(U8 i=0;i<16;++i){
+    reset_all_controllers(i);
+  }
+
+  #ifdef IKBD_MIDI_SEND_DIRECT
+    flushMidiSendBuffer();
+  #endif
 
  }
 
@@ -544,7 +550,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
 #ifdef ENABLE_GEMDOS_IO
                     S32 read = Fread(fh, pNewSeq->eventsBlockBufferSize, pPackedEventsSource);
-                    amTrace("[GEMDOS] Read events buffer data %lu \n",read);
+
+                    if(read!=pNewSeq->eventsBlockBufferSize){
+                        amTrace("[GEMDOS] Error: read %lu, expected: %lu \n",read,pNewSeq->eventsBlockBufferSize);
+                    }else
+                        amTrace("[GEMDOS] Read events buffer data %lu \n",read);
 #else
 
 #error TODO
@@ -558,7 +568,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                         pNewSeq->eventsBlockBufferSize=newEventSize;
 
                         //create linear buffer
-                        //reeserve mem
+                        //reserve mem
 
                         //TODO: copy depacked data
                         amMemCpy(pNewSeq->eventBlocksPtr,pPackedEvents,newEventSize);
@@ -884,6 +894,7 @@ BOOL isSequencePlaying(void){
 void stopSequence(void){
  if(g_CurrentNktSequence!=0){
   U16 state=g_CurrentNktSequence->sequenceState;
+
   if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED)){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
 
@@ -895,6 +906,11 @@ void stopSequence(void){
 
     //all notes off
     am_allNotesOff(16);
+
+    // reset all controllers
+    for(U8 i=0;i<16;++i){
+        reset_all_controllers(i);
+    }
 
     #ifdef IKBD_MIDI_SEND_DIRECT
       Supexec(flushMidiSendBuffer);
@@ -1337,7 +1353,6 @@ void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq, const BOOL bCompress){
         header->version = NKT_VERSION;
 
         amTrace("Set header: event data buffer: %ld events block buffer: %ld\n", header->eventDataBufSize,header->eventsBlockBufSize);
-
 
     }
 }

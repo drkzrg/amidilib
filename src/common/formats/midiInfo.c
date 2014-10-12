@@ -325,7 +325,7 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
 }
 
 //
-U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo){
+U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT){
 
     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
     sChunkHeader *pTrackHd=0;
@@ -350,10 +350,11 @@ U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo){
      // process track events
      U32 delta=0L;
      S32 iError=0;
-     BOOL bEOF=FALSE;
      U8 *pCmd=(U8 *)startTrkPtr;
      U8 ubSize=0;
      sRunningStatus_t rs;
+
+     (*bEOT)=FALSE;
 
      // reset running status
      rs.runningStatus=0;
@@ -363,23 +364,24 @@ U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo){
      pBufInfo->dataBlockSize=0;
      pBufInfo->eventsBlockSize=0;
 
-     while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
+     while ( ((pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)&&(iError>=0)) ){
       /* read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
       pCmd+=ubSize;
 
-      iError=collectMidiEventInfo(delta, &pCmd, &rs, pBufInfo ,&bEOF);   // todo check error
+      iError=collectMidiEventInfo(delta, &pCmd, &rs, pBufInfo ,bEOT);   // todo check error
+
       U32 currentDelta = readVLQ(pCmd,&ubSize);
 
-      while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)){
+      while((currentDelta==0)&&(pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)&&(iError>=0)){
         pCmd+=ubSize;
-        iError=collectMidiEventInfo(0,&pCmd, &rs, pBufInfo,&bEOF);
+        iError=collectMidiEventInfo(0,&pCmd, &rs, pBufInfo,bEOT);
         currentDelta = readVLQ(pCmd,&ubSize);
       }
 
       if(pBufInfo->bufPos>0){
           U32 deltaVLQ=0;
-          pBufInfo->eventsBlockSize += WriteVarLen(delta, (U8 *)&deltaVLQ);;
+          pBufInfo->eventsBlockSize += WriteVarLen(delta, (U8 *)&deltaVLQ);
 
           // event block
           pBufInfo->eventsBlockSize+=sizeof(sNktBlock_t);

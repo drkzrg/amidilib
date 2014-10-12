@@ -15,20 +15,20 @@
 
 typedef enum{
     // play mode
-    NKT_PLAY_ONCE  = 0b00000001, // play once if set, loop otherwise
+    NKT_PLAY_ONCE  = (U16)(0b00000001), // play once if set, loop otherwise
 
     // track state
-    NKT_PS_PLAYING = 0b00000010, // playing if set, stopped otherwise
-    NKT_PS_PAUSED  = 0b00000100, // paused if set
+    NKT_PS_PLAYING = (U16)(0b00000010), // playing if set, stopped otherwise
+    NKT_PS_PAUSED  = (U16)(0b00000100), // paused if set
 }eNktTrackState;
 
 // custom binary midi replay format
 typedef enum{
-  NKT_MIDIDATA      = 0b00000001,
-  NKT_TEMPO_CHANGE  = 0b00000010,
-  NKT_JUMP          = 0b00000100,          //not used atm
-  NKT_TRIGGER       = 0b00001000,
-  NKT_END           = 0b00010000,
+  NKT_MIDIDATA      = (U16)(0b00000001),
+  NKT_TEMPO_CHANGE  = (U16)(0b00000010),
+  NKT_JUMP          = (U16)(0b00000100),          //not used atm
+  NKT_TRIGGER       = (U16)(0b00001000),
+  NKT_END           = (U16)(0b00010000),
   NKT_MAX_EVENT = 5
 } eNktMsgType;
 

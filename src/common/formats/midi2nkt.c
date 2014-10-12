@@ -406,7 +406,7 @@ while( (*(*pMidiData))!=EV_EOX){
 }
 
 
-U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, BOOL *bEOF){
+U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, BOOL *bEOT){
  U8 usSwitch=0;
  U8 ubSize=0;
  U32 iError=0;
@@ -464,7 +464,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
              case EV_META:
               amTrace("delta: %lu META\t", delta);
 
-              iError=processMetaEvent(delta, pCmd, pSeq, rs, bufferInfo, bEOF);
+              iError=processMetaEvent(delta, pCmd, pSeq, rs, bufferInfo, bEOT);
 
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
@@ -540,7 +540,7 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
  // process track events
  U32 delta=0L;
  S32 iError=0;
- BOOL bEOF=FALSE;
+ BOOL bEOT=FALSE;
  U8 *pCmd=(U8 *)startTrkPtr;
  U8 ubSize=0;
  sNktBlock_t stBlock;
@@ -555,19 +555,20 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
 tempBufInfo.eventsBlockOffset=0L;
 tempBufInfo.dataBlockOffset=0L;
 
- while ( ((pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)) ){
+ while ( ((pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)) ){
+
   /* read delta time, pCmd should point to the command data */
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
 
-  iError=processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq,&bEOF);   // todo check error
+  iError=processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, &bEOT);   // todo check error
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
 
-  while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOF!=TRUE)&&(iError>=0)){
+  while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)){
     pCmd+=ubSize;
 
-    iError=processMidiEvent(0,&pCmd, &rs, &tempBufInfo ,pSeq,&bEOF);
+    iError=processMidiEvent(0,&pCmd, &rs, &tempBufInfo ,pSeq,&bEOT);
 
     currentDelta = readVLQ(pCmd,&ubSize);
   }
@@ -622,6 +623,25 @@ tempBufInfo.dataBlockOffset=0L;
 
  } /*end of decode events loop */
 
+ if(bEOT==FALSE){
+        amTrace("EOT meta event not found, appending NKT_END event!\n");
+        amTrace("delta: %lu Meta End of Track\n", 0);
+
+        stBlock.msgType=NKT_END;
+        stBlock.blockSize=0;
+        stBlock.bufferOffset=0; //we don't mind
+
+        // write VLQ
+        U32 eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        S32 count=WriteVarLen((S32)0,(U8 *)pSeq->eventBlocksPtr);
+        tempBufInfo.eventsBlockOffset+=count;
+
+        // write event info block
+        eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
+        tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
+ }
+
     // OK
  return 0;
 }
@@ -631,20 +651,30 @@ sNktSeq *Midi2Nkt(void *pMidiData, const U8 *pOutFileName, const BOOL bCompress)
 sBufferInfo_t BufferInfo;
 sMidiTrackInfo_t MidiInfo;
 sNktSeq *pNewSeq=0;
+BOOL bEOT=FALSE;
 
 amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
 amMemSet(&MidiInfo, 0L, sizeof(sMidiTrackInfo_t));
 
-if(collectMidiTrackInfo(pMidiData,&MidiInfo)<0){
+if(collectMidiTrackInfo(pMidiData,&MidiInfo,&bEOT)<0){
     amTrace("[MIDI2NKT]  MIDI file parse error. Exiting...\n");
     printf("[MIDI2NKT]  MIDI file parse error. Exiting \n");
     return 0;
 }
 
+// special case if midi track data isn't properly terminated with EOT meta event
+// like mus files or some mid files
+
+if(bEOT==FALSE){
+    amTrace("No EOT in midi data found, adding EOT meta event...\n");
+    MidiInfo.eventsBlockSize += 1;
+    MidiInfo.eventsBlockSize+=sizeof(sNktBlock_t);
+    ++MidiInfo.nbOfBlocks;
+}
 amTrace("[Midi track info]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",MidiInfo.nbOfBlocks,MidiInfo.eventsBlockSize,MidiInfo.dataBlockSize);
 
-//now MidiInfo holds information about number of event blocks
-//and amount of bytes wee need to store midi data
+// now MidiInfo holds information about number of event blocks
+// and amount of bytes wee need to store midi data
 
 // reserve memory for sequence header
 pNewSeq = amMallocEx(sizeof(sNktSeq),PREFER_TT);

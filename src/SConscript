@@ -67,9 +67,9 @@ if ((target == "f030") or (target == "ataritt")):
     ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
     ST_LDFLAGS='-Wl,--traditional-format -lm'
     if(int(debug)==0):
-        ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -opt-speed -I../include'
+	ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -opt-speed -I../include'
     else:
-        ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
+	ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
 
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -82,7 +82,7 @@ elif (target == "atarist"):
     if(int(debug)==0):
         ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -opt-speed -I../include'
     else:
-        ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
+	ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
     EXE_EXT_2='.ttp'
@@ -94,7 +94,7 @@ elif (target == "ct60"):
     if(int(debug)==0):
         ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -opt-speed -I../include'
     else:
-        ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
+	ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
 
     ST_CCFLAGS =''
     EXE_EXT_1='.tos'
@@ -165,12 +165,13 @@ env['VASM'] = 'vasmm68k_mot'
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined
 # EVENT_LINEAR_BUFFER library uses custom memory pool for midi events instead of using standard memory allocation calls (per sequence file),
-# memory pool is configurable(see eventPoolSize/eventDataAllocatorSize)
+#		      memory pool is configurable(see eventPoolSize/eventDataAllocatorSize)
+# LZO_DEBUG enables LZO debug mode
 
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_FILE_OUTPUT' + ' -DLOAD_TEST'
   elif(int(debug)==2):
     ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
   elif(int(debug)==3):

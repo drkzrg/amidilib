@@ -1200,8 +1200,6 @@ setNktHeader(&nktHd, pSeq, bCompress);
                     }
 
                     // copy output buffer with packed data
-                    // TODO: shrink existing buffer somehow
-
                     pSeq->eventsBlockBufferSize=nbBytesPacked;
                     nktHd.eventsBlockBufSize=nbBytesPacked;
                     amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
@@ -1282,7 +1280,6 @@ setNktHeader(&nktHd, pSeq, bCompress);
               return -1;
           }
 
-         return 0;
      }else{
 
          amTrace("[GEMDOS] Created file handle: %d\n",fh);

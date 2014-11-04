@@ -459,7 +459,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             S16 err=Fclose(fh);
 
             if(err!=GDOS_OK){
-              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+              amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
             }
 
         #else
@@ -625,7 +625,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 S16 err=Fclose(fh);
 
                 if(err!=GDOS_OK){
-                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                  amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
                 }
 
             #else
@@ -656,7 +656,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 S16 err=Fclose(fh);
 
                 if(err!=GDOS_OK){
-                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                  amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
                 }
 
             #else
@@ -683,7 +683,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 S16 err=Fclose(fh);
 
                 if(err!=GDOS_OK){
-                  amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                  amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
                 }
 
             #else
@@ -723,7 +723,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             S16 err=Fclose(fh);
 
             if(err!=GDOS_OK){
-                amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+                amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
             }
 
            #else
@@ -834,7 +834,7 @@ while(blockNb<pNewSeq->nbOfBlocks){
     S16 err=Fclose(fh);
 
     if(err!=GDOS_OK){
-        amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+        amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
     }
 
 #else

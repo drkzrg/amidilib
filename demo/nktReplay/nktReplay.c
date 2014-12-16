@@ -39,6 +39,9 @@ S16 iError=0;
         case DT_LA_GS_MIXED:{
               printf("Configuring GS compatible midi device with LA module.\n");
         }break;           /* if both LA/GS sound sources are available, like in CM-500 */
+        case DT_GM_SOUND_SOURCE:{
+            printf("Configuring GM compatible midi device.\n");
+        }
         case DT_MT32_GM_EMULATION:{
               printf("Configuring MT-32 compatible midi device with GM instrument patch set.\n");
         }break;     /* before loading midi data MT32 sound banks has to be patched */
@@ -50,8 +53,6 @@ S16 iError=0;
 
     // set GS / GM source, channel
     NktInit(devType,1);
-
-    Supexec(flushMidiSendBuffer);
 
     pNktSeq=loadSequence(argv[1]);
 
@@ -76,11 +77,13 @@ S16 iError=0;
 
 void printInfoScreen(){
 
-  printf("\n===== NKT replay demo v.1.2 =============\n");
+  printf("\n===== NKT replay demo v.1.21 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
   printf("    [p] - play loaded tune\n");
   printf("    [r] - pause/unpause played sequence \n");
   printf("    [m] - toggle play once/loop mode\n");
+  printf("    [arrow up/down] - adjust master volume\n");
+  printf("    [arrow left/right] - adjust master balance\n");
   printf("    [i] - display tune info\n");
   printf("    [h] - show this help screen\n");
   printf("\n    [spacebar] - stop sequence replay \n");
@@ -151,6 +154,27 @@ void mainLoop(sNktSeq *pSequence){
            //displays help/startup screen
           printInfoScreen();
          }break;
+
+         // adjust master volume
+         case SC_ARROW_UP:{
+
+
+         }break;
+          case SC_ARROW_DOWN:{
+
+
+          }break;
+
+          // adjust balance
+          case SC_ARROW_LEFT:{
+
+
+          }break;
+          case SC_ARROW_RIGHT:{
+
+
+          }break;
+
 #ifdef MANUAL_STEP
           case SC_ENTER:{
 

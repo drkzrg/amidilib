@@ -470,18 +470,6 @@ S16 am_init(){
    // set appropriate channel
    // prepare device for receiving messages
    setupMidiDevice(getGlobalConfig()->connectedDeviceType,getGlobalConfig()->midiChannel);
-
-   //TODO: interrogate connected external module type
-   //check external module communication scheme
- /*if(getGlobalConfig()->handshakeModeEnabled){
-    
-    //display info 
-     //if timeout turn off handshake mode
-    //   for (U8 i=0;i<16;++i){
-    // getDeviceInfoResponse(i);
-    //    }
-    ;
- }*/
    
  return 1;
 }

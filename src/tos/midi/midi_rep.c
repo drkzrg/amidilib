@@ -134,6 +134,8 @@ if(g_CurrentSequence){
           pTrackState->playState|=TS_PS_PLAYING;
         }
 
+        // reset all controllers
+
         am_allNotesOff(16);
 
         for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){

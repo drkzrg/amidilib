@@ -5,7 +5,7 @@
 // resets the MT-32 to its default timbres
 static sSysEX_t mt32_Reset={8,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x7f,0x01,0xf7}};
 
-// reset GS SysEX
+// reset GS SysEX / enable GS mode
 static const sSysEX_t gs_Reset = {11,(U8 []){0xf0,0x41,0x10,0x42,0x12,0x40,0x00,0x7f,0x00,0x41,0xf7}};
 
 // official Roland SysEX patches
@@ -13,6 +13,10 @@ static const sSysEX_t arCM500AllPartsOn = {8,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x
 
 // for CM-500 mode B, for MT-32 emulation
 static const sSysEX_t arCM500AllPartsOff = {8,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x7f,0x01,0xf7}};
+
+// enable/disable GM
+static const sSysEX_t arEnableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
+static const sSysEX_t arDisableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
 
 // MT-32 setup data
@@ -163,6 +167,20 @@ void  allPartsOffCm500(){
   sendSysEX(&arCM500AllPartsOff);
 }
 
+void enableGM(const BOOL bEnable){
+    if(bEnable!=FALSE){
+        sendSysEX(&arEnableGM);
+    }else{
+        sendSysEX(&arDisableGM);
+    }
+
+}
+
+void enableGS(){
+    sendSysEX(&gs_Reset);
+}
+
+
 // Official Roland patch, sets MT32 timbres to be GM compatible
 void patchMT32toGM(const BOOL bStandardGMDrumset){
 
@@ -198,46 +216,74 @@ void MT32Reset(void){
 }
 
 void setupMidiDevice(eMidiDeviceType device, U8 channel){
+
     switch(device){
      case DT_LA_SOUND_SOURCE:{
-        MT32Reset();
         amTrace("\nSetting MT32 device on ch: %d\n", channel);
+        MT32Reset();
         program_change(channel, 1);
      } break;
 
      case DT_LA_SOUND_SOURCE_EXT:{
-       MT32Reset();
        amTrace("\nSetting MT32 ext device on ch: %d\n", channel);
+
+       MT32Reset();
        program_change(channel, 1);
      }break;
 
      case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
-        amTrace("\nSetting generic GM/GS device on ch: %d\n", channel);
+        amTrace("\nSetting GS device on ch: %d\n", channel);
+        enableGM(FALSE);
+        enableGS();
+
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
      break;
 
      case DT_LA_GS_MIXED:{           /* if both LA / GS sound sources are available, like in CM-500 mode A */
+        amTrace("\nSetting generic LA / GS device on ch: %d\n", channel);
+
+        enableGM(FALSE);
+        enableGS();
+
         // silence CM-32P part
         allPartsOffCm500();
-        amTrace("\nSetting generic GM/GS device on ch: %d\n", channel);
+
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
      }
+
+     case DT_GM_SOUND_SOURCE:{
+        amTrace("\nSetting GM device on ch: %d\n", channel);
+        enableGM(TRUE);
+
+        // no banks for GM devices
+        program_change(channel, 1);
+     }break;
+
      case DT_MT32_GM_EMULATION:{
         MT32Reset();
+
        /* before loading midi data MT32 sound banks has to be patched */
        patchMT32toGM(TRUE);
        program_change(channel, 1);
+
      }break;
      case DT_XG_GM_YAMAHA:
         //not supported yet
      default:{
-       amTrace("\nSetting generic GM/GS device on ch: %d\n",channel);
+       amTrace("\nSetting generic default on ch: %d\n",channel);
        control_change(C_BANK_SELECT, channel,0,0x00);
        program_change(channel, 1);
      }break;
+    };
 
+    // all notes off
+    am_allNotesOff(16);
+
+    // reset all controllers
+    for(U8 i=0;i<16;++i){
+        reset_all_controllers(i);
     }
 
  #ifdef IKBD_MIDI_SEND_DIRECT

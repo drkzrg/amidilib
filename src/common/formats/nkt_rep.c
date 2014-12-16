@@ -200,12 +200,12 @@ volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
-volatile static U8 MasterVolume;
-
 volatile static U8 currentMasterVolume;
 volatile static U8 requestedMasterVolume;
-volatile static U16 sequenceState;
+volatile static U8 currentMasterBalance;
+volatile static U8 requestedMasterBalance;
 
+volatile static U16 sequenceState;
 
 void updateStepNkt(){
 
@@ -897,7 +897,7 @@ void stopSequence(void){
 
   }
 
-    //all notes off
+    // all notes off
     am_allNotesOff(16);
 
     // reset all controllers
@@ -998,9 +998,11 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
     // set appropriate channel
     // prepare device for receiving messages
 
-     setupMidiDevice(devType,channel);
-     currentMasterVolume=64;
-     requestedMasterVolume=64;
+    currentMasterVolume=64;
+    requestedMasterVolume=64;
+
+    setupMidiDevice(devType,channel);
+
 
     //
 
@@ -1081,6 +1083,17 @@ void setMidiMasterVolume(U8 vol){
 U8 getMidiMasterVolume(){;
     return currentMasterVolume;
 }
+
+void setMidiMasterBalance(U8 vol){
+    if(vol<=127){
+        requestedMasterVolume=vol;
+    }
+}
+
+U8 getMidiMasterBalance(){;
+    return currentMasterVolume;
+}
+
 
 
 U32 saveEventDataBlocks(S16 fh,sNktSeq *pSeq){

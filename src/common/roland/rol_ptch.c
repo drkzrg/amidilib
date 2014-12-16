@@ -22,13 +22,13 @@ static sSysEX_t arSetMasterVolumeGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x01, 0
 static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x02, 0x00, 0x04, 0xF7}};       // ll=LSB, mm=MSB - use 0x00 0x40 (center)
 
 
-void setMasterVolume(U16 vol){
+void setMidiMasterVolume(U16 vol){
     arSetMasterVolumeGM.data[5]=(U8)((vol>>8)&0x00ff);
     arSetMasterVolumeGM.data[6]=(U8)(vol&0x00ff);
     sendSysEX(&arSetMasterVolumeGM);
 }
 
-void setMasterBalance(U16 bal){
+void setMidiMasterBalance(U16 bal){
     arSetMasterVolumeGM.data[5]=(U8)((bal>>8)&0x00ff);
     arSetMasterVolumeGM.data[6]=(U8)(bal&0x00ff);
     sendSysEX(&arSetMasterBalanceGM);
@@ -253,8 +253,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMasterBalance(0x0040); // center
-        setMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(0x0040); // center
+        setMidiMasterVolume(0x7f7f);  // full volume
 
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
@@ -266,8 +266,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMasterBalance(0x0040); // center
-        setMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(0x0040); // center
+        setMidiMasterVolume(0x7f7f);  // full volume
 
         // silence CM-32P part
         allPartsOffCm500();
@@ -280,8 +280,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         amTrace("\nSetting GM device on ch: %d\n", channel);
         enableGM(TRUE);
 
-        setMasterBalance(0x0040); // center
-        setMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(0x0040); // center
+        setMidiMasterVolume(0x7f7f);  // full volume
 
         // no banks for GM devices
         program_change(channel, 1);

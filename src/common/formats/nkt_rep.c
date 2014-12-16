@@ -1074,27 +1074,6 @@ const U8 *getEventTypeName(U16 type){
 }
 #endif
 
-void setMidiMasterVolume(U8 vol){
-    if(vol<=127){
-        requestedMasterVolume=vol;
-    }
-}
-
-U8 getMidiMasterVolume(){;
-    return currentMasterVolume;
-}
-
-void setMidiMasterBalance(U8 vol){
-    if(vol<=127){
-        requestedMasterVolume=vol;
-    }
-}
-
-U8 getMidiMasterBalance(){;
-    return currentMasterVolume;
-}
-
-
 
 U32 saveEventDataBlocks(S16 fh,sNktSeq *pSeq){
  S32 written=0;

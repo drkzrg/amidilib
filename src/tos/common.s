@@ -188,27 +188,59 @@ _super_off:
 
 customResetVector:
 
-        movem.l	d0-7/a0-a6,-(sp)
-        jsr     _newVectorHandler
-        movem.l	(sp)+,d0-7/a0-a6
+      movem.l	d0-7/a0-a6,-(sp)
+      move.w	#15*3,d1
+      move.l	#_midiResetData,a0
 
-        jsr    _oldVectorHandler
+.send:
+      ;slap data to d0
+      move.w	(a0)+,d0	;get word
+      move.w	d0,d2		;make copy
+      andi.w	#$FF00,d2
+      lsr.w	#8,d2
+.wait1:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait1		;no, wait!
+      move.b	d2,$fffffc06.w	;write to MIDI data register
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
 
-        rts    ; check if it shouldn't be rte
+      ;not done
+      move.w	d0,d2
+      andi.w	#$00FF,d2
+.wait2:
+      btst	#1,$fffffc04.w	;is data register empty?
+      beq.s	.wait2		;no, wait!
+      move.b	d2,$fffffc06.w	;write to MIDI data register
 
+      subq.w	#1,d1
+      cmpi.w	#0,d1
+      beq.s	.done
 
-;   installs reset handler
-_NktInstallResetHandler:
-        movem.l	d0-7/a0-a6,-(sp)
-        move.l #0,_newVectorHandler
-        move.l  $42a.w,_oldVectorHandler
-        move.l  customResetVector,$42a.w
-        move.l  #$31415926,$426.w
-        movem.l	(sp)+,d0-7/a0-a6
-        RTS
+      bra.s	.send
+
+.done:
+
+	move.l _oldVectorHandler, $42a.w
+	move.l _oldMagicVal, $426.w
+	movem.l	(sp)+,d0-7/a0-a6
+
+	jmp    (a6)			    ; no rte!
+
+; installs reset handler
+
+_installMidiResetHandler:
+
+	move.l	$426.w, _oldMagicVal
+	move.l  #$31415926, $426.w
+	move.l  $42a.w, _oldVectorHandler
+	move.l  #customResetVector,$42a.w
+	RTS
 
 ;########################## redirect output to serial		
 ; redirect to serial
+
 _redirectToSerial:
 	move.w #2,-(sp)
 	move.w #1,-(sp)
@@ -237,15 +269,19 @@ finishTimerIntPtr:      ds.l    1       ; for signalising end of interrupt funct
 isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single track replay is installed
 timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
 
-; only for TimerC based replay,
-midiIntCounter:        ds.w    1        ; counts 200hz ticks, at certain point value is reset and midi update function is called (used in TiC only)
+					; only for TimerC based replay
+midiIntCounter:		ds.w	1       ; counts 200hz ticks, at certain point value is reset and midi update function is called (used in TiC only)
 
 _MIDIbytesToSend:	ds.w	1	; nb of bytes to send
 _midiOutEnabled:	ds.l	1	;
 _ymOutEnabled:		ds.l	1	;
-_bTempoChanged:		ds.l	1
-_oldVectorHandler:      ds.l    1
-_newVectorHandler:      ds.l    1
+_bTempoChanged:		ds.l	1	;
+_oldMagicVal:		ds.l    1	;
 
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 
+			DATA
+			dc.b	"XBRARESV"
+_oldVectorHandler:      dc.l    0	;
+_newVectorHandler:	dc.l    0	;
+_midiResetData:		dc.b    $b0,$78,$00,$b1,$78,$00,$b2,$78,$00,$b3,$78,$00,$b4,$78,$00,$b5,$78,$00,$b6,$78,$00,$b7,$78,$00,$b8,$78,$00,$b9,$78,$00,$ba,$78,$00,$bb,$78,$00,$bc,$78,$00,$bd,$78,$00,$be,$78,$00,$bf,$78,$00

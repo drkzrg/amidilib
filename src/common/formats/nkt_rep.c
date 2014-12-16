@@ -967,13 +967,13 @@ void switchReplayMode(void){
   }
 }
 
-extern void NktInstallResetHandler(U32 resetHandlerAddr);
+extern void installMidiResetHandler();
 
 void NktInit(const eMidiDeviceType devType, const U8 channel){
 
     initDebug("NKTLOG.LOG");
 
-    NktInstallResetHandler(&resetMidiDevice);
+    Supexec(installMidiResetHandler);
 
     // now depending on the connected device type and chosen operation mode
     // set appropriate channel

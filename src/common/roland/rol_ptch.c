@@ -18,6 +18,23 @@ static const sSysEX_t arCM500AllPartsOff = {8,(U8 []){0xf0,0x41,0x10,0x16,0x12,0
 static const sSysEX_t arEnableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
 static const sSysEX_t arDisableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
+static sSysEX_t arSetMasterVolumeGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x01, 0x7f, 0x7f, 0xf7}};        // ll=LSB, mm=MSB - use 0x7F 0x7F
+static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x02, 0x00, 0x04, 0xF7}};       // ll=LSB, mm=MSB - use 0x00 0x40 (center)
+
+
+void setMasterVolume(U16 vol){
+    arSetMasterVolumeGM.data[5]=(U8)((vol>>8)&0x00ff);
+    arSetMasterVolumeGM.data[6]=(U8)(vol&0x00ff);
+    sendSysEX(&arSetMasterVolumeGM);
+}
+
+void setMasterBalance(U16 bal){
+    arSetMasterVolumeGM.data[5]=(U8)((bal>>8)&0x00ff);
+    arSetMasterVolumeGM.data[6]=(U8)(bal&0x00ff);
+    sendSysEX(&arSetMasterBalanceGM);
+}
+
+
 
 // MT-32 setup data
 // MTGM basic setup file with 64 new sounds and a new patchmap
@@ -236,6 +253,9 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
+        setMasterBalance(0x0040); // center
+        setMasterVolume(0x7f7f);  // full volume
+
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
      break;
@@ -245,6 +265,9 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
         enableGM(FALSE);
         enableGS();
+
+        setMasterBalance(0x0040); // center
+        setMasterVolume(0x7f7f);  // full volume
 
         // silence CM-32P part
         allPartsOffCm500();
@@ -256,6 +279,9 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
      case DT_GM_SOUND_SOURCE:{
         amTrace("\nSetting GM device on ch: %d\n", channel);
         enableGM(TRUE);
+
+        setMasterBalance(0x0040); // center
+        setMasterVolume(0x7f7f);  // full volume
 
         // no banks for GM devices
         program_change(channel, 1);

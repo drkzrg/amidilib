@@ -32,6 +32,20 @@ void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
+static inline void resetMidiDevice(){
+
+    am_allNotesOff(16);
+
+    // reset all controllers
+    for(U8 i=0;i<16;++i){
+      reset_all_controllers(i);
+    }
+
+    #ifdef IKBD_MIDI_SEND_DIRECT
+      flushMidiSendBuffer();
+    #endif
+
+}
 
 // this is called when sequence ends
 static void onEndSequence(){
@@ -60,16 +74,7 @@ if(g_CurrentNktSequence){
   // reset all tracks state
   g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
-  am_allNotesOff(16);
-
-  // reset all controllers
-  for(U8 i=0;i<16;++i){
-    reset_all_controllers(i);
-  }
-
-  #ifdef IKBD_MIDI_SEND_DIRECT
-    flushMidiSendBuffer();
-  #endif
+  resetMidiDevice();
 
  }
 
@@ -145,8 +150,6 @@ if(pSeq!=0){
     pSeq->sequenceState = initialState;
 
 
-    setMidiMasterVolume(64);
-
 #ifdef IKBD_MIDI_SEND_DIRECT
     Supexec(clearMidiOutputBuffer);
 #endif
@@ -200,10 +203,10 @@ volatile static BOOL bStopped=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
-volatile static U8 currentMasterVolume;
-volatile static U8 requestedMasterVolume;
-volatile static U8 currentMasterBalance;
-volatile static U8 requestedMasterBalance;
+volatile U8 currentMasterVolume;
+volatile U8 requestedMasterVolume;
+volatile U8 currentMasterBalance;
+volatile U8 requestedMasterBalance;
 
 volatile static U16 sequenceState;
 
@@ -212,26 +215,6 @@ void updateStepNkt(){
  if(g_CurrentNktSequence==0) return;
 
  sequenceState=g_CurrentNktSequence->sequenceState;
-
-/* if(currentMasterVolume!=requestedMasterVolume){
-     currentMasterVolume=requestedMasterVolume;
-
-     // send master volume data
-     U8 setMasterVolMsg[8]={0xF0,0x7F,0x7F,0x04,0x01,0x00,0x00,0xF7};
-
-     setMasterVolMsg[5]=currentMasterVolume&0x0f; // 0xLL  Bits 0 to 6 of a 14-bit volume
-     setMasterVolMsg[6]=currentMasterVolume&0xf0; // 0xMM  Bits 7 to 13 of a 14-bit volume
-
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[0];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[1];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[2];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[3];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[4];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[5];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[6];
-     MIDIsendBuffer[MIDIbytesToSend++]=setMasterVolMsg[7];
-
- }*/
 
  //check sequence state if paused do nothing
  if(sequenceState&NKT_PS_PAUSED){
@@ -347,6 +330,9 @@ void updateStepNkt(){
 
       //rewind to the first event
       g_CurrentNktSequence->currentBlockId=0;
+
+      resetMidiDevice();
+
     }
    return;
   }
@@ -897,17 +883,8 @@ void stopSequence(void){
 
   }
 
-    // all notes off
-    am_allNotesOff(16);
+    resetMidiDevice();
 
-    // reset all controllers
-    for(U8 i=0;i<16;++i){
-        reset_all_controllers(i);
-    }
-
-    #ifdef IKBD_MIDI_SEND_DIRECT
-      Supexec(flushMidiSendBuffer);
-    #endif
   }
 }
 
@@ -998,18 +975,14 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
     // set appropriate channel
     // prepare device for receiving messages
 
-    currentMasterVolume=64;
-    requestedMasterVolume=64;
-
     setupMidiDevice(devType,channel);
-
-
-    //
-
 }
 
 
 void NktDeinit(){
+
+    stopSequence(); //just in case
+
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
     Supexec(flushMidiSendBuffer);

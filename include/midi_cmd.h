@@ -14,6 +14,9 @@
 #include "midi_send.h"
 #include "events.h"
 
+#define MIDI_DEFAULT_MB     64
+#define MIDI_DEFAULT_MVOL   32639
+
 #ifndef IKBD_MIDI_SEND_DIRECT
 /* small static buffer for sending MIDI commands */
 static U8 g_midi_cmd_buffer[4];

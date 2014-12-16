@@ -232,7 +232,18 @@ void MT32Reset(void){
  sendSysEX(&mt32_Reset);
 }
 
+extern volatile U8 currentMasterVolume;
+extern volatile U8 requestedMasterVolume;
+extern volatile U8 currentMasterBalance;
+extern volatile U8 requestedMasterBalance;
+
 void setupMidiDevice(eMidiDeviceType device, U8 channel){
+
+    currentMasterVolume=MIDI_DEFAULT_MVOL;
+    requestedMasterVolume=MIDI_DEFAULT_MVOL;
+
+    currentMasterBalance=MIDI_DEFAULT_MB;
+    requestedMasterBalance=MIDI_DEFAULT_MB;
 
     switch(device){
      case DT_LA_SOUND_SOURCE:{
@@ -245,6 +256,7 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
        amTrace("\nSetting MT32 ext device on ch: %d\n", channel);
 
        MT32Reset();
+
        program_change(channel, 1);
      }break;
 
@@ -253,8 +265,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMidiMasterBalance(0x0040); // center
-        setMidiMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(MIDI_DEFAULT_MB);      // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);     // full volume
 
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
@@ -266,8 +278,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMidiMasterBalance(0x0040); // center
-        setMidiMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(MIDI_DEFAULT_MB);   // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);  // full volume
 
         // silence CM-32P part
         allPartsOffCm500();
@@ -280,8 +292,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         amTrace("\nSetting GM device on ch: %d\n", channel);
         enableGM(TRUE);
 
-        setMidiMasterBalance(0x0040); // center
-        setMidiMasterVolume(0x7f7f);  // full volume
+        setMidiMasterBalance(MIDI_DEFAULT_MB); // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);  // full volume
 
         // no banks for GM devices
         program_change(channel, 1);

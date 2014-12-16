@@ -32,7 +32,7 @@ void getCurrentSequence(sNktSeq **pSeq){
   *pSeq=g_CurrentNktSequence;
 }
 
-static inline void resetMidiDevice(){
+static void resetMidiDevice(){
 
     am_allNotesOff(16);
 
@@ -967,9 +967,13 @@ void switchReplayMode(void){
   }
 }
 
+extern void NktInstallResetHandler(U32 resetHandlerAddr);
+
 void NktInit(const eMidiDeviceType devType, const U8 channel){
 
     initDebug("NKTLOG.LOG");
+
+    NktInstallResetHandler(&resetMidiDevice);
 
     // now depending on the connected device type and chosen operation mode
     // set appropriate channel

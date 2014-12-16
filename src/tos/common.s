@@ -186,6 +186,27 @@ _super_off:
 	movem.l	(sp)+,d0-7/a0-a6 
 	RTS
 
+customResetVector:
+
+        movem.l	d0-7/a0-a6,-(sp)
+        jsr     _newVectorHandler
+        movem.l	(sp)+,d0-7/a0-a6
+
+        jsr    _oldVectorHandler
+
+        rts    ; check if it shouldn't be rte
+
+
+;   installs reset handler
+_NktInstallResetHandler:
+        movem.l	d0-7/a0-a6,-(sp)
+        move.l #0,_newVectorHandler
+        move.l  $42a.w,_oldVectorHandler
+        move.l  customResetVector,$42a.w
+        move.l  #$31415926,$426.w
+        movem.l	(sp)+,d0-7/a0-a6
+        RTS
+
 ;########################## redirect output to serial		
 ; redirect to serial
 _redirectToSerial:
@@ -223,5 +244,8 @@ _MIDIbytesToSend:	ds.w	1	; nb of bytes to send
 _midiOutEnabled:	ds.l	1	;
 _ymOutEnabled:		ds.l	1	;
 _bTempoChanged:		ds.l	1
+_oldVectorHandler:      ds.l    1
+_newVectorHandler:      ds.l    1
+
 _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 

@@ -39,6 +39,8 @@ AUTO_INT_ENABLE		equ	0	;enable auto end of interrupt mode
     xdef _bTempoChanged		;flags indicating tempo and time signature change
     xdef _NktMidiUpdateHook     ;nkt replay midi update hook to insert into system Timer C interrupt (200Hz)
 
+    xdef _NktInstallResetHandler ;adds custom reset handler
+
 ;timer related, internal data
 ; TiB
     xdef stopTiB

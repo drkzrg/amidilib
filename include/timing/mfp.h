@@ -45,8 +45,9 @@ extern void installReplayRoutGeneric(U8 mode,U8 data,VOIDFUNCPTR func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRoutGeneric(void);
-/* ***** */
 
+extern void
+/* ***** */
 /* calculates settings for MFP timers for given frequency of tick */
 static const U8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
 

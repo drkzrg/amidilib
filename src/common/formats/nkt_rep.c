@@ -42,7 +42,7 @@ static void resetMidiDevice(){
     }
 
     #ifdef IKBD_MIDI_SEND_DIRECT
-      flushMidiSendBuffer();
+      Supexec(flushMidiSendBuffer);
     #endif
 
 }
@@ -200,6 +200,7 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 #endif
 
 volatile static BOOL bStopped=FALSE;
+volatile static BOOL bPaused=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
@@ -217,17 +218,24 @@ void updateStepNkt(){
  sequenceState=g_CurrentNktSequence->sequenceState;
 
  //check sequence state if paused do nothing
- if(sequenceState&NKT_PS_PAUSED){
-    am_allNotesOff(16);
+ if((sequenceState&NKT_PS_PAUSED)){
 
-    #ifdef IKBD_MIDI_SEND_DIRECT
-        flushMidiSendBuffer();
-    #endif
+     if(bPaused==FALSE){
+        bPaused=TRUE;
+        bStopped=FALSE;
+
+        // all notes off but only once
+        am_allNotesOff(16);
+
+        #ifdef IKBD_MIDI_SEND_DIRECT
+             Supexec(flushMidiSendBuffer);
+        #endif
+     }
     return;
   }
 
-  if(sequenceState&NKT_PS_PLAYING){
-
+  if((sequenceState&NKT_PS_PLAYING)){
+      bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
       addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
       U8 count=0;
@@ -897,17 +905,9 @@ void pauseSequence(){
            g_CurrentNktSequence->sequenceState&=(~NKT_PS_PLAYING);
            g_CurrentNktSequence->sequenceState|=NKT_PS_PAUSED;
 
-           // all notes off
-           am_allNotesOff(16);
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-           Supexec(flushMidiSendBuffer);
-#endif
-
 #ifndef SUPRESS_CON_OUTPUT
            printf("Pause sequence\n");
 #endif
-
            return;
           }else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
             g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
@@ -984,13 +984,6 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
 
 
 void NktDeinit(){
-
-    stopSequence(); //just in case
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-    // send content of midi buffer to device
-    Supexec(flushMidiSendBuffer);
-#endif
 
     deinitDebug();
 }

@@ -127,8 +127,8 @@ void pauseSequence();
 void playSequence(void);
 void switchReplayMode(void);
 
-void setMidiMasterVolume(U16 vol);
-void setMidiMasterBalance(U16 bal);
+void setMidiMasterVolume(U8 vol);
+void setMidiMasterBalance(U8 bal);
 
 U8 getMidiMasterVolume();
 U8 getMidiMasterBalance();

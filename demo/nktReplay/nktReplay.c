@@ -12,11 +12,17 @@ void printInfoScreen();
 
 void mainLoop(sNktSeq *pSequence);
 
+U8 _midiMasterVolume;
+U8 _midiMasterBalance;
+
 int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
 S16 iError=0;
 
-   if(argc>=1&&argv[1]!='\0'){
+_midiMasterVolume=127/2;
+_midiMasterBalance=64;
+
+    if(argc>=1&&argv[1]!='\0'){
         printf("Trying to load %s\n",argv[1]);
     }else{
         printf("No specified nkt filename! exiting\n");
@@ -53,6 +59,10 @@ S16 iError=0;
 
     // set GS / GM source, channel
     NktInit(devType,1);
+
+
+    setMidiMasterVolume(_midiMasterVolume);
+    setMidiMasterBalance(_midiMasterBalance);
 
     pNktSeq=loadSequence(argv[1]);
 
@@ -153,26 +163,44 @@ void mainLoop(sNktSeq *pSequence){
          }break;
         case SC_H:{
            //displays help/startup screen
-          printInfoScreen();
+            printInfoScreen();
          }break;
 
          // adjust master volume
          case SC_ARROW_UP:{
 
+              if(_midiMasterVolume<127){
+                  ++_midiMasterVolume;
+                  setMidiMasterVolume(_midiMasterVolume);
+                  printf("[Master Volume]: %d \n", _midiMasterVolume);
+              }
 
          }break;
           case SC_ARROW_DOWN:{
 
+              if(_midiMasterVolume>0){
+                --_midiMasterVolume;
+                setMidiMasterVolume(_midiMasterVolume);
+                printf("[Master Volume]: %d \n", _midiMasterVolume);
+              }
 
           }break;
 
           // adjust balance
           case SC_ARROW_LEFT:{
-
+              if(_midiMasterBalance>0){
+                  --_midiMasterBalance;
+                  setMidiMasterBalance(_midiMasterBalance);
+                  printf("<< [Master Pan]: %d \n", _midiMasterBalance);
+              }
 
           }break;
           case SC_ARROW_RIGHT:{
-
+              if(_midiMasterBalance<127){
+                  ++_midiMasterBalance;
+                  setMidiMasterBalance(_midiMasterBalance);
+                  printf("[Master Pan] >>: %d \n", _midiMasterBalance);
+              }
 
           }break;
 

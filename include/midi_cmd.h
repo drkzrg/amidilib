@@ -14,8 +14,14 @@
 #include "midi_send.h"
 #include "events.h"
 
-#define MIDI_DEFAULT_MB     64
-#define MIDI_DEFAULT_MVOL   32639
+#define MIDI_MASTER_VOL_MAX    127
+#define MIDI_MASTER_VOL_MIN    0
+
+#define MIDI_MASTER_PAN_MAX    127
+#define MIDI_MASTER_PAN_CENTER 64
+#define MIDI_MASTER_PAN_MIN    0
+
+#define MIDI_DEFAULT_MVOL   (127/2)
 
 #ifndef IKBD_MIDI_SEND_DIRECT
 /* small static buffer for sending MIDI commands */
@@ -42,6 +48,8 @@ amTrace("Send SysEx size: %lu \n",pMsg->size);
 #ifdef IKBD_MIDI_SEND_DIRECT
  amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
  MIDIbytesToSend+=pMsg->size;
+
+
  Supexec(flushMidiSendBuffer);
 #else
     MIDI_SEND_DATA(pMsg->size,pMsg->data);

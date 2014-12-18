@@ -18,23 +18,26 @@ static const sSysEX_t arCM500AllPartsOff = {8,(U8 []){0xf0,0x41,0x10,0x16,0x12,0
 static const sSysEX_t arEnableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
 static const sSysEX_t arDisableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
-static sSysEX_t arSetMasterVolumeGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x01, 0x7f, 0x7f, 0xf7}};        // ll=LSB, mm=MSB - use 0x7F 0x7F
-static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x7f, 0x7f, 0x04, 0x02, 0x00, 0x04, 0xF7}};       // ll=LSB, mm=MSB - use 0x00 0x40 (center)
+volatile extern U8 currentMasterVolume;
+volatile extern U8 requestedMasterVolume;
+volatile extern U8 currentMasterBalance;
+volatile extern U8 requestedMasterBalance;
 
-
-void setMidiMasterVolume(U16 vol){
-    arSetMasterVolumeGM.data[5]=(U8)((vol>>8)&0x00ff);
-    arSetMasterVolumeGM.data[6]=(U8)(vol&0x00ff);
-    sendSysEX(&arSetMasterVolumeGM);
+void setMidiMasterVolume(U8 vol){
+    requestedMasterVolume=vol;
 }
 
-void setMidiMasterBalance(U16 bal){
-    arSetMasterVolumeGM.data[5]=(U8)((bal>>8)&0x00ff);
-    arSetMasterVolumeGM.data[6]=(U8)(bal&0x00ff);
-    sendSysEX(&arSetMasterBalanceGM);
+void setMidiMasterBalance(U8 bal){
+    requestedMasterBalance=bal;
 }
 
+U8 getMidiMasterVolume(){
+    return currentMasterVolume;
+}
 
+U8 getMidiMasterBalance(){
+    return requestedMasterBalance;
+}
 
 // MT-32 setup data
 // MTGM basic setup file with 64 new sounds and a new patchmap
@@ -232,18 +235,15 @@ void MT32Reset(void){
  sendSysEX(&mt32_Reset);
 }
 
-extern volatile U8 currentMasterVolume;
-extern volatile U8 requestedMasterVolume;
-extern volatile U8 currentMasterBalance;
-extern volatile U8 requestedMasterBalance;
+
 
 void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
     currentMasterVolume=MIDI_DEFAULT_MVOL;
     requestedMasterVolume=MIDI_DEFAULT_MVOL;
 
-    currentMasterBalance=MIDI_DEFAULT_MB;
-    requestedMasterBalance=MIDI_DEFAULT_MB;
+    currentMasterBalance=MIDI_MASTER_PAN_CENTER;
+    requestedMasterBalance=MIDI_MASTER_PAN_CENTER;
 
     switch(device){
      case DT_LA_SOUND_SOURCE:{
@@ -265,8 +265,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMidiMasterBalance(MIDI_DEFAULT_MB);      // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);     // full volume
+        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER);      // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);            // half volume
 
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
@@ -278,8 +278,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMidiMasterBalance(MIDI_DEFAULT_MB);   // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);  // full volume
+        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER);   // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);         // half volume
 
         // silence CM-32P part
         allPartsOffCm500();
@@ -292,8 +292,8 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         amTrace("\nSetting GM device on ch: %d\n", channel);
         enableGM(TRUE);
 
-        setMidiMasterBalance(MIDI_DEFAULT_MB); // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);  // full volume
+        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER); // center
+        setMidiMasterVolume(MIDI_DEFAULT_MVOL);       // half volume
 
         // no banks for GM devices
         program_change(channel, 1);
@@ -322,6 +322,7 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
     // reset all controllers
     for(U8 i=0;i<16;++i){
         reset_all_controllers(i);
+        omni_off(i);   // set operation omni off/poly on
     }
 
  #ifdef IKBD_MIDI_SEND_DIRECT

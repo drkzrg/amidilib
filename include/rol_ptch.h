@@ -4,6 +4,9 @@
 #include "c_vars.h"
 #include "mdevtype.h"
 
+#include "vendors.h"
+#include "roland.h"
+
 /** resets MT-32 module to factory settings with default timbre library */
 void MT32Reset(void);
 

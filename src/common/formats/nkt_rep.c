@@ -15,6 +15,7 @@
 #include "timing/miditim.h"
 
 #include "midi.h"
+
 #include "midi_cmd.h"
 #include "rol_ptch.h"
 
@@ -39,6 +40,7 @@ static void resetMidiDevice(){
     // reset all controllers
     for(U8 i=0;i<16;++i){
       reset_all_controllers(i);
+      omni_off(i);
     }
 
     #ifdef IKBD_MIDI_SEND_DIRECT
@@ -204,6 +206,7 @@ volatile static BOOL bPaused=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
+
 volatile U8 currentMasterVolume;
 volatile U8 requestedMasterVolume;
 volatile U8 currentMasterBalance;
@@ -211,7 +214,62 @@ volatile U8 requestedMasterBalance;
 
 volatile static U16 sequenceState;
 
+enum{
+  IDX_VENDOR=1,
+  IDX_DEVICE_ID=2,
+  IDX_MODEL_ID=3,
+  IDX_MODE_ID=4,
+  IDX_MASTER_VOL=8,
+  IDX_MASTER_PAN=8
+};
+
+static sSysEX_t arSetMasterVolumeGM = {11,(U8 []){0xf0, 0x00, 0x00, 0x00, 0x00, 0x40,0x00,0x04,0x7f,0x00,0xf7}};
+static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x00, 0x00, 0x00, 0x00, 0x40,0x00,0x06,0x7f,0x00,0xf7}};
+
 void updateStepNkt(){
+
+ if(currentMasterVolume!=requestedMasterVolume){
+
+    //send new master vol
+    if(requestedMasterVolume<=0x7F){
+
+        // todo other device types
+        arSetMasterVolumeGM.data[IDX_VENDOR]=ID_ROLAND;
+        arSetMasterVolumeGM.data[IDX_DEVICE_ID]=GS_DEVICE_ID;
+        arSetMasterVolumeGM.data[IDX_MODEL_ID]=GS_MODEL_ID;
+        arSetMasterVolumeGM.data[IDX_MODE_ID]=0x12;                     // sending
+        arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
+        arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
+
+        sendSysEX(&arSetMasterVolumeGM);
+
+        #ifdef IKBD_MIDI_SEND_DIRECT
+            Supexec(flushMidiSendBuffer);
+        #endif
+
+        currentMasterVolume=requestedMasterVolume;
+
+    }
+ }
+
+ if(currentMasterBalance!=requestedMasterBalance){
+
+     // send new balance
+    arSetMasterBalanceGM.data[IDX_VENDOR]=ID_ROLAND;
+    arSetMasterBalanceGM.data[IDX_DEVICE_ID]=GS_DEVICE_ID;
+    arSetMasterBalanceGM.data[IDX_MODEL_ID]=GS_MODEL_ID;
+    arSetMasterBalanceGM.data[IDX_MODE_ID]=0x12;             // sending
+    arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
+    arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
+
+    sendSysEX(&arSetMasterBalanceGM);
+
+    #ifdef IKBD_MIDI_SEND_DIRECT
+     Supexec(flushMidiSendBuffer);
+    #endif
+
+    currentMasterBalance=requestedMasterBalance;
+ }
 
  if(g_CurrentNktSequence==0) return;
 
@@ -810,11 +868,10 @@ while(blockNb<pNewSeq->nbOfBlocks){
           }
 
           amTrace(" [/DATA]\n");
-
       }
+
       pNewSeq->eventsBlockOffset+=count;
       pNewSeq->eventsBlockOffset+=sizeof(sNktBlock_t);
-
 
       ++blockNb;
     }

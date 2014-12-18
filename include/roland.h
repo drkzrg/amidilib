@@ -9,7 +9,7 @@
 #define __ROLAND_H__
 
 /* settings for cm500 GS source */
-#define GS_MODEL_ID 0x16
+#define GS_MODEL_ID 0x42
 #define GS_DEVICE_ID 0x10
 
 /* settings for cm500 LA source */

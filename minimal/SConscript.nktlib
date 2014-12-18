@@ -228,6 +228,7 @@ Command("./include/amlog.h", inc_dir+'amlog.h', [ Delete("$TARGET"), Copy('$TARG
 Command("./include/events.h", inc_dir+'events.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
+Command("./include/roland.h", inc_dir+'roland.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 Command("./include/nkt_util.h", inc_dir+'nkt_util.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
 

@@ -12,15 +12,9 @@ void printInfoScreen();
 
 void mainLoop(sNktSeq *pSequence);
 
-U8 _midiMasterVolume;
-U8 _midiMasterBalance;
-
 int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
 S16 iError=0;
-
-_midiMasterVolume=127/2;
-_midiMasterBalance=64;
 
     if(argc>=1&&argv[1]!='\0'){
         printf("Trying to load %s\n",argv[1]);
@@ -30,7 +24,7 @@ _midiMasterBalance=64;
         return 0;
     }
 
-    eMidiDeviceType devType=DT_GS_SOUND_SOURCE;
+    eMidiDeviceType devType=DT_MT32_GM_EMULATION;
 
     switch(devType){
         case DT_LA_SOUND_SOURCE:{
@@ -59,10 +53,6 @@ _midiMasterBalance=64;
 
     // set GS / GM source, channel
     NktInit(devType,1);
-
-
-    setMidiMasterVolume(_midiMasterVolume);
-    setMidiMasterBalance(_midiMasterBalance);
 
     pNktSeq=loadSequence(argv[1]);
 
@@ -169,6 +159,8 @@ void mainLoop(sNktSeq *pSequence){
          // adjust master volume
          case SC_ARROW_UP:{
 
+              U8 _midiMasterVolume=getMidiMasterVolume();
+
               if(_midiMasterVolume<127){
                   ++_midiMasterVolume;
                   setMidiMasterVolume(_midiMasterVolume);
@@ -177,6 +169,7 @@ void mainLoop(sNktSeq *pSequence){
 
          }break;
           case SC_ARROW_DOWN:{
+              U8 _midiMasterVolume=getMidiMasterVolume();
 
               if(_midiMasterVolume>0){
                 --_midiMasterVolume;
@@ -188,6 +181,9 @@ void mainLoop(sNktSeq *pSequence){
 
           // adjust balance
           case SC_ARROW_LEFT:{
+
+              U8 _midiMasterBalance=getMidiMasterBalance();
+
               if(_midiMasterBalance>0){
                   --_midiMasterBalance;
                   setMidiMasterBalance(_midiMasterBalance);
@@ -196,6 +192,9 @@ void mainLoop(sNktSeq *pSequence){
 
           }break;
           case SC_ARROW_RIGHT:{
+
+              U8 _midiMasterBalance=getMidiMasterBalance();
+
               if(_midiMasterBalance<127){
                   ++_midiMasterBalance;
                   setMidiMasterBalance(_midiMasterBalance);

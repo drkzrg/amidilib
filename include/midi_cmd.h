@@ -34,7 +34,6 @@ typedef struct SysEX_t{
    U8 *data;
 }sSysEX_t;
 
-
 //////////////////////////////////////////////////////////////////////////////
 // helper functions for copying midi data to internal buffer
 extern volatile U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
@@ -48,7 +47,6 @@ amTrace("Send SysEx size: %lu \n",pMsg->size);
 #ifdef IKBD_MIDI_SEND_DIRECT
  amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
  MIDIbytesToSend+=pMsg->size;
-
 
  Supexec(flushMidiSendBuffer);
 #else

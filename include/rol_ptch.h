@@ -7,6 +7,23 @@
 #include "vendors.h"
 #include "roland.h"
 
+typedef enum ReverbMode{
+  RV_HALL,
+  RV_ROOM,
+  RV_PLATE,
+  RV_TAP_DELAY
+} eReverbMode;
+
+#define NO_CHANGE 255
+
+typedef struct midiModuleSettings{
+    U8 vendorID;
+    U8 deviceID;
+    U8 modelID;
+    U8 masterVolume;
+    U8 masterBalance;
+} sMidiModuleSettings;
+
 /** resets MT-32 module to factory settings with default timbre library */
 void MT32Reset(void);
 

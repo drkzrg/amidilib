@@ -8,9 +8,14 @@
 #ifndef __ROLAND_H__
 #define __ROLAND_H__
 
+/* settings for mt32 source */
+#define D50_MODEL_ID 0x14       //MT-32 can respond/send some D-50 messages too
+#define MT32_DEVICE_ID 0x10     // default 17
+#define MT32_MODEL_ID 0x16
+
 /* settings for cm500 GS source */
-#define GS_MODEL_ID 0x42
 #define GS_DEVICE_ID 0x10
+#define GS_MODEL_ID 0x42
 
 /* settings for cm500 LA source */
 #define LA_MODEL_ID 0x42
@@ -32,12 +37,5 @@
 #define DEV_ID14	0x0d
 #define DEV_ID15 	0x0e
 #define DEV_ID16	0x0f
-
-/* TODO:
- * functions for maintaining current device state, initial settings etc..   */
-/* blocking/unblocking functions on certain devices
-   (e.g. Roland MT-32 recognizes the standard MIDI controllers for
-   Volume (controller 7), Panpot (controller 10), Sustain (controller 64), and Modulation (controller 1))  */
-
 
 #endif

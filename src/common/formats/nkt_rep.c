@@ -207,12 +207,11 @@ volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
 
-volatile U8 currentMasterVolume;
 volatile U8 requestedMasterVolume;
-volatile U8 currentMasterBalance;
 volatile U8 requestedMasterBalance;
-
 volatile static U16 sequenceState;
+
+volatile sMidiModuleSettings _moduleSettings;
 
 enum{
   IDX_VENDOR=1,
@@ -228,16 +227,16 @@ static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x00, 0x00, 0x00, 0x00, 
 
 void updateStepNkt(){
 
- if(currentMasterVolume!=requestedMasterVolume){
+ if(_moduleSettings.masterVolume!=requestedMasterVolume){
 
     //send new master vol
     if(requestedMasterVolume<=0x7F){
 
         // todo other device types
-        arSetMasterVolumeGM.data[IDX_VENDOR]=ID_ROLAND;
-        arSetMasterVolumeGM.data[IDX_DEVICE_ID]=GS_DEVICE_ID;
-        arSetMasterVolumeGM.data[IDX_MODEL_ID]=GS_MODEL_ID;
-        arSetMasterVolumeGM.data[IDX_MODE_ID]=0x12;                     // sending
+        arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+        arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+        arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+        arSetMasterVolumeGM.data[IDX_MODE_ID]=0x12;                         // sending
         arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
         arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
 
@@ -247,18 +246,18 @@ void updateStepNkt(){
             Supexec(flushMidiSendBuffer);
         #endif
 
-        currentMasterVolume=requestedMasterVolume;
+        _moduleSettings.masterVolume=requestedMasterVolume;
 
     }
  }
 
- if(currentMasterBalance!=requestedMasterBalance){
+ if(_moduleSettings.masterBalance!=requestedMasterBalance){
 
      // send new balance
-    arSetMasterBalanceGM.data[IDX_VENDOR]=ID_ROLAND;
-    arSetMasterBalanceGM.data[IDX_DEVICE_ID]=GS_DEVICE_ID;
-    arSetMasterBalanceGM.data[IDX_MODEL_ID]=GS_MODEL_ID;
-    arSetMasterBalanceGM.data[IDX_MODE_ID]=0x12;             // sending
+    arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+    arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+    arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+    arSetMasterBalanceGM.data[IDX_MODE_ID]=0x12;                        // sending
     arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
     arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
 
@@ -268,7 +267,7 @@ void updateStepNkt(){
      Supexec(flushMidiSendBuffer);
     #endif
 
-    currentMasterBalance=requestedMasterBalance;
+    _moduleSettings.masterBalance=requestedMasterBalance;
  }
 
  if(g_CurrentNktSequence==0) return;
@@ -1041,8 +1040,7 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
 
 
 void NktDeinit(){
-
-    deinitDebug();
+  deinitDebug();
 }
 
 #ifdef DEBUG_BUILD

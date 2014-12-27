@@ -18,8 +18,8 @@
 #define GS_MODEL_ID 0x42
 
 /* settings for cm500 LA source */
-#define LA_MODEL_ID 0x42
-#define LA_DEVICE_ID 0x10
+#define LA_DEVICE_ID MT32_DEVICE_ID
+#define LA_MODEL_ID GS_MODEL_ID
 
 #define DEV_ID1 	0x00
 #define DEV_ID2		0x01

@@ -186,7 +186,7 @@ _super_off:
 customResetVector:
 
       movem.l	d0-7/a0-a6,-(sp)
-      move.w	#15*3,d1
+      move.w	#(15*3+8),d1
       move.l	#_midiResetData,a0
 
 .send:
@@ -281,4 +281,4 @@ _MIDIsendBuffer:	ds.b	MIDI_SENDBUFFER_SIZE
 			dc.b	"XBRARESV"
 _oldVectorHandler:      dc.l    0	;
 _newVectorHandler:	dc.l    0	;
-_midiResetData:		dc.b    $b0,$78,$00,$b1,$78,$00,$b2,$78,$00,$b3,$78,$00,$b4,$78,$00,$b5,$78,$00,$b6,$78,$00,$b7,$78,$00,$b8,$78,$00,$b9,$78,$00,$ba,$78,$00,$bb,$78,$00,$bc,$78,$00,$bd,$78,$00,$be,$78,$00,$bf,$78,$00
+_midiResetData:		dc.b    $b0,$78,$00,$b1,$78,$00,$b2,$78,$00,$b3,$78,$00,$b4,$78,$00,$b5,$78,$00,$b6,$78,$00,$b7,$78,$00,$b8,$78,$00,$b9,$78,$00,$ba,$78,$00,$bb,$78,$00,$bc,$78,$00,$bd,$78,$00,$be,$78,$00,$bf,$78,$00,$f0,$41,$10,$16,$12,$7f,$01,$f7

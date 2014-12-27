@@ -19,6 +19,8 @@ static const sSysEX_t arEnableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
 static const sSysEX_t arDisableGM = {6,(U8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
 volatile extern sMidiModuleSettings _moduleSettings;
+volatile extern U8 _mt32TextMsg[20];
+
 volatile extern U8 requestedMasterVolume;
 volatile extern U8 requestedMasterBalance;
 
@@ -36,6 +38,16 @@ U8 getMidiMasterVolume(){
 
 U8 getMidiMasterBalance(){
     return _moduleSettings.masterBalance;
+}
+
+// sets custom text message on mt-32 lcd screen
+void setMT32Message(const U8 *msg){
+    U8 len=strlen(msg);
+
+    if(len>20)len=20;
+
+    memset(&_mt32TextMsg[0],0,sizeof(U8)*20);
+    memcpy(&_mt32TextMsg[0],msg,sizeof(U8)*len);
 }
 
 // MT-32 setup data

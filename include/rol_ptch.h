@@ -57,6 +57,9 @@ void  allPartsOff(void);
 
 U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
 
+// sets custom text message on mt-32 lcd screen
+void setMT32Message(const U8 *msg);
+
 void setupMidiDevice(const eMidiDeviceType device, const U8 channel);
 
 #endif // ROL_PTCH_H

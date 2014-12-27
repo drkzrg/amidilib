@@ -43,6 +43,7 @@ static void resetMidiDevice(){
       omni_off(i);
     }
 
+
     #ifdef IKBD_MIDI_SEND_DIRECT
       Supexec(flushMidiSendBuffer);
     #endif
@@ -163,6 +164,8 @@ if(bInstallUpdate!=FALSE) Supexec(NktInstallReplayRout);
   printNktSequenceState();
 #endif
 
+    setMT32Message("Ready ...");
+
   } //endif
  return;
 }
@@ -212,6 +215,7 @@ volatile U8 requestedMasterBalance;
 volatile static U16 sequenceState;
 
 volatile sMidiModuleSettings _moduleSettings;
+volatile U8 _mt32TextMsg[20];
 
 enum{
   IDX_VENDOR=1,
@@ -225,7 +229,9 @@ enum{
 volatile static sSysEX_t arSetMasterVolumeGM   =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x04,0x7f,0x00,0xf7}};
 volatile static sSysEX_t arSetMasterBalanceGM  =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x06,0x7f,0x00,0xf7}};
 volatile static sSysEX_t arSetMasterVolumeMT32 =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x10,0x00,0x16,0x7f,0x00,0xf7}};
-
+volatile static sSysEX_t arSetTextMT32         =  {30,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x20,0x00,0x00,
+                                                              0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                                                              0x00,0xf7}};
 void updateStepNkt(){
  // handle volume/balance/reverb change
 
@@ -251,9 +257,31 @@ void updateStepNkt(){
              #endif
 
              _moduleSettings.masterVolume=requestedMasterVolume;
-
-
          }
+
+         if(_mt32TextMsg[0]!=0){
+
+             memset(&arSetTextMT32.data[8],0,sizeof(U8)*20);
+
+             arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
+             arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+             arSetTextMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+             arSetTextMT32.data[IDX_CMD_ID]=0x12;
+
+             memcpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(U8)*20);
+             arSetTextMT32.data[28]=am_calcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
+
+             // update text
+             sendSysEX(&arSetTextMT32);
+
+             #ifdef IKBD_MIDI_SEND_DIRECT
+                 Supexec(flushMidiSendBuffer);
+             #endif
+
+             // reset text
+             memset(&_mt32TextMsg[0],0,sizeof(U8)*20);
+         }
+
 
          // todo reverb change request
 
@@ -979,6 +1007,8 @@ void stopSequence(void){
        printf("Stop sequence\n");
 #endif
 
+    setMT32Message("Stopped...");
+
   }
 
     resetMidiDevice();
@@ -998,10 +1028,15 @@ void pauseSequence(){
 #ifndef SUPRESS_CON_OUTPUT
            printf("Pause sequence\n");
 #endif
+           setMT32Message("Paused...");
+
            return;
           }else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
             g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
             g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;  //set playing state
+
+            setMT32Message("Playing...");
+
           }
       }
  } //pauseSequence
@@ -1070,10 +1105,12 @@ void NktInit(const eMidiDeviceType devType, const U8 channel){
     // prepare device for receiving messages
 
     setupMidiDevice(devType,channel);
+    setMT32Message("AMIDILIB init...");
 }
 
 
 void NktDeinit(){
+  setMT32Message("Bye ! ;-)");
   deinitDebug();
 }
 

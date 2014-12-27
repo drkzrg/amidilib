@@ -11,7 +11,8 @@ typedef enum ReverbMode{
   RV_HALL,
   RV_ROOM,
   RV_PLATE,
-  RV_TAP_DELAY
+  RV_TAP_DELAY,
+  RV_NONE
 } eReverbMode;
 
 #define NO_CHANGE 255
@@ -21,7 +22,13 @@ typedef struct midiModuleSettings{
     U8 deviceID;
     U8 modelID;
     U8 masterVolume;
-    U8 masterBalance;
+    U8 masterBalance;  // only GM / GS
+
+    /* MT-32 only */
+    U8 reverbMode;
+    U8 reverbTime;
+    U8 reverbLevel;
+
 } sMidiModuleSettings;
 
 /** resets MT-32 module to factory settings with default timbre library */

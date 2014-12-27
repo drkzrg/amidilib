@@ -14,14 +14,17 @@
 #include "midi_send.h"
 #include "events.h"
 
-#define MIDI_MASTER_VOL_MAX    127
+#define MIDI_MASTER_VOL_MAX_GM   127
+#define MIDI_MASTER_VOL_MAX_MT32 100
+
+#define MIDI_MASTER_VOL_DEFAULT_GM (MIDI_MASTER_VOL_MAX_GM/2)
+#define MIDI_MASTER_VOL_DEFAULT_MT32 (MIDI_MASTER_VOL_MAX_MT32/2)
+
 #define MIDI_MASTER_VOL_MIN    0
 
 #define MIDI_MASTER_PAN_MAX    127
 #define MIDI_MASTER_PAN_CENTER 64
 #define MIDI_MASTER_PAN_MIN    0
-
-#define MIDI_DEFAULT_MVOL   (127/2)
 
 #ifndef IKBD_MIDI_SEND_DIRECT
 /* small static buffer for sending MIDI commands */

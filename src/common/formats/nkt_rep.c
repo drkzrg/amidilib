@@ -217,58 +217,92 @@ enum{
   IDX_VENDOR=1,
   IDX_DEVICE_ID=2,
   IDX_MODEL_ID=3,
-  IDX_MODE_ID=4,
+  IDX_CMD_ID=4,
   IDX_MASTER_VOL=8,
   IDX_MASTER_PAN=8
 };
 
-static sSysEX_t arSetMasterVolumeGM = {11,(U8 []){0xf0, 0x00, 0x00, 0x00, 0x00, 0x40,0x00,0x04,0x7f,0x00,0xf7}};
-static sSysEX_t arSetMasterBalanceGM = {8,(U8 []){0xf0, 0x00, 0x00, 0x00, 0x00, 0x40,0x00,0x06,0x7f,0x00,0xf7}};
+volatile static sSysEX_t arSetMasterVolumeGM   =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x04,0x7f,0x00,0xf7}};
+volatile static sSysEX_t arSetMasterBalanceGM  =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x06,0x7f,0x00,0xf7}};
+volatile static sSysEX_t arSetMasterVolumeMT32 =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x10,0x00,0x16,0x7f,0x00,0xf7}};
 
 void updateStepNkt(){
+ // handle volume/balance/reverb change
 
  if(_moduleSettings.masterVolume!=requestedMasterVolume){
 
-    //send new master vol
-    if(requestedMasterVolume<=0x7F){
+    if(MT32_MODEL_ID==_moduleSettings.modelID){
 
-        // todo other device types
-        arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-        arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-        arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-        arSetMasterVolumeGM.data[IDX_MODE_ID]=0x12;                         // sending
-        arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
-        arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
+         //handle mt32 volume
+         if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
 
-        sendSysEX(&arSetMasterVolumeGM);
+             arSetMasterVolumeMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
+             arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+             arSetMasterVolumeMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
 
-        #ifdef IKBD_MIDI_SEND_DIRECT
-            Supexec(flushMidiSendBuffer);
-        #endif
+             arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                                  // sending
+             arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
+             arSetMasterVolumeMT32.data[9]=am_calcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
 
-        _moduleSettings.masterVolume=requestedMasterVolume;
+             sendSysEX(&arSetMasterVolumeMT32);
 
-    }
+             #ifdef IKBD_MIDI_SEND_DIRECT
+                 Supexec(flushMidiSendBuffer);
+             #endif
+
+             _moduleSettings.masterVolume=requestedMasterVolume;
+
+
+         }
+
+         // todo reverb change request
+
+         // update text
+
+    }else{
+     // General Midi GS, todo move it to configurable callback
+         // send new master vol
+         if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_GM){
+
+             arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+             arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+             arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+
+             arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
+             arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
+             arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
+
+             sendSysEX(&arSetMasterVolumeGM);
+
+             #ifdef IKBD_MIDI_SEND_DIRECT
+                 Supexec(flushMidiSendBuffer);
+             #endif
+
+             _moduleSettings.masterVolume=requestedMasterVolume;
+
+         }
+      }
+
+      if(_moduleSettings.masterBalance!=requestedMasterBalance){
+
+          // send new balance
+         arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+         arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+         arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+         arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
+         arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
+         arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
+
+         sendSysEX(&arSetMasterBalanceGM);
+
+         #ifdef IKBD_MIDI_SEND_DIRECT
+          Supexec(flushMidiSendBuffer);
+         #endif
+
+         _moduleSettings.masterBalance=requestedMasterBalance;
+      }
  }
 
- if(_moduleSettings.masterBalance!=requestedMasterBalance){
-
-     // send new balance
-    arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-    arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-    arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-    arSetMasterBalanceGM.data[IDX_MODE_ID]=0x12;                        // sending
-    arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
-    arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
-
-    sendSysEX(&arSetMasterBalanceGM);
-
-    #ifdef IKBD_MIDI_SEND_DIRECT
-     Supexec(flushMidiSendBuffer);
-    #endif
-
-    _moduleSettings.masterBalance=requestedMasterBalance;
- }
 
  if(g_CurrentNktSequence==0) return;
 

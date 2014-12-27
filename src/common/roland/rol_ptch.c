@@ -772,15 +772,21 @@ volatile extern sMidiModuleSettings _moduleSettings;
 
 void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
-    requestedMasterVolume=MIDI_DEFAULT_MVOL;
+    requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_GM;
     requestedMasterBalance=MIDI_MASTER_PAN_CENTER;
 
     // this will force update on first frame
+    _moduleSettings.reverbMode=0;
+    _moduleSettings.reverbLevel=0;
+    _moduleSettings.reverbTime=0;
+
     _moduleSettings.masterVolume=0;
     _moduleSettings.masterBalance=0;
 
     switch(device){
      case DT_LA_SOUND_SOURCE:{
+        requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
+
         amTrace("\nSetting MT32 device on ch: %d\n", channel);
         MT32Reset();
 
@@ -793,14 +799,13 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
      case DT_LA_SOUND_SOURCE_EXT:{
        amTrace("\nSetting MT32 ext device on ch: %d\n", channel);
+       requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
+
        _moduleSettings.vendorID=ID_ROLAND;
        _moduleSettings.modelID=MT32_MODEL_ID;
        _moduleSettings.deviceID=0x10;
 
        MT32Reset();
-
-       setMidiMasterVolume(MIDI_DEFAULT_MVOL);            // half volume
-       setMidiMasterBalance(MIDI_MASTER_PAN_CENTER);      // center
 
        program_change(channel, 1);
      }break;
@@ -815,14 +820,11 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
         enableGM(FALSE);
         enableGS();
 
-        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER);      // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);            // half volume
-
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
      break;
 
-     case DT_LA_GS_MIXED:{           /* if both LA / GS sound sources are available, like in CM-500 mode A */
+     case DT_LA_GS_MIXED:{           /* if both LA / GS sound sources are available, like in CM-500 mode A, drop it? */
         amTrace("\nSetting generic LA / GS device on ch: %d\n", channel);
 
         _moduleSettings.vendorID=ID_ROLAND;
@@ -831,9 +833,6 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
         enableGM(FALSE);
         enableGS();
-
-        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER);   // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);         // half volume
 
         // silence CM-32P part
         allPartsOffCm500();
@@ -851,15 +850,15 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
         enableGM(TRUE);
 
-        setMidiMasterBalance(MIDI_MASTER_PAN_CENTER); // center
-        setMidiMasterVolume(MIDI_DEFAULT_MVOL);       // half volume
-
         // no banks for GM devices
         program_change(channel, 1);
      }break;
 
      case DT_MT32_GM_EMULATION:{
         amTrace("\nSetting GM emulation on MT32 on ch: %d\n", channel);
+
+        requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
+
         _moduleSettings.vendorID=ID_ROLAND;
         _moduleSettings.modelID=MT32_MODEL_ID;
         _moduleSettings.deviceID=0x10;
@@ -883,6 +882,10 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
     // all notes off
     am_allNotesOff(16);
+
+    // set initial volume balance (on GM/GS only)
+    setMidiMasterVolume(requestedMasterVolume);        // half volume
+    setMidiMasterBalance(requestedMasterBalance);      // center
 
     // reset all controllers
     for(U8 i=0;i<16;++i){

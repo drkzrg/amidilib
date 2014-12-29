@@ -31,8 +31,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)(pCurEvent->eventBlock.dataPtr);
             amTrace("T_NOTEON ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
             // write to output buffer
-            *(tab + (*bufPos))= (U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
-          //  tab[]=(U8)(EV_NOTE_ON<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            *(tab + (*bufPos))= (U8)(EV_NOTE_ON)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
             (*bufDataSize)+=3;
@@ -42,7 +41,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             // dump data
             sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             amTrace("T_NOTEOFF ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
-            tab[(*bufPos)]=(U8)(EV_NOTE_OFF<<4)|(pEventBlk->ubChannelNb); (*bufPos)++;
+            tab[(*bufPos)]=(U8)(EV_NOTE_OFF)|(pEventBlk->ubChannelNb); (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
             (*bufDataSize)+=3;
@@ -52,7 +51,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             // dump data
             amTrace("T_NOTEAFT \n");
             sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
-            tab[(*bufPos)]=(EV_NOTE_AFTERTOUCH<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=(EV_NOTE_AFTERTOUCH)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.pressure; (*bufPos)++;
             (*bufDataSize)+=3;
@@ -64,7 +63,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             // program change (dynamic according to connected device)
             sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
-            tab[(*bufPos)]=(EV_CONTROLLER<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=(EV_CONTROLLER)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.controllerNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.value; (*bufPos)++;
             tab[(*bufPos)]=0x00; (*bufPos)++;
@@ -75,7 +74,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
         // program change (dynamic according to connected device)
          amTrace("T_PRG_CH \n");
             sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
-            tab[(*bufPos)]=(EV_PROGRAM_CHANGE<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=(EV_PROGRAM_CHANGE)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.programNb; (*bufPos)++;
             (*bufDataSize)+=2;
             return;
@@ -84,7 +83,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             // dump data
          amTrace("T_CHAN_AFT \n");
             sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
-            tab[(*bufPos)] = (EV_CHANNEL_AFTERTOUCH<<4) | pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)] = (EV_CHANNEL_AFTERTOUCH) | pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)] = pEventBlk->eventData.pressure; (*bufPos)++;
             (*bufDataSize)+=2;
             return;
@@ -94,7 +93,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
          amTrace("T_PITCH_BEND \n");
             sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
-            tab[(*bufPos)]=(EV_PITCH_BEND<<4)|pEventBlk->ubChannelNb; (*bufPos)++;
+            tab[(*bufPos)]=(EV_PITCH_BEND)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.LSB; (*bufPos)++; //LSB
             tab[(*bufPos)]=pEventBlk->eventData.MSB; (*bufPos)++; //MSB
             (*bufDataSize)+=3;

@@ -233,17 +233,17 @@ BOOL bEOF=FALSE;
       ubSize=(*pCmd);
       if( (!(am_isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(am_isMidiRTorSysex(ubSize))))){
     /*recall last cmd byte */
-    usSwitch=g_runningStatus;
-        usSwitch=((usSwitch>>4)&0x0F);
+        usSwitch=g_runningStatus;
+        usSwitch=(usSwitch&0xF0);
       }else{
     /* check if the new cmd is the system one*/
     recallStatus=0;
 
-      if((am_isMidiRTorSysex(ubSize))){
-    usSwitch=ubSize;
+   if((am_isMidiRTorSysex(ubSize))){
+        usSwitch=ubSize;
       }else{
-    usSwitch=ubSize;
-        usSwitch=((usSwitch>>4)&0x0F);
+        usSwitch=ubSize;
+        usSwitch=(usSwitch&0xF0);
       }
    }
 
@@ -278,34 +278,34 @@ BOOL bEOF=FALSE;
         *iError=(S16)am_Sysex(pSeq,&pCmd,delta, pCurTrack);
       break;
       case SC_MTCQF:
-    recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
-    amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
-    pCmd++;
-    pCmd++;
+        recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
+        amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
+        ++pCmd;
+        ++pCmd;
       break;
       case SC_SONG_POS_PTR:
-    amTrace((const U8*)"Event: System common Song position pointer\n");
-    recallStatus=0;                      /* Song position pointer, 2 data bytes */
-    pCmd++;
-    pCmd++;
-    pCmd++;
+        amTrace((const U8*)"Event: System common Song position pointer\n");
+        recallStatus=0;                      /* Song position pointer, 2 data bytes */
+        ++pCmd;
+        ++pCmd;
+        ++pCmd;
       break;
       case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-    amTrace((const U8*)"Event: System common Song select\n");
-    recallStatus=0;
-    pCmd++;
-    pCmd++;
+        amTrace((const U8*)"Event: System common Song select\n");
+        recallStatus=0;
+        ++pCmd;
+        ++pCmd;
       break;
       case SC_UNDEF1:                   /* undefined */
       case SC_UNDEF2:                  /* undefined */
     amTrace((const U8*)"Event: System common not defined.\n");
-    recallStatus=0;
-    pCmd++;
+        recallStatus=0;
+        ++pCmd;
       break;
       case SC_TUNE_REQUEST:             /* tune request, no data bytes */
     amTrace((const U8*)"Event: System tune request.\n");
-    recallStatus=0;
-    pCmd++;
+        recallStatus=0;
+        ++pCmd;
       break;
       default:{
     amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));

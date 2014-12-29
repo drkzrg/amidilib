@@ -418,7 +418,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
 
   if( (!(isMidiChannelEvent(ubSize))&&(rs->recallRS==1)&&(!(isMidiRTorSysex(ubSize))))){
    /* recall last cmd byte */
-   usSwitch = ((rs->runningStatus>>4)&0x0F);
+   usSwitch = ((rs->runningStatus)&0xF0);
   }else{
    /* check if the new cmd is the system one */
    rs->recallRS=0;
@@ -427,7 +427,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
         usSwitch=ubSize;
    }else{
      usSwitch=ubSize;
-     usSwitch=((usSwitch>>4)&0x0F);
+     usSwitch=((usSwitch)&0xF0);
     }
    }
 

@@ -231,7 +231,7 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
 
      if( (!(isMidiChannelEvent(ubSize))&&(rs->recallRS==1)&&(!(isMidiRTorSysex(ubSize))))){
       /* recall last cmd byte */
-      usSwitch = ((rs->runningStatus>>4)&0x0F);
+      usSwitch = rs->runningStatus&0xF0;
      }else{
       /* check if the new cmd is the system one */
       rs->recallRS=0;
@@ -240,7 +240,7 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
            usSwitch=ubSize;
       }else{
         usSwitch=ubSize;
-        usSwitch=((usSwitch>>4)&0x0F);
+        usSwitch=usSwitch&0xF0;
        }
       }
 
@@ -279,9 +279,8 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
                  iError=collectMetaEventInfo(delta, pCmd, rs, bufferInfo, bEOF);
 
                 break;
-                case EV_SOX:                          	/* SySEX midi exclusive */
-                  amTrace("delta: %lu SYSEX\n", delta);
-                                    /* cancel out midi running status */
+                case EV_SOX:                                                        /* SySEX midi exclusive */
+                  amTrace("delta: %lu SYSEX\n", delta);                             /* cancel out midi running status */
                   iError=(S16)collectSysexInfo(pCmd,rs, bufferInfo);
                 break;
                 case SC_MTCQF:

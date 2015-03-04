@@ -91,9 +91,10 @@ stopTiC:
 
 updateTiC:
 ; always 200Hz update
-        move.l    update,$114.w		;slap interrupt
-        move.b    #246,$fffffa21.w	; set data
-        ori.b     #80,$fffffa1b.w	; div mode
+        move.l    update,$114.w			; slap interrupt
+        move.b    #246,$fffffa23.w		; set data
+        andi.b    #$0f,$fffffa1d.w 
+		ori.b     #40,$fffffa1d.w		; div mode
         bset.b    #5,$fffffa09.w        ; enable TiC
         bset.b    #5,$fffffa15.w        ; set interrupt mask B
         RTS

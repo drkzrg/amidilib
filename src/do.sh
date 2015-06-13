@@ -8,14 +8,14 @@
 
 #general
 #cygwin
-tools_prefix='/opt/cross-mint'
-base_dir='/home/saulot/'
-
-#linux
-#tools_prefix='/usr'
+#tools_prefix='/opt/cross-mint'
 #base_dir='/home/saulot/'
 
-debug_level=1
+#linux
+tools_prefix='/usr'
+base_dir='/home/saulot/'
+
+debug_level=0
 cross=1
 
 ##########################################################################################################################################
@@ -47,19 +47,19 @@ else
     cross_str="cross=n"
 fi
 
-build_options="target=f030 prefix=$tools_prefix ikbd_direct=yes tx_enable=no conout=yes gemdos_io=yes $cross_str $deb_str"
+build_options="target=f030 prefix=$tools_prefix ikbd_direct=yes tx_enable=no conout=yes gemdos_io=yes libc=no $cross_str $deb_str"
 copy_to_shared_dir=0
 shared_dir='/home/saulot/Pulpit/shared/amidilib'
 
 # hatari
 # if copy_to_emu_dir=1 copy binaries to emulator directory
-copy_to_emu_dir=0
+copy_to_emu_dir=1
 run_emu=0
 #install_dir=$base_dir'Pulpit/HD/AMIDIDEV/'
 emu_parameters='--monitor vga --memsize 14 --bpp 8 --drive-led y --confirm-quit no --midi-in /dev/midi2 --midi-out /dev/midi2 --conout 2'
-#emu_dir=$base_dir'Pulpit/HD/'
+emu_dir=$base_dir'Pulpit/HD/'
 #emu_dir='/cygdrive/d/Emulatory/TwardzielST/C/'
-emu_dir='/cygdrive/d/Emulatory/HATARI/HD/'
+#emu_dir='/cygdrive/d/Emulatory/HATARI/HD/'
 
 install_dir=$emu_dir'AMIDIDEV/'
 
@@ -75,7 +75,7 @@ MID2NKT_BIN='mid2nkt.ttp'
 
 # remote machine settings
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
-send_to_native_machine=1
+send_to_native_machine=0
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''

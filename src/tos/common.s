@@ -94,8 +94,9 @@ updateTiC:
         move.l    update,$114.w			; slap interrupt
         move.b    #246,$fffffa23.w		; set data
         andi.b    #$0f,$fffffa1d.w 
-		ori.b     #40,$fffffa1d.w		; div mode
-        bset.b    #5,$fffffa09.w        ; enable TiC
+	ori.b     #$40,$fffffa1d.w		; div mode
+
+	bset.b    #5,$fffffa09.w        ; enable TiC
         bset.b    #5,$fffffa15.w        ; set interrupt mask B
         RTS
 

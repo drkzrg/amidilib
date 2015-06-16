@@ -21,7 +21,7 @@ where name of 'target' can be: \n \
  'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
  'conout' - disable/enable console output,\n \
  'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
- 'no_libc' - builds library without libc, reducing binary size,\n \
+ 'libc' - if not "yes", builds library without libc dependencies, reducing binary size,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)
@@ -177,7 +177,7 @@ env['VASM'] = 'vasmm68k_mot'
 if ( (debug != 'none') and (int(debug)>0)):
   print "Debug build..."
   if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_FILE_OUTPUT' + ' -DLOAD_TEST'
+    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
   elif(int(debug)==2):
     ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
   elif(int(debug)==3):
@@ -220,12 +220,16 @@ memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linal
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
 lzo_src = ["common/lzo/minilzo.c"]
- 
+
+# custom startup
+startup_src = ["startup/mStartupAsmC.s", "startup/stdlib.s", "startup/mStartup.c" ]
+
 # main library 
 amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
+
 
 #################### test programs entry points
 amidi_test_src = ["../demo/midi_rep/main.c"] 
@@ -241,10 +245,23 @@ nkt_src=["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c"
 if (gemdos_io_enable=="yes"):
     nkt_src = nkt_src + discio_src
 
-# build test programs and link them with amidilib
-env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=[LIBRARYNAME + LIB_POSTFIX,'m'])
-env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
-env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+if(libc!="yes"):
+	# build test programs and link them with amidilib and custom startup code
+	env.Library("startup" + LIB_POSTFIX, startup_src)
+	
+	env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=["startup" + LIB_POSTFIX]);
+	env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=["startup" + LIB_POSTFIX ]);
+else:
+	# build test programs and link them with amidilib
+	env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
+	env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
+	env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+
+

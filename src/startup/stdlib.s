@@ -1,5 +1,5 @@
 ; custom, minimal startup for C code
-; (c) 2011 Mariusz Buras (all), Pawel Goralski (modifications for C)
+; (c) 2011,2015 Mariusz Buras (all), Pawel Goralski (modifications for C)
 
 		include 'm68k_defs.inc'
 		xdef	_memcpy
@@ -17,7 +17,9 @@
 		xdef ___umodsi3
 		xdef ___clzsi2
 		xdef ___ctzsi2
-		
+		else
+		xdef ___clzsi2
+		xdef ___ctzsi2
 		endif
 		else
 		  ; you're compiling without VASM or VASM version is too old

@@ -21,6 +21,39 @@ int puts( const char* pText ){
 	return 0;
 }
 
+
+int printf ( const char * format, ... ){
+
+    Cconws ( "printf()\r\n" );
+
+}
+
+void __assert_fail(const char *assertion, const char *file, unsigned int line, const char *function){
+
+}
+
+int getchar(){
+ return 0;
+}
+
+char * strncpy ( char * destination, const char * source, size_t num ){
+ return 0;
+}
+
+char * strrchr(const char * str, int character ){
+    return 0;
+}
+
+int __clzsi2 (int a){return 0;}
+int __clzdi2 (long a){return 0;}
+int __ctzsi2 (int a){return 0;}
+
+int snprintf ( char * s, size_t n, const char * format, ... ){return 0;}
+char * strstr (const char * str1, const char * str2 ){return 0;}
+char * strchr ( const char * str, int character ){return 0;}
+int strncmp ( const char * str1, const char * str2, size_t num ){return 0;}
+long int strtol (const char* str, char** endptr, int base){return 0;}
+int toupper ( int c ){return c;}
 // ----------------------------------------------------------------------------------------
 
 void* memset ( void * ptr, int value, size_t num )

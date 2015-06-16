@@ -222,7 +222,7 @@ ym2149_src = ["common/ym2149.c"]
 lzo_src = ["common/lzo/minilzo.c"]
 
 # custom startup
-startup_src = ["startup/mStartupAsmC.s", "startup/stdlib.s", "startup/mStartup.c" ]
+startup_src = ["startup/mStartupAsmC.s", "startup/stdlib.s", "startup/mStartup.c"]
 
 # main library 
 amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
@@ -247,14 +247,12 @@ if (gemdos_io_enable=="yes"):
 
 if(libc!="yes"):
 	# build test programs and link them with amidilib and custom startup code
-	env.Library("startup" + LIB_POSTFIX, startup_src)
-	
-	env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX])
-	env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX])
-	env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX])
-	env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = ["startup" + LIB_POSTFIX, LIBRARYNAME + LIB_POSTFIX])
-	env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=["startup" + LIB_POSTFIX]);
-	env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=["startup" + LIB_POSTFIX ]);
+	env.Program(AMIDI_TEST_EXE, [env.Object(startup_src) + amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX])
+	env.Program(MIDI_SEQ_TEST_EXE, [env.Object(startup_src) + midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
+	env.Program(YM2149_TEST_EXE, [env.Object(startup_src) + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
+	env.Program(TIMINGS_TEST_EXE, [env.Object(startup_src) + timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
+	env.Program(NKT_REPLAY_EXE, [env.Object(startup_src) + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
+	env.Program(MID2NKT_EXE, [env.Object(startup_src) + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
 else:
 	# build test programs and link them with amidilib
 	env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])

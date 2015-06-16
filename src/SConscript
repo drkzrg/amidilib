@@ -21,7 +21,7 @@ where name of 'target' can be: \n \
  'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
  'conout' - disable/enable console output,\n \
  'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
- 'libc' - if not "yes", builds library without libc dependencies, reducing binary size,\n \
+ 'libc' - if not 'yes', builds library without libc dependencies, reducing binary size,\n \
  set to '0' by default")
 
 debug = ARGUMENTS.get('debug', 0)

@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2014 Pawel Goralski
+/**  Copyright 2007-2015 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -19,13 +19,20 @@
 #include "midi_cmd.h"
 #include "rol_ptch.h"
 
-#include "minilzo.h" //lzo depack, TODO: add compilation flag to remove lzo during compilation time
+#include "minilzo.h" //lzo pack / depack
 
 #ifdef ENABLE_GEMDOS_IO
 #include "fmio.h"
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 #endif
+
+// helper function for determining amount of memory we need for data / events buffers
+extern U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
+
+void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq);
+void setNktTrackInfo(sNktTrackInfo* header, const sNktSeq *pNktSeq);
+
 
 static sNktSeq *g_CurrentNktSequence=0;
 
@@ -62,7 +69,6 @@ if(g_CurrentNktSequence){
 
   }else{
     // loop
-
     g_CurrentNktSequence->sequenceState&=(U16)(~NKT_PS_PAUSED);
     g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
@@ -71,8 +77,8 @@ if(g_CurrentNktSequence){
   g_CurrentNktSequence->timeElapsedFrac=0L;
 
   g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
-  g_CurrentNktSequence->currentBlockId=0l;
-  g_CurrentNktSequence->eventsBlockOffset=0L;
+  g_CurrentNktSequence->pTracks[0].currentBlockId=0l;
+  g_CurrentNktSequence->pTracks[0].eventsBlockOffset=0L;
 
   // reset all tracks state
   g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
@@ -137,7 +143,6 @@ if(pSeq!=0){
                    amTrace("Update 200hz: %ld [0x%x]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
               } break;
               default:{
-                  assert(0);
                   amTrace((const U8*)"[Error] Invalid timer update value %d\n", i);
               } break;
           };
@@ -146,8 +151,12 @@ if(pSeq!=0){
 
     pSeq->timeElapsedInt=0UL;
     pSeq->timeElapsedFrac=0UL;
-    pSeq->currentBlockId=0;
-    pSeq->eventsBlockOffset=0L;
+
+    for(int i=0;i<pSeq->nbOfTracks;++i){
+        pSeq->pTracks[i].currentBlockId=0;
+        pSeq->pTracks[i].eventsBlockOffset=0L;
+    }
+
     pSeq->timeStep=pSeq->defaultTempo.tuTable[pSeq->currentUpdateFreq];
 
     pSeq->sequenceState = initialState;
@@ -226,12 +235,12 @@ enum{
   IDX_MASTER_PAN=8
 };
 
-volatile static sSysEX_t arSetMasterVolumeGM   =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x04,0x7f,0x00,0xf7}};
-volatile static sSysEX_t arSetMasterBalanceGM  =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x06,0x7f,0x00,0xf7}};
-volatile static sSysEX_t arSetMasterVolumeMT32 =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x10,0x00,0x16,0x7f,0x00,0xf7}};
-volatile static sSysEX_t arSetTextMT32         =  {30,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x20,0x00,0x00,
-                                                              0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                                                              0x00,0xf7}};
+static sSysEX_t arSetMasterVolumeGM   =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x04,0x7f,0x00,0xf7}};
+static sSysEX_t arSetMasterBalanceGM  =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x40,0x00,0x06,0x7f,0x00,0xf7}};
+static sSysEX_t arSetMasterVolumeMT32 =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x10,0x00,0x16,0x7f,0x00,0xf7}};
+static sSysEX_t arSetTextMT32         =  {30,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x20,0x00,0x00,0x00,0x00,0x00,
+                                                              0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+                                                              0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xf7}};
 void updateStepNkt(){
  // handle volume/balance/reverb change
 
@@ -246,7 +255,7 @@ void updateStepNkt(){
              arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
              arSetMasterVolumeMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
 
-             arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                                  // sending
+             arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
              arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
              arSetMasterVolumeMT32.data[9]=am_calcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
 
@@ -356,7 +365,7 @@ void updateStepNkt(){
   if((sequenceState&NKT_PS_PLAYING)){
       bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
-      addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
+      addr=((U32)g_CurrentNktSequence->pTracks[0].eventBlocksPtr)+g_CurrentNktSequence->pTracks[0].eventsBlockOffset;
       U8 count=0;
 
       // read VLQ delta
@@ -368,7 +377,7 @@ void updateStepNkt(){
       nktBlk=(sNktBlock_t *)(pEventPtr);
 
       // track end?
-      if(nktBlk->msgType&NKT_END||g_CurrentNktSequence->currentBlockId>=g_CurrentNktSequence->nbOfBlocks){
+      if(nktBlk->msgType&NKT_END||g_CurrentNktSequence->pTracks[0].currentBlockId>=g_CurrentNktSequence->pTracks[0].nbOfBlocks){
          onEndSequence();
          return;
      }
@@ -387,7 +396,7 @@ void updateStepNkt(){
          // tempo change ?
          if(nktBlk->msgType&NKT_TEMPO_CHANGE){
             // set new tempo
-            addr=((U32)g_CurrentNktSequence->eventDataPtr)+nktBlk->bufferOffset;
+            addr=((U32)g_CurrentNktSequence->pTracks[0].eventDataPtr)+nktBlk->bufferOffset;
             U32 *pMidiDataStartAdr=(U32 *)(addr);
 
             g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
@@ -397,12 +406,12 @@ void updateStepNkt(){
             g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
 
             //next event
-            g_CurrentNktSequence->eventsBlockOffset+=count;
-            g_CurrentNktSequence->eventsBlockOffset+=sizeof(sNktBlock_t);
-            ++(g_CurrentNktSequence->currentBlockId);
+            g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=count;
+            g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=sizeof(sNktBlock_t);
+            ++(g_CurrentNktSequence->pTracks[0].currentBlockId);
 
             // get next event block
-            addr=((U32)g_CurrentNktSequence->eventBlocksPtr)+g_CurrentNktSequence->eventsBlockOffset;
+            addr=((U32)g_CurrentNktSequence->pTracks[0].eventBlocksPtr)+g_CurrentNktSequence->pTracks[0].eventsBlockOffset;
             U8 count=0;
 
             // read VLQ delta
@@ -414,7 +423,7 @@ void updateStepNkt(){
             nktBlk=(sNktBlock_t *)(pEventPtr);
         }
 
-         U32 *pMidiDataStartAdr=(U32 *)(((U32)g_CurrentNktSequence->eventDataPtr)+nktBlk->bufferOffset);
+         U32 *pMidiDataStartAdr=(U32 *)(((U32)g_CurrentNktSequence->pTracks[0].eventDataPtr)+nktBlk->bufferOffset);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
           amMemCpy(MIDIsendBuffer, pMidiDataStartAdr, nktBlk->blockSize);
@@ -425,10 +434,10 @@ void updateStepNkt(){
   #endif
 
           //go to next event
-          g_CurrentNktSequence->eventsBlockOffset+=count;
-          g_CurrentNktSequence->eventsBlockOffset+=sizeof(sNktBlock_t);
+          g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=count;
+          g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=sizeof(sNktBlock_t);
 
-          ++(g_CurrentNktSequence->currentBlockId);
+          ++(g_CurrentNktSequence->pTracks[0].currentBlockId);
 
      } // end delta check
 
@@ -448,15 +457,17 @@ void updateStepNkt(){
 
       g_CurrentNktSequence->timeElapsedInt=0L;
       g_CurrentNktSequence->timeElapsedFrac=0L;
-      g_CurrentNktSequence->eventsBlockOffset=0L;
       TimeAdd = 0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
       // get precalculated timestep
       g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
-      //rewind to the first event
-      g_CurrentNktSequence->currentBlockId=0;
+      //rewind all tracks to the first event
+      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
+          g_CurrentNktSequence->pTracks[i].currentBlockId=0;
+      }
 
       resetMidiDevice();
 
@@ -485,11 +496,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
 	
-    pNewSeq->currentUpdateFreq=NKT_U200HZ;
+    pNewSeq->currentUpdateFreq = NKT_U200HZ;
     pNewSeq->sequenceState |= NKT_PLAY_ONCE;
-    pNewSeq->defaultTempo.tempo=DEFAULT_MPQN;
-    pNewSeq->currentTempo.tempo=DEFAULT_MPQN;
-    pNewSeq->timeDivision=DEFAULT_PPQN;
+    pNewSeq->defaultTempo.tempo = DEFAULT_MPQN;
+    pNewSeq->currentTempo.tempo = DEFAULT_MPQN;
+    pNewSeq->timeDivision = DEFAULT_PPQN;
 
     //get nb of blocks from file
 #ifdef ENABLE_GEMDOS_IO
@@ -583,18 +594,47 @@ sNktSeq *loadSequence(const U8 *pFilePath){
      return NULL;
    }
 
+   //read track data
+   sNktTrackInfo *trackData=0;
+   trackData=(sNktTrackInfo *)amMallocEx(tempHd.nbOfTracks * sizeof(sNktTrack), PREFER_TT);
+
+   if(trackData==NULL){
+      amTrace("Error: Couldn't allocate memory for track info\n.");
+      return NULL;
+   }
+
+   amMemSet(trackData,0,sizeof(sNktTrackInfo) * tempHd.nbOfTracks);
+
+#ifdef ENABLE_GEMDOS_IO
+    read=Fread(fh,sizeof(sNktTrackInfo)* tempHd.nbOfTracks,trackData);
+
+    if(read<0){
+          // GEMDOS ERROR TODO, display error for now
+          amTrace("[GEMDOS] Error: %s\n",getGemdosError(read));
+    }else{
+        if(read<(sizeof(sNktTrackInfo)* tempHd.nbOfTracks)){
+            amTrace("[GEMDOS] Read error, unexpected EOF. Expected: %d, read: %d\n",sizeof(sNktTrackInfo)* tempHd.nbOfTracks,read);
+        }
+    }
+
+#else
+      fread(trackData,sizeof(sNktTrackInfo)* tempHd.nbOfTracks,1,fp);
+#endif
+
+   amMemSet(&tempHd,0,sizeof(sNktHd));
    amTrace("[NKT header]\nNb of blocks: %lu (%lu bytes),\nEvent data buffer size: %lu\n", tempHd.nbOfBlocks, tempHd.eventsBlockBufSize);
    amTrace("data buffer size: %lu\n", tempHd.eventDataBufSize);
 
+   amTrace("nb of Tracks: %u ", tempHd.nbOfTracks);
    amTrace("td: %u ", tempHd.division);
-   amTrace("packed: %s ", tempHd.bPacked?"YES":"NO");
+
 
    lzo_voidp pPackedEvents=0;
    lzo_voidp pPackedData=0;
    lzo_uint newEventSize=0;
    lzo_uint newDataSize=0;
 
-   if( tempHd.nbOfBlocks==0 || tempHd.eventsBlockBufSize==0 || tempHd.eventDataBufSize==0 ){
+   if( trackData[0].nbOfBlocks==0 || trackData[0].eventsBlockBufSize==0 || trackData[0].eventDataBufSize==0 ){
 
     #ifndef SUPRESS_CON_OUTPUT
         printf("Error: File %s has no data or event blocks!\n",pFilePath);
@@ -614,27 +654,26 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         fclose(fp); fp=0;
     #endif
 
-
     amFree(pNewSeq);
     return NULL;
 
    }else{
-       // update info from header
-        pNewSeq->nbOfBlocks = tempHd.nbOfBlocks;
-        pNewSeq->eventsBlockBufferSize=tempHd.eventsBlockBufSize;
-        pNewSeq->dataBufferSize = tempHd.eventDataBufSize;
+        // update info from header and track info data
         pNewSeq->timeDivision = tempHd.division;
-        pNewSeq->version=tempHd.version;
-        pNewSeq->timeDivision=tempHd.division;
-        pNewSeq->bPacked=tempHd.bPacked;
+        pNewSeq->version = tempHd.version;
+        pNewSeq->timeDivision = tempHd.division;
+
+        pNewSeq->pTracks[0].nbOfBlocks = trackData[0].nbOfBlocks;
+        pNewSeq->pTracks[0].eventsBlockBufferSize = trackData[0].eventsBlockBufSize;
+        pNewSeq->pTracks[0].dataBufferSize = trackData[0].eventDataBufSize;
 
         // ok
-        amTrace("Blocks in sequence: %lu \n", pNewSeq->nbOfBlocks);
-        amTrace("Event data buffer size: %lu \n", pNewSeq->dataBufferSize);
-        amTrace("Events block size: %lu \n", pNewSeq->eventsBlockBufferSize);
-        amTrace("Packed: %s \n", pNewSeq->bPacked?"YES":"NO");
+        amTrace("Blocks in sequence: %lu \n", pNewSeq->pTracks[0].nbOfBlocks);
+        amTrace("Event data buffer size: %lu \n", pNewSeq->pTracks[0].dataBufferSize);
+        amTrace("Events block size: %lu \n", pNewSeq->pTracks[0].eventsBlockBufferSize);
 
-        if(pNewSeq->bPacked!=FALSE){
+        // packed data check
+        if(trackData[0].eventsBlockBufSize!=trackData[0].eventsBlockPackedSize){
 
             lzo_voidp pPackedDataSource=0;
 
@@ -649,23 +688,22 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 // unpack them to temp buffers
 
                 amTrace("[LZO] Allocating temp events buffer\n");
-                U32 amount = pNewSeq->eventsBlockBufferSize*3;
+                U32 amount = pNewSeq->pTracks[0].eventsBlockBufferSize*3;
 
-                pPackedEvents=(lzo_voidp)amMallocEx(amount,PREFER_TT);
-                pPackedDataSource=(lzo_voidp)amMallocEx(pNewSeq->eventsBlockBufferSize,PREFER_TT);
+                pPackedEvents=(lzo_voidp) amMallocEx(amount, PREFER_TT);
+                pPackedDataSource=(lzo_voidp) amMallocEx(pNewSeq->pTracks[0].eventsBlockBufferSize,PREFER_TT);
 
                 if(pPackedEvents!=NULL&&pPackedDataSource!=NULL){
 
                     amMemSet(pPackedEvents,0,amount);
-                    amMemSet(pPackedDataSource,0,pNewSeq->eventsBlockBufferSize);
+                    amMemSet(pPackedDataSource,0,pNewSeq->pTracks[0].eventsBlockBufferSize);
 
                     // fill buffer with packed data
-
 #ifdef ENABLE_GEMDOS_IO
-                    S32 read = Fread(fh, pNewSeq->eventsBlockBufferSize, pPackedDataSource);
+                    S32 read = Fread(fh, pNewSeq->pTracks[0].eventsBlockBufferSize, pPackedDataSource);
 
-                    if(read!=pNewSeq->eventsBlockBufferSize){
-                        amTrace("[GEMDOS] Error: read %lu, expected: %lu \n",read,pNewSeq->eventsBlockBufferSize);
+                    if(read!=pNewSeq->pTracks[0].eventsBlockBufferSize){
+                        amTrace("[GEMDOS] Error: read %lu, expected: %lu \n",read,pNewSeq->pTracks[0].eventsBlockBufferSize);
                     }else
                         amTrace("[GEMDOS] Read events buffer data %lu \n",read);
 #else
@@ -674,11 +712,11 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
 #endif
                     amTrace("[LZO] Decompressing events block...\n");
-                    int decResult=lzo1x_decompress(pPackedDataSource,pNewSeq->eventsBlockBufferSize,pPackedEvents,&newEventSize,LZO1X_MEM_DECOMPRESS);
+                    int decResult=lzo1x_decompress(pPackedDataSource,pNewSeq->pTracks[0].eventsBlockBufferSize,pPackedEvents,&newEventSize,LZO1X_MEM_DECOMPRESS);
 
                     if( decResult == LZO_E_OK){
-                        amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->eventsBlockBufferSize,newEventSize);
-                        pNewSeq->eventsBlockBufferSize=newEventSize;
+                        amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->pTracks[0].eventsBlockBufferSize,newEventSize);
+                        pNewSeq->pTracks[0].eventsBlockBufferSize=newEventSize;
                     }else{
                         amTrace("[LZO] Error: Events block decompression error: %d at %ld\n",decResult,newEventSize);
                     }
@@ -688,29 +726,29 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 }
 
                 amTrace("[LZO] Allocating temp data buffer\n");
-                amount = pNewSeq->dataBufferSize*3;
+                amount = pNewSeq->pTracks[0].dataBufferSize*3;
 
                 pPackedData=(lzo_voidp)amMallocEx(amount,PREFER_TT);
 
-                pPackedDataSource=(lzo_voidp)amMallocEx(pNewSeq->dataBufferSize,PREFER_TT);
+                pPackedDataSource=(lzo_voidp)amMallocEx(pNewSeq->pTracks[0].dataBufferSize,PREFER_TT);
 
 
                 if(pPackedData!=NULL && pPackedDataSource!=NULL){
                     amMemSet(pPackedData,0,amount);
-                    amMemSet(pPackedDataSource,0,pNewSeq->dataBufferSize);
+                    amMemSet(pPackedDataSource,0,pNewSeq->pTracks[0].dataBufferSize);
 
 #ifdef ENABLE_GEMDOS_IO
                     amTrace("[GEMDOS] Read events data buffer\n");
-                    S32 read=Fread(fh,pNewSeq->dataBufferSize,pPackedDataSource);
+                    S32 read=Fread(fh, pNewSeq->pTracks[0].dataBufferSize, pPackedDataSource);
 #else
 #error TODO
 #endif
                     amTrace("[LZO] Decompressing data block...\n");
-                    int decResult = lzo1x_decompress(pPackedDataSource,pNewSeq->dataBufferSize,pPackedData,&newDataSize,LZO1X_MEM_DECOMPRESS);
+                    int decResult = lzo1x_decompress(pPackedDataSource,pNewSeq->pTracks[0].dataBufferSize,pPackedData,&newDataSize,LZO1X_MEM_DECOMPRESS);
 
                     if( decResult == LZO_E_OK){
-                        amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->dataBufferSize,newDataSize);
-                        pNewSeq->dataBufferSize=newDataSize;
+                        amTrace("[LZO] Decompressed events buffer %ld->%ld bytes\n",pNewSeq->pTracks[0].dataBufferSize,newDataSize);
+                        pNewSeq->pTracks[0].dataBufferSize=newDataSize;
                     }else{
                         amTrace("[LZO] Error: Data block decompression error: %d at %ld\n",decResult,newDataSize);
                     }
@@ -724,7 +762,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         U32 lbAllocAdr=0;
 
         // create linear buffer
-        if(createLinearBuffer(&(pNewSeq->lbEventsBuffer),pNewSeq->eventsBlockBufferSize+255,PREFER_TT)<0){
+        if(createLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer),pNewSeq->pTracks[0].eventsBlockBufferSize+255,PREFER_TT)<0){
 
             #ifndef SUPRESS_CON_OUTPUT
             printf("Error: loadSequence() Couldn't allocate memory for event block buffer.\n");
@@ -750,13 +788,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
          }
 
          // allocate contigous / linear memory for pNewSeq->NbOfBlocks events
-         lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->lbEventsBuffer), (pNewSeq->eventsBlockBufferSize)+255);
+         lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->pTracks[0].lbEventsBuffer), (pNewSeq->pTracks[0].eventsBlockBufferSize)+255);
          lbAllocAdr+=255;
          lbAllocAdr&=0xfffffff0;
 
-         pNewSeq->eventBlocksPtr = (U8 *)lbAllocAdr;
+         pNewSeq->pTracks[0].eventBlocksPtr = (U8 *)lbAllocAdr;
 
-         if(pNewSeq->eventBlocksPtr==0){
+         if(pNewSeq->pTracks[0].eventBlocksPtr==0){
 
 #ifndef SUPRESS_CON_OUTPUT
             printf("Error: loadSequence() Linear buffer out of memory.\n");
@@ -780,9 +818,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              return NULL;
          }
 
-         amTrace("Allocated %lu kb for event block buffer\n",(pNewSeq->eventsBlockBufferSize)/1024);
+         amTrace("Allocated %lu kb for event block buffer\n",(pNewSeq->pTracks[0].eventsBlockBufferSize)/1024);
 
-         if(createLinearBuffer(&(pNewSeq->lbDataBuffer),pNewSeq->dataBufferSize+255,PREFER_TT)<0){
+         if(createLinearBuffer(&(pNewSeq->pTracks[0].lbDataBuffer),pNewSeq->pTracks[0].dataBufferSize+255,PREFER_TT)<0){
 
             #ifndef SUPRESS_CON_OUTPUT
                 printf("Error: loadSequence() Couldn't allocate memory for temp data buffer. \n");
@@ -804,21 +842,21 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             #endif
 
              // destroy block buffer
-             destroyLinearBuffer(&(pNewSeq->lbEventsBuffer));
+             destroyLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer));
              amFree(pNewSeq);
 
              return NULL;
          }
 
        // alloc memory for data buffer from linear allocator
-       lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->lbDataBuffer), pNewSeq->dataBufferSize+255);
+       lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->pTracks[0].lbDataBuffer), pNewSeq->pTracks[0].dataBufferSize+255);
        lbAllocAdr+=255;
        lbAllocAdr&=0xfffffff0;
 
-       pNewSeq->eventDataPtr = (U8*)lbAllocAdr;
-       amTrace("Allocated %lu kb for event data buffer\n",(pNewSeq->dataBufferSize)/1024);
+       pNewSeq->pTracks[0].eventDataPtr = (U8*)lbAllocAdr;
+       amTrace("Allocated %lu kb for event data buffer\n",(pNewSeq->pTracks[0].dataBufferSize)/1024);
 
-       if(pNewSeq->eventDataPtr==0){
+       if(pNewSeq->pTracks[0].eventDataPtr==0){
 
            #ifndef SUPRESS_CON_OUTPUT
                 printf("Error: loadSequence() Linear buffer out of memory.\n");
@@ -827,8 +865,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
            amTrace("Error: loadSequence() Linear buffer out of memory.\n");
 
            // destroy block buffer
-           destroyLinearBuffer(&(pNewSeq->lbEventsBuffer));
-           destroyLinearBuffer(&(pNewSeq->lbDataBuffer));
+           destroyLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer));
+           destroyLinearBuffer(&(pNewSeq->pTracks[0].lbDataBuffer));
 
            #ifdef ENABLE_GEMDOS_IO
             amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
@@ -850,10 +888,10 @@ sNktSeq *loadSequence(const U8 *pFilePath){
      }
 
    // read raw data if file isn't packed
-   if(pNewSeq->bPacked!=FALSE){
+   if(trackData[0].eventsBlockBufSize!=trackData[0].eventsBlockPackedSize){
         // copy depacked data to buffers
-        amMemCpy(pNewSeq->eventBlocksPtr, pPackedEvents, pNewSeq->eventsBlockBufferSize);
-        amMemCpy(pNewSeq->eventDataPtr, pPackedData, pNewSeq->dataBufferSize);
+        amMemCpy(pNewSeq->pTracks[0].eventBlocksPtr, pPackedEvents, pNewSeq->pTracks[0].eventsBlockBufferSize);
+        amMemCpy(pNewSeq->pTracks[0].eventDataPtr, pPackedData, pNewSeq->pTracks[0].dataBufferSize);
 
         // free temp buffers with packed data
         amFree(pPackedEvents);
@@ -861,13 +899,13 @@ sNktSeq *loadSequence(const U8 *pFilePath){
    }
 
    // read raw data if file isn't packed
-   if(pNewSeq->bPacked==FALSE){
+   if(trackData[0].eventsBlockBufSize == trackData[0].eventsBlockPackedSize){
      // load decompressed data directly from file
      // load event block
-        tMEMSIZE amount = pNewSeq->eventsBlockBufferSize;
+        tMEMSIZE amount = pNewSeq->pTracks[0].eventsBlockBufferSize;
 
 #ifdef ENABLE_GEMDOS_IO
-         read=Fread(fh,amount,(void *)pNewSeq->eventBlocksPtr);
+         read=Fread(fh,amount,(void *)pNewSeq->pTracks[0].eventBlocksPtr);
 
          if(read<amount){
              amTrace("[GEMDOS] error, read bytes: %ld, expected read: %ld ",read,amount);
@@ -875,15 +913,15 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              return NULL;
          }
 #else
-        fread((void *)pNewSeq->eventBlocksPtr,amount,1,fp);
+        fread((void *)pNewSeq->pTracks[0].eventBlocksPtr, amount, 1, fp);
 #endif
 
-        amount = pNewSeq->dataBufferSize;
+        amount = pNewSeq->pTracks[0].dataBufferSize;
 
         // load data block
 #ifdef ENABLE_GEMDOS_IO
 
-        read=Fread(fh,amount,(void *)pNewSeq->eventDataPtr);
+        read=Fread(fh,amount,(void *)pNewSeq->pTracks[0].eventDataPtr);
 
         if(read<amount){
             amTrace("[GEMDOS] error, read bytes: %ld, expected read: %ld ",read,amount);
@@ -891,7 +929,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
             return NULL;
         }
 #else
-        fread((void *)pNewSeq->eventDataPtr,amount,1,fp);
+        fread((void *)pNewSeq->pTracks[0].eventDataPtr,amount,1,fp);
 #endif
  }
 
@@ -901,14 +939,14 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     U8 count=0;
 
 for (int i=0;i<255;++i){
-    amTrace("[0x%x]",pNewSeq->eventBlocksPtr[i]);
+    amTrace("[0x%x]",pNewSeq->pTracks[0].eventBlocksPtr[i]);
 
 }
 amTrace("\n");
 
-while(blockNb<pNewSeq->nbOfBlocks){
+while(blockNb<pNewSeq->pTracks[0].nbOfBlocks){
 
-      U32 addr=((U32)pNewSeq->eventBlocksPtr)+pNewSeq->eventsBlockOffset;
+      U32 addr=((U32)pNewSeq->pTracks[0].eventBlocksPtr)+pNewSeq->pTracks[0].eventsBlockOffset;
 
       U8 *pEventPtr=(U8 *)(addr);
       U32 d=readVLQ(pEventPtr,&count);
@@ -922,7 +960,7 @@ while(blockNb<pNewSeq->nbOfBlocks){
       if(eBlk->blockSize>0){
           amTrace("[DATA] ");
 
-          U8 *data = (U8 *)((U32)(pNewSeq->eventDataPtr)+eBlk->bufferOffset);
+          U8 *data = (U8 *)((U32)(pNewSeq->pTracks[0].eventDataPtr)+eBlk->bufferOffset);
 
           for(int j=0;j<eBlk->blockSize;++j){
            amTrace("0x%02x ",data[j]);
@@ -931,8 +969,8 @@ while(blockNb<pNewSeq->nbOfBlocks){
           amTrace(" [/DATA]\n");
       }
 
-      pNewSeq->eventsBlockOffset+=count;
-      pNewSeq->eventsBlockOffset+=sizeof(sNktBlock_t);
+      pNewSeq->pTracks[0].eventsBlockOffset+=count;
+      pNewSeq->pTracks[0].eventsBlockOffset+=sizeof(sNktBlock_t);
 
       ++blockNb;
     }
@@ -958,25 +996,27 @@ while(blockNb<pNewSeq->nbOfBlocks){
 
 void destroySequence(sNktSeq *pSeq){
 
-    if(pSeq==0) return;
+  if(pSeq==0) return;
 
-    if(pSeq->nbOfBlocks==0){
+  if(pSeq->pTracks){
 
-        amMemSet(pSeq,0,sizeof(sNktSeq));
-        amFree(pSeq);
-        return;
+   for(int i=0; i<pSeq->nbOfTracks; ++i){
 
-    }else{
+        if(pSeq->pTracks[i].nbOfBlocks!=0){
 
-        // release linear buffer
-        linearBufferFree(&(pSeq->lbEventsBuffer));
-        linearBufferFree(&(pSeq->lbDataBuffer));
+            // release linear buffer
+            linearBufferFree(&(pSeq->pTracks[i].lbEventsBuffer));
+            linearBufferFree(&(pSeq->pTracks[i].lbDataBuffer));
+        }
+   };
 
-        //clear struct
-        amMemSet(pSeq,0,sizeof(sNktSeq));
-        amFree(pSeq);
-        return;
-    }
+   amFree(pSeq->pTracks);
+   pSeq->pTracks=0;
+ }
+
+ amMemSet(pSeq,0,sizeof(sNktSeq));
+ amFree(pSeq);
+ return;
 }
 
 
@@ -1171,36 +1211,42 @@ const U8 *getEventTypeName(U16 type){
 #endif
 
 
-U32 saveEventDataBlocks(S16 fh,sNktSeq *pSeq){
- S32 written=0;
-        // save event block
-        amTrace("[MID2NKT] Saving event block.[%ld bytes] \n",pSeq->eventsBlockBufferSize);
+S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
+        S32 written=0;
 
-        written = Fwrite(fh,pSeq->eventsBlockBufferSize,(void *)pSeq->eventBlocksPtr);
+        // save data blocks
+        for(int i=0;i<pSeq->nbOfTracks;++i){
 
-        if(written<pSeq->eventsBlockBufferSize){
-           amTrace("[GEMDOS]Fatal error: Events block write error, written: %ld , expected %ld bytes\n", written, pSeq->eventsBlockBufferSize);
-           amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+            // save event block
+            amTrace("[MID2NKT] Saving event block.[%ld bytes] \n",pSeq->pTracks[i].eventsBlockBufferSize);
 
-           return -1;
-        }else{
-            amTrace("[GEMDOS] written: %ld bytes\n", written);
+            written = Fwrite(fh,pSeq->pTracks[i].eventsBlockBufferSize,(void *)pSeq->pTracks[i].eventBlocksPtr);
 
-        }
+            if(written<pSeq->pTracks[i].eventsBlockBufferSize){
+               amTrace("[GEMDOS]Fatal error: Events block write error, written: %ld , expected %ld bytes\n", written, pSeq->pTracks[i].eventsBlockBufferSize);
+               amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
 
-        // save data block
-        amTrace("[MID2NKT] Saving data block.[%ld bytes] \n",pSeq->dataBufferSize);
+               return -1;
+            }else{
+                amTrace("[GEMDOS] written: %ld bytes\n", written);
 
-        written=Fwrite(fh,pSeq->dataBufferSize,(void *)pSeq->eventDataPtr);
+            }
 
-        if(written<pSeq->dataBufferSize)
-        {
-           amTrace("[GEMDOS]Fatal error: Event data block write error, written: %ld , expected %ld bytes\n", written, pSeq->dataBufferSize);
-           amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+            // save data block
+            amTrace("[MID2NKT] Saving data block.[%ld bytes] \n",pSeq->pTracks[i].dataBufferSize);
 
-           return -1;
-        }else{
-            amTrace("[GEMDOS] written: %ld bytes\n", written);
+            written=Fwrite(fh,pSeq->pTracks[i].dataBufferSize,(void *)pSeq->pTracks[i].eventDataPtr);
+
+            if(written<pSeq->pTracks[i].dataBufferSize)
+            {
+               amTrace("[GEMDOS]Fatal error: Event data block write error, written: %ld , expected %ld bytes\n", written, pSeq->pTracks[i].dataBufferSize);
+               amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+
+               return -1;
+            }else{
+                amTrace("[GEMDOS] written: %ld bytes\n", written);
+            }
+
         }
 
     return 0;
@@ -1210,29 +1256,40 @@ U32 saveEventDataBlocks(S16 fh,sNktSeq *pSeq){
 
 U32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompress){
 
-
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");
-
+    return 0;
 }
 
 // create header
 sNktHd nktHd;
+sNktTrackInfo *pTrackInfo=0;
+
+if(pSeq->nbOfTracks==0){
+    amTrace("[MID2NKT] Fatal error, no tracks in sequence!\n");
+    return 0;
+}
+
+pTrackInfo=(sNktTrackInfo *)amMallocEx( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), PREFER_TT);
+
+if(pTrackInfo==0) {
+    amTrace("[MID2NKT] Fatal error, no memory for track info!\n");
+    return 0;
+}
 
 // set header
 amTrace("[MID2NKT] Init header...\n");
 
-setNktHeader(&nktHd, pSeq, bCompress);
+setNktHeader(&nktHd, pSeq);
+setNktTrackInfo(pTrackInfo,pSeq);
 
 #ifdef ENABLE_GEMDOS_IO
-
  S16 fh=GDOS_INVALID_HANDLE;
 
  amTrace("[GEMDOS] Save sequence to %s, compress: %d\n",filepath, bCompress);
 
  // file create
  fh = Fcreate(filepath,0);
-
 
  if(fh<0){
      amTrace("[GEMDOS] Error: %s\n", getGemdosError(fh));
@@ -1263,7 +1320,7 @@ setNktHeader(&nktHd, pSeq, bCompress);
               amMemSet(workMem,0,workMemSize);
 
               amTrace("[LZO] Compressing events block.\n");
-              tMEMSIZE tempBufSize=(pSeq->eventsBlockBufferSize+pSeq->eventsBlockBufferSize/16+64+3);
+              tMEMSIZE tempBufSize=(pSeq->pTracks[0].eventsBlockBufferSize+pSeq->pTracks[0].eventsBlockBufferSize/16+64+3);
               lzo_bytep tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
 
               if(tempBuffer==NULL){
@@ -1278,19 +1335,19 @@ setNktHeader(&nktHd, pSeq, bCompress);
 
               // compress
               lzo_uint nbBytesPacked=0;
-              if(lzo1x_1_compress(pSeq->eventBlocksPtr,pSeq->eventsBlockBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
+              if(lzo1x_1_compress(pSeq->pTracks[0].eventBlocksPtr,pSeq->pTracks[0].eventsBlockBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
                     amTrace("[LZO] Event data compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
 
                     /* check for an incompressible block */
-                    if (nbBytesPacked >= pSeq->eventsBlockBufferSize){
+                    if (nbBytesPacked >= pSeq->pTracks[0].eventsBlockBufferSize){
                             amTrace("[LZO] Error: Event block contains incompressible data.\n");
                         return -1;
                     }
 
                     // copy output buffer with packed data
-                    pSeq->eventsBlockBufferSize=nbBytesPacked;
-                    nktHd.eventsBlockBufSize=nbBytesPacked;
-                    amMemCpy(pSeq->eventBlocksPtr,tempBuffer,nbBytesPacked);
+                    pSeq->pTracks[0].eventsBlockBufferSize = nbBytesPacked;
+                    pTrackInfo[0].eventsBlockPackedSize = nbBytesPacked;
+                    amMemCpy(pSeq->pTracks[0].eventBlocksPtr,tempBuffer,nbBytesPacked);
 
               }else{
                  amTrace("[LZO] Internal error: Compression failed.\n");
@@ -1299,7 +1356,7 @@ setNktHeader(&nktHd, pSeq, bCompress);
               amFree(tempBuffer);
 
               amTrace("[LZO] Compressing data block.\n");
-              tempBufSize=pSeq->dataBufferSize+pSeq->dataBufferSize/16+64+3;
+              tempBufSize=pSeq->pTracks[0].dataBufferSize+pSeq->pTracks[0].dataBufferSize/16+64+3;
               tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
 
               if(tempBuffer==NULL){
@@ -1314,11 +1371,11 @@ setNktHeader(&nktHd, pSeq, bCompress);
 
               // compress data block
               nbBytesPacked=0;
-              if(lzo1x_1_compress(pSeq->eventDataPtr,pSeq->dataBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
-                    amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->dataBufferSize,nbBytesPacked);
+              if(lzo1x_1_compress(pSeq->pTracks[0].eventDataPtr,pSeq->pTracks[0].dataBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
+                    amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->dataBufferSize, nbBytesPacked);
 
                     /* check for an incompressible block */
-                      if (nbBytesPacked >= pSeq->dataBufferSize){
+                      if (nbBytesPacked >= pSeq->pTracks[0].dataBufferSize){
                             amTrace("[LZO] Error: Data block contains incompressible data.\n");
                         return -1;
                       }
@@ -1326,16 +1383,14 @@ setNktHeader(&nktHd, pSeq, bCompress);
                     // copy output buffer with packed data
                     // TODO: shrink existing buffer somehow
 
-                    pSeq->dataBufferSize=nbBytesPacked;
-                    nktHd.eventDataBufSize=nbBytesPacked;
-                    amMemCpy(pSeq->eventDataPtr,tempBuffer,nbBytesPacked);
+                    pSeq->pTracks[0].dataBufferSize=nbBytesPacked;
+                    pTrackInfo[0].eventDataBlockPackedSize = nbBytesPacked;
+
+                    amMemCpy(pSeq->pTracks[0].eventDataPtr,tempBuffer,nbBytesPacked);
 
               }else{
                   amTrace("[LZO] Internal error: Compression failed.\n");
               }
-
-
-              pSeq->bPacked=TRUE;
 
               //copy output buffer with packed data to
               amFree(tempBuffer);
@@ -1362,6 +1417,18 @@ setNktHeader(&nktHd, pSeq, bCompress);
           }else{
               amTrace("[GEMDOS] written: %ld bytes\n", written);
           }
+
+          // save track data
+          written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
+
+          if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+             amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
+             amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+             return -1;
+          }else{
+              amTrace("[GEMDOS] written: %ld bytes\n", written);
+          }
+
 
           // write data / event blocks
           if(saveEventDataBlocks(fh,pSeq)<0){
@@ -1410,9 +1477,11 @@ FILE *file;
 
  // file create
  // save header
+ // save track data
 
- // save event block
- // save data block
+ // for each track:
+ //// save event block
+ //// save data block
 
  // close file
 
@@ -1422,21 +1491,28 @@ FILE *file;
 }
 
 
-void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq, const BOOL bCompress){
+void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq){
 
     if(header){
         // clear header
         amMemSet(header, 0L, sizeof(sNktHd));
         header->id=ID_NKT;
-        header->bPacked = bCompress;
-        header->nbOfBlocks = pNktSeq->nbOfBlocks;
-        header->eventDataBufSize = pNktSeq->dataBufferSize;
-        header->eventsBlockBufSize = pNktSeq->eventsBlockBufferSize;
+        header->nbOfTracks=pNktSeq->nbOfTracks;
         header->division = pNktSeq->timeDivision;
         header->version = NKT_VERSION;
+    }
+}
 
-        amTrace("Set header: event data buffer: %ld events block buffer: %ld\n", header->eventDataBufSize,header->eventsBlockBufSize);
+void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
 
+    if(trackInfo){
+        for(int i=0;i<pNktSeq->nbOfTracks;++i){
+            trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
+            trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
+            trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
+            trackInfo[i].nbOfBlocks=0;
+            amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i,trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
+        }
     }
 }
 

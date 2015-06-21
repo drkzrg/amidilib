@@ -11,13 +11,13 @@
 /* Standard MIDI events definitions */
 
 /* MIDI Channel Events  */
-#define EV_NOTE_OFF             0x08       /* Note Off			    0x8		note number		    velocity */
-#define EV_NOTE_ON              0x09       /* Note On			    0x9		note number		    velocity */
-#define EV_NOTE_AFTERTOUCH      0x0A       /* Note Aftertouch	    0xA		note number		    aftertouch value */
-#define EV_CONTROLLER           0x0B       /* Controller			    0xB		controller number	controller value */
-#define EV_PROGRAM_CHANGE       0x0C       /* Program Change		    0xC		program number		not used */
-#define EV_CHANNEL_AFTERTOUCH   0x0D       /* Channel Aftertouch		0xD		aftertouch value	not used */
-#define EV_PITCH_BEND           0x0E       /* Pitch Bend		        0xE		pitch value (LSB)	pitch value (MSB) */
+#define EV_NOTE_OFF             0x80       /* Note Off			    0x8		note number		    velocity */
+#define EV_NOTE_ON              0x90       /* Note On			    0x9		note number		    velocity */
+#define EV_NOTE_AFTERTOUCH      0xA0       /* Note Aftertouch	    0xA		note number		    aftertouch value */
+#define EV_CONTROLLER           0xB0       /* Controller			    0xB		controller number	controller value */
+#define EV_PROGRAM_CHANGE       0xC0       /* Program Change		    0xC		program number		not used */
+#define EV_CHANNEL_AFTERTOUCH   0xD0       /* Channel Aftertouch		0xD		aftertouch value	not used */
+#define EV_PITCH_BEND           0xE0       /* Pitch Bend		        0xE		pitch value (LSB)	pitch value (MSB) */
 
 
 /* CONTROLLER (EV_CONTROLLER) EVENTS */

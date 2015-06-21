@@ -230,11 +230,13 @@ amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
 
 }
 
-U32 processMetaEvent( U32 delta, U8 **pMidiData, sNktSeq *pSeq, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+U32 processMetaEvent( U32 delta, U8 **pMidiData, sNktSeq *pSeq, U16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 
 U8 size=0;
 U32 metaLenght=0;
 sNktBlock_t stBlock;
+
+sNktTrack *pTrk=&pSeq->pTracks[trackIdx];
 
 /*get meta event type */
 (*pMidiData)++;
@@ -257,12 +259,12 @@ metaLenght=readVLQ((*pMidiData),&size);
         stBlock.bufferOffset=0; //we don't mind
 
          // write VLQ
-         U32 eventsBufPos=((U32)pSeq->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+         U32 eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
          S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
          bufferInfo->eventsBlockOffset+=count;
 
          // write event info block
-         eventsBufPos=((U32)pSeq->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+         eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
          amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
          bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
 
@@ -292,17 +294,17 @@ metaLenght=readVLQ((*pMidiData),&size);
             amTrace("%lu ms per quarter-note\n", val1);
 
             // write VLQ delta
-            U32 eventsBufPos=((U32)pSeq->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+            U32 eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
             S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
             bufferInfo->eventsBlockOffset+=count;
 
             // write event info block
-            eventsBufPos=((U32)pSeq->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+            eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
             amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
             bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
 
             // write tempo value to data buffer
-            eventsBufPos=((U32)pSeq->eventDataPtr)+bufferInfo->dataBlockOffset;
+            eventsBufPos=((U32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
             amMemCpy((void *)eventsBufPos,&val1,sizeof(U32));
             bufferInfo->dataBlockOffset+=sizeof(U32);
 
@@ -358,7 +360,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
            // write precalculated values to data buffer
 
-           eventsBufPos=((U32)pSeq->eventDataPtr)+bufferInfo->dataBlockOffset;
+           eventsBufPos=((U32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
            amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(U32));
            bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(U32);
 
@@ -406,7 +408,7 @@ while( (*(*pMidiData))!=EV_EOX){
 }
 
 
-U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, BOOL *bEOT){
+U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, U16 trackNbToProcess, BOOL *bEOT){
  U8 usSwitch=0;
  U8 ubSize=0;
  U32 iError=0;
@@ -463,9 +465,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
              break;
              case EV_META:
               amTrace("delta: %lu META\t", delta);
-
-              iError=processMetaEvent(delta, pCmd, pSeq, rs, bufferInfo, bEOT);
-
+              iError = processMetaEvent(delta, pCmd, pSeq, trackNbToProcess, rs, bufferInfo, bEOT);
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
                amTrace("delta: %lu SYSEX\n", delta);
@@ -513,13 +513,13 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
 }
 
 
-
-U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq){
+U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
 
 /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
 sChunkHeader *pTrackHd=0;
 U32 trackChunkSize=0;
 
+// TODO: update startTrkPtr to trackNbToProcess sMThd struct in pMidiData
 void *startTrkPtr=(void *)(((U8 *)pMidiData)+sizeof(sMThd));
 void *endTrkPtr=0;
 
@@ -550,8 +550,8 @@ endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
  rs.runningStatus=0;
  rs.recallRS=0;
 
- // clear
- amMemSet(&tempBufInfo,0,sizeof(sBufferInfo_t));
+// clear
+amMemSet(&tempBufInfo,0,sizeof(sBufferInfo_t));
 tempBufInfo.eventsBlockOffset=0L;
 tempBufInfo.dataBlockOffset=0L;
 
@@ -561,14 +561,14 @@ tempBufInfo.dataBlockOffset=0L;
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
 
-  iError=processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, &bEOT);   // todo check error
+  iError=processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, trackNbToProcess, &bEOT);
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
 
   while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)){
     pCmd+=ubSize;
 
-    iError=processMidiEvent(0,&pCmd, &rs, &tempBufInfo ,pSeq,&bEOT);
+    iError=processMidiEvent(0,&pCmd, &rs, &tempBufInfo, pSeq, trackNbToProcess,&bEOT);
 
     currentDelta = readVLQ(pCmd,&ubSize);
   }
@@ -594,20 +594,20 @@ tempBufInfo.dataBlockOffset=0L;
       amTrace("[Write event block]: d: [%lu] type: [%d] size: [%d] startOffset: [%lu]\n",delta,stBlock.msgType,tempBufInfo.bufPos,stBlock.bufferOffset);
 
       // write VLQ
-      U32 eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+      U32 eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
       S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
       amTrace("[E] delta vlq at [%lu]\n",tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=count;
 
       // write event info block
-      eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+      eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
       amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
       amTrace("[E] event info at [%lu]\n",tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
 
       // write to data buffer
 
-      eventsBufPos=((U32)pSeq->eventDataPtr)+tempBufInfo.dataBlockOffset;
+      eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventDataPtr)+tempBufInfo.dataBlockOffset;
       amMemCpy((void *)eventsBufPos, &tempBufInfo.buffer[0], stBlock.blockSize);
       amTrace("[D] event data at [%lu]\n",tempBufInfo.dataBlockOffset);
 
@@ -632,12 +632,12 @@ tempBufInfo.dataBlockOffset=0L;
         stBlock.bufferOffset=0; //we don't mind
 
         // write VLQ
-        U32 eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-        S32 count=WriteVarLen((S32)0,(U8 *)pSeq->eventBlocksPtr);
+        U32 eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        S32 count=WriteVarLen((S32)0,(U8 *)pSeq->pTracks[trackNbToProcess].eventBlocksPtr);
         tempBufInfo.eventsBlockOffset+=count;
 
         // write event info block
-        eventsBufPos=((U32)pSeq->eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
         amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
         tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
  }
@@ -649,14 +649,22 @@ tempBufInfo.dataBlockOffset=0L;
 sNktSeq *Midi2Nkt(void *pMidiData, const U8 *pOutFileName, const BOOL bCompress){
 
 sBufferInfo_t BufferInfo;
-sMidiTrackInfo_t MidiInfo;
 sNktSeq *pNewSeq=0;
 BOOL bEOT=FALSE;
+U16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
+
+sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)amMallocEx(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT);
+
+if(arMidiInfo==0){
+    amTrace("[MIDI2NKT] No memory for track info. Exiting...\n");
+    printf("[MIDI2NKT] No memory for track info. Exiting \n");
+    return 0;
+}
 
 amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
-amMemSet(&MidiInfo, 0L, sizeof(sMidiTrackInfo_t));
+amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 
-if(collectMidiTrackInfo(pMidiData,&MidiInfo,&bEOT)<0){
+if(collectMidiTrackInfo(pMidiData,&arMidiInfo[0],&bEOT)<0){
     amTrace("[MIDI2NKT]  MIDI file parse error. Exiting...\n");
     printf("[MIDI2NKT]  MIDI file parse error. Exiting \n");
     return 0;
@@ -667,17 +675,17 @@ if(collectMidiTrackInfo(pMidiData,&MidiInfo,&bEOT)<0){
 
 if(bEOT==FALSE){
     amTrace("No EOT in midi data found, adding EOT meta event...\n");
-    MidiInfo.eventsBlockSize += 1;
-    MidiInfo.eventsBlockSize+=sizeof(sNktBlock_t);
-    ++MidiInfo.nbOfBlocks;
+    arMidiInfo[0].eventsBlockSize += 1;
+    arMidiInfo[0].eventsBlockSize+=sizeof(sNktBlock_t);
+    ++arMidiInfo[0].nbOfBlocks;
 }
-amTrace("[Midi track info]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",MidiInfo.nbOfBlocks,MidiInfo.eventsBlockSize,MidiInfo.dataBlockSize);
+amTrace("[Midi track info]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",arMidiInfo[0].nbOfBlocks,arMidiInfo[0].eventsBlockSize,arMidiInfo[0].dataBlockSize);
 
 // now MidiInfo holds information about number of event blocks
 // and amount of bytes wee need to store midi data
 
 // reserve memory for sequence header
-pNewSeq = amMallocEx(sizeof(sNktSeq),PREFER_TT);
+pNewSeq = (sNktSeq *)amMallocEx(sizeof(sNktSeq),PREFER_TT);
 
 if(pNewSeq==0) {
     amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header.\n");
@@ -694,63 +702,72 @@ pNewSeq->currentTempo.tempo=DEFAULT_MPQN;
 pNewSeq->timeDivision=DEFAULT_PPQN;
 pNewSeq->version=NKT_VERSION;
 
-pNewSeq->nbOfBlocks=MidiInfo.nbOfBlocks;
-pNewSeq->eventsBlockBufferSize=MidiInfo.eventsBlockSize;
-pNewSeq->dataBufferSize=MidiInfo.dataBlockSize;
+pNewSeq->nbOfTracks=nbOfTracks;  // save nb of tracks
+pNewSeq->pTracks=(sNktTrack *) amMallocEx(nbOfTracks*sizeof(sNktTrack), PREFER_TT);
 
+if(pNewSeq->pTracks==NULL){
+     amFree(pNewSeq);
+     amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for track data.\n");
+     return 0;
+}
+
+pNewSeq->pTracks[0].nbOfBlocks=arMidiInfo[0].nbOfBlocks;
+pNewSeq->pTracks[0].eventsBlockBufferSize=arMidiInfo[0].eventsBlockSize;
+pNewSeq->pTracks[0].dataBufferSize=arMidiInfo[0].dataBlockSize;
 
 // reserve and initialise linear memory buffers
 // for event blocks and data
-if(createLinearBuffer(&(pNewSeq->lbEventsBuffer),pNewSeq->eventsBlockBufferSize+255, PREFER_TT)<0){
+if(createLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer),pNewSeq->pTracks[0].eventsBlockBufferSize+255, PREFER_TT)<0){
     amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for events block buffer.\n");
 
     amFree(pNewSeq);
     return 0;
 }
 
-if(createLinearBuffer(&(pNewSeq->lbDataBuffer),pNewSeq->dataBufferSize+255, PREFER_TT)<0){
+if(createLinearBuffer(&(pNewSeq->pTracks[0].lbDataBuffer),pNewSeq->pTracks[0].dataBufferSize+255, PREFER_TT)<0){
   amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for data buffer block.\n");
 
-  destroyLinearBuffer(&(pNewSeq->lbEventsBuffer));
+  destroyLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer));
   amFree(pNewSeq);
 
   return 0;
 }
 
 // allocate memory
-amTrace("[MIDI2NKT] Reserve memory:\nNb of events: %lu\nEvents block: %ld\nData block: %ld bytes\n", pNewSeq->nbOfBlocks, pNewSeq->eventsBlockBufferSize, pNewSeq->dataBufferSize);
+amTrace("[MIDI2NKT] Reserve memory:\nNb of events: %lu\nEvents block: %ld\nData block: %ld bytes\n", pNewSeq->pTracks[0].nbOfBlocks, pNewSeq->pTracks[0].eventsBlockBufferSize, pNewSeq->pTracks[0].dataBufferSize);
 
 // allocate contigous / linear memory for pNewSeq->NbOfBlocks events
 U32 lbAllocAdr=0;
-lbAllocAdr=(U32) linearBufferAlloc(&(pNewSeq->lbEventsBuffer), pNewSeq->eventsBlockBufferSize+255);
+lbAllocAdr=(U32) linearBufferAlloc(&(pNewSeq->pTracks[0].lbEventsBuffer), pNewSeq->pTracks[0].eventsBlockBufferSize+255);
 lbAllocAdr+=255;
 lbAllocAdr&=0xfffffff0;
-pNewSeq->eventBlocksPtr = (sNktBlock_t *)lbAllocAdr;
+pNewSeq->pTracks[0].eventBlocksPtr = (U8 *)lbAllocAdr;
 
 // alloc memory for data buffer from linear allocator
-lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->lbDataBuffer), pNewSeq->dataBufferSize+255);
+lbAllocAdr=(U32)linearBufferAlloc(&(pNewSeq->pTracks[0].lbDataBuffer), pNewSeq->pTracks[0].dataBufferSize+255);
 lbAllocAdr+=255;
 lbAllocAdr&=0xfffffff0;
-pNewSeq->eventDataPtr = (U8*)lbAllocAdr;
+pNewSeq->pTracks[0].eventDataPtr = (U8*)lbAllocAdr;
 
-if(pNewSeq->eventBlocksPtr==0||pNewSeq->eventDataPtr==0){
+if(pNewSeq->pTracks[0].eventBlocksPtr==0||pNewSeq->pTracks[0].eventDataPtr==0){
     amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for events block / events data.\n");
 
-    destroyLinearBuffer(&(pNewSeq->lbDataBuffer));
-    destroyLinearBuffer(&(pNewSeq->lbEventsBuffer));
+    destroyLinearBuffer(&(pNewSeq->pTracks[0].lbDataBuffer));
+    destroyLinearBuffer(&(pNewSeq->pTracks[0].lbEventsBuffer));
     amFree(pNewSeq);
 
     return 0;
 }
 
 // clear memory
-    amMemSet((void *)pNewSeq->eventBlocksPtr,0, pNewSeq->eventsBlockBufferSize);
-    amMemSet((void *)pNewSeq->eventDataPtr,0, pNewSeq->dataBufferSize);
+    amMemSet((void *)pNewSeq->pTracks[0].eventBlocksPtr,0, pNewSeq->pTracks[0].eventsBlockBufferSize);
+    amMemSet((void *)pNewSeq->pTracks[0].eventDataPtr,0, pNewSeq->pTracks[0].dataBufferSize);
 
 // transform midi data to nkt format
    amTrace("[MID->NKT] processing data ...\n");
 
-   U32 error = midiTrackDataToNkt(pMidiData,pNewSeq);
+   U32 error = midiTrackDataToNkt(pMidiData,pNewSeq,0);
+
 
 //save
  if(saveSequence(pNewSeq,pOutFileName,bCompress)<0){

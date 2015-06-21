@@ -82,8 +82,9 @@ U8 *filePath=0;
 
        U32 delta=0;
 
-       // check mid 0, no quit
-       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&&((sMThd *)pMidi)->format==0){
+       // check mid 0,1 no quit
+       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
+
            printf("Midi file loaded, size: %lu bytes.\n", ulFileLenght);
 
            U8 *pTempPtr=0;
@@ -93,7 +94,7 @@ U8 *filePath=0;
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);
 
-           printf("[ Please wait ] Converting MID to %s. Compress: %s\n",tempName,bEnableCompression?"YES":"NO");
+           printf("[ Please wait ] Converting MIDI %d to %s. Compress: %s\n",((sMThd *)pMidi)->format,tempName,bEnableCompression?"YES":"NO");
 
            // convert
            sNktSeq* pSeq = Midi2Nkt(pMidi,tempName, bEnableCompression);
@@ -106,7 +107,7 @@ U8 *filePath=0;
            }
 
        }else{
-           printf("File is not in MIDI 0 format. Exiting... \n");
+           printf("File is not in MIDI 0 or 1 format. Exiting... \n");
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */

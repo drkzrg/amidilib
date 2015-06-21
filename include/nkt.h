@@ -1,7 +1,7 @@
 #ifndef NKT_H
 #define NKT_H
 
-/**  Copyright 2007-2014 Pawel Goralski
+/**  Copyright 2007-2015 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -53,23 +53,11 @@ typedef struct __attribute__((packed)) NktTempo{
   U32 tuTable[NKT_UMAX];        // precalculated timesteps for 50, 100, 200hz updates for given tempo
 } sNktTempo;                    // to avoid timestep calculation during runtime
 
-typedef struct NktSeq{
-    U16 version;               // version
-    U16 timeDivision;          // track time division
-    U16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval (TODO: maybe we move it to global space / engine space)
-    sNktTempo defaultTempo;	   // initial tempo, quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
-    sNktTempo currentTempo;    // current tempo: quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
-    U32 timeElapsedFrac;	   // track elapsed time
-    U32 timeElapsedInt;		   // track elapsed time
-    U32 timeStep;              // current track's timestep
-    U16 sequenceState;         // bitfield with sequence state
-
+typedef struct NktTrack{
     U32 nbOfBlocks;            // nb of event blocks
     U32 currentBlockId;        // currently replayed block id 0-xxxx
-
     U32 eventsBlockBufferSize; // nb of bytes used for events buffer
     U32 dataBufferSize;        // nb of bytes used for event's data buffer
-    BOOL bPacked;              // indicates if sequence is packed
 
     U8 *eventBlocksPtr;        // pointer to start of events block
     U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
@@ -77,27 +65,54 @@ typedef struct NktSeq{
 
     tLinearBuffer lbDataBuffer;  // linear buffer for event data info
     tLinearBuffer lbEventsBuffer; // linear buffer for events block info
+}sNktTrack;
 
+
+typedef struct NktSeq{
+    U16 version;               // version
+    U16 timeDivision;          // track time division
+    U16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval
+    U16 nbOfTracks;            // number of tracks
+    U16 sequenceState;         // bitfield with sequence state
+    sNktTempo defaultTempo;	   // initial tempo, quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
+    sNktTempo currentTempo;    // current tempo: quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
+    U32 timeElapsedFrac;	   // sequence elapsed time fraction
+    U32 timeElapsedInt;		   // sequence elapsed time
+    U32 timeStep;              // sequence timestep
+    BOOL bPacked;              // indicates if sequence is lzo packed
+    sNktTrack *pTracks;        // array of tracks
 } sNktSeq;
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
-#define NKT_VERSION ((U16)2)
+#define NKT_VERSION ((U16)4)
 
-// stuff for file read
+// stuff for file reading
 // binary header, big endian
+
 typedef struct __attribute__((packed)) NktHd{
     U32 id;                         // always ID_NKT
+    U16 division;                   // time division
+    U16 version;                    // format version
+    U16 nbOfTracks;                 // number of tracks
+} sNktHd;
+
+typedef struct __attribute__((packed)) NktTrackInfo{
     U32 nbOfBlocks;                 // nb of event blocks in file
     U32 eventsBlockBufSize;         // (event vlq delta * NbOfBlocks) +  ( NbOfBlocks * sizeof(sNktBlk_t) )
     U32 eventsBlockPackedSize;      // if packed, size of packed data, contigous event block, 0 otherwise
     U32 eventDataBufSize;           // nb of bytes for data in event blocks
     U32 eventDataBlockPackedSize;   // if packed, size of packed data, contigous event data block, 0 otherwise
-    BOOL bPacked;                   // packed ?
-    U16 division;                   // time division
-    U16 version;                    // format version
+} sNktTrackInfo;
 
-    // TODO: add info / description block (?)
-} sNktHd;
+// file layout:
+// + sNktHd
+// + nbOfTracks*sNktTrackInfo
+// + track data[]
+//              :[eventBlock]
+//              :[eventData]
+// + ...
+// + track data[nbOfTracks]
+
 
 /////////////////////////////////////////////
 
@@ -136,7 +151,7 @@ U8 getMidiMasterBalance();
 #ifdef DEBUG_BUILD
 //debug helpers
 #ifdef MANUAL_STEP
-void initSequenceManual(sNktSeq *pSeq, U16 initialState); //todo remove in final build
+void initSequenceManual(sNktSeq *pSeq, U16 initialState);
 #endif
 void printNktSequenceState();
 const U8 *getEventTypeName(U16 type);

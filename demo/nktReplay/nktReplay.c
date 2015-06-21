@@ -24,7 +24,8 @@ S16 iError=0;
         return 0;
     }
 
-    eMidiDeviceType devType=DT_MT32_GM_EMULATION;
+    // hardcoded, todo: set config from commandline
+    eMidiDeviceType devType=DT_GS_SOUND_SOURCE;
 
     switch(devType){
         case DT_LA_SOUND_SOURCE:{

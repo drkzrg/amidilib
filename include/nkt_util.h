@@ -2,7 +2,7 @@
 #ifndef _NKT_UTIL_H
 #define _NKT_UTIL_H
 
-/**  Copyright 2007-2014 Pawel Goralski
+/**  Copyright 2007-2015 Pawel Goralski
     e-mail: pawel.goralski@nokturnal.pl
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -34,10 +34,7 @@ typedef struct sRunningStatus{
   U8 runningStatus;
 } sRunningStatus_t;
 
-// helper function for determining amount of memory we need for data / events buffers
-U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
 
-void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq, const BOOL bCompress);
 U32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompressed);
 
 #endif

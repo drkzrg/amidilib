@@ -324,7 +324,7 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
 }
 
 //
-U32 collectMidiTrackInfo(void *pMidiData, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT){
+U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT){
 
     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
     sChunkHeader *pTrackHd=0;

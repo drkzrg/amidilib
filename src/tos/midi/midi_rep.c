@@ -1,6 +1,12 @@
 
 // MIDI replay core
 
+/**  Copyright 2007-2015 Pawel Goralski
+    e-mail: pawel.goralski@nokturnal.pl
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
+
 #include <math.h>
 #include <assert.h>
 

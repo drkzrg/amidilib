@@ -20,6 +20,8 @@
 #include "fmio.h"
 #endif
 
+extern U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
+
 // from mparser.c
 U8  isMidiChannelEvent(U8 byteEvent){
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
@@ -664,7 +666,7 @@ if(arMidiInfo==0){
 amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
 amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 
-if(collectMidiTrackInfo(pMidiData,&arMidiInfo[0],&bEOT)<0){
+if(collectMidiTrackInfo(pMidiData,0,&arMidiInfo[0],&bEOT)<0){
     amTrace("[MIDI2NKT]  MIDI file parse error. Exiting...\n");
     printf("[MIDI2NKT]  MIDI file parse error. Exiting \n");
     return 0;

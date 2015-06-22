@@ -1221,7 +1221,7 @@ S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
         for(int i=0;i<pSeq->nbOfTracks;++i){
 
             // save event block
-            amTrace("[MID2NKT] Saving event block.[%ld bytes] \n",pSeq->pTracks[i].eventsBlockBufferSize);
+            amTrace("[MID2NKT] Saving event block.[%ld bytes] for track %d \n",pSeq->pTracks[i].eventsBlockBufferSize, i);
 
             written = Fwrite(fh,pSeq->pTracks[i].eventsBlockBufferSize,(void *)pSeq->pTracks[i].eventBlocksPtr);
 
@@ -1236,7 +1236,7 @@ S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
             }
 
             // save data block
-            amTrace("[MID2NKT] Saving data block.[%ld bytes] \n",pSeq->pTracks[i].dataBufferSize);
+            amTrace("[MID2NKT] Saving data block.[%ld bytes] for track [%d]\n",pSeq->pTracks[i].dataBufferSize, i);
 
             written=Fwrite(fh,pSeq->pTracks[i].dataBufferSize,(void *)pSeq->pTracks[i].eventDataPtr);
 
@@ -1456,6 +1456,17 @@ setNktTrackInfo(pTrackInfo,pSeq);
              amTrace("[GEMDOS] written: %ld bytes\n", written);
          }
 
+         // save track data
+         written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
+
+         if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+            amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
+            amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
+            return -1;
+         }else{
+             amTrace("[GEMDOS] written: %ld bytes\n", written);
+         }
+
          // write data / event blocks
          if(saveEventDataBlocks(fh,pSeq)<0){
              return -1;
@@ -1514,7 +1525,7 @@ void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
             trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
             trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
             trackInfo[i].nbOfBlocks=0;
-            amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i,trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
+            amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
         }
     }
 }

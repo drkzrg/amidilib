@@ -504,6 +504,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     pNewSeq->defaultTempo.tempo = DEFAULT_MPQN;
     pNewSeq->currentTempo.tempo = DEFAULT_MPQN;
     pNewSeq->timeDivision = DEFAULT_PPQN;
+    pNewSeq->nbOfTracks=1;
 
     //get nb of blocks from file
 #ifdef ENABLE_GEMDOS_IO
@@ -665,6 +666,17 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         pNewSeq->timeDivision = tempHd.division;
         pNewSeq->version = tempHd.version;
         pNewSeq->timeDivision = tempHd.division;
+        pNewSeq->nbOfTracks = tempHd.nbOfTracks;
+
+        pNewSeq->pTracks=amMallocEx(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT);
+
+        if(pNewSeq->pTracks==0){
+            amTrace("Error: Couldn't allocate memory for track info.\n");
+
+            amFree(pNewSeq);
+            return NULL;
+        }
+
 
         pNewSeq->pTracks[0].nbOfBlocks = trackData[0].nbOfBlocks;
         pNewSeq->pTracks[0].eventsBlockBufferSize = trackData[0].eventsBlockBufSize;
@@ -941,15 +953,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
     U32 blockNb=0;
     U8 count=0;
 
-for (int i=0;i<255;++i){
-    amTrace("[0x%x]",pNewSeq->pTracks[0].eventBlocksPtr[i]);
-
-}
-amTrace("\n");
-
 while(blockNb<pNewSeq->pTracks[0].nbOfBlocks){
 
-      U32 addr=((U32)pNewSeq->pTracks[0].eventBlocksPtr)+pNewSeq->pTracks[0].eventsBlockOffset;
+      U32 addr=((U32)pNewSeq->pTracks[0].eventBlocksPtr) + pNewSeq->pTracks[0].eventsBlockOffset;
 
       U8 *pEventPtr=(U8 *)(addr);
       U32 d=readVLQ(pEventPtr,&count);

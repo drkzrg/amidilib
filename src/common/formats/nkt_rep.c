@@ -609,6 +609,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
    amMemSet(trackData,0,sizeof(sNktTrackInfo) * tempHd.nbOfTracks);
 
 #ifdef ENABLE_GEMDOS_IO
+    Fseek(sizeof(sNktHd), fh, 0 );
     read=Fread(fh,sizeof(sNktTrackInfo)* tempHd.nbOfTracks,trackData);
 
     if(read<0){
@@ -624,7 +625,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
       fread(trackData,sizeof(sNktTrackInfo)* tempHd.nbOfTracks,1,fp);
 #endif
 
-   amMemSet(&tempHd,0,sizeof(sNktHd));
    amTrace("[NKT header]\nNb of blocks: %lu (%lu bytes),\nEvent data buffer size: %lu\n", trackData[0].nbOfBlocks, trackData[0].eventsBlockBufSize);
    amTrace("data buffer size: %lu\n", trackData[0].eventDataBufSize);
 
@@ -643,7 +643,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         printf("Error: File %s has no data or event blocks!\n",pFilePath);
     #endif
 
-    amTrace("Error: File %s has no data or event blocks!\n",pFilePath);
+    amTrace("\n Error: File %s has no data or event blocks!\n",pFilePath);
 
     #ifdef ENABLE_GEMDOS_IO
         amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
@@ -1524,7 +1524,7 @@ void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
             trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
             trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
             trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
-            trackInfo[i].nbOfBlocks=0;
+            trackInfo[i].nbOfBlocks=trackInfo[i].nbOfBlocks;
             amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
         }
     }

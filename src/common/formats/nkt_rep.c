@@ -191,8 +191,11 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 
   pSeq->timeElapsedInt = 0UL;
   pSeq->timeElapsedFrac = 0UL;
-  pSeq->currentBlockId = 0;
-  pSeq->eventsBlockOffset=0L;
+
+  for(int i=0;i<pSeq->nbOfTracks;++i){
+      pSeq->pTracks[i].currentBlockId=0;
+      pSeq->pTracks[i].eventsBlockOffset=0L;
+  }
 
   pSeq->timeStep = pSeq->currentTempo.tuTable[pSeq->currentUpdateFreq];
   pSeq->sequenceState = state;
@@ -622,8 +625,8 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
 
    amMemSet(&tempHd,0,sizeof(sNktHd));
-   amTrace("[NKT header]\nNb of blocks: %lu (%lu bytes),\nEvent data buffer size: %lu\n", tempHd.nbOfBlocks, tempHd.eventsBlockBufSize);
-   amTrace("data buffer size: %lu\n", tempHd.eventDataBufSize);
+   amTrace("[NKT header]\nNb of blocks: %lu (%lu bytes),\nEvent data buffer size: %lu\n", trackData[0].nbOfBlocks, trackData[0].eventsBlockBufSize);
+   amTrace("data buffer size: %lu\n", trackData[0].eventDataBufSize);
 
    amTrace("nb of Tracks: %u ", tempHd.nbOfTracks);
    amTrace("td: %u ", tempHd.division);
@@ -1336,7 +1339,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
               // compress
               lzo_uint nbBytesPacked=0;
               if(lzo1x_1_compress(pSeq->pTracks[0].eventBlocksPtr,pSeq->pTracks[0].eventsBlockBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
-                    amTrace("[LZO] Event data compressed %lu->%lu bytes.\n",pSeq->eventsBlockBufferSize,nbBytesPacked);
+                    amTrace("[LZO] Event data compressed %lu->%lu bytes.\n",pSeq->pTracks[0].eventsBlockBufferSize, nbBytesPacked);
 
                     /* check for an incompressible block */
                     if (nbBytesPacked >= pSeq->pTracks[0].eventsBlockBufferSize){
@@ -1372,7 +1375,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
               // compress data block
               nbBytesPacked=0;
               if(lzo1x_1_compress(pSeq->pTracks[0].eventDataPtr,pSeq->pTracks[0].dataBufferSize,tempBuffer,&nbBytesPacked,workMem)==LZO_E_OK){
-                    amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->dataBufferSize, nbBytesPacked);
+                    amTrace("[LZO] Data block compressed %lu->%lu bytes.\n",pSeq->pTracks[0].dataBufferSize, nbBytesPacked);
 
                     /* check for an incompressible block */
                       if (nbBytesPacked >= pSeq->pTracks[0].dataBufferSize){

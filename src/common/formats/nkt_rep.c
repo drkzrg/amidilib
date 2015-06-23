@@ -365,10 +365,13 @@ void updateStepNkt(){
     return;
   }
 
+  sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[0];
+
   if((sequenceState&NKT_PS_PLAYING)){
       bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
-      addr=((U32)g_CurrentNktSequence->pTracks[0].eventBlocksPtr)+g_CurrentNktSequence->pTracks[0].eventsBlockOffset;
+
+      addr=((U32)pCurTrack->eventBlocksPtr)+ pCurTrack->eventsBlockOffset;
       U8 count=0;
 
       // read VLQ delta
@@ -380,7 +383,7 @@ void updateStepNkt(){
       nktBlk=(sNktBlock_t *)(pEventPtr);
 
       // track end?
-      if(nktBlk->msgType&NKT_END||g_CurrentNktSequence->pTracks[0].currentBlockId>=g_CurrentNktSequence->pTracks[0].nbOfBlocks){
+      if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
          onEndSequence();
          return;
      }
@@ -399,7 +402,7 @@ void updateStepNkt(){
          // tempo change ?
          if(nktBlk->msgType&NKT_TEMPO_CHANGE){
             // set new tempo
-            addr=((U32)g_CurrentNktSequence->pTracks[0].eventDataPtr)+nktBlk->bufferOffset;
+            addr=((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset;
             U32 *pMidiDataStartAdr=(U32 *)(addr);
 
             g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
@@ -409,12 +412,12 @@ void updateStepNkt(){
             g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
 
             //next event
-            g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=count;
-            g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=sizeof(sNktBlock_t);
-            ++(g_CurrentNktSequence->pTracks[0].currentBlockId);
+            pCurTrack->eventsBlockOffset+=count;
+            pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+            ++(pCurTrack->currentBlockId);
 
             // get next event block
-            addr=((U32)g_CurrentNktSequence->pTracks[0].eventBlocksPtr)+g_CurrentNktSequence->pTracks[0].eventsBlockOffset;
+            addr=((U32)pCurTrack->eventBlocksPtr)+pCurTrack->eventsBlockOffset;
             U8 count=0;
 
             // read VLQ delta
@@ -426,7 +429,7 @@ void updateStepNkt(){
             nktBlk=(sNktBlock_t *)(pEventPtr);
         }
 
-         U32 *pMidiDataStartAdr=(U32 *)(((U32)g_CurrentNktSequence->pTracks[0].eventDataPtr)+nktBlk->bufferOffset);
+         U32 *pMidiDataStartAdr=(U32 *)(((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
           amMemCpy(MIDIsendBuffer, pMidiDataStartAdr, nktBlk->blockSize);
@@ -437,10 +440,10 @@ void updateStepNkt(){
   #endif
 
           //go to next event
-          g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=count;
-          g_CurrentNktSequence->pTracks[0].eventsBlockOffset+=sizeof(sNktBlock_t);
+          pCurTrack->eventsBlockOffset+=count;
+          pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
 
-          ++(g_CurrentNktSequence->pTracks[0].currentBlockId);
+          ++(pCurTrack->currentBlockId);
 
      } // end delta check
 

@@ -372,9 +372,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 #ifndef SUPRESS_CON_OUTPUT
        printf("Written %ld bytes\n",bytes_written);
 #endif
-        amTrace("Written %d bytes\n",bytes_written);
-
-
+       amTrace("Written %d bytes\n",bytes_written);
 #endif
 
       }// end of midi output file write

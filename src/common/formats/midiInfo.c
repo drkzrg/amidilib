@@ -333,10 +333,11 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
     void *startTrkPtr=(void *)(((U8 *)pMidiData)+sizeof(sMThd));
     void *endTrkPtr=0;
 
+    // set first track start
     pTrackHd=(sChunkHeader *)startTrkPtr;
 
     if(pTrackHd->id!=ID_MTRK){
-     amTrace("Error: Cannot find MIDI track chunk. Exiting. \n");
+     amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. \n");
      return 1;
     };
 
@@ -345,6 +346,23 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
     // adjust to track start
     startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
     endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+    pTrackHd=endTrkPtr;
+
+    for(int i=0;i<trackNb;++i){
+
+        if(pTrackHd->id!=ID_MTRK){
+         amTrace("Error: Cannot find MIDI track [%d] chunk. Exiting. \n", i+1);
+         return 1;
+        };
+
+        trackChunkSize=pTrackHd->headLenght;
+
+        // adjust to track start
+        startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
+        endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+        pTrackHd=(sChunkHeader *)endTrkPtr; //next
+    }
+
 
      // process track events
      U32 delta=0L;

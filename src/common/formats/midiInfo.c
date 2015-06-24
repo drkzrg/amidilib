@@ -345,7 +345,7 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
 
     // adjust to track start
     startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-    endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+    endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
     pTrackHd=endTrkPtr;
 
     for(int i=0;i<trackNb;++i){
@@ -359,7 +359,7 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
 
         // adjust to track start
         startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-        endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+        endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
         pTrackHd=(sChunkHeader *)endTrkPtr; //next
     }
 

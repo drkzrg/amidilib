@@ -535,10 +535,11 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
         amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. \n");
         return 1;
     };
+    trackChunkSize = pTrackHd->headLenght;
 
     // adjust to track start
     startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-    endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+    endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
     pTrackHd=(sChunkHeader *)endTrkPtr;
 
     for(int i=0;i<trackNbToProcess;++i){
@@ -552,7 +553,7 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
 
         // adjust to track start
         startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-        endTrkPtr=(void *)((U8*)pTrackHd + trackChunkSize);
+        endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
         pTrackHd=(sChunkHeader *)endTrkPtr; //next
     }
 

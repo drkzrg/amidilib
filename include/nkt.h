@@ -58,9 +58,9 @@ typedef struct NktTrack{
     U32 currentBlockId;        // currently replayed block id 0-xxxx
     U32 eventsBlockBufferSize; // nb of bytes used for events buffer
     U32 dataBufferSize;        // nb of bytes used for event's data buffer
+    U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
 
     U8 *eventBlocksPtr;        // pointer to start of events block
-    U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
     U8 *eventDataPtr;          // pointer to start of event's data block
 
     tLinearBuffer lbDataBuffer;  // linear buffer for event data info
@@ -79,7 +79,6 @@ typedef struct NktSeq{
     U32 timeElapsedFrac;	   // sequence elapsed time fraction
     U32 timeElapsedInt;		   // sequence elapsed time
     U32 timeStep;              // sequence timestep
-    BOOL bPacked;              // indicates if sequence is lzo packed
     sNktTrack *pTracks;        // array of tracks
 } sNktSeq;
 

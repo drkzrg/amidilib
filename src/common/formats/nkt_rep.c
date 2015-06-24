@@ -365,9 +365,23 @@ void updateStepNkt(){
     return;
   }
 
-  sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[0];
+
+
 
   if((sequenceState&NKT_PS_PLAYING)){
+
+      // update
+      g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
+      TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
+      g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
+
+      // timestep forward
+      g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
+
+   for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+
+      sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[i];
+
       bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
 
@@ -383,18 +397,18 @@ void updateStepNkt(){
       nktBlk=(sNktBlock_t *)(pEventPtr);
 
       // track end?
-      if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
-         onEndSequence();
-         return;
-     }
+      if(g_CurrentNktSequence->nbOfTracks==1){
+          if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
+             onEndSequence();
+             return;
+         }
+      }else{
+          if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
+             ;
+         }
 
-     // update
-     g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
-     TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
-     g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
+      }
 
-     // timestep forward
-     g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
 
      if( g_CurrentNktSequence->timeElapsedInt==currentDelta||currentDelta==0){
          g_CurrentNktSequence->timeElapsedInt -= currentDelta;
@@ -446,7 +460,7 @@ void updateStepNkt(){
           ++(pCurTrack->currentBlockId);
 
      } // end delta check
-
+   }
   }else{
     // check sequence state if stopped reset position
     // and tempo to default, but only once
@@ -630,11 +644,16 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 #endif
 
    amTrace("[NKT header]\nnb of Tracks: %u ", tempHd.nbOfTracks);
-   amTrace("td: %u ", tempHd.division);
+   amTrace("td: %u \n", tempHd.division);
+
+   if(tempHd.version!=NKT_VERSION){
+     amTrace("Error: Wrong version of NKT file. Cannot load file.\n");
+     amFree(trackData);
+     return NULL;
+   }
 
    for (int i=0;i<tempHd.nbOfTracks;++i){
-     amTrace("[NKT track #%u]\nNb of blocks: %lu (%lu bytes),\nEvent data buffer size: %lu\n",i,trackData[i].nbOfBlocks, trackData[i].eventsBlockBufSize);
-     amTrace("data buffer size: %lu\n", trackData[i].eventDataBufSize);
+     amTrace("[NKT track #%u]\nNb of blocks: %u (%u bytes),\nEvent data buffer size: %u\n",i,trackData[i].nbOfBlocks, trackData[i].eventsBlockBufSize,trackData[i].eventDataBufSize);
    }
 
    lzo_voidp pPackedEvents=0;
@@ -664,6 +683,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         fclose(fp); fp=0;
     #endif
 
+    amFree(trackData);
     amFree(pNewSeq);
     return NULL;
 
@@ -671,7 +691,6 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         // update info from header and track info data
         pNewSeq->timeDivision = tempHd.division;
         pNewSeq->version = tempHd.version;
-        pNewSeq->timeDivision = tempHd.division;
         pNewSeq->nbOfTracks = tempHd.nbOfTracks;
 
         pNewSeq->pTracks=amMallocEx(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT);
@@ -688,18 +707,22 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
             sNktTrack *pTrk=(sNktTrack *)&pNewSeq->pTracks[i];
 
+            pTrk->currentBlockId=0;
+            pTrk->eventsBlockOffset=0;
+
             pTrk->nbOfBlocks = trackData[i].nbOfBlocks;
             pTrk->eventsBlockBufferSize = trackData[i].eventsBlockBufSize;
             pTrk->dataBufferSize = trackData[i].eventDataBufSize;
 
-            amTrace("[Track]: %u \n", i);
-            amTrace("Blocks in sequence: %lu \n", pTrk->nbOfBlocks);
-            amTrace("Event data buffer size: %lu \n", pTrk->dataBufferSize);
-            amTrace("Events block size: %lu \n", pTrk->eventsBlockBufferSize);
+            amTrace("\n[Track]: %u \n", i);
+            amTrace("Blocks in sequence: %u \n", pTrk->nbOfBlocks);
+            amTrace("Event data buffer size: %u \n", pTrk->dataBufferSize);
+            amTrace("Events block size: %u \n", pTrk->eventsBlockBufferSize);
 
 
         // packed data check
         if(trackData[i].eventsBlockBufSize!=trackData[i].eventsBlockPackedSize){
+            amTrace("[Data packed]\n");
 
             lzo_voidp pPackedDataSource=0;
 
@@ -952,7 +975,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
                 // todo cleanup
                 return NULL;
             }
-    #else
+     #else
             fread((void *)pTrk->eventDataPtr,amount,1,fp);
     #endif
      }
@@ -1245,7 +1268,7 @@ S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
         for(int i=0;i<pSeq->nbOfTracks;++i){
 
             // save event block
-            amTrace("[MID2NKT] Saving event block.[%ld bytes] for track %d \n",pSeq->pTracks[i].eventsBlockBufferSize, i);
+            amTrace("[MID2NKT] Saving event block.[%ld bytes] for track [%d] \n",pSeq->pTracks[i].eventsBlockBufferSize, i);
 
             written = Fwrite(fh,pSeq->pTracks[i].eventsBlockBufferSize,(void *)pSeq->pTracks[i].eventBlocksPtr);
 

@@ -94,7 +94,7 @@ U8 *filePath=0;
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);
 
-           printf("[ Please wait ] Converting MIDI %d to %s. Compress: %s\n",((sMThd *)pMidi)->format,tempName,bEnableCompression?"YES":"NO");
+           printf("[ Please wait ] Converting MIDI %d to %s. Compress: %s\n",((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
 
            // convert
            sNktSeq* pSeq = Midi2Nkt(pMidi,tempName, bEnableCompression);
@@ -125,7 +125,7 @@ U8 *filePath=0;
 
 
 void printInfoScreen(){
-    printf("\n== MID / MUS to NKT converter v.1.2 =========\n");
+    printf("\n== MID / MUS to NKT converter v.1.3 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");
 }

@@ -73,8 +73,8 @@ if(g_CurrentNktSequence){
     g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
 
-  g_CurrentNktSequence->timeElapsedInt=0L;
-  g_CurrentNktSequence->timeElapsedFrac=0L;
+  g_CurrentNktSequence->pTracks[0].timeElapsedInt=0L;
+  g_CurrentNktSequence->pTracks[0].timeElapsedFrac=0L;
 
   g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
   g_CurrentNktSequence->pTracks[0].currentBlockId=0l;
@@ -149,10 +149,11 @@ if(pSeq!=0){
 
      } //end for
 
-    pSeq->timeElapsedInt=0UL;
-    pSeq->timeElapsedFrac=0UL;
+
 
     for(int i=0;i<pSeq->nbOfTracks;++i){
+        pSeq->pTracks[i].timeElapsedInt=0UL;
+        pSeq->pTracks[i].timeElapsedFrac=0UL;
         pSeq->pTracks[i].currentBlockId=0;
         pSeq->pTracks[i].eventsBlockOffset=0L;
     }
@@ -370,17 +371,21 @@ void updateStepNkt(){
 
   if((sequenceState&NKT_PS_PLAYING)){
 
-      // update
-      g_CurrentNktSequence->timeElapsedFrac += g_CurrentNktSequence->timeStep;
-      TimeAdd = g_CurrentNktSequence->timeElapsedFrac >> 16;
-      g_CurrentNktSequence->timeElapsedFrac &= 0xffff;
 
-      // timestep forward
-      g_CurrentNktSequence->timeElapsedInt=g_CurrentNktSequence->timeElapsedInt+TimeAdd;
 
-   for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+
+      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
 
       sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[i];
+
+      // update
+      pCurTrack->timeElapsedFrac += g_CurrentNktSequence->timeStep;
+      TimeAdd = pCurTrack->timeElapsedFrac >> 16;
+      pCurTrack->timeElapsedFrac &= 0xffff;
+
+      // timestep forward
+      pCurTrack->timeElapsedInt=pCurTrack->timeElapsedInt+TimeAdd;
+
 
       bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
@@ -410,8 +415,9 @@ void updateStepNkt(){
       }
 
 
-     if( g_CurrentNktSequence->timeElapsedInt==currentDelta||currentDelta==0){
-         g_CurrentNktSequence->timeElapsedInt -= currentDelta;
+
+     if( pCurTrack->timeElapsedInt==currentDelta||currentDelta==0){
+           pCurTrack->timeElapsedInt -= currentDelta;
 
          // tempo change ?
          if(nktBlk->msgType&NKT_TEMPO_CHANGE){
@@ -475,8 +481,6 @@ void updateStepNkt(){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
-      g_CurrentNktSequence->timeElapsedInt=0L;
-      g_CurrentNktSequence->timeElapsedFrac=0L;
       TimeAdd = 0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
@@ -485,6 +489,8 @@ void updateStepNkt(){
 
       //rewind all tracks to the first event
       for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
+          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
           g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
           g_CurrentNktSequence->pTracks[i].currentBlockId=0;
       }

@@ -60,6 +60,9 @@ typedef struct NktTrack{
     U32 dataBufferSize;        // nb of bytes used for event's data buffer
     U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
 
+    U32 timeElapsedFrac;	   // sequence elapsed time fraction
+    U32 timeElapsedInt;		   // sequence elapsed time
+
     U8 *eventBlocksPtr;        // pointer to start of events block
     U8 *eventDataPtr;          // pointer to start of event's data block
 
@@ -76,8 +79,7 @@ typedef struct NktSeq{
     U16 sequenceState;         // bitfield with sequence state
     sNktTempo defaultTempo;	   // initial tempo, quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
     sNktTempo currentTempo;    // current tempo: quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
-    U32 timeElapsedFrac;	   // sequence elapsed time fraction
-    U32 timeElapsedInt;		   // sequence elapsed time
+
     U32 timeStep;              // sequence timestep
     sNktTrack *pTracks;        // array of tracks
 } sNktSeq;

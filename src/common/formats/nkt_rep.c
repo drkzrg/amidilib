@@ -874,7 +874,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
              return NULL;
          }
 
-         amTrace("Allocated %lu kb for event block buffer\n",(pTrk->eventsBlockBufferSize)/1024);
+         amTrace("Allocated %lu k for event block buffer\n",pTrk->eventsBlockBufferSize);
 
          if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255,PREFER_TT)<0){
 
@@ -910,7 +910,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
        lbAllocAdr&=0xfffffff0;
 
        pTrk->eventDataPtr = (U8*)lbAllocAdr;
-       amTrace("Allocated %lu kb for event data buffer\n",(pTrk->dataBufferSize)/1024);
+       amTrace("Allocated %lu b for event data buffer\n",pTrk->dataBufferSize);
 
        if(pTrk->eventDataPtr==0){
 
@@ -999,6 +999,9 @@ sNktSeq *loadSequence(const U8 *pFilePath){
    for(int i=0;i<pNewSeq->nbOfTracks;++i){
     amTrace("[Track #%u]\n",i);
 
+    U32 blockNb=0;
+    U8 count=0;
+
     while(blockNb<pNewSeq->pTracks[i].nbOfBlocks){
 
       U32 addr=((U32)pNewSeq->pTracks[i].eventBlocksPtr) + pNewSeq->pTracks[i].eventsBlockOffset;
@@ -1010,7 +1013,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
 
       sNktBlock_t *eBlk=(sNktBlock_t *)(pEventPtr);
 
-      amTrace("delta [%lu] type:[%u] size:[%u] bytes offset: [%lu] \n",d, eBlk->msgType, eBlk->blockSize,eBlk->bufferOffset);
+      amTrace("delta [%lu] type:[%hu] size:[%hu] bytes offset: [%lu] \n",d, eBlk->msgType, eBlk->blockSize,eBlk->bufferOffset);
 
       if(eBlk->blockSize>0){
           amTrace("[DATA] ");

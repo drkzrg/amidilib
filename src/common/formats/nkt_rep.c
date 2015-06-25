@@ -190,10 +190,11 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
 
   pSeq->currentTempo.tempo = pSeq->defaultTempo.tempo;
 
-  pSeq->timeElapsedInt = 0UL;
-  pSeq->timeElapsedFrac = 0UL;
+
 
   for(int i=0;i<pSeq->nbOfTracks;++i){
+      pSeq->pTracks[i].timeElapsedInt = 0UL;
+      pSeq->pTracks[i].timeElapsedFrac = 0UL;
       pSeq->pTracks[i].currentBlockId=0;
       pSeq->pTracks[i].eventsBlockOffset=0L;
   }
@@ -1232,10 +1233,15 @@ void printNktSequenceState(){
 if(g_CurrentNktSequence){
     printf("Td/PPQN: %u\n",g_CurrentNktSequence->timeDivision);
     printf("Time step: %lu\n",g_CurrentNktSequence->timeStep);
-    printf("Time elapsedFrac: %lu\n",g_CurrentNktSequence->timeElapsedFrac);
-    printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->timeElapsedInt);
+
+    for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+        printf("[%d] Time elapsedFrac: %lu\t",i,g_CurrentNktSequence->pTracks[i].timeElapsedFrac);
+        printf("\tTime elapsed: %lu\n",g_CurrentNktSequence->pTracks[i].timeElapsedInt);
+    }
+
     printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo.tempo);
     printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->currentTempo.tempo);
+
     printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 

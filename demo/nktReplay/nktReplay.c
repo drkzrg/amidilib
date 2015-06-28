@@ -109,7 +109,7 @@ void displayTuneInfo(){
 void mainLoop(sNktSeq *pSequence){
     BOOL bQuit=FALSE;
 #ifdef MANUAL_STEP
-    initSequenceManual(pSequence,NKT_PLAY_ONCE,TRUE);
+    initSequenceManual(pSequence, NKT_PLAY_ONCE);
 #else
     initSequence(pSequence,NKT_PLAY_ONCE,TRUE);
 #endif
@@ -207,7 +207,7 @@ void mainLoop(sNktSeq *pSequence){
 #ifdef MANUAL_STEP
           case SC_ENTER:{
 
-            for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){
+            for(int i=0;i<200;++i){
                 updateStepNkt();
             }
 

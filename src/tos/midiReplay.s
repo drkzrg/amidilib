@@ -26,7 +26,7 @@ replaySetupRoutine:
         move.l  stopTimerIntPtr,a0         ; stop timer
         jsr     (a0)
 
-        move.l  updateRout,a0           ; update sequence state and send events / copy events to internal send buffer
+	move.l  updateStepRout,a0           ; update sequence state and send events / copy events to internal send buffer
         jsr 	(a0)
 
 	if (IKBD_MIDI_SEND_DIRECT==1)
@@ -104,7 +104,7 @@ _installReplayRout:
 
         move.w  #0,midiIntCounter
 
-        move.w  d2,isMultitrackReplay
+	move.w  d2,_isMultitrackReplay
         move.w  d3,timerReplayType
 
         jsr	_super_on
@@ -119,11 +119,11 @@ _installReplayRout:
 ; check single / multitrack replay
         cmpi.w  #0,d2
         bne.s   .installMultiTrack
-        move.l  #_updateStepSingle, updateRout
+	move.l  #_updateStepSingle, updateStepRout
         bra.s   .checkIntType
 
 .installMultiTrack:
-        move.l  #_updateStepMulti, updateRout
+	move.l  #_updateStepMulti, updateStepRout
 
 .checkIntType:
         ; handle various timer versions

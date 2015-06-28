@@ -572,9 +572,8 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
  rs.recallRS=0;
 
 // clear
-amMemSet(&tempBufInfo,0,sizeof(sBufferInfo_t));
-tempBufInfo.eventsBlockOffset=0L;
-tempBufInfo.dataBlockOffset=0L;
+ amMemSet(&tempBufInfo,0,sizeof(sBufferInfo_t));
+
 
  while ( ((pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)) ){
 

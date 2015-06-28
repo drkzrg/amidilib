@@ -55,12 +55,12 @@ AUTO_INT_ENABLE		equ	0	;enable auto end of interrupt mode
     xdef tData                  ; Timer mode / data
     xdef tMode                  ;
 
-    xdef updateRout             ; function pointer to update routine (single / multitrack)
+    xdef updateStepRout             ; function pointer to update routine (single / multitrack)
     xdef stopTimerIntPtr        ; function pointer to timer stop function
     xdef updateTimerIntPtr      ; function pointer to timer update / setup function
     xdef finishTimerIntPtr      ; function pointer to signal timer finish
 
-    xdef isMultitrackReplay     ; flag indicates if multitrack / single track replay is installed
+    xdef _isMultitrackReplay     ; flag indicates if multitrack / single track replay is installed
     xdef timerReplayType:       ; currently installed midi sequence handler type (TiB/TiC etc.)
     xdef oldVector              ; old timer vector replaced by us
     xdef midiIntCounter         ; interruptCounter (used in TiC update variant)

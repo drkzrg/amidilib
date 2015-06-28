@@ -260,12 +260,12 @@ dummy1:			ds.b	1
 tMode:                  ds.b	1       ; current timer mode
 dummy2:			ds.b	1
 
-updateRout:             ds.l    1       ; pointer to update routine (single / multitrack)
+updateStepRout:         ds.l    1       ; pointer to update routine (single / multitrack)
 stopTimerIntPtr:        ds.l    1       ; stop interrupt function pointer
 updateTimerIntPtr:      ds.l    1       ; update on given interrupt function pointer
 finishTimerIntPtr:      ds.l    1       ; for signalising end of interrupt function pointer
 
-isMultitrackReplay:     ds.w    1       ; flag indicates if multitrack / single track replay is installed
+_isMultitrackReplay:    ds.w    1       ; flag indicates if multitrack / single track replay is installed
 timerReplayType:        ds.w    1       ; currently installed midi sequence handler type (TiB/TiC etc.)
 
 					; only for TimerC based replay

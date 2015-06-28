@@ -29,10 +29,10 @@
 
 // helper function for determining amount of memory we need for data / events buffers
 extern U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
+extern U16 isMultitrackReplay;
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq);
 void setNktTrackInfo(sNktTrackInfo* header, const sNktSeq *pNktSeq);
-
 
 static sNktSeq *g_CurrentNktSequence=0;
 
@@ -168,7 +168,19 @@ if(pSeq!=0){
 #endif
 
     // install our interrupt handler
-if(bInstallUpdate!=FALSE) Supexec(NktInstallReplayRout);
+    if(bInstallUpdate!=FALSE){
+
+        if(pSeq->nbOfTracks==1){
+             amTrace((const U8*)"Setting single track replay\n");
+            isMultitrackReplay=0;
+            Supexec(NktInstallReplayRout);
+        }else{
+            amTrace((const U8*)"Setting multitrack replay \n");
+            isMultitrackReplay=1;
+            Supexec(NktInstallReplayRout);
+        }
+
+    }
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();
@@ -189,8 +201,6 @@ void initSequenceManual(sNktSeq *pSeq, U16 state){
   g_CurrentNktSequence=pSeq;
 
   pSeq->currentTempo.tempo = pSeq->defaultTempo.tempo;
-
-
 
   for(int i=0;i<pSeq->nbOfTracks;++i){
       pSeq->pTracks[i].timeElapsedInt = 0UL;
@@ -246,105 +256,115 @@ static sSysEX_t arSetMasterVolumeMT32 =  {11,(U8 []){0xf0,0x00,0x00,0x00,0x00,0x
 static sSysEX_t arSetTextMT32         =  {30,(U8 []){0xf0,0x41,0x10,0x16,0x12,0x20,0x00,0x00,0x00,0x00,0x00,
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xf7}};
+
+
+__attribute__((always_inline)) static inline void handleMasterSettings() {
+
+    // handle volume/balance/reverb change
+   if(_moduleSettings.masterVolume!=requestedMasterVolume){
+
+       if(MT32_MODEL_ID==_moduleSettings.modelID){
+
+            //handle mt32 volume
+            if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
+
+                arSetMasterVolumeMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
+                arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+                arSetMasterVolumeMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+
+                arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
+                arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
+                arSetMasterVolumeMT32.data[9]=am_calcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
+
+                sendSysEX(&arSetMasterVolumeMT32);
+
+                #ifdef IKBD_MIDI_SEND_DIRECT
+                    Supexec(flushMidiSendBuffer);
+                #endif
+
+                _moduleSettings.masterVolume=requestedMasterVolume;
+            }
+
+            if(_mt32TextMsg[0]!=0){
+
+                memset(&arSetTextMT32.data[8],0,sizeof(U8)*20);
+
+                arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
+                arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+                arSetTextMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+                arSetTextMT32.data[IDX_CMD_ID]=0x12;
+
+                memcpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(U8)*20);
+                arSetTextMT32.data[28]=am_calcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
+
+                // update text
+                sendSysEX(&arSetTextMT32);
+
+                #ifdef IKBD_MIDI_SEND_DIRECT
+                    Supexec(flushMidiSendBuffer);
+                #endif
+
+                // reset text
+                memset(&_mt32TextMsg[0],0,sizeof(U8)*20);
+            }
+
+
+            // todo reverb change request
+
+            // update text
+
+       }else{
+        // General Midi GS, todo move it to configurable callback
+            // send new master vol
+            if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_GM){
+
+                arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+                arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+                arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+
+                arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
+                arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
+                arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
+
+                sendSysEX(&arSetMasterVolumeGM);
+
+                #ifdef IKBD_MIDI_SEND_DIRECT
+                    Supexec(flushMidiSendBuffer);
+                #endif
+
+                _moduleSettings.masterVolume=requestedMasterVolume;
+
+            }
+         }
+
+         if(_moduleSettings.masterBalance!=requestedMasterBalance){
+
+             // send new balance
+            arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
+            arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
+            arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+            arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
+            arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
+            arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
+
+            sendSysEX(&arSetMasterBalanceGM);
+
+            #ifdef IKBD_MIDI_SEND_DIRECT
+             Supexec(flushMidiSendBuffer);
+            #endif
+
+            _moduleSettings.masterBalance=requestedMasterBalance;
+         }
+    }
+
+}
+
+//update step for single track replay
+
 void updateStepNkt(){
- // handle volume/balance/reverb change
 
- if(_moduleSettings.masterVolume!=requestedMasterVolume){
-
-    if(MT32_MODEL_ID==_moduleSettings.modelID){
-
-         //handle mt32 volume
-         if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
-
-             arSetMasterVolumeMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
-             arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-             arSetMasterVolumeMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-
-             arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
-             arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
-             arSetMasterVolumeMT32.data[9]=am_calcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
-
-             sendSysEX(&arSetMasterVolumeMT32);
-
-             #ifdef IKBD_MIDI_SEND_DIRECT
-                 Supexec(flushMidiSendBuffer);
-             #endif
-
-             _moduleSettings.masterVolume=requestedMasterVolume;
-         }
-
-         if(_mt32TextMsg[0]!=0){
-
-             memset(&arSetTextMT32.data[8],0,sizeof(U8)*20);
-
-             arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
-             arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-             arSetTextMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-             arSetTextMT32.data[IDX_CMD_ID]=0x12;
-
-             memcpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(U8)*20);
-             arSetTextMT32.data[28]=am_calcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
-
-             // update text
-             sendSysEX(&arSetTextMT32);
-
-             #ifdef IKBD_MIDI_SEND_DIRECT
-                 Supexec(flushMidiSendBuffer);
-             #endif
-
-             // reset text
-             memset(&_mt32TextMsg[0],0,sizeof(U8)*20);
-         }
-
-
-         // todo reverb change request
-
-         // update text
-
-    }else{
-     // General Midi GS, todo move it to configurable callback
-         // send new master vol
-         if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_GM){
-
-             arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-             arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-             arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-
-             arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
-             arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
-             arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
-
-             sendSysEX(&arSetMasterVolumeGM);
-
-             #ifdef IKBD_MIDI_SEND_DIRECT
-                 Supexec(flushMidiSendBuffer);
-             #endif
-
-             _moduleSettings.masterVolume=requestedMasterVolume;
-
-         }
-      }
-
-      if(_moduleSettings.masterBalance!=requestedMasterBalance){
-
-          // send new balance
-         arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-         arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-         arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
-         arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
-         arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
-         arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
-
-         sendSysEX(&arSetMasterBalanceGM);
-
-         #ifdef IKBD_MIDI_SEND_DIRECT
-          Supexec(flushMidiSendBuffer);
-         #endif
-
-         _moduleSettings.masterBalance=requestedMasterBalance;
-      }
- }
-
+ // handle master volume, balance, reverb, mt32 text
+ handleMasterSettings();
 
  if(g_CurrentNktSequence==0) return;
 
@@ -368,16 +388,9 @@ void updateStepNkt(){
   }
 
 
-
-
   if((sequenceState&NKT_PS_PLAYING)){
 
-
-
-
-      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
-
-      sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[i];
+      sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[0];
 
       // update
       pCurTrack->timeElapsedFrac += g_CurrentNktSequence->timeStep;
@@ -386,7 +399,6 @@ void updateStepNkt(){
 
       // timestep forward
       pCurTrack->timeElapsedInt=pCurTrack->timeElapsedInt+TimeAdd;
-
 
       bPaused=FALSE;
       bStopped=FALSE;   // we replaying, so we have to reset this flag
@@ -403,62 +415,206 @@ void updateStepNkt(){
       nktBlk=(sNktBlock_t *)(pEventPtr);
 
       // track end?
-      if(g_CurrentNktSequence->nbOfTracks==1){
-          if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
+
+          if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks){
              onEndSequence();
              return;
          }
-      }else{
-          if(nktBlk->msgType&NKT_END||pCurTrack->currentBlockId>=pCurTrack->nbOfBlocks){
-             ;
-         }
 
+          if( pCurTrack->timeElapsedInt==currentDelta||currentDelta==0){
+                pCurTrack->timeElapsedInt -= currentDelta;
+
+              // tempo change ?
+              if(nktBlk->msgType&NKT_TEMPO_CHANGE){
+                 // set new tempo
+                 addr=((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset;
+                 U32 *pMidiDataStartAdr=(U32 *)(addr);
+
+                 g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
+                 pMidiDataStartAdr++;
+
+                 // get precalculated timestep from data buffer
+                 g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
+
+                 //next event
+                 pCurTrack->eventsBlockOffset+=count;
+                 pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+                 ++(pCurTrack->currentBlockId);
+
+                 // get next event block
+                 addr=((U32)pCurTrack->eventBlocksPtr)+pCurTrack->eventsBlockOffset;
+                 U8 count=0;
+
+                 // read VLQ delta
+                 U8 *pEventPtr=(U8 *)(addr);
+                 U32 currentDelta = readVLQ(pEventPtr,&count);
+                 pEventPtr+=count;
+
+                 // get event block
+                 nktBlk=(sNktBlock_t *)(pEventPtr);
+             }
+
+              U32 *pMidiDataStartAdr=(U32 *)(((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
+
+     #ifdef IKBD_MIDI_SEND_DIRECT
+               amMemCpy(MIDIsendBuffer, pMidiDataStartAdr, nktBlk->blockSize);
+               MIDIbytesToSend=nktBlk->blockSize;
+       #else
+               //send to xbios
+               amMidiSendData(nktBlk->blockSize, pMidiDataStartAdr);
+       #endif
+
+               //go to next event
+               pCurTrack->eventsBlockOffset+=count;
+               pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+
+               ++(pCurTrack->currentBlockId);
+
+          } // end delta check
+
+  }else{
+    // check sequence state if stopped reset position
+    // and tempo to default, but only once
+
+   if(bStopped==FALSE){
+      bStopped=TRUE;
+
+      g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
+
+      //copy/update precalculated tempo data
+      for (int i=0;i<NKT_UMAX;++i){
+          g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
+      TimeAdd = 0;
+
+      // reset tempo to initial valueas taken during start (get them from main sequence?)
+      // get precalculated timestep
+      g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
+
+      //rewind all tracks to the first event
+      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
+          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
+          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
+          g_CurrentNktSequence->pTracks[i].currentBlockId=0;
+      }
+
+      resetMidiDevice();
+
+    }
+   return;
+  }
+
+} //end updateStepNkt()
 
 
-     if( pCurTrack->timeElapsedInt==currentDelta||currentDelta==0){
-           pCurTrack->timeElapsedInt -= currentDelta;
 
-         // tempo change ?
-         if(nktBlk->msgType&NKT_TEMPO_CHANGE){
-            // set new tempo
-            addr=((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset;
-            U32 *pMidiDataStartAdr=(U32 *)(addr);
+// update step for multitrack replay
 
-            g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
-            pMidiDataStartAdr++;
+void updateStepNktMt(){
 
-            // get precalculated timestep from data buffer
-            g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
+ // handle master volume, balance, reverb, mt32 text
+ handleMasterSettings();
 
-            //next event
-            pCurTrack->eventsBlockOffset+=count;
-            pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
-            ++(pCurTrack->currentBlockId);
+ if(g_CurrentNktSequence==0) return;
 
-            // get next event block
-            addr=((U32)pCurTrack->eventBlocksPtr)+pCurTrack->eventsBlockOffset;
-            U8 count=0;
+ sequenceState=g_CurrentNktSequence->sequenceState;
 
-            // read VLQ delta
-            U8 *pEventPtr=(U8 *)(addr);
-            U32 currentDelta=readVLQ(pEventPtr,&count);
-            pEventPtr+=count;
+ //check sequence state if paused do nothing
+ if((sequenceState&NKT_PS_PAUSED)){
 
-            // get event block
-            nktBlk=(sNktBlock_t *)(pEventPtr);
-        }
+     if(bPaused==FALSE){
+        bPaused=TRUE;
+        bStopped=FALSE;
 
-         U32 *pMidiDataStartAdr=(U32 *)(((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
+        // all notes off but only once
+        am_allNotesOff(16);
+
+        #ifdef IKBD_MIDI_SEND_DIRECT
+             Supexec(flushMidiSendBuffer);
+        #endif
+     }
+    return;
+  }
+
+
+  if((sequenceState&NKT_PS_PLAYING)){
+
+      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+
+      sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[i];
+
+      // update
+      pCurTrack->timeElapsedFrac += g_CurrentNktSequence->timeStep;
+      TimeAdd = pCurTrack->timeElapsedFrac >> 16;
+      pCurTrack->timeElapsedFrac &= 0xffff;
+
+      // timestep forward
+      pCurTrack->timeElapsedInt=pCurTrack->timeElapsedInt+TimeAdd;
+
+      bPaused=FALSE;
+      bStopped=FALSE;   // we replaying, so we have to reset this flag
+
+      addr=((U32)pCurTrack->eventBlocksPtr)+ pCurTrack->eventsBlockOffset;
+      U8 count=0;
+
+      // read VLQ delta
+      U8 *pEventPtr=(U8 *)(addr);
+      U32 currentDelta=readVLQ(pEventPtr,&count);
+      pEventPtr+=count;
+
+      // get event block
+      nktBlk=(sNktBlock_t *)(pEventPtr);
+
+      // track end?
+      if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks){
+        // skip update
+        continue;
+      }
+
+      if( pCurTrack->timeElapsedInt == currentDelta || currentDelta==0 ){
+          pCurTrack->timeElapsedInt -= currentDelta;
+
+          // tempo change ?
+          if(nktBlk->msgType&NKT_TEMPO_CHANGE){
+              // set new tempo
+              addr=((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset;
+              U32 *pMidiDataStartAdr=(U32 *)(addr);
+
+              g_CurrentNktSequence->currentTempo.tempo=*pMidiDataStartAdr;
+              pMidiDataStartAdr++;
+
+              // get precalculated timestep from data buffer
+              g_CurrentNktSequence->timeStep=pMidiDataStartAdr[g_CurrentNktSequence->currentUpdateFreq];
+
+              //next event
+              pCurTrack->eventsBlockOffset+=count;
+              pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+              ++(pCurTrack->currentBlockId);
+
+              // get next event block
+              addr=((U32)pCurTrack->eventBlocksPtr)+pCurTrack->eventsBlockOffset;
+              U8 count=0;
+
+              // read VLQ delta
+              U8 *pEventPtr=(U8 *)(addr);
+              U32 currentDelta=readVLQ(pEventPtr,&count);
+              pEventPtr+=count;
+
+              // get event block
+              nktBlk=(sNktBlock_t *)(pEventPtr);
+          }
+
+          U32 *pMidiDataStartAdr=(U32 *)(((U32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
           amMemCpy(MIDIsendBuffer, pMidiDataStartAdr, nktBlk->blockSize);
           MIDIbytesToSend=nktBlk->blockSize;
-  #else
+#else
           //send to xbios
           amMidiSendData(nktBlk->blockSize, pMidiDataStartAdr);
-  #endif
+#endif
 
           //go to next event
           pCurTrack->eventsBlockOffset+=count;
@@ -467,7 +623,16 @@ void updateStepNkt(){
           ++(pCurTrack->currentBlockId);
 
      } // end delta check
-   }
+   } //end of track processing
+
+   // check end of track
+     for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+
+
+     }
+
+
+
   }else{
     // check sequence state if stopped reset position
     // and tempo to default, but only once
@@ -700,7 +865,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
         pNewSeq->version = tempHd.version;
         pNewSeq->nbOfTracks = tempHd.nbOfTracks;
 
-        pNewSeq->pTracks=amMallocEx(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT);
+        pNewSeq->pTracks=(sNktTrack *)amMallocEx(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT);
 
         if(pNewSeq->pTracks==0){
             amTrace("Error: Couldn't allocate memory for track info.\n");
@@ -1245,7 +1410,7 @@ if(g_CurrentNktSequence){
     printf("\tDefault Tempo: %lu\n",g_CurrentNktSequence->defaultTempo.tempo);
     printf("\tLast Tempo: %lu\n",g_CurrentNktSequence->currentTempo.tempo);
 
-    printf("\tSequence state: 0x%x\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
+    printf("\tSequence state: %s\n",getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 
  printMidiSendBufferState();
@@ -1277,10 +1442,10 @@ const U8 *getEventTypeName(U16 type){
 
 
 S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
-        S32 written=0;
 
         // save data blocks
         for(int i=0;i<pSeq->nbOfTracks;++i){
+            S32 written=0;
 
             // save event block
             amTrace("[MID2NKT] Saving event block.[%ld bytes] for track [%d] \n",pSeq->pTracks[i].eventsBlockBufferSize, i);

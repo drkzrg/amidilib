@@ -150,19 +150,45 @@ metaLenght=readVLQ((*pMidiData),&size);
 (*pMidiData)=(*pMidiData)+size;
 
  switch(metaType){
-    case MT_SEQ_NB:{}break;
-    case MT_TEXT:
-    case MT_COPYRIGHT:{}break;
-    case MT_SEQNAME:{}break;
-    case MT_INSTRNAME:{}break;
-    case MT_LYRICS:{}break;
-    case MT_MARKER:{}break;
-    case MT_CUEPOINT:{}break;
-    case MT_PROGRAM_NAME:{}break;
-    case MT_DEVICE_NAME:{}break;
-    case MT_CH_PREFIX:{}break;
-    case MT_MIDI_CH:{}break;
-    case MT_MIDI_PORT:{}break;
+    case MT_SEQ_NB:{
+     amTrace("Meta SEQUENCE NB\n");
+    }break;
+    case MT_TEXT:{
+     amTrace("Meta TEXT\n");
+    }break;
+    case MT_COPYRIGHT:{
+     amTrace("Meta COPYRIGHT\n");
+    }break;
+    case MT_SEQNAME:{
+     amTrace("Meta SEQUENCE NAME\n");
+    }break;
+    case MT_INSTRNAME:{
+     amTrace("Meta INSTRUMENT NAME\n");
+    }break;
+    case MT_LYRICS:{
+     amTrace("Meta LYRICS\n");
+    }break;
+    case MT_MARKER:{
+     amTrace("Meta MARKER\n");
+    }break;
+    case MT_CUEPOINT:{
+     amTrace("Meta CUEPOINT\n");
+    }break;
+    case MT_PROGRAM_NAME:{
+     amTrace("Meta PROGRAM NAME\n");
+    }break;
+    case MT_DEVICE_NAME:{
+        amTrace("Meta DEVICE NAME\n");
+    }break;
+    case MT_CH_PREFIX:{
+        amTrace("Meta CH PREFIX\n");
+    }break;
+    case MT_MIDI_CH:{
+        amTrace("Meta MIDI CH\n");
+    }break;
+    case MT_MIDI_PORT:{
+        amTrace("Meta MIDI PORT\n");
+    }break;
     case MT_EOT:{
      amTrace("Meta EOT\n");
 
@@ -192,10 +218,10 @@ metaLenght=readVLQ((*pMidiData),&size);
       ++(bufferInfo->nbOfBlocks);
     } break;
 
-    case MT_SMPTE_OFFSET:{}break;
-    case MT_TIME_SIG:{}break;
-    case MT_KEY_SIG:{}break;
-    case MT_SEQ_SPEC:{}break;
+    case MT_SMPTE_OFFSET:{amTrace("Meta SMPTE offset\n");}break;
+    case MT_TIME_SIG:{amTrace("Meta TIME SIGNATURE\n");}break;
+    case MT_KEY_SIG:{amTrace("Meta KEY SIGNATURE\n");}break;
+    case MT_SEQ_SPEC:{amTrace("Meta SEQ SPEC\n");}break;
  };
 
 (*pMidiData)+=metaLenght;
@@ -275,7 +301,7 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
                   iError=collectPitchBendInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_META:
-                 amTrace("delta: %lu META\n", delta);
+                 amTrace("delta: %lu ", delta);
                  iError=collectMetaEventInfo(delta, pCmd, rs, bufferInfo, bEOF);
 
                 break;

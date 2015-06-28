@@ -1,4 +1,4 @@
-;    Copyright 2014 Pawel Goralski
+;    Copyright 2015 Pawel Goralski
 ;    e-mail: pawel.goralski@nokturnal.pl
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
@@ -9,10 +9,13 @@
     include "common_m68k.inc"
     include "m68k_defs.inc"
 
-        xref    update
-        xref    _updateStepNkt
+	xref  update			; function pointer to current interrupt routine
+	xref  updateStepRout		; function pointer holding current replay routine address
 
-        xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
+	xref _updateStepNkt		; update step for single track replay
+	xref _updateStepNktMt		; update step for multitrack replay
+
+	xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
         xdef _NktDeinstallReplayRout	; removes Nkt replay routine from system
 	xdef _NktMidiUpdateHook
 	xdef _clearMidiOutputBuffer	; clears MidiOutputBuffer
@@ -21,7 +24,8 @@
 replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
 
-        jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
+	move.l	updateStepRout,a0
+	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
 
@@ -126,8 +130,8 @@ replayNkt:
 _NktMidiUpdateHook:
 	movem.l   d0-7/a0-6,-(a7)	; save registers
 
-
-	jsr 	_updateStepNkt          ; update sequence state and send events / copy events to internal send buffer
+	move.l	updateStepRout,a0
+	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
 
@@ -222,8 +226,18 @@ _NktInstallReplayRout:
         movem.l	d0-d7/a0-a6,-(sp)
 	move.w	sr,-(sp)	;save status register
 
-        move.w  #0,isMultitrackReplay
-        move.w  #0,midiIntCounter
+	move.w  #0,midiIntCounter
+
+; set adequate update step routine depending on replay type
+
+	move.w	_isMultitrackReplay,d0
+	tst.w	d0
+	beq.s	.isSingleTrack
+	move.l	#_updateStepNktMt, updateStepRout
+	bra.s	.done
+.isSingleTrack:
+	move.l	#_updateStepNkt, updateStepRout
+.done:
 
         or.w	#$0700,sr	;turn off all interupts
 
@@ -232,7 +246,7 @@ _NktInstallReplayRout:
 	bclr.b	#3,$fffffa17.w
 	endif
 
-        move.l  #replayNkt, update      ;
+	move.l  #replayNkt, update	  ; set interrupt update function
 
         move.l	$114,oldVector            ; save TiC
         move.l  #stopTiC, stopTimerIntPtr
@@ -275,6 +289,8 @@ _NktDeinstallReplayRout:
 	ori.b     #80,$fffffa1b.w	; div mode
 	bset.b    #5,$fffffa09.w        ; enable TiC
 	bset.b    #5,$fffffa15.w        ; set interrupt mask B
+
+	move.l	  #0, updateStepRout	; clear update step rout
 
 	move.w 	  (sp)+,sr 		;restore Status Register
         movem.l (sp)+,d0-d7/a0-a6

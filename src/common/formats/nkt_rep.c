@@ -73,14 +73,16 @@ if(g_CurrentNktSequence){
     g_CurrentNktSequence->sequenceState|=(U16)NKT_PS_PLAYING;
   }
 
-  g_CurrentNktSequence->pTracks[0].timeElapsedInt=0L;
-  g_CurrentNktSequence->pTracks[0].timeElapsedFrac=0L;
+  // reset all tracks state
+
+  for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+    g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
+    g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
+    g_CurrentNktSequence->pTracks[i].currentBlockId=0L;
+    g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
+  }
 
   g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
-  g_CurrentNktSequence->pTracks[0].currentBlockId=0l;
-  g_CurrentNktSequence->pTracks[0].eventsBlockOffset=0L;
-
-  // reset all tracks state
   g_CurrentNktSequence->timeStep=g_CurrentNktSequence->defaultTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
   resetMidiDevice();
@@ -154,7 +156,7 @@ if(pSeq!=0){
     for(int i=0;i<pSeq->nbOfTracks;++i){
         pSeq->pTracks[i].timeElapsedInt=0UL;
         pSeq->pTracks[i].timeElapsedFrac=0UL;
-        pSeq->pTracks[i].currentBlockId=0;
+        pSeq->pTracks[i].currentBlockId=0UL;
         pSeq->pTracks[i].eventsBlockOffset=0L;
     }
 
@@ -233,6 +235,7 @@ volatile static BOOL bPaused=FALSE;
 volatile static U32 TimeAdd=0;
 volatile static U32 addr;
 volatile static sNktBlock_t *nktBlk=0;
+volatile static U16 TrackEndCount=0;
 
 volatile U8 requestedMasterVolume;
 volatile U8 requestedMasterBalance;
@@ -494,10 +497,10 @@ void updateStepNkt(){
 
       //rewind all tracks to the first event
       for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
-          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
-          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
-          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
-          g_CurrentNktSequence->pTracks[i].currentBlockId=0;
+          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0UL;
+          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0UL;
+          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0UL;
+          g_CurrentNktSequence->pTracks[i].currentBlockId=0UL;
       }
 
       resetMidiDevice();
@@ -541,6 +544,8 @@ void updateStepNktMt(){
 
   if((sequenceState&NKT_PS_PLAYING)){
 
+      TrackEndCount=0;
+
       for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
 
       sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[i];
@@ -570,6 +575,8 @@ void updateStepNktMt(){
       // track end?
       if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks){
         // skip update
+          if(nktBlk->msgType&NKT_END) ++TrackEndCount;
+
         continue;
       }
 
@@ -599,7 +606,7 @@ void updateStepNktMt(){
 
               // read VLQ delta
               U8 *pEventPtr=(U8 *)(addr);
-              U32 currentDelta=readVLQ(pEventPtr,&count);
+              U32 currentDelta = readVLQ(pEventPtr,&count);
               pEventPtr+=count;
 
               // get event block
@@ -625,13 +632,11 @@ void updateStepNktMt(){
      } // end delta check
    } //end of track processing
 
-   // check end of track
-     for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
-
-
+     // check end of track
+     if(g_CurrentNktSequence->nbOfTracks==TrackEndCount){
+         // all tracks reached its end
+         onEndSequence();
      }
-
-
 
   }else{
     // check sequence state if stopped reset position
@@ -648,6 +653,8 @@ void updateStepNktMt(){
       }
 
       TimeAdd = 0;
+
+      TrackEndCount=0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
       // get precalculated timestep

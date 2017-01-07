@@ -1,11 +1,9 @@
 
 This is a part of AMIDILIB software
-Copyright (c) 2007-2010, Pawel Goralski/Nokturnal (pawel.goralski@nokturnal.pl)
+Copyright (c) 2007-2017, Pawel Goralski/Nokturnal (pawel.goralski@nokturnal.pl)
 All rights reserved.
 
 AMIDILIB uses miniLZO for data compression (http://www.oberhumer.com/opensource/lzo) published under GPL license, see COPYING file for full GPL license information.
-
-AMIDILIB uses Mersienne Twister implementation published under LGPL. See twisterm.h for further information.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.

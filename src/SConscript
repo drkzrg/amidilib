@@ -1,5 +1,5 @@
 
-#    Copyright 2007-2014 Pawel Goralski
+#    Copyright 2007-2017 Pawel Goralski
 #    e-mail: pawel.goralski@nokturnal.pl
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
@@ -9,154 +9,204 @@ import os
 
 env = Environment(tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2015 Pawel Goralski\n \
-Type: 'scons target=name (mandatory) cross=y/n (default=y, optional) debug=0/1 (default=0,optional)'\n \
-where name of 'target' can be: \n \
- 'f030' - for Atari Falcon030/TT build\n \
- 'atarist' - for Atari ST build \n \
- 'ct60' - for Atari Falcon CT60/63\n \
- 'cross' - enables m68k-atari-mint cross compiler, set to 'y' by default\n \
- 'prefix' - prefix path to cross tools (optional) \n \
- 'debug' - enables/disables build of debug version of library with additional tracing options,\n \
- 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
- 'conout' - disable/enable console output,\n \
- 'gemdos_io' - uses gemdos i/o instead of standard libc file i/o,\n \
- 'libc' - if not 'yes', builds library without libc dependencies, reducing binary size,\n \
- set to '0' by default")
+Help("AMIDILIB Copyright 2007-2017 Pawel Goralski\n \
+Type: 'Set build variables in SConstruct'\n \
+where name of 'TARGET_MACHINE' can be: \n \
+	'F030' - for Atari Falcon030 / TT build\n \
+	'ST' - for Atari ST build \n \
+	'CT60' - for Atari Falcon CT60/63\n \
+ 'USE_CROSSCOMPILER' - enables m68k cross compiler, set to 'y' by default\n \
+ 'BUILD_MODE' - build type ('debug', 'release'),\n \
+ 'USE_FPU' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
+ 'TX_ENABLE' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
+ 'CONOUT_ENABLE' - disable / enable console output,\n \
+ 'GEMDOS_IO_ENABLE' - uses gemdos i/o instead of standard libc file i/o,\n \
+ 'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
+ 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 6.2 brownelf.\n \
+ 'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2), \n")
 
-debug = ARGUMENTS.get('debug', 0)
-cross = ARGUMENTS.get('cross', 0)
-prefix = ARGUMENTS.get('prefix', 0)
-target = ARGUMENTS.get('target', 0)
-ikbd_direct = ARGUMENTS.get('ikbd_direct', 0)
-tx_enable = ARGUMENTS.get('tx_enable', 0)
-conout_enable = ARGUMENTS.get('conout', 0)
-gemdos_io_enable=ARGUMENTS.get('gemdos_io', 0)
-libc = ARGUMENTS.get('libc', 0)
+Import('TARGET_MACHINE',\
+		'BUILD_MODE',\
+		'IKBD_DIRECT_WRITE',\
+		'USE_FPU',\
+		'TX_ENABLE',\
+		'CONOUT_ENABLE',\
+		'GEMDOS_IO_ENABLE',\
+		'USE_LIBC',\
+		'ENABLE_LTO',\
+		'USE_CROSSCOMPILER',\
+		'TOOLSET',\
+		'DEBUG_LEVEL')
+ 
+build_mode = BUILD_MODE
+use_crosscompiler = USE_CROSSCOMPILER
+targetPlatform = TARGET_MACHINE
+ikbd_direct_write = IKBD_DIRECT_WRITE
+tx_enable = TX_ENABLE
+conout_enable = CONOUT_ENABLE
+gemdos_io_enable = GEMDOS_IO_ENABLE
+use_libc = USE_LIBC
+debug_level = DEBUG_LEVEL
+enable_lto = ENABLE_LTO
+use_fpu = USE_FPU
 
+# check cross compilation and set prefix
+# add lto builds
+# add linking of custom startup if no libc
+
+# environment 
+compilerName=''
 LIBRARYNAME = 'amidi'
+PREFIX=''
 
-#to indicate that we are cross compiling
-if(((cross=='') or (cross=='no') or (cross=='n') or (cross == None))):
-  CROSS=0
-  CROSS_PREFIX=''
-elif ((cross=='yes')or (cross=='y')):
-  CROSS=1
-  if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' 'm68k-atari-mint-'
-  else:
-	CROSS_PREFIX = 'm68k-atari-mint-'
+if(TOOLSET=='GCC434'):
+# Cygwin path
+	PREFIX = '/opt/cross-mint'
+# Linux cross compiler
+# PREFIX = /usr
+	compilerName = 'm68k-atari-mint-'
+	env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
+	env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
+elif(TOOLSET=='GCC62'):
+# Linux/Cygwin cross compiler
+    PREFIX = '/usr'
+    compilerName = 'm68k-ataribrown-elf-'
+    env['CPPPATH'] = [PREFIX + '/m68k-ataribrown-elf/include','/mintlib-0.60.1-bin/include']
+    env['LIBPATH'] = [PREFIX + '/m68k-ataribrown-elf/lib']
 else:
-  print "No compilation parameter set. Assuming cross compilation for Atari target."
-  CROSS=1
-  if((prefix!='')):
-	CROSS_PREFIX = prefix + '/bin/' +'m68k-atari-mint-'
-  else:
-	CROSS_PREFIX = 'm68k-atari-mint-'
+    print('ERROR: Undefined target toolset. Exiting...')
+    exit(-1)
+
+env['CC'] = PREFIX + '/bin/' + compilerName + 'gcc'
+env['CXX'] = PREFIX + '/bin/' + compilerName + 'g++'
+env['OBJCOPY'] = PREFIX + '/bin/' + compilerName + 'objcopy'
+env['STRIP'] = PREFIX + '/bin/' + compilerName + 'strip -s'
+env['STACK'] = PREFIX + '/bin/' + compilerName + 'stack'
+env['AR'] = PREFIX + '/bin/' + compilerName + 'ar'
+env['RANLIB'] = PREFIX + '/bin/' + compilerName + 'ranlib'
+
+if(TOOLSET == 'GCC62'):
+    env['PROGSUFFIX'] = '.elf'
+else:
+    env['PROGSUFFIX'] = '.tos'
+
+env['LIBSUFFIX'] ='.a'
+
+# VASM
+env['AS']='vasmm68k_mot'
+env['VASM'] = env['AS']
+
+# ST/e, F030, CT60 program flags
+CFLAGS=''
+LDFLAGS=''
+VASM_FLAGS=''
+CPPFLAGS=''
+CXXFLAGS=''
+
+LIB_POSTFIX='not_set'
+LIB_TARGET='not_set'
+
+STACK_SIZE=0
+    
+TARGET='-DTARGET_'
+
+if(TOOLSET=='GCC434'):
+    if(targetPlatform == 'ST'):
+		CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer '
+		LDFLAGS += '-m68000 -Wl,--traditional-format '
+		VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include'
+		LIB_TARGET = '000'
+    elif(targetPlatform == 'F030'):
+		CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer '
+		LDFLAGS += '-m68030 -Wl,--traditional-format '
+		VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include'
+		LIB_TARGET = '030'
+    elif(targetPlatform == 'CT60'):
+		CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer '
+		LDFLAGS += '-m68060 -Wl,--traditional-format '
+		VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include'
+		LIB_TARGET = '060'
+    else:
+		print('Unsupported target. Exiting...')
+		exit(-1)
+elif(TOOLSET == 'GCC62'):
+	if(targetPlatform == 'ST'):
+		CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
+		LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
+		VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include'
+		LIB_TARGET = '000'
+
+		# floating point support
+		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68000','/usr/m68k-ataribrown-elf/lib/m68000']
+	elif(targetPlatform == 'F030'):
+		CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
+		LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+		VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include'
+		LIB_TARGET = '030'
+		
+		# floating point support
+		if(use_fpu == 'yes'):
+			# hardware fpu support
+			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020', '/usr/m68k-ataribrown-elf/lib/m68020', '/mintlib-0.60.1-bin/lib020']		
+		else:
+			# soft float
+			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020/softfp', '/usr/m68k-ataribrown-elf/lib/m68020/softfp', '/mintlib-0.60.1-bin/lib020_soft']
+	elif(targetPlatform == 'CT60'):
+		CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
+		LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
+		VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include'
+		LIB_TARGET = '060'
+		
+  		# floating point support
+		# hardware fpu support
+		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68060', '/usr/m68k-ataribrown-elf/lib/m68060']		
+	else:
+		print('Unsupported target. Exiting...')
+		exit(-1)
+else:
+    print('ERROR: Undefined target toolset. Exiting...')
+    exit(-1)
+
+if(enable_lto=='yes'):
+	CFLAGS += CFLAGS + '-flto '
+	LDFLAGS += LDFLAGS + '-flto  '
 	
-ST_CFLAGS=''
-ST_LDFLAGS=''
-ST_VASM_FLAGS =''
-ST_CCFLAGS =''
-EXE_EXT_1=''
-EXE_EXT_2=''
-LIB_POSTFIX=''
-
-print "Cross tools path: " + prefix
-
-if ((target == "f030") or (target == "ataritt")):
-    print "Building Atari Falcon 030/TT target..."
-    ST_CFLAGS='-std=c99 -m68030 -ffast-math -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format'
-    if(int(debug)==0):
-	ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -opt-speed -I../include'
-    else:
-	ST_VASM_FLAGS = '-Faout -quiet -m68030 -spaces -showopt -no-opt -I../include'
-
-    ST_CCFLAGS =''
-    EXE_EXT_1='.tos'
-    EXE_EXT_2='.ttp'
-    LIB_POSTFIX='030'
-elif (target == "atarist"):
-    print "Building Atari ST/Ste target..."
-    ST_CFLAGS='-std=c99 -m68000 -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format'
-    if(int(debug)==0):
-        ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -opt-speed -I../include'
-    else:
-	ST_VASM_FLAGS = '-Faout -quiet -m68000 -spaces -showopt -no-opt -I../include'
-    ST_CCFLAGS =''
-    EXE_EXT_1='.tos'
-    EXE_EXT_2='.ttp'
-    LIB_POSTFIX='000'
-elif (target == "ct60"):
-    print "Building Falcon CT60/63 target..."
-    ST_CFLAGS='-std=c99 -m68060 -ffast-math -fomit-frame-pointer'
-    ST_LDFLAGS='-Wl,--traditional-format'
-    if(int(debug)==0):
-        ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -opt-speed -I../include'
-    else:
-	ST_VASM_FLAGS = '-Faout -quiet -m68060 -spaces -showopt -no-opt -I../include'
-
-    ST_CCFLAGS =''
-    EXE_EXT_1='.tos'
-    EXE_EXT_2='.ttp'
-    LIB_POSTFIX='060'
-else:
-    print "Unknown target...["+target+"] Terminating build. Type in 'scons --help' from commandline for a list of options" 
+	
+TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
-if(libc!="yes"):
-    ST_LDFLAGS='-nostdlib ' + ST_LDFLAGS
+if(use_libc == "no"):
+    LDFLAGS='-nostdlib -nostartfiles -Wl,-e__start ' + LDFLAGS
 
 # skip writing directly to ikbd port completely
-if (tx_enable=="yes"):
-    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=1'
+if (tx_enable == "yes"):
+    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=1'
 else:
-    ST_VASM_FLAGS=ST_VASM_FLAGS + ' -DTX_ENABLE=0'
+    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=0'
 
-if (conout_enable=="no"):
+if (conout_enable == "no"):
     print "Silent mode. Console output disabled."
-    ST_CFLAGS=ST_CFLAGS + ' -DSUPRESS_CON_OUTPUT '
+    CFLAGS = CFLAGS + ' -DSUPRESS_CON_OUTPUT '
 
-if (gemdos_io_enable=="yes"):
+if (gemdos_io_enable == "yes"):
     print "Use GEMDOS for file I/O not libc functions."
-    ST_CFLAGS=ST_CFLAGS + ' -DENABLE_GEMDOS_IO '
+    CFLAGS = CFLAGS + ' -DENABLE_GEMDOS_IO '
 
 # output executable name
 OUTPUT_DIR='../bin/'
-AMIDI_TEST_EXE='midiplay' + EXE_EXT_2
-YM2149_TEST_EXE='ym2149' + EXE_EXT_1
-MIDI_SEQ_TEST_EXE='midiout' + EXE_EXT_1
-TIMINGS_TEST_EXE='midiseq' + EXE_EXT_1
-NKT_REPLAY_EXE = 'nktrep' + EXE_EXT_2
-MID2NKT_EXE = 'mid2nkt' + EXE_EXT_2
+AMIDI_TEST_NAME = 'midiplay' 
+YM2149_TEST_NAME ='ym2149' 
+MIDI_SEQ_TEST_NAME = 'midiout'
+TIMINGS_TEST_NAME = 'midiseq' 
+NKT_REPLAY_NAME = 'nktrep' 
+MID2NKT_NAME = 'mid2nkt' 
 
-env["CC"] = CROSS_PREFIX + 'gcc'
-env["CXX"] = CROSS_PREFIX + 'g++'
-env["AS"] = 'vasmm68k_mot'
-env['AR'] = CROSS_PREFIX + 'ar'
-env['RANLIB'] = CROSS_PREFIX + 'ranlib'
-env['OBJCOPY'] = CROSS_PREFIX + 'objcopy'
-env['STRIP'] = CROSS_PREFIX + 'strip -s'
-env['STACK'] = CROSS_PREFIX + 'stack'
-  
 include_path=''
 lib_path=''
-  
-if(CROSS==1):
-    include_path = prefix + "/m68k-atari-mint/include"
-    lib_path = prefix + "/m68k-atari-mint/lib"
-else:
-    include_path = prefix + "/include"
-    lib_path = prefix + "/lib"
 	
-env["CPPPATH"] = [include_path, "../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = [lib_path,'../bin/']
+env["CPPPATH"] = env["CPPPATH"] + ["../","../include","../include/lzo","../include/ym2149","../include/input"]
+env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
   
-# VASM settings
-env['VASM'] = 'vasmm68k_mot'
-
 #############################################################################################################################
 # additional defines  
 #############################################################################################################################
@@ -171,37 +221,39 @@ env['VASM'] = 'vasmm68k_mot'
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined
 # EVENT_LINEAR_BUFFER library uses custom memory pool for midi events instead of using standard memory allocation calls (per sequence file),
-#		      memory pool is configurable(see eventPoolSize/eventDataAllocatorSize)
+# memory pool is configurable (see eventPoolSize / eventDataAllocatorSize)
 # LZO_DEBUG enables LZO debug mode
 
-if ( (debug != 'none') and (int(debug)>0)):
+if ( build_mode == 'debug'):
   print "Debug build..."
-  if(int(debug)==1):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
-  elif(int(debug)==2):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
-  elif(int(debug)==3):
-    ST_CFLAGS=ST_CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
+  if(debug_level=='1'):
+    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+  elif(debug_level=='2'):
+    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
+  elif(debug_level=='3'):
+    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
+  else:
+	CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
   
-  LIB_POSTFIX = LIB_POSTFIX+'d'
-  ST_CFLAGS= ST_CFLAGS  
+  LIB_POSTFIX = LIB_TARGET+'d'  
 else:
-    print "Release build... Code optimisation is turned on."
-    ST_CFLAGS= ST_CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
+	print "Release build... Code optimisation is turned on."
+	CFLAGS= CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
+	LIB_POSTFIX = LIB_TARGET  
     
-if(ikbd_direct=="yes"):
+if(ikbd_direct_write == "yes"):
     print "Sending data directly via IKBD ENABLED"
-    ST_CFLAGS=ST_CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
-    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
-elif(((ikbd_direct=='') or (ikbd_direct=='no') or (ikbd_direct=='n') or (ikbd_direct == None))):
+    CFLAGS = CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
+    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+elif(ikbd_direct_write=='no'):
     print "Sending data directly via IKBD DISABLED"
-    ST_CFLAGS=ST_CFLAGS +' '
-    ST_VASM_FLAGS = ST_VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
+    CFLAGS = CFLAGS +' '
+    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
 
-env["CFLAGS"] = ST_CFLAGS  
-env["LINKFLAGS"] = ST_LDFLAGS 
-env["ASFLAGS"] = ST_VASM_FLAGS
-env['VASM_FLAGS'] = ST_VASM_FLAGS
+env["CFLAGS"] = CFLAGS  
+env["LINKFLAGS"] = LDFLAGS 
+env["ASFLAGS"] = VASM_FLAGS
+env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
@@ -222,6 +274,7 @@ ym2149_src = ["common/ym2149.c"]
 lzo_src = ["common/lzo/minilzo.c"]
 
 # custom startup
+# todo remove it and link one, external version
 startup_src = ["startup/mStartupAsmC.s", "startup/stdlib.s", "startup/mStartup.c"]
 
 # main library 
@@ -229,7 +282,6 @@ amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midi
 
 # build library
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
-
 
 #################### test programs entry points
 amidi_test_src = ["../demo/midi_rep/main.c"] 
@@ -240,26 +292,28 @@ nktReplay_src = ["../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = ["../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
-nkt_src=["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
+nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
 
-if (gemdos_io_enable=="yes"):
+if (gemdos_io_enable == "yes"):
     nkt_src = nkt_src + discio_src
 
-if(libc!="yes"):
+if(use_libc=="no"):
 	# build test programs and link them with amidilib and custom startup code
-	env.Program(AMIDI_TEST_EXE, [env.Object(startup_src) + amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX])
-	env.Program(MIDI_SEQ_TEST_EXE, [env.Object(startup_src) + midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
-	env.Program(YM2149_TEST_EXE, [env.Object(startup_src) + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
-	env.Program(TIMINGS_TEST_EXE, [env.Object(startup_src) + timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX])
-	env.Program(NKT_REPLAY_EXE, [env.Object(startup_src) + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
-	env.Program(MID2NKT_EXE, [env.Object(startup_src) + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+	env.Program(AMIDI_TEST_NAME, [env.Object(startup_src) + amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(MIDI_SEQ_TEST_NAME, [env.Object(startup_src) + midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(YM2149_TEST_NAME, [env.Object(startup_src) + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(TIMINGS_TEST_NAME, [env.Object(startup_src) + timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(NKT_REPLAY_NAME, [env.Object(startup_src) + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS = [], PROGSUFFIX=env['PROGSUFFIX']);
+	env.Program(MID2NKT_NAME, [env.Object(startup_src) + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[], PROGSUFFIX = env['PROGSUFFIX']);
 else:
 	# build test programs and link them with amidilib
-	env.Program(AMIDI_TEST_EXE, [amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
-	env.Program(MIDI_SEQ_TEST_EXE, [midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
-	env.Program(YM2149_TEST_EXE, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
-	env.Program(TIMINGS_TEST_EXE, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX,'m'])
-	env.Program(NKT_REPLAY_EXE, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[]);
-	env.Program(MID2NKT_EXE, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[]);
+	env.Program(AMIDI_TEST_NAME, [amidi_test_src + env.Object(input_src)] , LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(MIDI_SEQ_TEST_NAME, [midiOut_test_src + env.Object(input_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(YM2149_TEST_NAME, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(TIMINGS_TEST_NAME, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(NKT_REPLAY_NAME, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=[], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(MID2NKT_NAME, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=[], PROGSUFFIX = env['PROGSUFFIX']);
 
-
+# add stripping symbols
+# add copy/install/deploy step 	
+	

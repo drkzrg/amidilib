@@ -7,7 +7,6 @@
     See license.txt for licensing information.
 */
 
-#include <math.h>
 #include <assert.h>
 
 #include "config.h"

@@ -345,27 +345,26 @@ if(use_libc=="no"):
 	startup_obj = [CSTARTUP_FOLDER + 'mStartupAsmC' + objPostfix, CSTARTUP_FOLDER +'mStartup' + objPostfix, CSTARTUP_FOLDER + 'stdlib' + objPostfix]
 	
 	# build test programs and link them with amidilib and custom startup code
-	env.Program(AMIDI_TEST_NAME, [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-	env.Program(MIDI_SEQ_TEST_NAME, [startup_obj + midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-	env.Program(YM2149_TEST_NAME, [startup_obj + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)],  LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-	env.Program(TIMINGS_TEST_NAME, [startup_obj + timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-	env.Program(NKT_REPLAY_NAME, [startup_obj + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
-	env.Program(MID2NKT_NAME, [startup_obj + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source =  [startup_obj + midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)],  LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source =  [startup_obj + timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source =  [startup_obj + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source =  [startup_obj + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
 else:
-	
 	# build test programs and link them with amidilib
 	if(TOOLSET == 'GCC62'):
 		ADDLIBS=['crt0']
 	
-	env.Program(AMIDI_TEST_NAME, [amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(MIDI_SEQ_TEST_NAME, [midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(YM2149_TEST_NAME, [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(TIMINGS_TEST_NAME, [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(NKT_REPLAY_NAME, [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-	env.Program(MID2NKT_NAME, [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
 	OutDirPath = Dir('../').abspath
-	if(TOOLSET == 'GCC62'):
+	if(TOOLSET == 'GXX62'):
 		convertElf(AMIDI_TEST_NAME, build_mode, OutDirPath, '.ttp')
 		convertElf(MIDI_SEQ_TEST_NAME, build_mode, OutDirPath,'.tos')
 		convertElf(YM2149_TEST_NAME, build_mode, OutDirPath,'.tos')

@@ -56,7 +56,6 @@ def convertElf(prgName, buildMode, outputDirPath, ext):
 	env.AlwaysBuild(tosBinary)
 	return	
  
- 
 build_mode = BUILD_MODE
 use_crosscompiler = USE_CROSSCOMPILER
 targetPlatform = TARGET_MACHINE
@@ -236,9 +235,6 @@ MIDI_SEQ_TEST_NAME = 'midiout'
 TIMINGS_TEST_NAME = 'midiseq' 
 NKT_REPLAY_NAME = 'nktrep' 
 MID2NKT_NAME = 'mid2nkt' 
-
-include_path=''
-lib_path=''
 	
 env["CPPPATH"] = env["CPPPATH"] + ["../","../include","../include/lzo","../include/ym2149","../include/input"]
 env["LIBPATH"] = env["LIBPATH"] + ['../bin/']

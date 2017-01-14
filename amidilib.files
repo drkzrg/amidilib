@@ -39,6 +39,8 @@ include/mt32togm.h
 include/roland.h
 include/vendors.h
 include/xmidi.h
+minimal/SConstruct_debug
+minimal/SConstruct_release
 src/common/core/amidilib.c
 src/common/core/amlog.c
 src/common/core/c_vars.c
@@ -95,7 +97,6 @@ minimal/nktreplay/SConscript
 minimal/nktreplay/SConstruct
 minimal/nktreplay.sh
 minimal/SConscript.nktreplay
-minimal/SConstruct
 minimal/SConscript.nktconvert
 minimal/makeMinimalLib.sh
 gendoc.sh

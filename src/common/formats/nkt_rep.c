@@ -1658,7 +1658,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
           // save track data
           written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
 
-          if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+          if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks){
              amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
              amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
              return -1;
@@ -1693,7 +1693,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
          // save track data
          written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
 
-         if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+         if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
             amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
             amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
             return -1;
@@ -1758,7 +1758,7 @@ void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
             trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
             trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
             trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
-            trackInfo[i].nbOfBlocks=trackInfo[i].nbOfBlocks;
+            trackInfo[i].nbOfBlocks=pNktSeq->pTracks[i].nbOfBlocks;
             amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
         }
     }

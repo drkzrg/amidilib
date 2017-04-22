@@ -125,7 +125,7 @@ void mainLoop(sNktSeq *pSequence){
       while(bQuit==FALSE){
 
         //check keyboard input
-        for (int i=0; i<128; i++) {
+        for (U16 i=0; i<128; ++i) {
 
           if (Ikbd_keyboard[i]==KEY_PRESSED) {
           Ikbd_keyboard[i]=KEY_UNDEFINED;

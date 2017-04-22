@@ -143,7 +143,7 @@ if(g_CurrentSequence){
 
         am_allNotesOff(16);
 
-        for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
 
           pTrack=g_CurrentSequence->arTracks[i];
 
@@ -630,7 +630,7 @@ void am_destroySequence (sSequence_t **pPtr){
   }
 
   //destroy all tracks
-   for (int i=0;i<AMIDI_MAX_TRACKS;i++){
+   for (U16 i=0;i<AMIDI_MAX_TRACKS;++i){
      if((*pPtr)->arTracks[i]!=0){
      if((*pPtr)->arTracks[i]->pTrackName!=0) amFree(((*pPtr)->arTracks[i]->pTrackName));
 
@@ -675,7 +675,7 @@ if(g_CurrentSequence){
          printf("\tCur BPM: %lu\n",pTrackState->currentBPM);
          printf("\tCur Tempo: %lu\n",pTrackState->currentTempo);
          printf("\tCur Play state: %s\n",getPlayStateStr(pTrackState->playState));
-         printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
+         printf("\tMute: %s\n",(pTrackState->playState & TM_MUTE)?"TRUE":"FALSE");
       }
     }break;
     case ST_MULTI:{
@@ -689,7 +689,7 @@ if(g_CurrentSequence){
         printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
         printf("Cur BPM: %lu\n",pTrackState->currentBPM);
 
-        for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
             pTrack=g_CurrentSequence->arTracks[i];
             pTrackState=0;
 
@@ -706,7 +706,7 @@ if(g_CurrentSequence){
         printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
         printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
 
-        for (int i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
             pTrack=g_CurrentSequence->arTracks[i];
 				sTrackState_t *pTrackState=0;
                 printf("Track[%d]\n",i);

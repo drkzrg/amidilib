@@ -320,10 +320,10 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("bytes written %d\n",*len);
+       printf("bytes written %lu\n",(U32)(*len));
 #endif
 
-    amTrace("bytes written %d\n",*len);
+    amTrace("bytes written %lu\n",(U32)(*len));
 
      if(pOutMidName){
 
@@ -350,10 +350,10 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
             }
 
 #ifndef SUPRESS_CON_OUTPUT
-        printf("Written %d bytes\n",bytes_written);
+        printf("Written %ld bytes\n",bytes_written);
 #endif
 
-        amTrace("Written %d bytes\n",bytes_written);
+        amTrace("Written %ld bytes\n",bytes_written);
 
         }else{
             #ifndef SUPRESS_CON_OUTPUT

@@ -105,7 +105,7 @@ int main(void){
   //enter main loop
   while(bQuit==FALSE){
     
-  for (int i=0; i<128; i++) {
+  for (U16 i=0; i<128; ++i) {
      
      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -293,7 +293,7 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
 
   pSeqPtr->timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
   
-  for (int i=0;i<3;i++){
+  for (U16 i=0;i<3;++i){
       pSeqPtr->tracks[i].seqPosIdx=0UL;
       pSeqPtr->tracks[i].timeElapsedInt=0UL;
   }  
@@ -388,7 +388,7 @@ static BOOL bStopped=FALSE;
   if((g_CurrentState.state==PS_STOPPED&&bStopped==FALSE)){
     bStopped=TRUE;
     //repeat for each track
-    for (int i=0;i<3;i++){
+    for (U16 i=0;i<3;++i){
       g_CurrentState.tracks[i].seqPosIdx=0;
       g_CurrentState.tracks[i].timeElapsedInt=0UL;
     }
@@ -421,7 +421,7 @@ static BOOL bStopped=FALSE;
    g_CurrentState.timeElapsedFrac &= 0xffff;
    
   //repeat for each track
-  for (int i=0;i<3;i++){
+  for (U16 i=0;i<3;++i){
 
      //for each active track
       U32 count=g_CurrentState.tracks[i].seqPosIdx;
@@ -476,7 +476,7 @@ void onEndSeq(){
       g_CurrentState.timeElapsedFrac=0UL;
       g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
   
-      for (int i=0;i<3;i++){
+      for (U16 i=0;i<3;++i){
         g_CurrentState.tracks[i].seqPosIdx=0UL;
         g_CurrentState.tracks[i].timeElapsedInt=0UL;
        }

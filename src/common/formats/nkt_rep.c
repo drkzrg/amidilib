@@ -485,7 +485,7 @@ void updateStepNkt(){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (int i=0;i<NKT_UMAX;++i){
+      for (U16 i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -648,7 +648,7 @@ void updateStepNktMt(){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (int i=0;i<NKT_UMAX;++i){
+      for (U16 i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -831,7 +831,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
      return NULL;
    }
 
-   for (int i=0;i<tempHd.nbOfTracks;++i){
+   for (U16 i=0;i<tempHd.nbOfTracks;++i){
      amTrace("[NKT track #%u]\nNb of blocks: %u (%u bytes),\nEvent data buffer size: %u\n",i,trackData[i].nbOfBlocks, trackData[i].eventsBlockBufSize,trackData[i].eventDataBufSize);
    }
 
@@ -1658,7 +1658,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
           // save track data
           written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
 
-          if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks){
+          if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
              amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
              amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
              return -1;

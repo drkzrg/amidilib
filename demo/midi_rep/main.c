@@ -137,7 +137,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
       while(bQuit==FALSE){
 
 	    //check keyboard input  
-	    for (int i=0; i<128; i++) {
+	    for (U16 i=0; i<128; ++i) {
 	    
 	      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -289,7 +289,7 @@ void midiParserTest(sSequence_t *pSequence){
    amTrace((const U8*)"Active track: %d\n",pSequence->ubActiveTrack);
 	  
 	  //output data loaded in each track
-  for (int i=0;i<pSequence->ubNumTracks;i++){
+  for (U16 i=0;i<pSequence->ubNumTracks;++i){
     sTrack_t *p=pSequence->arTracks[i];
     
     if(p!=0){

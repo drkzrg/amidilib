@@ -12,10 +12,8 @@
 #include "amidilib.h"
 #endif
 
-#include <alloca.h>
-
 /* for saving last running status */
-static U8 g_runningStatus;
+static U8 g_runningStatus=0;
 
 //////////////////////////////////////////////////////
 U16 am_getTimeDivision (const void *pMidiPtr){
@@ -338,11 +336,14 @@ if((*recallRS)==0){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+  U8 tempBuf[tempEvent.copyEventCb.size];
 #else
   getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+  U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+  tempEvent.dataPtr=(void *)tempBuf;
+
+
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
   pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -369,11 +370,13 @@ if((*recallRS)==0){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+  U8 tempBuf[tempEvent.copyEventCb.size];
 #else
   getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+  U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+  tempEvent.dataPtr=(void *)tempBuf;
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
 
@@ -425,11 +428,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+  U8 tempBuf[tempEvent.copyEventCb.size];
 #else
   getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+  U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+  tempEvent.dataPtr=(void *) tempBuf;
 
   /*assert(tempEvent.dataPtr>0);*/
   pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -457,11 +462,13 @@ sEventBlock_t tempEvent;
     tempEvent.type=T_NOTEON;
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
+
     pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -507,11 +514,14 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *) tempBuf;
+
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
 
@@ -533,11 +543,12 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
     tempEvent.type=T_NOTEAFT;
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -581,12 +592,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
 
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
@@ -607,11 +619,12 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
 
     /*assert(tempEvent.dataPtr>0);*/
     pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
@@ -659,11 +672,12 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -680,11 +694,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
       getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
-      tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+      U8 tempBuf[tempEvent.copyEventCb.size];
 #else
       getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-      tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+      U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+      tempEvent.dataPtr=(void *) tempBuf;
 
       pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
       pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -729,11 +745,13 @@ if((*recallRS)==0){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -749,11 +767,13 @@ if((*recallRS)==0){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -798,11 +818,12 @@ tempEvent.dataPtr=0;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -820,11 +841,12 @@ tempEvent.dataPtr=0;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+    tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
@@ -862,11 +884,13 @@ S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   getEventFuncCopyInfo(T_SYSEX,&tempEvent.copyEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+  U8 tempBuf[tempEvent.copyEventCb.size];
 #else
   getEventFuncInfo(T_SYSEX,&tempEvent.sendEventCb);
-  tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+  U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+  tempEvent.dataPtr=(void *) tempBuf;
 
   pEvntBlock=(sSysEX_EventBlock_t *)tempEvent.dataPtr;
 
@@ -1045,11 +1069,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_MARKER,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_META_MARKER,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pMarkerName=amMallocEx(ubLenght+1,PREFER_TT);
@@ -1088,11 +1114,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_CUEPOINT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_META_CUEPOINT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pCuePointName=0;
@@ -1208,11 +1236,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_EOT,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_META_EOT,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sEot_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->dummy=0L;		//dummy value
@@ -1255,11 +1285,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_SET_TEMPO,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sTempo_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->eventData.tempoVal=	val1;
@@ -1317,11 +1349,13 @@ sEventBlock_t tempEvent;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     getEventFuncCopyInfo(T_META_SET_SIGNATURE,&tempEvent.copyEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.copyEventCb.size);
+    U8 tempBuf[tempEvent.copyEventCb.size];
 #else
     getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
-    tempEvent.dataPtr=alloca(tempEvent.sendEventCb.size);
+    U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
+    tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sTimeSignature_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->timeSignature=timeSign;

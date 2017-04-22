@@ -155,7 +155,7 @@ void deinitDebug(){
     S16 err=Fclose(fh);
 
     if(err!=GDOS_OK){
-      printf("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));
+      printf("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
     }
 
 #else

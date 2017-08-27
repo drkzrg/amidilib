@@ -1,1 +1,13 @@
 /amidilib.creator.user
+
+src/cov-int/
+
+cov-int/
+
+bin/
+
+src/\.sconsign\.dblite
+
+amidilib\.tgz
+
+*.o

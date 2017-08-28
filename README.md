@@ -12,7 +12,7 @@
 Introduction
 ------------
 
-AMIDILIB is replay library which allows easy replay of MIDI files in various formats via external midi port found in all 16/32 bit Atari home computers (https://en.wikipedia.org/wiki/Atari_ST). 
+AMIDILIB is replay library which allows easy replay of MIDI files in various formats via external midi port found in all 16/32 bit [Atari home computers](https://en.wikipedia.org/wiki/Atari_ST). 
 It supports General Midi instruments (GM1 / GM2) and Roland MT-32 family of synths. 
 It can also preprocess various midi data and export it to custom binary format (nkt), which is more suitable for use in programs and games - 
 data doesn't have to be preprocessed which increases loading times, contains minimal amount of information needed to replay music. 

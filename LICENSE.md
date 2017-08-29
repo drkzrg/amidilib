@@ -1,5 +1,6 @@
 
 The MIT License (MIT)
+---------------------
 
 Copyright (c) 2007-2017, Paweł Góralski / Nokturnal (pawel.goralski@nokturnal.pl)
 

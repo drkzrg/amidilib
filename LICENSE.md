@@ -11,7 +11,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 AMIDILIB uses:
+--------------
 miniLZO(http://www.oberhumer.com/opensource/lzo) are Copyright (C) 1996-2017 Markus Franz Xaver Oberhumer All Rights Reserved.
+
 miniLZO(http://www.oberhumer.com/opensource/lzo) are distributed under the terms of the GNU General Public License (GPL).  See the file COPYING.
+
 Mus to Midi conversion from Doom 3 BFG Edition GPL Source Code Copyright (C) 1993-2012 id Software LLC, a ZeniMax Media company. 
 

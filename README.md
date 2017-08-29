@@ -32,3 +32,7 @@ Detailed information about building library are in [compilation instructions](co
 
 Currently there's no binary relases, but it might change in the future. Documentation and examples are also missing, but they will be provided at some point. 
 Until then you can contact me: [nokturnal@nokturnal.pl](mailto:nokturnal@nokturnal.pl).
+
+lICENSE
+-------------------------
+See [LICENSE](LICENSE.md)

@@ -41,6 +41,7 @@ include/vendors.h
 include/xmidi.h
 minimal/SConstruct_debug
 minimal/SConstruct_release
+src/SConstruct_brownerelf
 src/common/core/amidilib.c
 src/common/core/amlog.c
 src/common/core/c_vars.c
@@ -54,6 +55,9 @@ src/common/memory/stack.c
 src/common/midi/midiseq.c
 src/common/timing/miditim.c
 src/common/ym2149.c
+src/convertElf.sh
+src/do.sh
+src/make.sh
 src/tos/discio/fmio.c
 src/tos/memory/memory.c
 src/tos/midi/midi_rep.c

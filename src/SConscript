@@ -237,7 +237,7 @@ NKT_REPLAY_NAME = 'nktrep'
 MID2NKT_NAME = 'mid2nkt' 
 	
 env["CPPPATH"] = env["CPPPATH"] + ["../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
+env["LIBPATH"] = env["LIBPATH"] + ['../bin/','/usr/m68k-ataribrowner-elf/lib']
   
 #############################################################################################################################
 # additional defines  
@@ -349,15 +349,17 @@ if(use_libc=="no"):
 	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source =  [startup_obj + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
 else:
 	# build test programs and link them with amidilib
+	startup_obj=['']
 	if(TOOLSET == 'GCC710'):
-		ADDLIBS=['crt0']
-	
-	env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	    ADDLIBS = ['c']
+	    startup_obj = ['/usr/m68k-ataribrowner-elf/lib/crt0.o']
+
+        env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj +nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj +mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
 	OutDirPath = Dir('../').abspath
 	if(TOOLSET == 'GXX710'):

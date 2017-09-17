@@ -182,7 +182,17 @@ if(pSeq!=0){
             Supexec(NktInstallReplayRout);
         }
 
-    }
+    }else{
+            if(pSeq->nbOfTracks==1){
+                 amTrace((const U8*)"Setting single track replay\n");
+                isMultitrackReplay=0;
+                Supexec(NktInstallReplayRoutNoTimers);
+            }else{
+                amTrace((const U8*)"Setting multitrack replay \n");
+                isMultitrackReplay=1;
+                Supexec(NktInstallReplayRoutNoTimers);
+            }
+      }
 
 #ifdef DEBUG_BUILD
   printNktSequenceState();
@@ -485,7 +495,7 @@ void updateStepNkt(){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (U16 i=0;i<NKT_UMAX;++i){
+      for (int i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -648,7 +658,7 @@ void updateStepNktMt(){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (U16 i=0;i<NKT_UMAX;++i){
+      for (int i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -831,7 +841,7 @@ sNktSeq *loadSequence(const U8 *pFilePath){
      return NULL;
    }
 
-   for (U16 i=0;i<tempHd.nbOfTracks;++i){
+   for (int i=0;i<tempHd.nbOfTracks;++i){
      amTrace("[NKT track #%u]\nNb of blocks: %u (%u bytes),\nEvent data buffer size: %u\n",i,trackData[i].nbOfBlocks, trackData[i].eventsBlockBufSize,trackData[i].eventDataBufSize);
    }
 
@@ -1658,7 +1668,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
           // save track data
           written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
 
-          if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+          if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
              amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
              amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
              return -1;
@@ -1693,7 +1703,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
          // save track data
          written=Fwrite(fh, sizeof(sNktTrackInfo) * pSeq->nbOfTracks, pTrackInfo);
 
-         if(written<(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
+         if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
             amTrace("[GEMDOS]Fatal error: Track write error, written: %ld, expected %ld\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
             amTrace("[GEMDOS] Error: %s\n", getGemdosError((S16)written));
             return -1;
@@ -1758,7 +1768,7 @@ void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
             trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
             trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
             trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
-            trackInfo[i].nbOfBlocks=pNktSeq->pTracks[i].nbOfBlocks;
+            trackInfo[i].nbOfBlocks=trackInfo[i].nbOfBlocks;
             amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
         }
     }

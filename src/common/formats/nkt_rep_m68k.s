@@ -15,6 +15,9 @@
 	xref _updateStepNkt		; update step for single track replay
 	xref _updateStepNktMt		; update step for multitrack replay
 
+
+        xdef _NktInstallReplayRoutNoTimers	; sets Nkt replay interrupt routine (single / multitrack) without setting timers
+
 	xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
         xdef _NktDeinstallReplayRout	; removes Nkt replay routine from system
 	xdef _NktMidiUpdateHook
@@ -24,7 +27,12 @@
 replayNkt:
         movem.l   d0-7/a0-6,-(a7)	; save registers
 
-	move.l	updateStepRout,a0
+        move.l	updateStepRout,d0	; check if anything is installed
+	tst.l	d0
+	beq.s	.nothingToDo
+
+        move.l	d0,a0
+
 	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
@@ -122,6 +130,7 @@ replayNkt:
 	jsr   (a0)
 	endif
 
+.nothingToDo:
 
         movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
@@ -130,10 +139,15 @@ replayNkt:
 _NktMidiUpdateHook:
 	movem.l   d0-7/a0-6,-(a7)	; save registers
 
-	move.l	updateStepRout,a0
+        move.l	updateStepRout,d0	; check if anything is installed
+	tst.l	d0
+	beq.s	.nothingToDo
+
+        move.l	d0,a0
 	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
+
 
 	if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
@@ -144,8 +158,6 @@ _NktMidiUpdateHook:
 
 	move.w  sr,-(a7)
 	or.w	#$2300,sr		; disable interrupts, leave ikbd
-
-
 
 	cmpi.w   #0,d1
 	beq.s   .done       ;if 0 bytes do nothing
@@ -214,10 +226,32 @@ _NktMidiUpdateHook:
 	echo	"[nkt_rep_m68k.s] ACIA WRITE SKIP"
 	endif
 
+.nothingToDo:
 
 	movem.l   (a7)+,d0-7/a0-6	; restore registers
 
 	rts
+
+
+_NktInstallReplayRoutNoTimers:
+    movem.l	d0-d7/a0-a6,-(sp)
+    move.w	sr,-(sp)	;save status register
+
+    move.w  #0,midiIntCounter
+
+; set adequate update step routine depending on replay type
+
+    move.w	_isMultitrackReplay,d0
+    tst.w	d0
+    beq.s	.isSingleTrack
+    move.l	#_updateStepNktMt, updateStepRout
+    bra.s	.done
+.isSingleTrack:
+    move.l	#_updateStepNkt, updateStepRout
+.done:
+    move.w 	  (sp)+,sr 		;restore Status Register
+    movem.l (sp)+,d0-d7/a0-a6	;restore registers
+        rts
 
 ; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
 

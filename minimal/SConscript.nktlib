@@ -202,9 +202,9 @@ else:
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
-    VASM_FLAGS += ' -DTX_ENABLE=1'
+    VASM_FLAGS += '-DTX_ENABLE=1 '
 else:
-    VASM_FLAGS += ' -DTX_ENABLE=0'
+    VASM_FLAGS += '-DTX_ENABLE=0 '
 
 if (conout_enable == "no"):
     print "Silent mode. Console output disabled."

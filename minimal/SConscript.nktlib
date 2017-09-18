@@ -123,21 +123,21 @@ if(TOOLSET=='GCC434'):
         if(targetPlatform == 'ST'):
                 CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68000 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I./nktlib/include'
+                VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68000/'
 
                 LIB_TARGET = '000'
         elif(targetPlatform == 'F030'):
                 CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I./nktlib/include'
+                VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68030/'
 
                 LIB_TARGET = '030'
         elif(targetPlatform == 'CT60'):
                 CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68060 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I./nktlib/include'
+                VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68060/'
 
                 LIB_TARGET = '060'
@@ -154,8 +154,8 @@ elif(TOOLSET == 'GCC710'):
 
         if(targetPlatform == 'ST'):
                 CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
-                LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-                VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I./nktlib/include'
+                LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+                VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68000/'
                 LIB_TARGET = '000'
                 # floating point support
@@ -163,7 +163,7 @@ elif(TOOLSET == 'GCC710'):
         elif(targetPlatform == 'F030'):
                 CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
-                VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I./nktlib/include'
+                VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68030/'
                 LIB_TARGET = '030'
                 # floating point support
@@ -177,8 +177,8 @@ elif(TOOLSET == 'GCC710'):
 
         elif(targetPlatform == 'CT60'):
                 CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
-                LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-                VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I./nktlib/include'
+                LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+                VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68060/'
 
                 LIB_TARGET = '060'
@@ -202,24 +202,24 @@ else:
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=1'
+    VASM_FLAGS += ' -DTX_ENABLE=1'
 else:
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=0'
+    VASM_FLAGS += ' -DTX_ENABLE=0'
 
 if (conout_enable == "no"):
     print "Silent mode. Console output disabled."
-    CFLAGS = CFLAGS + ' -DSUPRESS_CON_OUTPUT '
+    CFLAGS += '-DSUPRESS_CON_OUTPUT '
 
 if (gemdos_io_enable == "yes"):
     print "Use GEMDOS for file I/O not libc functions."
-    CFLAGS = CFLAGS + ' -DENABLE_GEMDOS_IO '
+    CFLAGS += '-DENABLE_GEMDOS_IO '
 
 if(use_custom_alloc=='yes'):
-    CFLAGS = CFLAGS + ' -DEXTERN_MEM_FUNCTIONS '
+    CFLAGS += '-DEXTERN_MEM_FUNCTIONS '
 
 if(enable_lto == 'yes'):
-    CFLAGS += CFLAGS + '-flto '
-    LDFLAGS += LDFLAGS + '-flto  '
+    CFLAGS += '-flto '
+    LDFLAGS += '-flto '
     
 env["CPPPATH"] =env["CPPPATH"] + ["../","./include","./include/lzo"]
 env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
@@ -227,28 +227,28 @@ env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
 if ( build_mode == 'debug'):
   print "Debug build..."
   if(debug_level=='1'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER '
   elif(debug_level=='3'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
-        CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+        CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
 
   LIB_POSTFIX = LIB_TARGET+'d'
 else:
         print "Release build... Code optimisation is turned on."
-        CFLAGS= CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
+        CFLAGS += '-DEVENT_LINEAR_BUFFER ' +'-O2 ' + '-DUSE_INLINE '
         LIB_POSTFIX = LIB_TARGET
 
 if(ikbd_direct_write == "yes"):
     print "Sending data directly via IKBD ENABLED"
-    CFLAGS = CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+    CFLAGS += CFLAGS +'-DIKBD_MIDI_SEND_DIRECT '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=1 '
 elif(ikbd_direct_write=='no'):
     print "Sending data directly via IKBD DISABLED"
-    CFLAGS = CFLAGS +' '
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
+    CFLAGS += ' '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=0 '
 
 env["CFLAGS"] = CFLAGS
 env["LINKFLAGS"] = LDFLAGS

@@ -1,20 +1,15 @@
 /* @(#) iff.c 96/04/29 1.21 */
 
-#include <kernel/types.h>
-#include <kernel/mem.h>
-#include <kernel/tags.h>
-#include <misc/iff.h>
-#include "io.h"
-
-
-/*****************************************************************************/
-
+#include <iff.h>
+#include <fmio.h>
+#include <memory.h>
 
 #ifdef NO_64_BIT_SCALARS
-#define int64  int32
-#define uint64 uint32
+#define int64  int32_t
+#define uint64 uint32_t
 #endif
 
+#if 0
 
 /*****************************************************************************/
 
@@ -59,21 +54,21 @@ typedef struct CollectionList {
 
 typedef struct Chunk {
     PackedID ID;
-    uint32   Filler;
+    uint32_t   Filler;
     uint64   Size;
 } Chunk;
 
 typedef struct SmallChunk {
     PackedID ID;
-    uint32   Size;
+    uint32_t   Size;
 } SmallChunk;
 
 
 /*****************************************************************************/
 
 
-static int32 internalWriteChunk(IFFParser *iff, ContextNode *top,
-                                const void *buf, uint32 numBytes);
+static int32_t internalWriteChunk(IFFParser *iff, ContextNode *top,
+                                const void *buf, uint32_t numBytes);
 
 
 /*****************************************************************************/
@@ -82,7 +77,7 @@ static int32 internalWriteChunk(IFFParser *iff, ContextNode *top,
 /* Characters in [0x20 - 0x7e], no leading spaces (except for ID_NULL) */
 static bool GoodID(PackedID id){
 char  *ptr;
-uint32 i;
+uint32_t i;
 
     ptr = (char *)&id;
     if (ptr[0] == ' ')
@@ -111,7 +106,7 @@ uint32 i;
 static bool GoodType(PackedID type)
 {
 char   *ptr;
-uint32  i;
+uint32_t  i;
 
     if (!GoodID(type))
         return (FALSE);
@@ -221,7 +216,7 @@ SmallChunk   smallChunk;
 
     if (GoodID(chunk.ID))
     {
-        if (cn = AllocMem(sizeof(ContextNode), MEMTYPE_ANY))
+        if (cn = amMallocEx(sizeof(ContextNode), PREFER_TT))
         {
             cn->cn_Type        = type;
             cn->cn_ID          = chunk.ID;
@@ -324,11 +319,11 @@ uint64       rsize;
 /*****************************************************************************/
 
 
-int32 ReadChunk(IFFParser *iff, void *buf, uint32 numBytes)
+int32_t ReadChunk(IFFParser *iff, void *buf, uint32_t numBytes)
 {
 ContextNode *top;
-uint32       maxBytes;
-int32        result;
+uint32_t       maxBytes;
+int32_t        result;
 
     if (!(top = GetCurrentContext(iff)))
         return IFF_PARSE_EOF;
@@ -349,7 +344,7 @@ int32        result;
     }
     else
     {
-        top->cn_Offset += (uint32)result;
+        top->cn_Offset += (uint32_t)result;
     }
 
     return result;
@@ -359,7 +354,7 @@ int32        result;
 /*****************************************************************************/
 
 
-int32 ReadChunkCompressed(IFFParser *iff, void *buf, uint32 numBytes)
+int32_t ReadChunkCompressed(IFFParser *iff, void *buf, uint32_t numBytes)
 {
     TOUCH(iff);
     TOUCH(buf);
@@ -371,7 +366,7 @@ int32 ReadChunkCompressed(IFFParser *iff, void *buf, uint32 numBytes)
 /*****************************************************************************/
 
 
-Err SeekChunk(IFFParser *iff, int32 position, IFFSeekModes mode)
+Err SeekChunk(IFFParser *iff, int32_t position, IFFSeekModes mode)
 {
 ContextNode *top;
 uint64       base;
@@ -412,8 +407,8 @@ uint64       pos;
 
     /* seek on stream */
     {
-        const int64 seekOffset = (int32)(newOffset - top->cn_Offset);
-        int32 oldStreamPos, newStreamPos;
+        const int64 seekOffset = (int32_t)(newOffset - top->cn_Offset);
+        int32_t oldStreamPos, newStreamPos;
 
         /* seek relative to current file position, and see if we got there */
         if ((oldStreamPos = IFFSeek(iff,seekOffset)) < 0) return oldStreamPos;
@@ -532,7 +527,7 @@ bool         firstChunk;
         return err;
 
     /* Allocate and fill in a ContextNode for the new chunk */
-    if (!(cn = AllocMem(sizeof(ContextNode), MEMTYPE_ANY)))
+    if (!(cn = amMallocEx(sizeof(ContextNode), PREFER_TT)))
         return IFF_ERR_NOMEM;
 
     cn->cn_ID          = id;
@@ -579,12 +574,12 @@ ContextNode *top;
 int64        rsize;
 Err          err;
 uint64       size;
-int8         pad;
+int8_t         pad;
 bool         unknownSize;
 bool         bit64;
-uint32       size32;
-uint8        padBuf[2];
-uint32       alignment, padding, extra;
+uint32_t       size32;
+uint8_t        padBuf[2];
+uint32_t       alignment, padding, extra;
 
     if (!(top = GetCurrentContext(iff)))
         return IFF_PARSE_EOF;
@@ -711,8 +706,8 @@ uint32       alignment, padding, extra;
         if (err < 0)
             return err;
 
-        padBuf[0] = (uint8)(alignment >> 8);
-        padBuf[1] = (uint8)(alignment & 0x00FF);
+        padBuf[0] = (uint8_t)(alignment >> 8);
+        padBuf[1] = (uint8_t)(alignment & 0x00FF);
 
         err = IFFWrite(iff, padBuf, 2);
         if (err < 0)
@@ -738,11 +733,11 @@ uint32       alignment, padding, extra;
 /*****************************************************************************/
 
 
-static int32 internalWriteChunk(IFFParser *iff, ContextNode *top,
-                                const void *buf, uint32 numBytes)
+static int32_t internalWriteChunk(IFFParser *iff, ContextNode *top,
+                                const void *buf, uint32_t numBytes)
 {
-uint32 maxBytes;
-int32  result;
+uint32_t maxBytes;
+int32_t  result;
 
     if ((top->cn_Size != IFF_SIZE_UNKNOWN_32)
      && (top->cn_Size != IFF_SIZE_UNKNOWN_64))
@@ -759,7 +754,7 @@ int32  result;
     result = IFFWrite(iff, buf, numBytes);
     if (result >= 0)
     {
-        top->cn_Offset += (uint32)result;
+        top->cn_Offset += (uint32_t)result;
 
         if (top->cn_Offset > top->cn_CurrentSize)
             top->cn_CurrentSize = top->cn_Offset;
@@ -772,7 +767,7 @@ int32  result;
 /*****************************************************************************/
 
 
-int32 WriteChunk(IFFParser	*iff, const void *buf, uint32 numBytes)
+int32_t WriteChunk(IFFParser	*iff, const void *buf, uint32_t numBytes)
 {
 ContextNode *top;
 
@@ -792,7 +787,7 @@ ContextNode *top;
 /*****************************************************************************/
 
 
-int32 WriteChunkCompressed(IFFParser *iff, const void *buf, uint32 numBytes)
+int32_t WriteChunkCompressed(IFFParser *iff, const void *buf, uint32_t numBytes)
 {
     TOUCH(iff);
     TOUCH(buf);
@@ -808,7 +803,7 @@ int32 WriteChunkCompressed(IFFParser *iff, const void *buf, uint32 numBytes)
 /* Purge a collection list node and all collection items within its
  * scope (given by First, LastPtr).
  */
-static int32 PurgeCollectionList(IFFParser *iff, ContextInfo *ci)
+static int32_t PurgeCollectionList(IFFParser *iff, ContextInfo *ci)
 {
 CollectionList	*cl;
 CollectionChunk	*cc, *nextcc;
@@ -871,7 +866,7 @@ ContextInfo     *ci;
 
     cn = GetCurrentContext(iff);
     size = cn->cn_Size;
-    if (cc = AllocMem(sizeof(CollectionChunk) + size, MEMTYPE_ANY))
+    if (cc = amMallocEx(sizeof(CollectionChunk) + size, PREFER_TT))
     {
         cc->cc_Container = FindPropContext(iff);
         cc->cc_Data      = &cc[1];
@@ -955,8 +950,7 @@ ContextInfo     *ci;
 /*****************************************************************************/
 
 
-static Err HandleStopChunk(const IFFParser *iff, void *dummy)
-{
+static Err HandleStopChunk(const IFFParser *iff, void *dummy) {
     TOUCH(iff);
     TOUCH(dummy);
 
@@ -965,11 +959,7 @@ static Err HandleStopChunk(const IFFParser *iff, void *dummy)
 }
 
 
-/*****************************************************************************/
-
-
-static Err HandlePropertyChunk(IFFParser *iff, void *dummy)
-{
+static Err HandlePropertyChunk(IFFParser *iff, void *dummy) {
 ContextInfo *ci;
 PropChunk   *pc;
 ContextNode *cn;
@@ -979,18 +969,17 @@ Err          err;
 
     cn = GetCurrentContext(iff);
 
-    ci = AllocContextInfo(cn->cn_Type, cn->cn_ID, IFF_CI_PROPCHUNK,
-                          cn->cn_Size + sizeof(PropChunk), NULL);
-    if (ci)
-    {
+    ci = AllocContextInfo(cn->cn_Type, cn->cn_ID, IFF_CI_PROPCHUNK, cn->cn_Size + sizeof(PropChunk), NULL);
+
+    if (ci) {
         pc              = (PropChunk *)ci->ci_Data;
         pc->pc_DataSize = cn->cn_Size;
         pc->pc_Data     = &pc[1];
 
 	/* Store contents of property chunk in current context */
 	err = BufferChunk(iff, cn->cn_Size, pc->pc_Data);
-	if (err >= 0)
-	{
+
+	if (err >= 0){
 	    err = StoreContextInfo(iff, ci, IFF_CIL_PROP);
 	    if (err >= 0)
 	    {
@@ -998,10 +987,10 @@ Err          err;
 		return 1;
 	    }
 	}
+
 	FreeContextInfo(ci);
-    }
-    else
-    {
+
+    }else{
         err = IFF_ERR_NOMEM;
     }
 
@@ -1013,16 +1002,13 @@ Err          err;
 
 
 /* Install a handler node into the current context */
-static Err InstallHandler(IFFParser *iff, uint32 type, uint32 id, uint32 ident,
-                          ContextInfoLocation pos, IFFCallBack cb,
-                          const void *userData)
-{
+static Err InstallHandler(IFFParser *iff, uint32_t type, uint32_t id, uint32_t ident, ContextInfoLocation pos, IFFCallBack cb, const void *userData) {
+
 ContextInfo  *ci;
 ChunkHandler *ch;
 Err	      err;
 
-    if (ci = AllocContextInfo(type, id, ident, sizeof(ChunkHandler), NULL))
-    {
+    if (ci = AllocContextInfo(type, id, ident, sizeof(ChunkHandler), NULL)){
         ch               = (ChunkHandler *)ci->ci_Data;
         ch->ch_HandlerCB = cb;
         ch->ch_UserData  = userData;
@@ -1036,13 +1022,8 @@ Err	      err;
     return IFF_ERR_NOMEM;
 }
 
-
-/*****************************************************************************/
-
-
 /* Read and test generic type ID */
-static Err ReadGenericType(IFFParser *iff)
-{
+static Err ReadGenericType(IFFParser *iff){
 ContextNode *top;
 Err          result;
 
@@ -1070,8 +1051,7 @@ Err          result;
 /*****************************************************************************/
 
 
-Err CreateIFFParser(IFFParser **iffp, bool writeMode, const TagArg tags[])
-{
+Err CreateIFFParser(IFFParser **iffp, bool writeMode, const TagArg tags[]) {
 IFFParser   *iff;
 Err          result;
 TagArg      *tag;
@@ -1084,10 +1064,10 @@ IFFIOFuncs  *ioFuncs;
 
     openKey = NULL;
     ioFuncs = NULL;
-    while ((tag = NextTagArg(&tags)) != NULL)
-    {
-        switch (tag->ta_Tag)
-        {
+
+    while ((tag = NextTagArg(&tags)) != NULL) {
+
+        switch (tag->ta_Tag){
             case IFF_TAG_FILE        : openKey = tag->ta_Arg;
                                        ioFuncs = (IFFIOFuncs *)&fileFuncs;
                                        break;
@@ -1105,9 +1085,9 @@ IFFIOFuncs  *ioFuncs;
     if (ioFuncs == NULL)
         return IFF_ERR_NOOPENTYPE;
 
-    iff = AllocMem(sizeof(IFFParser), MEMTYPE_FILL);
-    if (iff)
-    {
+    iff = amMallocEx(sizeof(IFFParser), PREFER_TT);
+
+    if (iff){
         PrepList(&iff->iff_Stack);
         iff->iff_NewIO     = TRUE;
         iff->iff_WriteMode = writeMode;
@@ -1119,13 +1099,13 @@ IFFIOFuncs  *ioFuncs;
         AddHead(&iff->iff_Stack, (Node *)&iff->iff_TopContext);
 
         result = IFFOpen(iff, openKey, writeMode);
-        if (result >= 0)
-        {
+        if (result >= 0){
             iff->iff_Cookie = iff;
             *iffp = iff;
 
             return result;
         }
+
         FreeMem(iff,sizeof(IFFParser));
     }
 
@@ -1354,7 +1334,7 @@ Err            eoc;
 /*****************************************************************************/
 
 
-Err PushChunk(IFFParser *iff, PackedID type, PackedID id, uint32 size)
+Err PushChunk(IFFParser *iff, PackedID type, PackedID id, uint32_t size)
 {
     if (iff->iff_WriteMode)
         return PushChunkW(iff, type, id, size);
@@ -1599,11 +1579,11 @@ ContextNode *parent;
 
 
 ContextInfo *AllocContextInfo(PackedID type, PackedID id, PackedID ident,
-                              uint32 dataSize, IFFCallBack cb)
+                              uint32_t dataSize, IFFCallBack cb)
 {
 ContextInfo *ci;
 
-    if (ci = AllocMem(sizeof(ContextInfo) + dataSize, MEMTYPE_FILL))
+    if (ci = amMallocEx(sizeof(ContextInfo) + dataSize, PREFER_TT))
     {
         ci->ci_ID       = id;
         ci->ci_Type     = type;
@@ -1673,3 +1653,5 @@ ContextNode *cn;
 
     return NULL;
 }
+
+#endif

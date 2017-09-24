@@ -289,7 +289,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 
 
       // allocate 64kb working buffer for midi output
-      pOut=amMallocEx(64*1024,PREFER_TT);
+      pOut = (U8 *)amMallocEx(64*1024,PREFER_TT);
 
      // set midi output name
      if(pFileName){

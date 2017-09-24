@@ -125,11 +125,11 @@ extern "C" {
 #  endif
 #endif
 
-/* The larger type of lzo_uint and lzo_uint32_t. */
+/* The larger type of lzo_uint and lzo_uint32_t_t. */
 #if (LZO_SIZEOF_LZO_INT >= 4)
 #  define lzo_xint              lzo_uint
 #else
-#  define lzo_xint              lzo_uint32_t
+#  define lzo_xint              lzo_uint32_t_t
 #endif
 
 typedef int lzo_bool;
@@ -138,7 +138,7 @@ typedef int lzo_bool;
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int)  == LZO_SIZEOF_LZO_INT)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint) == LZO_SIZEOF_LZO_INT)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_xint) >= sizeof(lzo_uint))
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_xint) >= sizeof(lzo_uint32_t))
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_xint) >= sizeof(lzo_uint32_t_t))
 
 #ifndef __LZO_MMODEL
 #define __LZO_MMODEL            /*empty*/
@@ -161,7 +161,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_xint) >= sizeof(lzo_uint32_t))
 #define lzo_int16_tp            lzo_int16_t __LZO_MMODEL *
 #define lzo_uint16_tp           lzo_uint16_t __LZO_MMODEL *
 #define lzo_int32_tp            lzo_int32_t __LZO_MMODEL *
-#define lzo_uint32_tp           lzo_uint32_t __LZO_MMODEL *
+#define lzo_uint32_t_tp           lzo_uint32_t_t __LZO_MMODEL *
 #if defined(lzo_int64_t)
 #define lzo_int64_tp            lzo_int64_t __LZO_MMODEL *
 #define lzo_uint64_tp           lzo_uint64_t __LZO_MMODEL *
@@ -334,7 +334,7 @@ struct lzo_callback_t
  * compiler's view of various types are consistent.
  */
 #define lzo_init() __lzo_init_v2(LZO_VERSION,(int)sizeof(short),(int)sizeof(int),\
-    (int)sizeof(long),(int)sizeof(lzo_uint32_t),(int)sizeof(lzo_uint),\
+    (int)sizeof(long),(int)sizeof(lzo_uint32_t_t),(int)sizeof(lzo_uint),\
     (int)lzo_sizeof_dict_t,(int)sizeof(char *),(int)sizeof(lzo_voidp),\
     (int)sizeof(lzo_callback_t))
 LZO_EXTERN(int) __lzo_init_v2(unsigned,int,int,int,int,int,int,int,int,int);
@@ -357,11 +357,11 @@ LZO_EXTERN(lzo_voidp)
     lzo_memset(lzo_voidp buf, int c, lzo_uint len);
 
 /* checksum functions */
-LZO_EXTERN(lzo_uint32_t)
-    lzo_adler32(lzo_uint32_t c, const lzo_bytep buf, lzo_uint len);
-LZO_EXTERN(lzo_uint32_t)
-    lzo_crc32(lzo_uint32_t c, const lzo_bytep buf, lzo_uint len);
-LZO_EXTERN(const lzo_uint32_tp)
+LZO_EXTERN(lzo_uint32_t_t)
+    lzo_adler32(lzo_uint32_t_t c, const lzo_bytep buf, lzo_uint len);
+LZO_EXTERN(lzo_uint32_t_t)
+    lzo_crc32(lzo_uint32_t_t c, const lzo_bytep buf, lzo_uint len);
+LZO_EXTERN(const lzo_uint32_t_tp)
     lzo_get_crc32_table(void);
 
 /* misc. */
@@ -388,11 +388,11 @@ LZO_EXTERN(unsigned) __lzo_align_gap(const lzo_voidp p, lzo_uint size);
 #define lzo_byte                unsigned char
 /* deprecated type names */
 #define lzo_int32               lzo_int32_t
-#define lzo_uint32              lzo_uint32_t
+#define lzo_uint32_t              lzo_uint32_t_t
 #define lzo_int32p              lzo_int32_t __LZO_MMODEL *
-#define lzo_uint32p             lzo_uint32_t __LZO_MMODEL *
+#define lzo_uint32_tp             lzo_uint32_t_t __LZO_MMODEL *
 #define LZO_INT32_MAX           LZO_INT32_C(2147483647)
-#define LZO_UINT32_MAX          LZO_UINT32_C(4294967295)
+#define LZO_uint32_t_MAX          LZO_uint32_t_C(4294967295)
 #if defined(lzo_int64_t)
 #define lzo_int64               lzo_int64_t
 #define lzo_uint64              lzo_uint64_t
@@ -403,7 +403,7 @@ LZO_EXTERN(unsigned) __lzo_align_gap(const lzo_voidp p, lzo_uint size);
 #endif
 /* deprecated types */
 typedef union { lzo_bytep a; lzo_uint b; } __lzo_pu_u;
-typedef union { lzo_bytep a; lzo_uint32_t b; } __lzo_pu32_u;
+typedef union { lzo_bytep a; lzo_uint32_t_t b; } __lzo_pu32_u;
 /* deprecated defines */
 #if !defined(LZO_SIZEOF_LZO_UINT)
 #  define LZO_SIZEOF_LZO_UINT   LZO_SIZEOF_LZO_INT

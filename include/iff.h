@@ -1,42 +1,21 @@
-#ifndef __MISC_IFF_H
-#define __MISC_IFF_H
+#ifndef __IFF_H
+#define __IFF_H
 
+// iff parser adapted from amiga sources
 
-/******************************************************************************
-**
-**  @(#) iff.h 96/04/29 1.27
-**
-**  IFF file parser.
-**
-******************************************************************************/
+#include <c_vars.h>
+#include <stdint.h>
+#include <stdbool.h>
 
+#define NO_64_BIT_SCALARS
 
-#ifndef __KERNEL_TYPES_H
-#include <kernel/types.h>
-#endif
-
-#ifndef __KERNEL_LIST_H
-#include <kernel/list.h>
-#endif
-
-#ifndef __KERNEL_ITEM_H
-#include <kernel/item.h>
-#endif
-
-#ifndef __KERNEL_OPERROR_H
-#include <kernel/operror.h>
-#endif
-
-
-/*****************************************************************************/
-
-
-/* kernel interface definitions */
-#define IFF_FOLIONAME "iff"
-
-
-/*****************************************************************************/
-
+// followings items need to be updated to something more appriopriate
+typedef int32_t Err;
+typedef struct {void *n_Next; } MinNode;                              /* Linkage in the LIFO queue */
+typedef uint32_t PackedID;  /* container ID (eg: AIFF)   */
+typedef void *List;
+typedef struct sTagArg {void *ta_Arg; } TagArg;
+//
 
 /* There is one ContextNode structure created for every scoping level
  * during a parse operation. The nodes are kept in a LIFO queue. As new
@@ -47,16 +26,16 @@
  * cn_Offset indicates the current offset within this chunk where
  * ReadChunk() and WriteChunk() are.
  */
-typedef struct ContextNode
-{
+
+typedef struct ContextNode {
     MinNode  cn;              /* Linkage in the LIFO queue */
     PackedID cn_Type;         /* container ID (eg: AIFF)   */
     PackedID cn_ID;           /* chunk ID                  */
 #ifdef NO_64_BIT_SCALARS
-    uint32   cn_SizeHi;
-    uint32   cn_Size;
-    uint32   cn_OffsetHi;
-    uint32   cn_Offset;
+    uint32_t   cn_SizeHi;
+    uint32_t   cn_Size;
+    uint32_t   cn_OffsetHi;
+    uint32_t   cn_Offset;
 #else
     uint64   cn_Size;         /* chunk size                  */
     uint64   cn_Offset;	      /* current offset within chunk */
@@ -64,8 +43,8 @@ typedef struct ContextNode
 #ifndef EXTERNAL_RELEASE
     List     cn_ContextInfo;
 #ifdef NO_64_BIT_SCALARS
-    uint32   cn_CurrentSizeHi;
-    uint32   cn_CurrentSize;
+    uint32_t   cn_CurrentSizeHi;
+    uint32_t   cn_CurrentSize;
 #else
     uint64   cn_CurrentSize;
 #endif
@@ -76,12 +55,7 @@ typedef struct ContextNode
 /*****************************************************************************/
 
 
-#ifdef EXTERNAL_RELEASE
-/* a parsing context */
-typedef struct IFFParser IFFParser;
-#else
-typedef struct IFFParser
-{
+typedef struct IFFParser {
     List               iff_Stack;
     ContextNode        iff_TopContext;
     void              *iff_IOContext;
@@ -89,21 +63,19 @@ typedef struct IFFParser
     bool               iff_WriteMode;
     bool               iff_NewIO;
     bool               iff_Paused;
-    uint16             iff_Alignment;
+    uint16_t           iff_Alignment;
     void              *iff_Cookie;
 } IFFParser;
-#endif
 
 /* call back functions */
 typedef Err (* IFFCallBack)(IFFParser *iff, void *userData);
 
 /* information local to an active ContextNode */
-typedef struct ContextInfo
-{
+typedef struct ContextInfo {
     MinNode      ci;
 #ifdef NO_64_BIT_SCALARS
-    uint32       ci_DataSizeHi;
-    uint32       ci_DataSize;
+    uint32_t       ci_DataSizeHi;
+    uint32_t       ci_DataSize;
 #else
     uint64       ci_DataSize;
 #endif
@@ -118,18 +90,14 @@ typedef struct ContextInfo
 } ContextInfo;
 
 
-/*****************************************************************************/
-
-
 /* These are used for custom IO processing */
 typedef Err (* IFFOpenFunc)(void **userData, void *openKey, bool writeMode);
 typedef Err (* IFFCloseFunc)(void *userData);
-typedef int32 (* IFFReadFunc)(void *userData, void *buffer, uint32 numBytes);
-typedef int32 (* IFFWriteFunc)(void *userData, const void *buffer, uint32 numBytes);
-typedef int32 (* IFFSeekFunc)(void *userData, int32 position);
+typedef int32_t (* IFFReadFunc)(void *userData, void *buffer, uint32_t numBytes);
+typedef int32_t (* IFFWriteFunc)(void *userData, const void *buffer, uint32_t numBytes);
+typedef int32_t (* IFFSeekFunc)(void *userData, int32_t position);
 
-typedef struct IFFIOFuncs
-{
+typedef struct IFFIOFuncs {
     IFFOpenFunc  io_Open;
     IFFCloseFunc io_Close;
     IFFReadFunc  io_Read;
@@ -138,19 +106,11 @@ typedef struct IFFIOFuncs
 } IFFIOFuncs;
 
 
-/*****************************************************************************/
-
-
 /* to specify chunks */
-typedef struct IFFTypeID
-{
+typedef struct IFFTypeID {
     PackedID Type;   /* container ID (eg: AIFF) */
     PackedID ID;     /* chunk ID (eg: SSND)     */
 } IFFTypeID;
-
-
-/*****************************************************************************/
-
 
 /* Describes the data associated with a previously encountered property
  * chunk.
@@ -158,36 +118,28 @@ typedef struct IFFTypeID
 typedef struct PropChunk
 {
 #ifdef NO_64_BIT_SCALARS
-    uint32  pc_DataSizeHi;
-    uint32  pc_DataSize;
+    uint32_t  pc_DataSizeHi;
+    uint32_t  pc_DataSize;
 #else
     uint64  pc_DataSize;
 #endif
     void   *pc_Data;
 } PropChunk;
 
-
-/*****************************************************************************/
-
-
 /* A node in a collection list. The next pointers cross a context boundaries so
  * that the complete list is accessible.
  */
-typedef struct CollectionChunk
-{
+typedef struct CollectionChunk {
     struct CollectionChunk *cc_Next;
     ContextNode            *cc_Container;
     void                   *cc_Data;
 #ifdef NO_64_BIT_SCALARS
-    uint32                  cc_DataSizeHi;
-    uint32                  cc_DataSize;
+    uint32_t                  cc_DataSizeHi;
+    uint32_t                  cc_DataSize;
 #else
     uint64                  cc_DataSize;
 #endif
 } CollectionChunk;
-
-
-/*****************************************************************************/
 
 
 /* Error codes */
@@ -241,9 +193,8 @@ typedef struct CollectionChunk
 /* about to leave context */
 #define IFF_PARSE_EOC         MakeIFFErr(ER_INFO,ER_C_NSTND,11)
 
-
-/*****************************************************************************/
-
+// make ID
+#define	MAKE_ID(a,b,c,d) ((uint32_t) (a)<<24 | (uint32_t) (b)<<16 | (uint32_t) (c)<<8 | (uint32_t) (d))
 
 /* Universal IFF identifiers */
 #define ID_FORM  MAKE_ID('F','O','R','M')
@@ -258,28 +209,16 @@ typedef struct CollectionChunk
 #define IFF_CI_ENTRYHANDLER     MAKE_ID('e','n','h','d')
 #define IFF_CI_EXITHANDLER      MAKE_ID('e','x','h','d')
 
-
-/*****************************************************************************/
-
-
 /* Control modes for ParseIFF() */
-typedef enum ParseIFFModes
-{
+typedef enum ParseIFFModes {
     IFF_PARSE_SCAN,
     IFF_PARSE_STEP,
     IFF_PARSE_RAWSTEP
 } ParseIFFModes;
 
 
-/*****************************************************************************/
-
-
 /* value that entry or exit handlers should return to keep ParseIFF() running */
 #define IFF_CB_CONTINUE 1
-
-
-/*****************************************************************************/
-
 
 /* different types of seek operations */
 typedef enum IFFSeekModes
@@ -289,10 +228,6 @@ typedef enum IFFSeekModes
     IFF_SEEK_END            /* relative to end of chunk     */
 } IFFSeekModes;
 
-
-/*****************************************************************************/
-
-
 /* Control modes for StoreContextInfo() */
 typedef enum ContextInfoLocation
 {
@@ -300,10 +235,6 @@ typedef enum ContextInfoLocation
     IFF_CIL_TOP,     /* store in current context      */
     IFF_CIL_PROP     /* store in topmost FORM or LIST */
 } ContextInfoLocation;
-
-
-/*****************************************************************************/
-
 
 /* If you pass this value as a size to PushChunk() when writing a file, the
  * parser will figure out the size of the chunk for you. If you know the size,
@@ -339,21 +270,15 @@ typedef enum ContextInfoLocation
 /* default byte alignment enforced by the folio on writes */
 #define IFF_DEFAULT_ALIGNMENT 4
 
-
-/*****************************************************************************/
-
-
 /* for use with CreateIFFParser() */
-typedef enum IFFParserTags
-{
+
+#define TAG_ITEM_LAST 0 // ?
+
+typedef enum IFFParserTags {
     IFF_TAG_FILE = TAG_ITEM_LAST+1,  /* name of file to parse             */
     IFF_TAG_IOFUNCS,                 /* callback functions to do IO       */
     IFF_TAG_IOFUNCS_DATA             /* openKey parameter for IFFOpenFunc */
 } IFFParserTags;
-
-
-/*****************************************************************************/
-
 
 #ifdef  __cplusplus
 extern "C" {
@@ -366,23 +291,23 @@ Err CloseIFFFolio(void);
 
 /* parser control */
 Err CreateIFFParser(IFFParser **iff, bool writeMode, const TagArg tags[]);
-Err CreateIFFParserVA(IFFParser **iff, bool writeMode, uint32 tag, ...);
+Err CreateIFFParserVA(IFFParser **iff, bool writeMode, uint32_t tag, ...);
 Err DeleteIFFParser(IFFParser *iff);
 Err ParseIFF(IFFParser *iff, ParseIFFModes control);
 
 /* chunk data IO */
-int32 ReadChunk(IFFParser *iff, void *buffer, uint32 numBytes);
-int32 WriteChunk(IFFParser *iff, const void *buffer, uint32 numBytes);
-Err SeekChunk(IFFParser *iff, int32 position, IFFSeekModes mode);
+int32_t ReadChunk(IFFParser *iff, void *buffer, uint32_t numBytes);
+int32_t WriteChunk(IFFParser *iff, const void *buffer, uint32_t numBytes);
+Err SeekChunk(IFFParser *iff, int32_t position, IFFSeekModes mode);
 
 #ifdef NO_64_BIT_SCALARS
-int32 GetIFFOffset(IFFParser *iff);
+int32_t GetIFFOffset(IFFParser *iff);
 #else
-int64 GetIFFOffset(IFFParser *iff);
+int64_t GetIFFOffset(IFFParser *iff);
 #endif
 
 /* context entry and exit */
-Err PushChunk(IFFParser *iff, PackedID type, PackedID id, uint32 size);
+Err PushChunk(IFFParser *iff, PackedID type, PackedID id, uint32_t size);
 Err PopChunk(IFFParser *iff);
 
 /* built-in chunk and property handlers */
@@ -398,7 +323,7 @@ ContextNode *GetCurrentContext(const IFFParser *iff);
 ContextNode *GetParentContext(const ContextNode *contextNode);
 
 /* ContextInfo utilities */
-ContextInfo *AllocContextInfo(PackedID type, PackedID id, PackedID ident, uint32 dataSize, IFFCallBack cb);
+ContextInfo *AllocContextInfo(PackedID type, PackedID id, PackedID ident, uint32_t dataSize, IFFCallBack cb);
 void FreeContextInfo(ContextInfo *ci);
 ContextInfo *FindContextInfo(const IFFParser *iff, PackedID type, PackedID id, PackedID ident);
 Err StoreContextInfo(IFFParser *iff, ContextInfo *ci, ContextInfoLocation pos);
@@ -414,10 +339,7 @@ Err InstallExitHandler(IFFParser *iff, PackedID type, PackedID id, ContextInfoLo
 
 #ifdef  __cplusplus
 }
+
 #endif  /* __cplusplus */
 
-
-/*****************************************************************************/
-
-
-#endif /* __MISC_IFF_H */
+#endif

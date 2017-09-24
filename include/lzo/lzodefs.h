@@ -2879,41 +2879,41 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #endif
 #if (LZO_SIZEOF_LONG == 4) && !(LZO_CFG_PREFER_TYPEOF_ACC_INT32E_T == LZO_TYPEOF_INT)
 #  define lzo_int32e_t              long int
-#  define lzo_uint32e_t             unsigned long int
+#  define lzo_uint32_te_t             unsigned long int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_LONG
 #elif (LZO_SIZEOF_INT == 4)
 #  define lzo_int32e_t              int
-#  define lzo_uint32e_t             unsigned int
+#  define lzo_uint32_te_t             unsigned int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_INT
 #elif (LZO_SIZEOF_SHORT == 4)
 #  define lzo_int32e_t              short int
-#  define lzo_uint32e_t             unsigned short int
+#  define lzo_uint32_te_t             unsigned short int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_SHORT
 #elif (LZO_SIZEOF_LONG_LONG == 4)
 #  define lzo_int32e_t              lzo_llong_t
-#  define lzo_uint32e_t             lzo_ullong_t
+#  define lzo_uint32_te_t             lzo_ullong_t
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_LONG_LONG
 #elif 1 && !(LZO_CFG_TYPE_NO_MODE_SI) && (LZO_CC_CLANG || (LZO_CC_GNUC >= 0x025f00ul) || LZO_CC_LLVM) && (__INT_MAX__+0 > 2147483647L)
 #  if !(LZO_LANG_ASSEMBLER)
    typedef int lzo_int32e_si_t__ __attribute__((__mode__(__SI__)));
-   typedef unsigned int lzo_uint32e_si_t__ __attribute__((__mode__(__SI__)));
+   typedef unsigned int lzo_uint32_te_si_t__ __attribute__((__mode__(__SI__)));
 #  endif
 #  define lzo_int32e_t              lzo_int32e_si_t__
-#  define lzo_uint32e_t             lzo_uint32e_si_t__
+#  define lzo_uint32_te_t             lzo_uint32_te_si_t__
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___MODE_SI
 #elif 1 && !(LZO_CFG_TYPE_NO_MODE_SI) && (LZO_CC_GNUC >= 0x025f00ul) && defined(__AVR__) && (__LONG_MAX__+0 == 32767L)
 #  if !(LZO_LANG_ASSEMBLER)
    typedef int lzo_int32e_si_t__ __attribute__((__mode__(__SI__)));
-   typedef unsigned int lzo_uint32e_si_t__ __attribute__((__mode__(__SI__)));
+   typedef unsigned int lzo_uint32_te_si_t__ __attribute__((__mode__(__SI__)));
 #  endif
 #  define lzo_int32e_t              lzo_int32e_si_t__
-#  define lzo_uint32e_t             lzo_uint32e_si_t__
+#  define lzo_uint32_te_t             lzo_uint32_te_si_t__
 #  define LZO_INT32_C(c)            (c##LL)
-#  define LZO_UINT32_C(c)           (c##ULL)
+#  define LZO_uint32_t_C(c)           (c##ULL)
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___MODE_SI
 #elif (LZO_SIZEOF___INT32 == 4)
 #  define lzo_int32e_t              __int32
-#  define lzo_uint32e_t             unsigned __int32
+#  define lzo_uint32_te_t             unsigned __int32
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___INT32
 #else
 #endif
@@ -2979,17 +2979,17 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #if !defined(lzo_int32l_t)
 #if defined(lzo_int32e_t)
 #  define lzo_int32l_t              lzo_int32e_t
-#  define lzo_uint32l_t             lzo_uint32e_t
+#  define lzo_uint32_tl_t             lzo_uint32_te_t
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_LZO_INT32E_T
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_TYPEOF_LZO_INT32E_T
 #elif (LZO_SIZEOF_INT >= 4) && (LZO_SIZEOF_INT < LZO_SIZEOF_LONG)
 #  define lzo_int32l_t              int
-#  define lzo_uint32l_t             unsigned int
+#  define lzo_uint32_tl_t             unsigned int
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_INT
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_SIZEOF_INT
 #elif (LZO_SIZEOF_LONG >= 4)
 #  define lzo_int32l_t              long int
-#  define lzo_uint32l_t             unsigned long int
+#  define lzo_uint32_tl_t             unsigned long int
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_LONG
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_SIZEOF_LONG
 #else
@@ -3016,12 +3016,12 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #if !defined(lzo_int32f_t)
 #if (LZO_SIZEOF_SIZE_T >= 8)
 #  define lzo_int32f_t              lzo_int64l_t
-#  define lzo_uint32f_t             lzo_uint64l_t
+#  define lzo_uint32_tf_t             lzo_uint64l_t
 #  define LZO_SIZEOF_LZO_INT32F_T   LZO_SIZEOF_LZO_INT64L_T
 #  define LZO_TYPEOF_LZO_INT32F_T   LZO_TYPEOF_LZO_INT64L_T
 #else
 #  define lzo_int32f_t              lzo_int32l_t
-#  define lzo_uint32f_t             lzo_uint32l_t
+#  define lzo_uint32_tf_t             lzo_uint32_tl_t
 #  define LZO_SIZEOF_LZO_INT32F_T   LZO_SIZEOF_LZO_INT32L_T
 #  define LZO_TYPEOF_LZO_INT32F_T   LZO_TYPEOF_LZO_INT32L_T
 #endif
@@ -3161,11 +3161,11 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int16_t) == sizeof(lzo_uint16_t))
 #endif
 #if defined(lzo_int32e_t)
 #define lzo_int32_t                 lzo_int32e_t
-#define lzo_uint32_t                lzo_uint32e_t
+#define lzo_uint32_t_t                lzo_uint32_te_t
 #define LZO_SIZEOF_LZO_INT32_T      LZO_SIZEOF_LZO_INT32E_T
 #define LZO_TYPEOF_LZO_INT32_T      LZO_TYPEOF_LZO_INT32E_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == 4)
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == sizeof(lzo_uint32_t))
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == sizeof(lzo_uint32_t_t))
 #endif
 #if defined(lzo_int64e_t)
 #define lzo_int64_t                 lzo_int64e_t
@@ -3177,7 +3177,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int64_t) == sizeof(lzo_uint64_t))
 #endif
 #if 1
 #define lzo_int_least32_t           lzo_int32l_t
-#define lzo_uint_least32_t          lzo_uint32l_t
+#define lzo_uint_least32_t          lzo_uint32_tl_t
 #define LZO_SIZEOF_LZO_INT_LEAST32_T LZO_SIZEOF_LZO_INT32L_T
 #define LZO_TYPEOF_LZO_INT_LEAST32_T LZO_TYPEOF_LZO_INT32L_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_least32_t) >= 4)
@@ -3193,7 +3193,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_least64_t) == sizeof(lzo_uint_leas
 #endif
 #if 1
 #define lzo_int_fast32_t           lzo_int32f_t
-#define lzo_uint_fast32_t          lzo_uint32f_t
+#define lzo_uint_fast32_t          lzo_uint32_tf_t
 #define LZO_SIZEOF_LZO_INT_FAST32_T LZO_SIZEOF_LZO_INT32F_T
 #define LZO_TYPEOF_LZO_INT_FAST32_T LZO_TYPEOF_LZO_INT32F_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_fast32_t) >= 4)
@@ -3227,19 +3227,19 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_fast64_t) == sizeof(lzo_uint_fast6
 #if !defined(LZO_INT32_C)
 #  if (LZO_BROKEN_INTEGRAL_CONSTANTS) && (LZO_SIZEOF_INT >= 4)
 #    define LZO_INT32_C(c)          ((c) + 0)
-#    define LZO_UINT32_C(c)         ((c) + 0U)
+#    define LZO_uint32_t_C(c)         ((c) + 0U)
 #  elif (LZO_BROKEN_INTEGRAL_CONSTANTS) && (LZO_SIZEOF_LONG >= 4)
 #    define LZO_INT32_C(c)          ((c) + 0L)
-#    define LZO_UINT32_C(c)         ((c) + 0UL)
+#    define LZO_uint32_t_C(c)         ((c) + 0UL)
 #  elif (LZO_SIZEOF_INT >= 4)
 #    define LZO_INT32_C(c)          (c)
-#    define LZO_UINT32_C(c)         (c##U)
+#    define LZO_uint32_t_C(c)         (c##U)
 #  elif (LZO_SIZEOF_LONG >= 4)
 #    define LZO_INT32_C(c)          (c##L)
-#    define LZO_UINT32_C(c)         (c##UL)
+#    define LZO_uint32_t_C(c)         (c##UL)
 #  elif (LZO_SIZEOF_LONG_LONG >= 4)
 #    define LZO_INT32_C(c)          (c##LL)
-#    define LZO_UINT32_C(c)         (c##ULL)
+#    define LZO_uint32_t_C(c)         (c##ULL)
 #  else
 #    error "LZO_INT32_C"
 #  endif

@@ -75,9 +75,9 @@ PREFIX=''
 
 if(TOOLSET=='GCC434'):
 # Cygwin path
-    PREFIX = '/opt/cross-mint'
+#    PREFIX = '/opt/cross-mint'
 # Linux cross compiler
-# PREFIX = /usr
+    PREFIX = '/usr'
     compilerName = 'm68k-atari-mint-'
     env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
     env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
@@ -144,14 +144,14 @@ if(TOOLSET=='GCC434'):
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68030 -Wl,--traditional-format '
-        VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include'
+        VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER='../deps/startup/aout/m68030/'
 
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
-        VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include'
+        VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER='../deps/startup/aout/m68060/'
 
         LIB_TARGET = '060'

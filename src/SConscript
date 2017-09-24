@@ -81,12 +81,12 @@ if(TOOLSET=='GCC434'):
 	compilerName = 'm68k-atari-mint-'
 	env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
 	env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
-elif(TOOLSET=='GCC62'):
+elif(TOOLSET=='GCC710'):
 # Linux/Cygwin cross compiler
     PREFIX = '/usr'
-    compilerName = 'm68k-ataribrown-elf-'
-    env['CPPPATH'] = [PREFIX + '/m68k-ataribrown-elf/include','/mintlib-0.60.1-bin/include']
-    env['LIBPATH'] = [PREFIX + '/m68k-ataribrown-elf/lib']
+    compilerName = 'm68k-ataribrowner-elf-'
+    env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
+    env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
@@ -99,7 +99,7 @@ env['STACK'] = PREFIX + '/bin/' + compilerName + 'stack'
 env['AR'] = PREFIX + '/bin/' + compilerName + 'ar'
 env['RANLIB'] = PREFIX + '/bin/' + compilerName + 'ranlib'
 
-if(TOOLSET == 'GCC62'):
+if(TOOLSET == 'GCC710'):
     env['PROGSUFFIX'] = '.elf'
 else:
     env['PROGSUFFIX'] = '.tos'
@@ -130,12 +130,14 @@ if(TOOLSET=='GCC434'):
 	fpu_flags = ''
 	
 	if(use_fpu == 'yes'):
-		fpu_flags='-m68882 '
+		fpu_flags = '-m68881 '
+	else:
+		fpu_flags = '-msoft-float '
 		
 	if(targetPlatform == 'ST'):
-		CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' 
+		CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
 		LDFLAGS += '-m68000 -Wl,--traditional-format '
-		VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include'
+		VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
 		CSTARTUP_FOLDER='../deps/startup/aout/m68000/'
 		
 		LIB_TARGET = '000'
@@ -147,7 +149,7 @@ if(TOOLSET=='GCC434'):
 
 		LIB_TARGET = '030'
 	elif(targetPlatform == 'CT60'):
-		CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' 
+		CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
 		LDFLAGS += '-m68060 -Wl,--traditional-format '
 		VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include'
 		CSTARTUP_FOLDER='../deps/startup/aout/m68060/'
@@ -156,43 +158,49 @@ if(TOOLSET=='GCC434'):
 	else:
 		print('Unsupported target. Exiting...')
 		exit(-1)
-elif(TOOLSET == 'GCC62'):
+elif(TOOLSET == 'GCC710'):
+
+	if(use_fpu == 'yes'):
+		fpu_flags = '-m68881 '
+	else:
+		fpu_flags = '-msoft-float '
+
 	if(targetPlatform == 'ST'):
-		CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
-		LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-		VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include'
-		CSTARTUP_FOLDER='../deps/startup/brownelf/m68000/'
+		CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+		LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+		VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
+		CSTARTUP_FOLDER = '../deps/startup/brownelf/m68000/'
 
 		LIB_TARGET = '000'
 
 		# floating point support
-		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68000','/usr/m68k-ataribrown-elf/lib/m68000','/mintlib-0.60.1-bin/startup']
+		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
 	elif(targetPlatform == 'F030'):
-		CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
+		CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
 		LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
-		VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include'
-		CSTARTUP_FOLDER='../deps/startup/brownelf/m68030/'
+		VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
+		CSTARTUP_FOLDER = '../deps/startup/brownelf/m68030/'
 
 		LIB_TARGET = '030'
 		
 		# floating point support
 		if(use_fpu == 'yes'):
 			# hardware fpu support
-			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020', '/usr/m68k-ataribrown-elf/lib/m68020', '/mintlib-0.60.1-bin/lib020' , '/mintlib-0.60.1-bin/startup']		
+			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
 		else:
 			# soft float
-			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020/softfp', '/usr/m68k-ataribrown-elf/lib/m68020/softfp', '/mintlib-0.60.1-bin/lib020_soft','/mintlib-0.60.1-bin/startup']
+			env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
 	elif(targetPlatform == 'CT60'):
-		CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
-		LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-		VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include'
+		CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+		LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+		VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
 		CSTARTUP_FOLDER='../deps/startup/brownelf/m68060/'
 
 		LIB_TARGET = '060'
 		
   		# floating point support
 		# hardware fpu support
-		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68060', '/usr/m68k-ataribrown-elf/lib/m68060','/mintlib-0.60.1-bin/startup']		
+		env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
 	else:
 		print('Unsupported target. Exiting...')
 		exit(-1)
@@ -201,8 +209,8 @@ else:
     exit(-1)
 
 if(enable_lto == 'yes'):
-	CFLAGS += CFLAGS + '-flto '
-	LDFLAGS += LDFLAGS + '-flto  '
+	CFLAGS += '-flto '
+	LDFLAGS += '-flto '
 	
 	
 TARGET = TARGET + targetPlatform
@@ -215,17 +223,17 @@ else:
 		
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=1'
+    VASM_FLAGS += '-DTX_ENABLE=1 '
 else:
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=0'
+    VASM_FLAGS += '-DTX_ENABLE=0 '
 
 if (conout_enable == "no"):
     print "Silent mode. Console output disabled."
-    CFLAGS = CFLAGS + ' -DSUPRESS_CON_OUTPUT '
+    CFLAGS += '-DSUPRESS_CON_OUTPUT '
 
 if (gemdos_io_enable == "yes"):
     print "Use GEMDOS for file I/O not libc functions."
-    CFLAGS = CFLAGS + ' -DENABLE_GEMDOS_IO '
+    CFLAGS += '-DENABLE_GEMDOS_IO '
 
 # output executable name
 OUTPUT_DIR='../bin/'
@@ -237,7 +245,7 @@ NKT_REPLAY_NAME = 'nktrep'
 MID2NKT_NAME = 'mid2nkt' 
 	
 env["CPPPATH"] = env["CPPPATH"] + ["../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
+env["LIBPATH"] = env["LIBPATH"] + ['../bin/','/usr/m68k-ataribrowner-elf/lib']
   
 #############################################################################################################################
 # additional defines  
@@ -259,28 +267,28 @@ env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
 if ( build_mode == 'debug'):
   print "Debug build..."
   if(debug_level=='1'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER '
   elif(debug_level=='3'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
-	CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+	CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   
-  LIB_POSTFIX = LIB_TARGET+'d'  
+  LIB_POSTFIX = LIB_TARGET+'d' 
 else:
 	print "Release build... Code optimisation is turned on."
-	CFLAGS= CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
-	LIB_POSTFIX = LIB_TARGET  
+	CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O2 ' + ' -DUSE_INLINE '
+	LIB_POSTFIX = LIB_TARGET 
     
 if(ikbd_direct_write == "yes"):
     print "Sending data directly via IKBD ENABLED"
-    CFLAGS = CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+    CFLAGS += '-DIKBD_MIDI_SEND_DIRECT '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=1 '
 elif(ikbd_direct_write=='no'):
     print "Sending data directly via IKBD DISABLED"
-    CFLAGS = CFLAGS +' '
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
+    CFLAGS += ' '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=0 '
 
 env["CFLAGS"] = CFLAGS  
 env["LINKFLAGS"] = LDFLAGS 
@@ -349,18 +357,20 @@ if(use_libc=="no"):
 	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source =  [startup_obj + mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
 else:
 	# build test programs and link them with amidilib
-	if(TOOLSET == 'GCC62'):
-		ADDLIBS=['crt0']
-	
-	env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	startup_obj=['']
+	if(TOOLSET == 'GCC710'):
+	    ADDLIBS = ['c']
+	    startup_obj = ['/usr/m68k-ataribrowner-elf/lib/crt0.o']
+
+	env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +timings_test_src  + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+	env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj +nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+	env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj +mid2nkt_src +  env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
 	OutDirPath = Dir('../').abspath
-	if(TOOLSET == 'GXX62'):
+	if(TOOLSET == 'GCC710'):
 		convertElf(AMIDI_TEST_NAME, build_mode, OutDirPath, '.ttp')
 		convertElf(MIDI_SEQ_TEST_NAME, build_mode, OutDirPath,'.tos')
 		convertElf(YM2149_TEST_NAME, build_mode, OutDirPath,'.tos')

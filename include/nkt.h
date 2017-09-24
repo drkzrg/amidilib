@@ -126,6 +126,9 @@ void NktDeinit();
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
 extern void NktInstallReplayRout();
 
+/** installs update sequence, single/multitrack variant not hooked to timer */
+extern void NktInstallReplayRoutNoTimers();
+
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void NktDeinstallReplayRout();
 

@@ -9,3 +9,4 @@ include/twisterm
 include/ym2149
 ../../../QtCreator3.2/bin
 minimal
+src

@@ -13,9 +13,9 @@ variant_dir='./nktlib', duplicate=0, exports={\
 'GEMDOS_IO_ENABLE':'yes',\
 'USE_LIBC':'yes',\
 'ENABLE_LTO':'no',\
-'ENABLE_LZO':'yes',\
+'ENABLE_LZO':'no',\
 'USE_CUSTOM_ALLOC':'yes',\
 'USE_CROSSCOMPILER':'yes',\
-'TOOLSET':'GCC434',\
-'DEBUG_LEVEL':'0'\
+'TOOLSET':'GCC710',\
+'DEBUG_LEVEL':'1'\
 })

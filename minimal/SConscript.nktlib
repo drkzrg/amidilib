@@ -21,7 +21,7 @@ where name of 'TARGET_MACHINE' can be: \n \
  'CONOUT_ENABLE' - disable / enable console output,\n \
  'GEMDOS_IO_ENABLE' - uses gemdos i/o instead of standard libc file i/o,\n \
  'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
- 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 6.2 brownelf.\n \
+ 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 7.1 brownerelf.\n \
  'ENABLE_LZO' - enable lzo support (packed data).\n \
  'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2),\n \
  'USE_CUSTOM_ALLOC' - use memory allocation functions provided by user \n")
@@ -67,12 +67,12 @@ if(TOOLSET=='GCC434'):
         compilerName = 'm68k-atari-mint-'
         env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
         env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
-elif(TOOLSET=='GCC62'):
+elif(TOOLSET=='GCC710'):
 # Linux/Cygwin cross compiler
     PREFIX = '/usr'
-    compilerName = 'm68k-ataribrown-elf-'
-    env['CPPPATH'] = [PREFIX + '/m68k-ataribrown-elf/include','/mintlib-0.60.1-bin/include']
-    env['LIBPATH'] = [PREFIX + '/m68k-ataribrown-elf/lib']
+    compilerName = 'm68k-ataribrowner-elf-'
+    env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
+    env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
@@ -85,7 +85,7 @@ env['STACK'] = PREFIX + '/bin/' + compilerName + 'stack'
 env['AR'] = PREFIX + '/bin/' + compilerName + 'ar'
 env['RANLIB'] = PREFIX + '/bin/' + compilerName + 'ranlib'
 
-if(TOOLSET == 'GCC62'):
+if(TOOLSET == 'GCC710'):
     env['PROGSUFFIX'] = '.elf'
 else:
     env['PROGSUFFIX'] = '.tos'
@@ -116,79 +116,81 @@ if(TOOLSET=='GCC434'):
         fpu_flags = ''
 
         if(use_fpu == 'yes'):
-                fpu_flags='-m68882 '
+            fpu_flags='-m68881 '
+        else:
+            fpu_flags='-msoft-float '
 
         if(targetPlatform == 'ST'):
-                CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer '
+                CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68000 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include'
+                VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68000/'
 
                 LIB_TARGET = '000'
         elif(targetPlatform == 'F030'):
                 CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include'
+                VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68030/'
 
                 LIB_TARGET = '030'
         elif(targetPlatform == 'CT60'):
-                CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer '
+                CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68060 -Wl,--traditional-format '
-                VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include'
+                VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68060/'
 
                 LIB_TARGET = '060'
         else:
                 print('Unsupported target. Exiting...')
                 exit(-1)
-elif(TOOLSET == 'GCC62'):
+elif(TOOLSET == 'GCC710'):
+        fpu_flags = ''
+
+        if(use_fpu == 'yes'):
+            fpu_flags='-m68881 '
+        else:
+            fpu_flags='-msoft-float '
+
         if(targetPlatform == 'ST'):
-                CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
-                LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-                VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include'
-                CSTARTUP_FOLDER='../deps/startup/brownelf/m68000/'
-
+                CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+                LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+                VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I./nktlib/include '
+                CSTARTUP_FOLDER='../deps/startup/brownerelf/m68000/'
                 LIB_TARGET = '000'
-
                 # floating point support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68000','/usr/m68k-ataribrown-elf/lib/m68000','/mintlib-0.60.1-bin/startup']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
         elif(targetPlatform == 'F030'):
-                CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
+                CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
-                VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include'
-                CSTARTUP_FOLDER='../deps/startup/brownelf/m68030/'
-
+                VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I./nktlib/include '
+                CSTARTUP_FOLDER='../deps/startup/brownerelf/m68030/'
                 LIB_TARGET = '030'
-
                 # floating point support
+
                 if(use_fpu == 'yes'):
                         # hardware fpu support
-                        env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020', '/usr/m68k-ataribrown-elf/lib/m68020', '/mintlib-0.60.1-bin/lib020' , '/mintlib-0.60.1-bin/startup']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
                 else:
                         # soft float
-                        env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68020/softfp', '/usr/m68k-ataribrown-elf/lib/m68020/softfp', '/mintlib-0.60.1-bin/lib020_soft','/mintlib-0.60.1-bin/startup']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
+
         elif(targetPlatform == 'CT60'):
-                CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections '
-                LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0'
-                VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include'
-                CSTARTUP_FOLDER='../deps/startup/brownelf/m68060/'
+                CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+                LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+                VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I./nktlib/include '
+                CSTARTUP_FOLDER='../deps/startup/brownerelf/m68060/'
 
                 LIB_TARGET = '060'
-
                 # floating point support
                 # hardware fpu support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/6.2.0/m68060', '/usr/m68k-ataribrown-elf/lib/m68060','/mintlib-0.60.1-bin/startup']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
         else:
                 print('Unsupported target. Exiting...')
                 exit(-1)
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
-
-if(enable_lto == 'yes'):
-        CFLAGS += CFLAGS + '-flto '
-        LDFLAGS += LDFLAGS + '-flto  '
 
 TARGET = TARGET + targetPlatform
 
@@ -200,151 +202,68 @@ else:
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=1'
+    VASM_FLAGS += '-DTX_ENABLE=1 '
 else:
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=0'
+    VASM_FLAGS += '-DTX_ENABLE=0 '
 
 if (conout_enable == "no"):
     print "Silent mode. Console output disabled."
-    CFLAGS = CFLAGS + ' -DSUPRESS_CON_OUTPUT '
+    CFLAGS += '-DSUPRESS_CON_OUTPUT '
 
 if (gemdos_io_enable == "yes"):
     print "Use GEMDOS for file I/O not libc functions."
-    CFLAGS = CFLAGS + ' -DENABLE_GEMDOS_IO '
-
-env["CPPPATH"] =env["CPPPATH"] + ["../","./include","./include/lzo"]
-env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
-  
-# VASM settings
-env['VASM'] = 'vasmm68k_mot'
-
-# skip writing directly to ikbd port completely
-if (tx_enable == "yes"):
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=1'
-else:
-    VASM_FLAGS = VASM_FLAGS + ' -DTX_ENABLE=0'
-
-if (conout_enable == "no"):
-    print "Silent mode. Console output disabled."
-    CFLAGS = CFLAGS + ' -DSUPRESS_CON_OUTPUT '
-
-if (gemdos_io_enable == "yes"):
-    print "Use GEMDOS for file I/O not libc functions."
-    CFLAGS = CFLAGS + ' -DENABLE_GEMDOS_IO '
+    CFLAGS += '-DENABLE_GEMDOS_IO '
 
 if(use_custom_alloc=='yes'):
-    CFLAGS = CFLAGS + ' -DEXTERN_MEM_FUNCTIONS '
+    CFLAGS += '-DEXTERN_MEM_FUNCTIONS '
+
+if(enable_lto == 'yes'):
+    CFLAGS += '-flto '
+    LDFLAGS += '-flto '
+    
+env["CPPPATH"] =env["CPPPATH"] + ["../","./include","./include/lzo"]
+env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
 
 if ( build_mode == 'debug'):
   print "Debug build..."
   if(debug_level=='1'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER '
   elif(debug_level=='3'):
-    CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER'
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
-        CFLAGS = CFLAGS + ' -DDEBUG_BUILD -DEVENT_LINEAR_BUFFER' + ' -DUSE_INLINE'  + ' -DDEBUG_SERIAL_OUTPUT' + ' -DLOAD_TEST'
+        CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
 
   LIB_POSTFIX = LIB_TARGET+'d'
 else:
         print "Release build... Code optimisation is turned on."
-        CFLAGS= CFLAGS + ' -DEVENT_LINEAR_BUFFER' +' -O2' + ' -DUSE_INLINE'
+        CFLAGS += '-DEVENT_LINEAR_BUFFER ' +'-O2 ' + '-DUSE_INLINE '
         LIB_POSTFIX = LIB_TARGET
 
 if(ikbd_direct_write == "yes"):
     print "Sending data directly via IKBD ENABLED"
-    CFLAGS = CFLAGS +' -DIKBD_MIDI_SEND_DIRECT'
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=1'
+    CFLAGS += CFLAGS +'-DIKBD_MIDI_SEND_DIRECT '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=1 '
 elif(ikbd_direct_write=='no'):
     print "Sending data directly via IKBD DISABLED"
-    CFLAGS = CFLAGS +' '
-    VASM_FLAGS = VASM_FLAGS + ' -DIKBD_MIDI_SEND_DIRECT=0'
+    CFLAGS += ' '
+    VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=0 '
 
 env["CFLAGS"] = CFLAGS
 env["LINKFLAGS"] = LDFLAGS
 env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
-src_dir='../../src/'
-inc_dir='../../include/'
-lib_dir='./lib/'
-
-# copy source files
-# make directories if they doesn't exist
-if './src' and not os.path.exists('./src'):
-    os.makedirs('./src')
-
-if './include' and not os.path.exists('./include'):
-    os.makedirs('./include')
-
-if './lib' and not os.path.exists('./lib'):
-    os.makedirs('./lib')
-
-if './include/memory' and not os.path.exists('./include/memory'):
-    os.makedirs('./include/memory')
-
-if './include/timing' and not os.path.exists('./include/timing'):
-    os.makedirs('./include/timing')
-
-if './include/lzo' and not os.path.exists('./include/lzo'):
-    os.makedirs('./include/lzo')
-
-
-# sources
-Command("./src/nkt_rep.c", src_dir+'common/formats/nkt_rep.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/nkt_rep_m68k.s", src_dir+'common/formats/nkt_rep_m68k.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/rol_ptch.c", src_dir+'common/roland/rol_ptch.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/linalloc.c", src_dir+'common/memory/linalloc.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/common.s", src_dir+'tos/common.s', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/memory.c", src_dir+'tos/memory/memory.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
-Command("./src/amlog.c", src_dir+'common/core/amlog.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/midi2nkt.c", src_dir+'common/formats/midi2nkt.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/mus2midi.c", src_dir+'common/formats/mus2midi.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/midiInfo.c", src_dir+'common/formats/midiInfo.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/c_vars.c", src_dir+'common/core/c_vars.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/miditim.c", src_dir+'common/timing/miditim.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
-
-# external minilzo
-Command("./include/lzo/minilzo.h", inc_dir+'lzo/minilzo.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/lzo/lzodefs.h", inc_dir+'lzo/lzodefs.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/lzo/lzoconf.h", inc_dir+'lzo/lzoconf.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./src/minilzo.c", src_dir+'common/lzo/minilzo.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
-# copy includes
-Command("./include/nkt.h", inc_dir+'nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/c_vars.h", inc_dir+'c_vars.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/memory/linalloc.h", inc_dir+'memory/linalloc.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/memory/memory.h", inc_dir+'memory/memory.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/mdevtype.h", inc_dir+'mdevtype.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/timing/mfp.h", inc_dir+'timing/mfp.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/timing/miditim.h", inc_dir+'timing/miditim.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/midi_cmd.h", inc_dir+'midi_cmd.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/midi_send.h", inc_dir+'midi_send.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/amlog.h", inc_dir+'amlog.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/events.h", inc_dir+'events.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/midi.h", inc_dir+'midi.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/vendors.h", inc_dir+'vendors.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/roland.h", inc_dir+'roland.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/rol_ptch.h", inc_dir+'rol_ptch.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/nkt_util.h", inc_dir+'nkt_util.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
-
-Command("./include/common_m68k.inc", inc_dir+'common_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/m68k_defs.inc", inc_dir+'m68k_defs.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/timing/mfp_m68k.inc", inc_dir+'timing/mfp_m68k.inc', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
-Command("./include/dmus.h", inc_dir+'dmus.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-Command("./include/midi2nkt.h", inc_dir+'midi2nkt.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-
+if(TOOLSET == 'GCC710'):
+    lib_dir='./lib/elf/'
+else:
+    lib_dir='./lib/aout/'
+    
 # gemdos i/o
 gemdos_src=""
 
 if(gemdos_io_enable=='yes'):
-    Command("./include/fmio.h", inc_dir+'fmio.h', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
-    Command("./src/fmio.c", src_dir+'tos/discio/fmio.c', [ Delete("$TARGET"), Copy('$TARGET', '$SOURCE')])
     gemdos_src = ["./src/fmio.c"]
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]

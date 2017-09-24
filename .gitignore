@@ -11,3 +11,5 @@ src/\.sconsign\.dblite
 amidilib\.tgz
 
 *.o
+
+minimal/\.sconsign\.dblite

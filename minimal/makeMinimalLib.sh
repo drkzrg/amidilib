@@ -8,9 +8,9 @@
 #    This file is part of BadMood/Amidilib.
 
 #clean all stuff
-scons --sconstruct=Sconstruct_release -c
+scons --sconstruct=SConstruct_release -c
 
 #build
-scons --sconstruct=Sconstruct_release
+scons --sconstruct=SConstruct_release
 
 

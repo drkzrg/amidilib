@@ -295,8 +295,8 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
      // set midi output name
      if(pFileName){
 	     char *pTempPtr=0;
-
-         strncpy(tempName,pFileName,strlen(pFileName));
+         S16 len=strlen(pFileName);
+         strncpy(tempName,pFileName,(len>128)?(128-1):len);
          pTempPtr=strrchr(tempName,'.');
          memcpy(pTempPtr+1,"mid",4);
      }

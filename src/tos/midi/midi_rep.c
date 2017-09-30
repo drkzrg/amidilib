@@ -276,7 +276,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
       bEOTflag=isEOT(pCurrentEvent);
 
     //check if next events are null and pack buffer until first next non zero delta
-    while(bEOTflag!=FALSE&&pCurrentEvent->eventBlock.uiDeltaTime==0){
+    while( pCurrentEvent && ((bEOTflag!=FALSE) && (pCurrentEvent->eventBlock.uiDeltaTime==0)) ){
         //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
     //execute callback which copies data to midi buffer (_MIDIsendBuffer)

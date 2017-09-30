@@ -322,6 +322,7 @@ sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
 tempEvent.dataPtr=0;
+S16 retCode = 0;
 
 #ifdef MIDI_PARSER_DEBUG
 assert(sizeof(sNoteOff_t)==2);
@@ -341,9 +342,8 @@ if((*recallRS)==0){
   getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
   U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
+
   tempEvent.dataPtr=(void *)tempBuf;
-
-
 
   pEvntBlock=(sNoteOff_EventBlock_t *)tempEvent.dataPtr;
   pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
@@ -351,7 +351,7 @@ if((*recallRS)==0){
   /* now we can recall former running status next time */
   (*recallRS)=1;
 
-  (*pPtr)++;
+  ++(*pPtr);
   pNoteOff=(sNoteOff_t *)(*pPtr);
 
   /* get parameters */
@@ -360,6 +360,12 @@ if((*recallRS)==0){
 
   (*pPtr)=(*pPtr)+sizeof(sNoteOff_t);
 
+  /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 }else {
   /* recall last cmd status */
   /* and get parameters as usual */
@@ -390,6 +396,14 @@ if((*recallRS)==0){
   pEvntBlock->eventData.velocity=pNoteOff->velocity;
 
   (*pPtr)=(*pPtr)+sizeof(sNoteOff_t);
+
+  /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
+
 }
 
 #ifdef MIDI_PARSER_DEBUG
@@ -400,22 +414,18 @@ if((*recallRS)==0){
   amTrace((const U8*)"vel: %d\n",pNoteOff->velocity);
 #endif
 
-  /* add event to list */
-
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
+   return retCode;
 }
 
 //
 S16 am_noteOn(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
-sEventBlock_t tempEvent;
+ sEventBlock_t tempEvent;
 
  U8 channel=0;
  U8 note=0;
  U8 velocity=0;
+ S16 retCode=0;
+
  sNoteOn_EventBlock_t *pEvntBlock=NULL;
  tempEvent.dataPtr=0;
 
@@ -442,18 +452,26 @@ sEventBlock_t tempEvent;
   /* now we can recall former running status next time */
   (*recallRS)=1;
 
-  (*pPtr)++;
+  ++(*pPtr);
   channel=(g_runningStatus&0x0F)+1;
   pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
   note=*(*pPtr);
   pEvntBlock->eventData.noteNb=*(*pPtr);
 
   /* get parameters */
-  (*pPtr)++;
+  ++(*pPtr);
   velocity=*(*pPtr);
   pEvntBlock->eventData.velocity=*(*pPtr);
 
-  (*pPtr)++;
+  ++(*pPtr);
+
+  /* add event to list */
+  #ifdef EVENT_LINEAR_BUFFER
+    retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  #else
+     retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+  #endif
+
  }else{
     /* get last note info */
     channel=(g_runningStatus&0x0F)+1;
@@ -475,11 +493,19 @@ sEventBlock_t tempEvent;
     note=*(*pPtr);
     pEvntBlock->eventData.noteNb=*(*pPtr);
     /* get parameters */
-    (*pPtr)++;
+    ++(*pPtr);
     velocity=*(*pPtr);
     pEvntBlock->eventData.velocity=*(*pPtr);
 
-    (*pPtr)++;
+    ++(*pPtr);
+
+    /* add event to list */
+    #ifdef EVENT_LINEAR_BUFFER
+      retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+    #else
+       retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+    #endif
+
  }
 
  #ifdef MIDI_PARSER_DEBUG
@@ -490,19 +516,15 @@ sEventBlock_t tempEvent;
     amTrace((const U8*)"vel: %d \n",velocity);
  #endif
 
-    /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
-
+ return retCode;
 }
 
 S16 am_noteAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 U8 noteNb=0;
 U8 pressure=0;
+S16 retCode=0;
+
 sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
  if((*recallRS)==0){
@@ -528,14 +550,21 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
     /* now we can recall former running status next time */
     (*recallRS)=1;
 
-    (*pPtr)++;
+    ++(*pPtr);
     /* get parameters */
     noteNb=*(*pPtr);
     pEvntBlock->eventData.noteNb=*(*pPtr);
-    (*pPtr)++;
+    ++(*pPtr);
     pressure=*(*pPtr);
     pEvntBlock->eventData.pressure=*(*pPtr);
-    (*pPtr)++;
+    ++(*pPtr);
+
+    /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
 
  }else{
         /* get parameters */
@@ -555,27 +584,30 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
     noteNb=*(*pPtr);
     pEvntBlock->eventData.noteNb=*(*pPtr);
-        (*pPtr)++;
-        pressure=*(*pPtr);
+    ++(*pPtr);
+    pressure=*(*pPtr);
     pEvntBlock->eventData.pressure=*(*pPtr);
-        (*pPtr)++;
+    ++(*pPtr);
+
+    /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
     }
 
 #ifdef MIDI_PARSER_DEBUG
      amTrace((const U8*)"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d\n",(unsigned long)delta, noteNb,pressure);
 #endif
-    /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
+
+   return retCode;
 }
 
 S16 am_Controller(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
-sEventBlock_t tempEvent;
-
-  U8 channelNb=0;
+    sEventBlock_t tempEvent;
+    S16 retCode = 0;
+    U8 channelNb=0;
     U8 controllerNb=0;
     U8 value=0;
     sController_EventBlock_t *pEvntBlock=NULL;
@@ -604,15 +636,23 @@ sEventBlock_t tempEvent;
 
     channelNb=g_runningStatus&0x0F;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
-        (*pPtr)++;
-        /* get controller nb */
-        controllerNb=(*(*pPtr));
+    ++(*pPtr);
+    /* get controller nb */
+    controllerNb=(*(*pPtr));
     pEvntBlock->eventData.controllerNb=(*(*pPtr));
-        (*pPtr)++;
-        value=*((*pPtr));
+    ++(*pPtr);
+    value=*((*pPtr));
     pEvntBlock->eventData.value=*((*pPtr));
-        (*pPtr)++;
-    }else{
+    ++(*pPtr);
+
+    /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
+
+    } else {
         channelNb=g_runningStatus&0x0F;
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_CONTROL;
@@ -633,28 +673,33 @@ sEventBlock_t tempEvent;
     /* get program controller nb */
     controllerNb=(*(*pPtr));
     pEvntBlock->eventData.controllerNb=(*(*pPtr));
-        (*pPtr)++;
-        value=*((*pPtr));
+    ++(*pPtr);
+    value=*((*pPtr));
     pEvntBlock->eventData.value=*((*pPtr));
-        (*pPtr)++;
+    ++(*pPtr);
+    /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+#else
+   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+#endif
+
     }
 #ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",delta, channelNb+1, controllerNb,getMidiControllerName(controllerNb), value);
 #endif
 
-    /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
+   return retCode;
 }
 
 S16 am_PC(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
   U8 channel=0;
-    U8 PN=0;
+  U8 PN=0;
+  S16 retCode=0;
+
+
     sPrgChng_EventBlock_t *pEvntBlock=NULL;
      tempEvent.dataPtr=0;
 
@@ -662,7 +707,7 @@ sEventBlock_t tempEvent;
         /* save last running status */
         g_runningStatus=*(*pPtr);
 
-    /* now we can recall former running status next time */
+        /* now we can recall former running status next time */
         (*recallRS)=1;
 
     channel=(g_runningStatus&0x0F)+1;
@@ -681,12 +726,20 @@ sEventBlock_t tempEvent;
 
     pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
-        (*pPtr)++;
-        /* get parameters */
-        PN=*(*pPtr);
+    ++(*pPtr);
+    /* get parameters */
+    PN=*(*pPtr);
     pEvntBlock->eventData.programNb=*(*pPtr);
-    (*pPtr)++;
-    }else{
+    ++(*pPtr);
+
+    /* add event to list */
+    #ifdef EVENT_LINEAR_BUFFER
+      retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+    #else
+      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+    #endif
+
+    } else {
       /* get last PC status */
       channel=(g_runningStatus&0x0F)+1;
       tempEvent.uiDeltaTime=delta;
@@ -709,8 +762,17 @@ sEventBlock_t tempEvent;
       pEvntBlock->eventData.programNb=*(*pPtr);
 
      /* get parameters */
-      (*pPtr)++;
-    }
+      ++(*pPtr);
+
+      /* add event to list */
+      #ifdef EVENT_LINEAR_BUFFER
+        retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+      #else
+        retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+      #endif
+
+     }
+
 #ifdef MIDI_PARSER_DEBUG
     amTrace((const U8*)"delta: %lu\t",delta);
     amTrace((const U8*)"event: Program change ");
@@ -718,16 +780,12 @@ sEventBlock_t tempEvent;
     amTrace((const U8*)"program nb: %d\n",PN);
 #endif
 
-  /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
+    return retCode;
  }
 
 S16 am_ChannelAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
+S16 retCode=0;
 
     U8 param=0;
     sChannelAft_EventBlock_t *pEvntBlock=NULL;
@@ -760,7 +818,15 @@ sEventBlock_t tempEvent;
         param=*(*pPtr);
         pEvntBlock->eventData.pressure=*(*pPtr);
         ++(*pPtr);
-    }else{
+
+        /* add event to list */
+        #ifdef EVENT_LINEAR_BUFFER
+            retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+        #else
+            retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+        #endif
+
+    } else {
         tempEvent.uiDeltaTime=delta;
         tempEvent.type=T_CHAN_AFT;
 
@@ -781,17 +847,20 @@ sEventBlock_t tempEvent;
         param=*(*pPtr);
         pEvntBlock->eventData.pressure=*(*pPtr);
         ++(*pPtr);
+
+        /* add event to list */
+        #ifdef EVENT_LINEAR_BUFFER
+            retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+        #else
+            retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+        #endif
     }
+
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %lu\tevent: Channel aftertouch pressure: %d\n",delta, param);
 #endif
-    /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-    return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
 
+ return retCode;
 }
 
 S16 am_PitchBend(sSequence_t *pSeq, U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
@@ -799,6 +868,7 @@ sEventBlock_t tempEvent;
 
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
 sPitchBend_t *pPitchBend=0;
+S16 retCode=0;
 
 #ifdef MIDI_PARSER_DEBUG
   assert(sizeof(sPitchBend_t)==2);
@@ -828,14 +898,23 @@ tempEvent.dataPtr=0;
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
-    (*pPtr)++;
+    ++(*pPtr);
     pPitchBend=(sPitchBend_t *)(*pPtr);
 
     /* get parameters */
     pEvntBlock->eventData.LSB=pPitchBend->LSB;
     pEvntBlock->eventData.MSB=pPitchBend->MSB;
-        (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
-    }else{
+    (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
+
+    /* add event to list */
+   #ifdef EVENT_LINEAR_BUFFER
+     retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+   #else
+      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   #endif
+
+
+    } else {
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_PITCH_BEND;
 
@@ -846,29 +925,34 @@ tempEvent.dataPtr=0;
     getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
     U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
-    tempEvent.dataPtr=(void *) tempBuf;
+
+    tempEvent.dataPtr = (void *)tempBuf;
 
     pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
-        /* get parameters */
-        pPitchBend=(sPitchBend_t *)(*pPtr);
+    /* get parameters */
+    pPitchBend=(sPitchBend_t *)(*pPtr);
 
     /* get parameters */
     pEvntBlock->eventData.LSB=pPitchBend->LSB;
     pEvntBlock->eventData.MSB=pPitchBend->MSB;
-        (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
-    }
+    (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
+
+    /* add event to list */
+   #ifdef EVENT_LINEAR_BUFFER
+     retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+   #else
+      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   #endif
+
+ }
+
  #ifdef MIDI_PARSER_DEBUG
  amTrace((const U8*)"delta: %u\tevent: Pitch bend LSB: %d, MSB:%d\n",(unsigned long)delta,pPitchBend->LSB,pPitchBend->MSB);
  #endif
 
- /* add event to list */
-#ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
-#else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
-#endif
+  return retCode;
 }
 
 S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
@@ -1144,7 +1228,7 @@ sEventBlock_t tempEvent;
         amTrace((const U8*)"%s \n",pEvntBlock->pCuePointName);
 #endif
     return 0;
-    }break;
+    } break;
 
     case MT_PROGRAM_NAME:{
         /* program(patch) name */

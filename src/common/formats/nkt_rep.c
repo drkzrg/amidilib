@@ -1501,7 +1501,7 @@ S32 saveEventDataBlocks(S16 fh, sNktSeq *pSeq){
 
 
 
-U32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompress){
+S32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompress){
 
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");
@@ -1764,13 +1764,16 @@ void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq){
 void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
 
     if(trackInfo){
-        for(int i=0;i<pNktSeq->nbOfTracks;++i){
+
+        for(U16 i=0;i<pNktSeq->nbOfTracks;++i){
             trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
             trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
             trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
-            trackInfo[i].nbOfBlocks=trackInfo[i].nbOfBlocks;
+            trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
+
             amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
         }
+
     }
 }
 

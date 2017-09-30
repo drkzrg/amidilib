@@ -682,9 +682,9 @@ amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
 amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 
 //collect track info from each track
-for(int i=0;i<nbOfTracks;++i){
+for(U16 i=0;i<nbOfTracks;++i){
 
-    if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT)<0){
+    if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT)!=0){
         amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting...\n",i);
         printf("[MIDI2NKT]  MIDI track [%d] parse error. Exiting \n",i);
         return 0;

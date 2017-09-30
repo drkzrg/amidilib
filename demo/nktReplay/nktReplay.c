@@ -41,12 +41,14 @@ S16 iError=0;
               printf("Configuring GS compatible midi device with LA module.\n");
         }break;           /* if both LA/GS sound sources are available, like in CM-500 */
         case DT_GM_SOUND_SOURCE:{
-            printf("Configuring GM compatible midi device.\n");
+            printf("Configuring General MIDI compatible device.\n");
         }break;
         case DT_MT32_GM_EMULATION:{
               printf("Configuring MT-32 compatible midi device with GM instrument patch set.\n");
         }break;     /* before loading midi data MT32 sound banks has to be patched */
-        case DT_XG_GM_YAMAHA:
+        case DT_XG_GM_YAMAHA:{
+              printf("Configuring XG Yamaha GM device (currently unsupported).\n");
+        }break;
         default:{
                printf("Configuring Generic GM/GS compatible midi device.\n");
         }break;

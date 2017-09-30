@@ -520,7 +520,8 @@ void stopSeq(void){
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-        if(pTrack->currentState.playState&TS_PS_PLAYING||(pTrack->currentState.playState&&TS_PS_PAUSED)){
+        const sTrackState_t *tState=&(pTrack->currentState);
+        if( ((tState->playState&TS_PS_PLAYING)||(tState->playState&TS_PS_PAUSED)) ){
           pTrack->currentState.playState&=(~(TS_PS_PLAYING|TS_PS_PAUSED));
           printf("Stop sequence\n");
         }

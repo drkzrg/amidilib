@@ -29,7 +29,7 @@ const U8 *arEventNames[T_EVT_COUNT]={
     "End of track(Meta)",
     "Cuepoint(Meta)",
     "Marker(Meta)",
-    "Set time signature (Meta)"
+    "Set time signature (Meta)",
     "SysEX Msg"
 };
 

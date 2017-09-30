@@ -41,9 +41,10 @@ long usp;
 /* */ 
 static const U8 *g_arMidiDeviceTypeName[]={
   "Roland MT-32",       
-  "Roland CM-32L",   
+  "Roland CM-32L/CM-64",
   "GS/GM",       
   "LA/GS mixed mode",
+  "GM",
   "MT-32 GM emulation",
   "Yamaha XG GM mode"
 };
@@ -563,8 +564,7 @@ const S8 *getConnectedDeviceInfo(void){
 }
 
 const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
- if(device>=0&&device<DT_NUM_DEVICES)  return g_arMidiDeviceTypeName[device];
- else return NULL;
+ return g_arMidiDeviceTypeName[device];
 }
 
 #ifdef DEBUG_BUILD

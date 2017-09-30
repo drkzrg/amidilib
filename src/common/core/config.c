@@ -246,31 +246,31 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
 }
 
 
-//helper functions
+// helper functions
 S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, BOOL *val){
   
-  U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
+  U8 *substrPtr=(U8 *)strstr((const char*)data, (const char*) tagName );
    
   if(substrPtr) {
       
        U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
 	
        if(rval!=NULL){
-	 rval++;
-	 rval++;
+            ++rval;
+            ++rval;
 	 
-	if(strncmp(rval,TRUE_TAG,4)==0){
-	  *val=TRUE;
-	   return 0; 
-	}else if(strncmp(rval,FALSE_TAG,4)==0){
-	  *val=FALSE;
-	  return 0; 
-	}  
+            if(strncmp(rval,TRUE_TAG,4)==0){
+                *val=TRUE;
+                return 0;
+            }else if(strncmp(rval,FALSE_TAG,4)==0){
+                *val=FALSE;
+                return 0;
+            }
        }
-  
-    amTrace("entry '%s' was not found,\n", tagName); 
-    return -1;
   }
+
+  amTrace("entry '%s' was not found,\n", tagName);
+  return -1;
 }
 
 S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U32 *val){

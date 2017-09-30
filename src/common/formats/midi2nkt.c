@@ -61,63 +61,65 @@ typedef struct sBufferInfo{
 } sBufferInfo_t;
 
 
-U32 processNoteOff(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
-sNoteOff_t *pNoteOff=0;
+void processNoteOff(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+    sNoteOff_t *pNoteOff=0;
 
-if(rs->recallRS==0){
+    if(rs->recallRS==0){
+        /* save last running status */
+        rs->runningStatus=*(*pMidiData);
+
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+
+        /* now we can recall former running status next time */
+        rs->recallRS=1;
+
+        ++(*pMidiData);
+        pNoteOff=(sNoteOff_t *)(*pMidiData);
+
+    }else{
+
+        /* recall last cmd status */
+        /* and get parameters as usual */
+
+        pNoteOff=(sNoteOff_t *)(*pMidiData);
+    }
+
+    bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->noteNb;
+    bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->velocity;
+
+    amTrace(" n: %d  v: %d\n",pNoteOff->noteNb, pNoteOff->velocity);
+    (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
+
+}
+
+
+void processNoteOn(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+    sNoteOn_t *pNoteOn=0;
+
+    if(rs->recallRS==0){
     /* save last running status */
-    rs->runningStatus=*(*pMidiData);
-
-    bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+        rs->runningStatus=*(*pMidiData);
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
     /* now we can recall former running status next time */
-    rs->recallRS=1;
+        rs->recallRS=1;
+        ++(*pMidiData);
 
-    (*pMidiData)++;
-    pNoteOff=(sNoteOff_t *)(*pMidiData);
-}else{
+        // get channel from running status
+        pNoteOn=(sNoteOn_t *)(*pMidiData);
+    }else{
+        pNoteOn=(sNoteOn_t *)(*pMidiData);
+    }
 
-    /* recall last cmd status */
-    /* and get parameters as usual */
+    bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->noteNb;
+    bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->velocity;
 
-    pNoteOff=(sNoteOff_t *)(*pMidiData);
-}
-
-bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->noteNb;
-bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->velocity;
-
-amTrace(" n: %d  v: %d\n",pNoteOff->noteNb, pNoteOff->velocity);
-(*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
+    amTrace(" n: %d  v: %d\n",pNoteOn->noteNb, pNoteOn->velocity);
+    (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 
 }
 
-
-U32 processNoteOn(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
-sNoteOn_t *pNoteOn=0;
-
-if(rs->recallRS==0){
-  /* save last running status */
-  rs->runningStatus=*(*pMidiData);
-  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
-
-  /* now we can recall former running status next time */
-  rs->recallRS=1;
-  (*pMidiData)++;
-  // get channel from running status
-  pNoteOn=(sNoteOn_t *)(*pMidiData);
- }else{
-  pNoteOn=(sNoteOn_t *)(*pMidiData);
- }
-
- bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->noteNb;
- bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->velocity;
-
- amTrace(" n: %d  v: %d\n",pNoteOn->noteNb, pNoteOn->velocity);
- (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
-
-}
-
-U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
   sNoteAft_t *pNoteAft=0;
 
   if(rs->recallRS==0){
@@ -141,98 +143,99 @@ U32 processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferIn
 }
 
 
-U32 processControllerEvent(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
-sController_t *pContrEv=0;
+void processControllerEvent(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+    sController_t *pContrEv=0;
 
-if(rs->recallRS==0){
-    /* save last running status */
-    rs->runningStatus=*(*pMidiData);
-    bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+    if(rs->recallRS==0){
+        /* save last running status */
+        rs->runningStatus=*(*pMidiData);
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
-    /* now we can recall former running status next time */
-    rs->recallRS=1;
-    (*pMidiData)++;
-    pContrEv=(sController_t *)(*pMidiData);
- }else{
-    pContrEv=(sController_t *)(*pMidiData);
- }
+        /* now we can recall former running status next time */
+        rs->recallRS=1;
+        ++(*pMidiData);
+        pContrEv=(sController_t *)(*pMidiData);
+    }else{
+        pContrEv=(sController_t *)(*pMidiData);
+    }
 
- bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->controllerNb;
- bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->value;
+    bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->controllerNb;
+    bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->value;
 
- amTrace(" c: %d  v: %d\n",pContrEv->controllerNb, pContrEv->value);
- (*pMidiData)=(*pMidiData)+sizeof(sController_t);
+    amTrace(" c: %d  v: %d\n",pContrEv->controllerNb, pContrEv->value);
+    (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
-U32 processProgramChange(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
-sProgramChange_t *pPC=0;
+void processProgramChange(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+    sProgramChange_t *pPC=0;
 
-if(rs->recallRS==0){
-  /* save last running status */
-  rs->runningStatus=*(*pMidiData);
-  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+    if(rs->recallRS==0){
+        /* save last running status */
+        rs->runningStatus=*(*pMidiData);
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
-  /* now we can recall former running status next time */
-  rs->recallRS=1;
-  (*pMidiData)++;
-  pPC=(sProgramChange_t *)(*pMidiData);
-}else{
-  pPC=(sProgramChange_t *)(*pMidiData);
+        /* now we can recall former running status next time */
+        rs->recallRS=1;
+        ++(*pMidiData);
+        pPC=(sProgramChange_t *)(*pMidiData);
+    }else{
+        pPC=(sProgramChange_t *)(*pMidiData);
+    }
+
+    amTrace(" p: %d \n",pPC->programNb);
+    bufferInfo->buffer[bufferInfo->bufPos++]=pPC->programNb;
+
+    (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
- amTrace(" p: %d \n",pPC->programNb);
- bufferInfo->buffer[bufferInfo->bufPos++]=pPC->programNb;
 
-(*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
-}
-
-U32 processChannelAft(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
+void processChannelAft(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
 sChannelAft_t *pChAft=0;
 
-if(rs->recallRS==0){
-  /* save last running status */
-  rs->runningStatus=*(*pMidiData);
-  bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
+    if(rs->recallRS==0){
+        /* save last running status */
+        rs->runningStatus=*(*pMidiData);
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
-  /* now we can recall former running status next time */
-  rs->recallRS=1;
-  (*pMidiData)++;
-  pChAft=(sChannelAft_t *)(*pMidiData);
-}else{
-  pChAft=(sChannelAft_t *)(*pMidiData);
-}
- amTrace(" press: %d \n",pChAft->pressure);
+        /* now we can recall former running status next time */
+        rs->recallRS=1;
+        ++(*pMidiData);
+        pChAft=(sChannelAft_t *)(*pMidiData);
+    }else{
+        pChAft=(sChannelAft_t *)(*pMidiData);
+    }
 
- bufferInfo->buffer[bufferInfo->bufPos++]=pChAft->pressure;
+    amTrace(" press: %d \n",pChAft->pressure);
 
-(*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
-}
+    bufferInfo->buffer[bufferInfo->bufPos++]=pChAft->pressure;
 
-U32 processPitchBend(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){;
-sPitchBend_t *pPitchBend=0;
-
-if(rs->recallRS==0){
- /* save last running status */
- rs->runningStatus=*(*pMidiData);
- bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
-
- /* now we can recall former running status next time */
- rs->recallRS=1;
- (*pMidiData)++;
-  pPitchBend=(sPitchBend_t *)(*pMidiData);
-}else{
-  pPitchBend=(sPitchBend_t *)(*pMidiData);
+    (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
-bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->LSB;
-bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->MSB;
+void processPitchBend(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
+    sPitchBend_t *pPitchBend=0;
 
-amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
+    if(rs->recallRS==0){
+        /* save last running status */
+        rs->runningStatus=*(*pMidiData);
+        bufferInfo->buffer[bufferInfo->bufPos++]=*(*pMidiData);
 
-(*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
+        /* now we can recall former running status next time */
+        rs->recallRS=1;
+        ++(*pMidiData);
+        pPitchBend=(sPitchBend_t *)(*pMidiData);
+     }else{
+        pPitchBend=(sPitchBend_t *)(*pMidiData);
+    }
 
+    bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->LSB;
+    bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->MSB;
+
+    amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
+
+    (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 }
 
-U32 processMetaEvent( U32 delta, U8 **pMidiData, sNktSeq *pSeq, U16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+void processMetaEvent( U32 delta, U8 **pMidiData, sNktSeq *pSeq, U16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
 
 U8 size=0;
 U32 metaLenght=0;
@@ -241,10 +244,10 @@ sNktBlock_t stBlock;
 sNktTrack *pTrk=&pSeq->pTracks[trackIdx];
 
 /*get meta event type */
-(*pMidiData)++;
+++(*pMidiData);
 U8 metaType=*(*pMidiData);
 
-(*pMidiData)++;
+++(*pMidiData);
 
 // get VLQ
 metaLenght=readVLQ((*pMidiData),&size);
@@ -366,7 +369,6 @@ metaLenght=readVLQ((*pMidiData),&size);
            amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(U32));
            bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(U32);
 
-
     }break;
 
     case MT_SEQ_NB:{amTrace("META: MT_SEQ_NB\n");} break;
@@ -392,7 +394,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
 }
 
-U32 processSysex(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processSysex(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
 U32 ulCount=0L;
 U8 *pDataPtr=0;
 
@@ -410,7 +412,7 @@ while( (*(*pMidiData))!=EV_EOX){
 }
 
 
-U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, U16 trackNbToProcess, BOOL *bEOT){
+void processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, U16 trackNbToProcess, BOOL *bEOT){
  U8 usSwitch=0;
  U8 ubSize=0;
  U32 iError=0;
@@ -439,71 +441,71 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
           switch(usSwitch){
              case EV_NOTE_OFF:
                amTrace("delta: %lu NOTE OFF\t", delta);
-               iError=processNoteOff(pCmd,rs, bufferInfo);
+               processNoteOff(pCmd,rs, bufferInfo);
              break;
              case EV_NOTE_ON:
                amTrace("delta: %lu NOTE ON\t", delta);
-               iError=processNoteOn(pCmd,rs, bufferInfo);
+               processNoteOn(pCmd,rs, bufferInfo);
              break;
              case EV_NOTE_AFTERTOUCH:
                amTrace("delta: %lu NOTE AFT\t", delta);
-               iError=processNoteAft(pCmd,rs, bufferInfo);
+               processNoteAft(pCmd,rs, bufferInfo);
              break;
              case EV_CONTROLLER:
                amTrace("delta: %lu CONTROLLER\t", delta);
-               iError=processControllerEvent(pCmd,rs, bufferInfo );
+               processControllerEvent(pCmd,rs, bufferInfo );
              break;
              case EV_PROGRAM_CHANGE:
                amTrace("delta: %lu PROGRAM CHANGE\t", delta);
-               iError=processProgramChange(pCmd,rs, bufferInfo);
+               processProgramChange(pCmd,rs, bufferInfo);
              break;
              case EV_CHANNEL_AFTERTOUCH:
-                amTrace("delta: %lu NOTE AFT\t", delta);
-               iError=processChannelAft(pCmd,rs, bufferInfo);
+               amTrace("delta: %lu NOTE AFT\t", delta);
+               processChannelAft(pCmd,rs, bufferInfo);
              break;
              case EV_PITCH_BEND:
-              amTrace("delta: %lu PITCH BEND\t", delta);
-               iError=processPitchBend(pCmd,rs, bufferInfo);
+               amTrace("delta: %lu PITCH BEND\t", delta);
+               processPitchBend(pCmd,rs, bufferInfo);
              break;
              case EV_META:
               amTrace("delta: %lu META\t", delta);
-              iError = processMetaEvent(delta, pCmd, pSeq, trackNbToProcess, rs, bufferInfo, bEOT);
+              processMetaEvent(delta, pCmd, pSeq, trackNbToProcess, rs, bufferInfo, bEOT);
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
                amTrace("delta: %lu SYSEX\n", delta);
-               rs->recallRS=0; 	                /* cancel out midi running status */
-               iError=(S16)processSysex(pCmd,rs, bufferInfo);
+               rs->recallRS=0;                      /* cancel out midi running status */
+               processSysex(pCmd,rs, bufferInfo);
              break;
              case SC_MTCQF:
                amTrace("delta: %lu SC_MTCQF\n", delta);
                rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
                amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
-               (*pCmd)++;
-               (*pCmd)++;
+               ++(*pCmd);
+               ++(*pCmd);
              break;
            case SC_SONG_POS_PTR:
                amTrace((const U8*)"Event: System common Song position pointer\n");
                rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
-                (*pCmd)++;
-                (*pCmd)++;
-                (*pCmd)++;
+                ++(*pCmd);
+                ++(*pCmd);
+                ++(*pCmd);
              break;
              case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
                amTrace((const U8*)"Event: System common Song select\n");
                rs->recallRS=0;
-               (*pCmd)++;
-               (*pCmd)++;
+               ++(*pCmd);
+               ++(*pCmd);
              break;
              case SC_UNDEF1:                   /* undefined */
              case SC_UNDEF2:                   /* undefined */
                amTrace((const U8*)"Event: System common not defined.\n");
                rs->recallRS=0;
-               (*pCmd)++;
+               ++(*pCmd);
              break;
              case SC_TUNE_REQUEST:             /* tune request, no data bytes */
                amTrace((const U8*)"Event: System tune request.\n");
                rs->recallRS=0;
-              (*pCmd)++;
+              ++(*pCmd);
              break;
              default:{
                amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
@@ -511,10 +513,7 @@ U32 processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferIn
              }break;
   } //end switch
 
- return iError;
 }
-
-
 
 
 U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
@@ -560,7 +559,6 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
 
  // process track events
  U32 delta=0L;
- S32 iError=0;
  BOOL bEOT=FALSE;
  U8 *pCmd=(U8 *)startTrkPtr;
  U8 ubSize=0;
@@ -574,21 +572,20 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
 // clear
  amMemSet(&tempBufInfo,0,sizeof(sBufferInfo_t));
 
-
- while ( ((pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)) ){
+ while ( ((pCmd!=endTrkPtr)&&(bEOT!=TRUE)) ){
 
   /* read delta time, pCmd should point to the command data */
   delta=readVLQ(pCmd,&ubSize);
   pCmd+=ubSize;
 
-  iError=processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, trackNbToProcess, &bEOT);
+  processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, trackNbToProcess, &bEOT);
 
   U32 currentDelta = readVLQ(pCmd,&ubSize);
 
-  while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOT!=TRUE)&&(iError>=0)){
+  while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOT!=TRUE)){
     pCmd+=ubSize;
 
-    iError=processMidiEvent(0,&pCmd, &rs, &tempBufInfo, pSeq, trackNbToProcess,&bEOT);
+    processMidiEvent(0,&pCmd, &rs, &tempBufInfo, pSeq, trackNbToProcess,&bEOT);
 
     currentDelta = readVLQ(pCmd,&ubSize);
   }

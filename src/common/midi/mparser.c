@@ -726,72 +726,72 @@ sEventBlock_t tempEvent;
 #endif
  }
 
-S16 am_ChannelAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack)
-{
+S16 am_ChannelAft(sSequence_t *pSeq,U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
-U8 param=0;
-sChannelAft_EventBlock_t *pEvntBlock=NULL;
-tempEvent.dataPtr=0;
+    U8 param=0;
+    sChannelAft_EventBlock_t *pEvntBlock=NULL;
+    tempEvent.dataPtr=0;
 
-if((*recallRS)==0){
+    if((*recallRS)==0){
         /* save last running status */
         g_runningStatus=*(*pPtr);
         /* now we can recall former running status next time */
         (*recallRS)=1;
 
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_CHAN_AFT;
+        tempEvent.uiDeltaTime=delta;
+        tempEvent.type=T_CHAN_AFT;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-    U8 tempBuf[tempEvent.copyEventCb.size];
+        getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+        U8 tempBuf[tempEvent.copyEventCb.size];
 #else
-    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    U8 tempBuf[tempEvent.sendEventCb.size];
+        getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
+        U8 tempBuf[tempEvent.sendEventCb.size];
 #endif
 
-    tempEvent.dataPtr=(void *)tempBuf;
+        tempEvent.dataPtr=(void *)tempBuf;
 
-    pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
-
-    /* get parameters */
-        (*pPtr)++;
-        param=*(*pPtr);
-    pEvntBlock->eventData.pressure=*(*pPtr);
-        (*pPtr)++;
-    }else{
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_CHAN_AFT;
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-    U8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-    U8 tempBuf[tempEvent.sendEventCb.size];
-#endif
-
-    tempEvent.dataPtr=(void *) tempBuf;
-
-    pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+        pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
+        pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
 
         /* get parameters */
-    param=*(*pPtr);
-    pEvntBlock->eventData.pressure=*(*pPtr);
-        (*pPtr)++;
+        ++(*pPtr);
+        param=*(*pPtr);
+        pEvntBlock->eventData.pressure=*(*pPtr);
+        ++(*pPtr);
+    }else{
+        tempEvent.uiDeltaTime=delta;
+        tempEvent.type=T_CHAN_AFT;
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+        getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
+        U8 tempBuf[tempEvent.copyEventCb.size];
+#else
+        getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
+        U8 tempBuf[tempEvent.sendEventCb.size];
+#endif
+
+        tempEvent.dataPtr=(void *)tempBuf;
+
+        pEvntBlock=(sChannelAft_EventBlock_t *)tempEvent.dataPtr;
+        pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+
+        /* get parameters */
+        param=*(*pPtr);
+        pEvntBlock->eventData.pressure=*(*pPtr);
+        ++(*pPtr);
     }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const U8*)"delta: %lu\tevent: Channel aftertouch pressure: %d\n",delta, param);
+        amTrace((const U8*)"delta: %lu\tevent: Channel aftertouch pressure: %d\n",delta, param);
 #endif
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+    return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
 #else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+    return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
 #endif
+
 }
 
 S16 am_PitchBend(sSequence_t *pSeq, U8 **pPtr,U16 *recallRS,U32 delta, sTrack_t **pCurTrack){

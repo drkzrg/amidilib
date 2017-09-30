@@ -18,13 +18,13 @@
 // event list, temp event
 
 #ifdef EVENT_LINEAR_BUFFER
-S16 addEvent(sSequence_t *pSequence, sEventList **listPtr, sEventBlock_t *eventBlockPtr )
+S16 addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #else
-S16 addEvent(sEventList **listPtr, sEventBlock_t *eventBlockPtr )
+S16 addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #endif
 {
- sEventList *pTempPtr=NULL;
- sEventList *pNewItem=NULL;
+ sEventList *pTempPtr = NULL;
+ sEventList *pNewItem = NULL;
 
 if(*listPtr!=NULL){
   /* list not empty, start at very first element */

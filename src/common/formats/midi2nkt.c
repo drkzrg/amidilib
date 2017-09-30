@@ -712,6 +712,8 @@ pNewSeq = (sNktSeq *)amMallocEx(sizeof(sNktSeq),PREFER_TT);
 
 if(pNewSeq==0) {
     amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header.\n");
+    amFree(arMidiInfo);
+    return -1;
 }
 
 // clear memory

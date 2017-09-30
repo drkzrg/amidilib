@@ -38,7 +38,7 @@ U8 *filePath=0;
   }else{
       printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
       deinitDebug();
-      getchar();
+      int c=getchar();
       return 0;
   }
 
@@ -119,7 +119,7 @@ U8 *filePath=0;
    deinitDebug();
    printf("\nDone. Press any key... \n");
 
-   getchar();
+   int c=getchar();
    return 0;
 }
 

@@ -13,7 +13,7 @@
 
 // helper functions for determining amount of data stored in midi file before actual conversion
 
-U32 collectNoteOffInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectNoteOffInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 
     if(rs->recallRS==0){
         /* save last running status */
@@ -32,7 +32,7 @@ U32 collectNoteOffInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* b
 }
 
 
-U32 collectNoteOnInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectNoteOnInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 
 if(rs->recallRS==0){
   /* save last running status */
@@ -50,7 +50,7 @@ if(rs->recallRS==0){
  (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 }
 
-U32 collectNoteAftInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectNoteAftInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 
   if(rs->recallRS==0){
    /* save last running status */
@@ -68,7 +68,7 @@ U32 collectNoteAftInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* b
 }
 
 
-U32 collectControllerEventInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectControllerEventInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 
 if(rs->recallRS==0){
     /* save last running status */
@@ -85,7 +85,7 @@ if(rs->recallRS==0){
  (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
-U32 collectProgramChangeInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectProgramChangeInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 
 if(rs->recallRS==0){
   /* save last running status */
@@ -100,7 +100,7 @@ if(rs->recallRS==0){
  (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
-U32 collectChannelAftInfo(U8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo){
+void collectChannelAftInfo(U8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo){
 
 if(rs->recallRS==0){
   /* save last running status */
@@ -116,7 +116,7 @@ if(rs->recallRS==0){
  (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
-U32 collectPitchBendInfo(U8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo){
+void collectPitchBendInfo(U8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo){
 
     if(rs->recallRS==0){
         /* save last running status */
@@ -135,7 +135,7 @@ U32 collectPitchBendInfo(U8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* 
 }
 
 
-U32 collectMetaEventInfo( U32 delta, U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, BOOL *bEOT){
+void collectMetaEventInfo( U32 delta, U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, BOOL *bEOT){
 
 U8 size=0;
 U32 metaLenght=0;
@@ -228,7 +228,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
 }
 
-U32 collectSysexInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+void collectSysexInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 U32 ulCount=0;
 
     rs->recallRS=0;
@@ -245,10 +245,9 @@ U32 ulCount=0;
 
 
 /////////////////////////////////////////   collect midi info
-U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo , BOOL *bEOF){
+void collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo , BOOL *bEOF){
     U8 usSwitch=0;
     U8 ubSize=0;
-    U32 iError=0;
 
     /* handling of running status */
     /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
@@ -274,71 +273,70 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
              switch(usSwitch){
                 case EV_NOTE_OFF:
                   amTrace("delta: %lu NOTE OFF\n", delta);
-                  iError=collectNoteOffInfo(pCmd,rs, bufferInfo);
+                  collectNoteOffInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_NOTE_ON:
                   amTrace("delta: %lu NOTE ON\n", delta);
-                  iError=collectNoteOnInfo(pCmd,rs, bufferInfo);
+                  collectNoteOnInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_NOTE_AFTERTOUCH:
                   amTrace("delta: %lu NOTE AFT\n", delta);
-                  iError=collectNoteAftInfo(pCmd,rs, bufferInfo);
+                  collectNoteAftInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_CONTROLLER:
                   amTrace("delta: %lu CONTROLLER\n", delta);
-                  iError=collectControllerEventInfo(pCmd,rs, bufferInfo );
+                  collectControllerEventInfo(pCmd,rs, bufferInfo );
                 break;
                 case EV_PROGRAM_CHANGE:
                   amTrace("delta: %lu PROGRAM CHANGE\n", delta);
-                  iError=collectProgramChangeInfo(pCmd,rs, bufferInfo);
+                  collectProgramChangeInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_CHANNEL_AFTERTOUCH:
-                   amTrace("delta: %lu NOTE AFT\n", delta);
-                  iError=collectChannelAftInfo(pCmd,rs, bufferInfo);
+                  amTrace("delta: %lu NOTE AFT\n", delta);
+                  collectChannelAftInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_PITCH_BEND:
                  amTrace("delta: %lu PITCH BEND\n", delta);
-                  iError=collectPitchBendInfo(pCmd,rs, bufferInfo);
+                 collectPitchBendInfo(pCmd,rs, bufferInfo);
                 break;
                 case EV_META:
                  amTrace("delta: %lu ", delta);
-                 iError=collectMetaEventInfo(delta, pCmd, rs, bufferInfo, bEOF);
-
+                 collectMetaEventInfo(delta, pCmd, rs, bufferInfo, bEOF);
                 break;
                 case EV_SOX:                                                        /* SySEX midi exclusive */
                   amTrace("delta: %lu SYSEX\n", delta);                             /* cancel out midi running status */
-                  iError=(S16)collectSysexInfo(pCmd,rs, bufferInfo);
+                  collectSysexInfo(pCmd,rs, bufferInfo);
                 break;
                 case SC_MTCQF:
                   amTrace("delta: %lu SC_MTCQF\n", delta);
                   rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
                   amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
-                  (*pCmd)++;
-                  (*pCmd)++;
+                  ++(*pCmd);
+                  ++(*pCmd);
                 break;
               case SC_SONG_POS_PTR:
                   amTrace((const U8*)"Event: System common Song position pointer\n");
                   rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
-                   (*pCmd)++;
-                   (*pCmd)++;
-                   (*pCmd)++;
+                   ++(*pCmd);
+                   ++(*pCmd);
+                   ++(*pCmd);
                 break;
                 case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
                   amTrace((const U8*)"Event: System common Song select\n");
                   rs->recallRS=0;
-                  (*pCmd)++;
-                  (*pCmd)++;
+                  ++(*pCmd);
+                  ++(*pCmd);
                 break;
                 case SC_UNDEF1:                   /* undefined */
                 case SC_UNDEF2:                   /* undefined */
                   amTrace((const U8*)"Event: System common not defined.\n");
                   rs->recallRS=0;
-                  (*pCmd)++;
+                  ++(*pCmd);
                 break;
                 case SC_TUNE_REQUEST:             /* tune request, no data bytes */
                   amTrace((const U8*)"Event: System tune request.\n");
                   rs->recallRS=0;
-                 (*pCmd)++;
+                  ++(*pCmd);
                 break;
                 default:{
                   amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
@@ -346,7 +344,6 @@ U32 collectMidiEventInfo(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sMidi
                 }break;
      } //end switch
 
-    return iError;
 }
 
 //
@@ -392,7 +389,6 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
 
      // process track events
      U32 delta=0L;
-     S32 iError=0;
      U8 *pCmd=(U8 *)startTrkPtr;
      U8 ubSize=0;
      sRunningStatus_t rs;
@@ -407,18 +403,18 @@ U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInf
      pBufInfo->dataBlockSize=0;
      pBufInfo->eventsBlockSize=0;
 
-     while ( ((pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)&&(iError>=0)) ){
+     while ( ((pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)) ){
       /* read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
       pCmd+=ubSize;
 
-      iError=collectMidiEventInfo(delta, &pCmd, &rs, pBufInfo ,bEOT);   // todo check error
+      collectMidiEventInfo(delta, &pCmd, &rs, pBufInfo ,bEOT);   // todo check error
 
       U32 currentDelta = readVLQ(pCmd,&ubSize);
 
-      while((currentDelta==0)&&(pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)&&(iError>=0)){
+      while((currentDelta==0)&&(pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)){
         pCmd+=ubSize;
-        iError=collectMidiEventInfo(0,&pCmd, &rs, pBufInfo,bEOT);
+        collectMidiEventInfo(0,&pCmd, &rs, pBufInfo,bEOT);
         currentDelta = readVLQ(pCmd,&ubSize);
       }
 

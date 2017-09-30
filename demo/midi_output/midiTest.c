@@ -383,7 +383,7 @@ int main(void) {
 				  
 				  case SC_S:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+3,currentVelocity);
-				  }
+                  }break;
 				  
 				  case SC_E:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+4,currentVelocity);
@@ -393,7 +393,7 @@ int main(void) {
 				  case SC_D:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+5,currentVelocity);
 				    
-				  }
+                  }break;
 				  
 				  case SC_R:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+6,currentVelocity);
@@ -401,7 +401,7 @@ int main(void) {
 				  
 				  case SC_F:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+7,currentVelocity);
-				  }
+                  }break;
 				  
 				  case SC_T:{
 				    note_off(currentChannel,noteBaseArray[currentOctave]+8,currentVelocity);
@@ -434,6 +434,7 @@ int main(void) {
 				      case DT_LA_GS_MIXED:           /* if both LA/GS sound sources are available, like in CM-500 */
 				      case DT_MT32_GM_EMULATION:     /* before loading midi data MT32 sound banks has to be patched */
 				      case DT_XG_GM_YAMAHA:
+                      case DT_GM_SOUND_SOURCE:
 				      default:{
                         printf("ch: [%d] b: [%d] [%s] (#PC %d)\n",currentChannel,currentBankSelect, getCM32LInstrName(currentPN), currentPN);
 				    
@@ -465,7 +466,7 @@ int main(void) {
 	Supexec(IkbdUninstall);
 
 /* clean up, free internal library buffers etc..*/
-am_deinit();
+ am_deinit();
  return 0;
 }
 

@@ -60,57 +60,13 @@ static inline void getMFPTimerSettings(const U32 freq,U8 *mode,U8 *data){
 static U8 presc=0;
 static U32 temp=0;
 
-if( freq<=614400 && freq>=2400 ) {
-  *mode=MFP_DIV4;		/* divide by 4  */
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-  return;
+
+if( *mode == MFP_STOP ) {
+    *data=(U8)0;
+    return;
 }
 
-if( freq<2400 && freq>=960 ) {
-  *mode=MFP_DIV10;		/* divide by 10 	*/
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-  return;
-}
-
-if( freq<960  && freq>=600 ) {
-  *mode=MFP_DIV16;		/* divide by 16 	*/
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-
-  return;
-}
-
-if( freq<600  && freq>=192 ) {
-  *mode = MFP_DIV50;		/* divide by 50 	*/
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-
-  return;
-}
-
-if( freq<192  && freq>=150 ) {
-  *mode=MFP_DIV64;		/* divide by 64 	*/
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-  return;
-}
-
-if( freq<150  && freq>=96  ) {
-  *mode=MFP_DIV100;		/* divide by 100	*/
-  presc=prescales[*mode];
-  temp=presc*freq;
-  *data=(U8)((U32)2457600/temp);
-  return;
-}
-
-if(freq<96 && freq>=48) {
+if(((freq<96) && (freq>=48))) {
   *mode=MFP_DIV200; 		/* divide by 200	*/
   presc=prescales[*mode];
   temp=presc*freq;
@@ -118,9 +74,55 @@ if(freq<96 && freq>=48) {
   return;
 }
 
- if( *mode==0 ) {
-  *data=0;
- }
+if( ((freq<150)  && (freq>=96))  ) {
+  *mode = MFP_DIV100;		/* divide by 100	*/
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+if( ((freq<600)  && (freq>=192)) ) {
+  *mode = MFP_DIV50;		/* divide by 50 	*/
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+if( ((freq<192)  && (freq>=150)) ) {
+  *mode = MFP_DIV64;		/* divide by 64 	*/
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+if( ((freq<960)  && (freq>=600)) ) {
+  *mode = MFP_DIV16;		/* divide by 16 	*/
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+if( ((freq<2400) && (freq>=960)) ) {
+  *mode = MFP_DIV10;		/* divide by 10 	*/
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+if( ( (freq<=614400) && (freq>=2400)) ) {
+  *mode = MFP_DIV4;		/* divide by 4  */
+  presc = prescales[*mode];
+  temp = presc*freq;
+  *data = (U8)((U32)2457600/temp);
+  return;
+}
+
+
  return;
 }
 

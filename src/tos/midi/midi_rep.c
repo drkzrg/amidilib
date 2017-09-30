@@ -89,26 +89,30 @@ void initSeqManual(sSequence_t *seq){
     g_CurrentSequence=0;
     g_CurrentSequence=seq;
 
-    for(int i=0;i<seq->ubNumTracks;++i){
+    for(U16 i=0;i<seq->ubNumTracks;++i){
 	 sTrack_t *pTrack=0;
      pTrack=seq->arTracks[i];
 
-     if(pTrack){
-         pTrackState=&(pTrack->currentState);
-         pTrackState->currentTempo=DEFAULT_MPQN;
-         pTrackState->currentBPM=DEFAULT_BPM;
-         pTrackState->timeElapsedInt=0L;
-         pTrackState->currEventPtr=pTrack->pTrkEventList;               // set begining of event list
-         pTrackState->playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-     }
+        if(pTrack){
+            pTrackState=&(pTrack->currentState);
+            pTrackState->currentTempo=DEFAULT_MPQN;
+            pTrackState->currentBPM=DEFAULT_BPM;
+            pTrackState->timeElapsedInt=0L;
+            pTrackState->currEventPtr=pTrack->pTrkEventList;               // set begining of event list
+            pTrackState->playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+
+        }
+
     } 
   
+    seq->timeElapsedFrac=0L;
+    seq->timeStep=0L;
+    seq->timeStep=am_calculateTimeStep(seq->arTracks[0]->currentState.currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+
 #ifdef IKBD_MIDI_SEND_DIRECT
         Supexec(flushMidiSendBuffer);
 #endif
-    seq->timeElapsedFrac=0L;
-    seq->timeStep=0L;    
-    seq->timeStep=am_calculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+
   }
   
  return;

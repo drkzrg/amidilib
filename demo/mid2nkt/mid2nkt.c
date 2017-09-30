@@ -66,10 +66,10 @@ U8 *filePath=0;
 
            // set midi output name
            U8 *pTempPtr=0;
-           const u16 len=strlen(filePath);
+           const U16 fpLen= strlen(filePath);
            amMemSet(tempName,0,sizeof(U8)*128);
 
-           strncpy(tempName,filePath,(len>128)?(128-1):len);
+           strncpy(tempName,filePath,(fpLen>=128)?(128-1):len);
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"mid",4);
 
@@ -92,7 +92,7 @@ U8 *filePath=0;
            const U16 filePathLength = strlen(filePath);
 
            amMemSet(tempName,0,sizeof(U8)*128);
-           strncpy(tempName,filePath,(filePathLength>128)?(128-1):filePathLength);
+           strncpy(tempName,filePath,(filePathLength>=128)?(128-1):filePathLength);
 
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);

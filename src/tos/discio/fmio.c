@@ -250,7 +250,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
      pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
      
      if(pData!=NULL){
-      U32 lRet=0L;
+      S32 lRet=0L;
       amMemSet(pData,0,(*fileLenght)+1);
 
       lRet=Fread(fileHandle, (*fileLenght), pData );
@@ -279,14 +279,14 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
       }
 
       return (pData);
-     }
-     else
-     {
+
+     } else {
       /*no memory available */
       printf("Not enough memory to load file.\n");
       amTrace("Not enough memory to load file.\n");
       return NULL;
      }
+
     }else{
       amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
 
@@ -343,5 +343,3 @@ S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize)
     }
  
 }
-
-

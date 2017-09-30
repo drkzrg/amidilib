@@ -436,7 +436,8 @@ void updateStepMulti(){
                 bEOTflag=isEOT(pCurrentEvent);
 
                 //check if next events are null and pack buffer until first next non zero delta
-                while(bEOTflag!=FALSE&&pCurrentEvent->eventBlock.uiDeltaTime==0){
+                while( (pCurrentEvent!=0) && ((bEOTflag!=FALSE) && (pCurrentEvent->eventBlock.uiDeltaTime==0)) ){
+
                 //handle event
 #ifdef IKBD_MIDI_SEND_DIRECT
                 // execute callback which copies data to midi buffer (_MIDIsendBuffer)
@@ -448,11 +449,12 @@ void updateStepMulti(){
                     (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
 #endif
                 //go to next event
-                    pActiveTrackState->currEventPtr=pActiveTrackState->currEventPtr->pNext;
-                    pCurrentEvent=pActiveTrackState->currEventPtr;
+                    pActiveTrackState->currEventPtr = pActiveTrackState->currEventPtr->pNext;
+                    pCurrentEvent = pActiveTrackState->currEventPtr;
 
-                    if(pCurrentEvent) bEOTflag=isEOT(pCurrentEvent);
-                }
+                    if(pCurrentEvent) bEOTflag = isEOT(pCurrentEvent);
+
+                } //end while
 
                 if(bEOTflag!=FALSE){
                     endOfSequence=TRUE;

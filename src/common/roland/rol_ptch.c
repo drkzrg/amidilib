@@ -851,7 +851,7 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
 
         control_change(C_BANK_SELECT, channel,0,0x00);
         program_change(channel, 1);
-     }
+     }break;
 
      case DT_GM_SOUND_SOURCE:{
         amTrace("\nSetting GM device on ch: %d\n", channel);
@@ -882,14 +882,14 @@ void setupMidiDevice(eMidiDeviceType device, U8 channel){
        patchMT32toGM(FALSE);
        program_change(channel, 1);
 
-     }break;
+     } break;
      case DT_XG_GM_YAMAHA:
         //not supported yet
-     default:{
-       amTrace("\nSetting generic default on ch: %d\n",channel);
-       control_change(C_BANK_SELECT, channel,0,0x00);
-       program_change(channel, 1);
-     }break;
+        default:{
+            amTrace("\nSetting generic default on ch: %d\n",channel);
+            control_change(C_BANK_SELECT, channel,0,0x00);
+            program_change(channel, 1);
+        } break;
     };
 
     // all notes off

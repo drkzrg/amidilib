@@ -300,7 +300,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings() {
 
             if(_mt32TextMsg[0]!=0){
 
-                memset(&arSetTextMT32.data[8],0,sizeof(U8)*20);
+                memset((void *)&(arSetTextMT32.data[8]),0,sizeof(U8)*20);
 
                 arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
                 arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;

@@ -251,8 +251,8 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 			break;
 		case MUSEVENT_PITCHWHEEL:
 			status |= 0xE0;
-			bit1 = (*cur & 1) >> 6;
-			bit2 = (*cur++ >> 1) & 127;
+            bit1 = (((*cur) & 1) >> 6);
+            bit2 = (((*cur)++ >> 1) & 127);
 			break;
 		case MUSEVENT_CHANNELMODE:
 			status |= 0xB0;

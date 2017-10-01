@@ -1,6 +1,14 @@
 #!/bin/bash
 # copies all needed files for building minimal, standalone nkt replay library.
 
+
+echo Target directory cleanup
+find ./nktlib/ -name "*.s" -type f|xargs rm -f
+find ./nktlib/ -name "*.inc" -type f|xargs rm -f
+find ./nktlib/ -name "*.h" -type f|xargs rm -f
+find ./nktlib/ -name "*.c" -type f|xargs rm -f
+
+
 echo Copying sources ..
 
 if [ ! -d "./nktlib/src" ]; then

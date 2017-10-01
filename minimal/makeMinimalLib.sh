@@ -20,5 +20,8 @@ scons --sconstruct=SConstruct_release
 echo ############ Cleanup
 find ./nktlib/ -name "*.o" -type f|xargs rm -f
 
+tar czvf nktlib.tgz ./nktlib
+
+
 echo Done
 

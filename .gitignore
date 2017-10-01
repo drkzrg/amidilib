@@ -17,3 +17,5 @@ minimal/\nktlib/\src/\*
 minimal/\nktlib/\include/\*
 minimal/\nktlib/\lib/\*
 
+
+*.tgz

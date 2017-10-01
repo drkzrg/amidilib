@@ -8,7 +8,8 @@
 #include "midi.h"           // midi
 #include "midi2nkt.h"
 
-#define MIDI_OUT_TEMP (100*1024) // temporary buffer for MUS->MID conversion
+static const U32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
+static const U32 MAX_GEMDOS_FILEPATH = 128;
 
 void printInfoScreen();
 
@@ -26,9 +27,9 @@ U8 *filePath=0;
       printf("Trying to load %s\n",argv[1]);
       filePath=argv[1];
 
-  }else if(argc==3&&argv[1]!='\0'&&argv[2]!='\0'){
+  }else if((argc==3)&&(argv[1]!='\0')&&(argv[2]!='\0')){
 
-      if((strcmp("-c",argv[1])==0)||(strcmp("--compress",argv[1])==0)){
+      if((strcmp("-c",(argv[1])==0))||(strcmp("--compress",(argv[1])==0))){
        bEnableCompression=TRUE;
       }
 
@@ -46,9 +47,9 @@ U8 *filePath=0;
   U32 iError=0;
   U32 ulFileLenght=0L;
   void *pMidi=0;
-  char tempName[128];
+  char tempName[MAX_GEMDOS_FILEPATH];
 
-  pMidi=loadFile(filePath, PREFER_TT, &ulFileLenght);
+  pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
 
    if(pMidi!=NULL){
 
@@ -58,23 +59,38 @@ U8 *filePath=0;
        if(((pMusHeader->ID)>>8)==MUS_ID){
            // convert it to midi format
            amTrace((const U8*)"Converting MUS -> MID ...\n");
+
            U8 *pOut=0;
            U32 len=0;
+
+           amMemSet(tempName,0,sizeof(U8)*MAX_GEMDOS_FILEPATH);
 
            // allocate working buffer for midi output
            pOut=amMallocEx(MIDI_OUT_TEMP, PREFER_TT);
 
            // set midi output name
            U8 *pTempPtr=0;
-           const U16 fpLen= strlen(filePath);
-           amMemSet(tempName,0,sizeof(U8)*128);
+           S32 fpLen = strlen(filePath);
 
-           strncpy(tempName,filePath,(fpLen>=128)?(128-1):len);
-           pTempPtr=strrchr(tempName,'.');
-           amMemCpy(pTempPtr+1,"mid",4);
+           fpLen = ((fpLen>=MAX_GEMDOS_FILEPATH)?(MAX_GEMDOS_FILEPATH-1):fpLen);
+           strncpy(tempName,filePath,fpLen);
 
-           printf("[Please Wait] [MUS->MID] Processing midi data..\n");
-           Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
+           pTempPtr = strrchr(tempName,'.');
+
+           if(pTempPtr){
+
+               amMemCpy(pTempPtr+1,"mid",4);
+               printf("[Please Wait] [MUS->MID] Processing midi data..\n");
+               S32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
+
+           } else{
+
+               printf("[Error] Filename update failed.\n");
+
+               /* free up buffer and quit */
+               amFree(pMidi);
+               return 0;
+           }
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
            amFree(pMidi);
@@ -84,15 +100,16 @@ U8 *filePath=0;
        U32 delta=0;
 
        // check mid 0,1 no quit
-       if(((sMThd *)pMidi)->id==ID_MTHD&&((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
+       if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
 
            printf("Midi file loaded, size: %lu bytes.\n", ulFileLenght);
 
            U8 *pTempPtr=0;
-           const U16 filePathLength = strlen(filePath);
+           S32 filePathLength = strlen(filePath);
+           filePathLength = ((filePathLength>=MAX_GEMDOS_FILEPATH)?(MAX_GEMDOS_FILEPATH-1):filePathLength);
 
            amMemSet(tempName,0,sizeof(U8)*128);
-           strncpy(tempName,filePath,(filePathLength>=128)?(128-1):filePathLength);
+           strncpy(tempName,filePath,filePathLength);
 
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);
@@ -122,13 +139,14 @@ U8 *filePath=0;
    deinitDebug();
    printf("\nDone. Press any key... \n");
 
-   int c=getchar();
+   int c = getchar();
+
    return 0;
 }
 
 
 void printInfoScreen(){
-    printf("\n== MID / MUS to NKT converter v.1.3 =========\n");
+    printf("\n== MID / MUS to NKT converter v.1.4 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");
 }

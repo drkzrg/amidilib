@@ -24,7 +24,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 
 /|\ m68k / atari version / cleanup / customisation:
-Copyright (C) 2013-2014 Pawel Goralski [nokturnal@nokturnal.pl]
+Copyright (C) 2013-2017 Pawel Goralski [nokturnal@nokturnal.pl]
 
 ===========================================================================
 */
@@ -100,7 +100,7 @@ static const U8 MidiMap[] = {
 };
 
 // The MUS data is stored in little-endian, m68k is big endian
-U16 LittleToNative(const U16 value){
+static inline U16 LittleToNative(const U16 value){
     U16 val=value;
     U16 result;
   
@@ -251,8 +251,8 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 			break;
 		case MUSEVENT_PITCHWHEEL:
 			status |= 0xE0;
-            bit1 = (((*cur) & 1) >> 6);
-            bit2 = (((*cur)++ >> 1) & 127);
+            bit1 = (*cur & 1) >> 6;
+            bit2 = (*cur++ >> 1) & 127;
 			break;
 		case MUSEVENT_CHANNELMODE:
 			status |= 0xB0;

@@ -13,3 +13,7 @@ amidilib\.tgz
 *.o
 
 minimal/\.sconsign\.dblite
+minimal/\nktlib/\src/\*
+minimal/\nktlib/\include/\*
+minimal/\nktlib/\lib/\*
+

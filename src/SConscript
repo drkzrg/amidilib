@@ -36,26 +36,9 @@ Import('TARGET_MACHINE',\
         'ENABLE_LTO',\
         'USE_CROSSCOMPILER',\
         'TOOLSET',\
-        'DEBUG_LEVEL')
+        'DEBUG_LEVEL'
+        )
 
-# helper function, calls external tool (brownout) to convert elf files to tos executables
-def convertElf(prgName, buildMode, outputDirPath, ext):
-    OUTDIR = ''
-    symbolGeneration=''
-    OutDirPath = Dir('../').abspath
-
-    if(buildMode=='debug'):
-        symbolGeneration=' -x'
-        OUTDIR = outputDirPath + '/bin/'
-    else:
-        OUTDIR = outputDirPath + '/bin/'
-
-    print('Converting: '+prgName + env['PROGSUFFIX'] +' -> ' + prgName + ext)
-
-    tosBinary = env.Command(prgName + ext , None, 'brownout -i '+ OUTPUT_DIR + prgName + env['PROGSUFFIX'] + ' -o ' + OUTPUT_DIR + prgName + ext + symbolGeneration)
-    env.AlwaysBuild(tosBinary)
-    return
- 
 build_mode = BUILD_MODE
 use_crosscompiler = USE_CROSSCOMPILER
 targetPlatform = TARGET_MACHINE
@@ -67,6 +50,24 @@ use_libc = USE_LIBC
 debug_level = DEBUG_LEVEL
 enable_lto = ENABLE_LTO
 use_fpu = USE_FPU
+rootdir = Dir('../').abspath
+outputdir = Dir('.').abspath
+
+# helper function, calls external tool (brownout) to convert elf files to tos executables
+def convertElf(prgName, buildMode, outputDirPath, ext):
+    symbolGeneration=''
+    OutDirPath = outputdir + '/'
+
+    if(buildMode=='debug'):
+        symbolGeneration=' -x'
+
+    print('Converting: '+prgName + env['PROGSUFFIX'] +' -> ' + prgName + ext)
+
+    tosBinary = env.Command(prgName + ext , None, 'brownout -i '+ OutDirPath + prgName + env['PROGSUFFIX'] + ' -o ' + OutDirPath + prgName + ext + symbolGeneration)
+    env.AlwaysBuild(tosBinary)
+    return
+
+
 
 # environment 
 compilerName=''
@@ -236,7 +237,6 @@ if (gemdos_io_enable == "yes"):
     CFLAGS += '-DENABLE_GEMDOS_IO '
 
 # output executable name
-OUTPUT_DIR='../bin/'
 AMIDI_TEST_NAME = 'midiplay' 
 YM2149_TEST_NAME ='ym2149' 
 MIDI_SEQ_TEST_NAME = 'midiout'
@@ -244,9 +244,9 @@ TIMINGS_TEST_NAME = 'midiseq'
 NKT_REPLAY_NAME = 'nktrep' 
 MID2NKT_NAME = 'mid2nkt' 
 
-env["CPPPATH"] = env["CPPPATH"] + ["../","../include","../include/lzo","../include/ym2149","../include/input"]
-env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
-  
+env["CPPPATH"] = env["CPPPATH"] + [rootdir + "/include"] + [rootdir + "/include/lzo"] + [rootdir + "/include/ym2149"] + [rootdir + "/include/input"]
+env["LIBPATH"] = env["LIBPATH"] + [outputdir+'/']
+
 #############################################################################################################################
 # additional defines  
 #############################################################################################################################
@@ -371,6 +371,7 @@ else:
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj +mid2nkt_src + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
     OutDirPath = Dir('../').abspath
+
     if(TOOLSET == 'GCC710'):
         convertElf(AMIDI_TEST_NAME, build_mode, OutDirPath, '.ttp')
         convertElf(MIDI_SEQ_TEST_NAME, build_mode, OutDirPath,'.tos')

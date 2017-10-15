@@ -11,6 +11,9 @@
 #include "nkt_util.h"
 #include "memory.h"
 
+
+extern U8 isMidiRTorSysex(U8 byteEvent);
+
 // helper functions for determining amount of data stored in midi file before actual conversion
 
 void collectNoteOffInfo(U8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){

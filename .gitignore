@@ -19,3 +19,5 @@ minimal/\nktlib/\lib/\*
 
 
 *.tgz
+
+build/

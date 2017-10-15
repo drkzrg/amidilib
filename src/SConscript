@@ -51,6 +51,7 @@ debug_level = DEBUG_LEVEL
 enable_lto = ENABLE_LTO
 use_fpu = USE_FPU
 rootdir = Dir('../').abspath
+projdir = Dir('#').abspath
 outputdir = Dir('.').abspath
 
 # helper function, calls external tool (brownout) to convert elf files to tos executables
@@ -66,8 +67,6 @@ def convertElf(prgName, buildMode, outputDirPath, ext):
     tosBinary = env.Command(prgName + ext , None, 'brownout -i '+ OutDirPath + prgName + env['PROGSUFFIX'] + ' -o ' + OutDirPath + prgName + ext + symbolGeneration)
     env.AlwaysBuild(tosBinary)
     return
-
-
 
 # environment 
 compilerName=''
@@ -244,7 +243,7 @@ TIMINGS_TEST_NAME = 'midiseq'
 NKT_REPLAY_NAME = 'nktrep' 
 MID2NKT_NAME = 'mid2nkt' 
 
-env["CPPPATH"] = env["CPPPATH"] + [rootdir + "/include"] + [rootdir + "/include/lzo"] + [rootdir + "/include/ym2149"] + [rootdir + "/include/input"]
+env["CPPPATH"] = env["CPPPATH"] + [projdir + "/../include"] + [projdir + "/../include/lzo"] + [projdir + "/../include/ym2149"] + [projdir + "/../include/input"]
 env["LIBPATH"] = env["LIBPATH"] + [outputdir+'/']
 
 #############################################################################################################################
@@ -320,12 +319,12 @@ amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midi
 env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
 
 #################### test programs entry points
-amidi_test_src = ["../demo/midi_rep/main.c"] 
-midiOut_test_src = ["../demo/midi_output/midiTest.c"]
-timings_test_src = ["../demo/timings/timTest.c","../demo/timings/sampleSequence.c","tos/testReplay.s"]
-ym2149_test_src = ["../demo/ymOutput/ymTest.c"]
-nktReplay_src = ["../demo/nktReplay/nktReplay.c"]
-mid2nkt_src = ["../demo/mid2nkt/mid2nkt.c"]
+amidi_test_src = [projdir + "/../demo/midi_rep/main.c"]
+midiOut_test_src = [projdir + "/../demo/midi_output/midiTest.c"]
+timings_test_src = [projdir + "/../demo/timings/timTest.c",projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
+ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
+nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
+mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
 nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
@@ -365,8 +364,8 @@ else:
 
     env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +timings_test_src + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS =ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +timings_test_src + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj +nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj +mid2nkt_src + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
@@ -379,7 +378,3 @@ else:
         convertElf(TIMINGS_TEST_NAME, build_mode, OutDirPath, '.tos')
         convertElf(NKT_REPLAY_NAME, build_mode, OutDirPath, '.ttp')
         convertElf(MID2NKT_NAME, build_mode, OutDirPath, '.ttp')
-
-# add stripping symbols
-# add copy/install/deploy step
-

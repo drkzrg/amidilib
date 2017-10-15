@@ -43,6 +43,7 @@ minimal/SConstruct_debug
 minimal/SConstruct_release
 minimal/updateMinimalBuild.sh
 src/SConstruct_brownerelf
+src/SConstruct_brownerelf_debug
 src/common/core/amidilib.c
 src/common/core/amlog.c
 src/common/core/c_vars.c

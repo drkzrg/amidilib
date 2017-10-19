@@ -139,21 +139,21 @@ if(TOOLSET=='GCC434'):
         CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68000/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68000/'
 
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68030 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68030/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68030/'
 
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68060/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68060/'
 
         LIB_TARGET = '060'
     else:
@@ -171,7 +171,7 @@ elif(TOOLSET == 'GCC710'):
         CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68000/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68000/'
 
         LIB_TARGET = '000'
 
@@ -181,7 +181,7 @@ elif(TOOLSET == 'GCC710'):
         CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68030/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68030/'
 
         LIB_TARGET = '030'
 
@@ -196,11 +196,11 @@ elif(TOOLSET == 'GCC710'):
         CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER='../deps/startup/'+build_mode+'/'+OBJ_FORMAT+'/m68060/'
+        CSTARTUP_FOLDER='../deps/startup/'+OBJ_FORMAT+'/'+build_mode+'/m68060/'
 
         LIB_TARGET = '060'
 
-          # floating point support
+        # floating point support
         # hardware fpu support
         env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
     else:

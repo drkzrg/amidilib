@@ -10,7 +10,7 @@ variant_dir='../build/aout/release', duplicate=0, exports={\
 'TX_ENABLE':'no',\
 'CONOUT_ENABLE':'yes',\
 'GEMDOS_IO_ENABLE':'yes',\
-'USE_LIBC':'yes',\
+'USE_LIBC':'no',\
 'ENABLE_LTO':'no',\
 'USE_CROSSCOMPILER':'yes',\
 'TOOLSET':'GCC434',\

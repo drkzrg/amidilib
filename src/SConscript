@@ -162,10 +162,17 @@ if(TOOLSET=='GCC434'):
 elif(TOOLSET == 'GCC710'):
     OBJ_FORMAT='brownerelf'
 
+
+
     if(use_fpu == 'yes'):
         fpu_flags = '-m68881 '
     else:
         fpu_flags = '-msoft-float '
+
+    if(enable_lto == 'yes'):
+        CFLAGS += '-flto '
+        LDFLAGS += '-flto '
+
 
     if(targetPlatform == 'ST'):
         CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
@@ -192,6 +199,7 @@ elif(TOOLSET == 'GCC710'):
         else:
             # soft float
             env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
+
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
@@ -203,17 +211,13 @@ elif(TOOLSET == 'GCC710'):
         # floating point support
         # hardware fpu support
         env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
+
     else:
         print('Unsupported target. Exiting...')
         exit(-1)
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
-
-if(enable_lto == 'yes'):
-    CFLAGS += '-flto '
-    LDFLAGS += '-flto '
-
 
 TARGET = TARGET + targetPlatform
 
@@ -246,7 +250,7 @@ NKT_REPLAY_NAME = 'nktrep'
 MID2NKT_NAME = 'mid2nkt' 
 
 env["CPPPATH"] = env["CPPPATH"] + [projdir + "/../include"] + [projdir + "/../include/lzo"] + [projdir + "/../include/ym2149"] + [projdir + "/../include/input"]
-env["LIBPATH"] = env["LIBPATH"] + [projdir+'/']
+env["LIBPATH"] = env["LIBPATH"] + [projdir+'/../deps']
 
 #############################################################################################################################
 # additional defines  
@@ -343,12 +347,12 @@ if(use_libc=="no"):
     print startup_obj
 
     # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)],  LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + timings_test_src + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [startup_obj + nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [startup_obj + mid2nkt_src + env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj  + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
 else:
     # build test programs and link them with amidilib
     startup_obj=[]

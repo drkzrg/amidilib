@@ -1,6 +1,7 @@
 
 #include "rol_ptch.h"
 #include "midi_cmd.h"
+#include <string.h>
 
 // resets the MT-32 to its default timbres
 static sSysEX_t mt32_Reset={8,(U8 []){0xf0,ID_ROLAND,MT32_DEVICE_ID,MT32_MODEL_ID,0x12,0x7f,0x01,0xf7}};

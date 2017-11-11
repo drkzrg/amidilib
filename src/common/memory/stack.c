@@ -22,7 +22,7 @@ S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize){
   //allocate memory
   void *pNewStack=0;
   
-  pNewStack=amMallocEx(elementSize*pPtr->size,PREFER_TT); 
+  pNewStack=(void *)amMallocEx(elementSize*pPtr->size,PREFER_TT);
 
   if(pNewStack==0) return 1;
     amMemSet(pNewStack,0,elementSize*pPtr->size);
@@ -34,7 +34,7 @@ S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize){
 
 //void element has to be of the constant size
 void pushStack(tStack *pPtr, void *newElement){
-  if(pPtr->top==pPtr->size){ 
+  if(pPtr->top == pPtr->size){
       //stack underflow
       pPtr->size=pPtr->size + DEFAULT_MAXSTACK;
       

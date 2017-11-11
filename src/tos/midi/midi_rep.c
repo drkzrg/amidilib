@@ -745,9 +745,8 @@ const U8 *getPlayStateStr(const U16 state){
     }else if(!(state&TS_PS_PLAYING)){
        return "Stopped...";
     }
-assert(0);
 	
-return "";
+ return "";
 }
 
 

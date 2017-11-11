@@ -67,7 +67,7 @@ U8* WriteShort(void* b, U16 s){
 }
 
 U8* WriteInt(void* b, U32 i){
- U32* buffer = (unsigned int*)b;
+ U32* buffer = (U32*)b;
  *buffer = i;
  ++buffer;
  return (U8 *)buffer;

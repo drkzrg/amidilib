@@ -5,8 +5,8 @@
     See license.txt for licensing information.
 */
 
-#ifndef __C_VARS_H__
-#define __C_VARS_H__
+#ifndef C_VARS_H_
+#define C_VARS_H_
 
 /* ###################################################################################
 #  INCLUDES
@@ -53,12 +53,14 @@ void compilerSanityCheck(void);
 // returns:
 // TRUE - for little endian, x86, PS2
 // FALSE / for big endian - // Big Endian - GameCube, Atari
-BOOL checkEndianess();
+const BOOL checkEndianess();
 
 #ifdef USE_INLINE
   #define INLINE inline        /* use standard inline */
 #else
   #define INLINE              /* no inline */
 #endif
+
+#define STATIC_ASSERT(cond,str) _Static_assert (cond, str);
 
 #endif

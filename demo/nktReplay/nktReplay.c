@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
 S16 iError=0;
 
-    if(argc>=1&&argv[1]!='\0'){
+    if( (argc>=1) && strlen(argv[1])!='0' ){
         printf("Trying to load %s\n",argv[1]);
     }else{
         printf("No specified nkt filename! exiting\n");

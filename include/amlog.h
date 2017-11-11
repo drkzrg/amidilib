@@ -1,5 +1,6 @@
-#ifndef _DEBUG_H_
-#define _DEBUG_H_
+
+#ifndef AMLOG_H_
+#define AMLOG_H_
 
 /**
     Copyright 2010-2013 Pawel Goralski
@@ -11,18 +12,20 @@
 
 #ifdef DEBUG_BUILD
 #define DEBUG
+#define _DEBUG
 #endif
 
-#ifdef DEBUG_SERIAL_OUTPUT_ONLY
-#warning DEBUG serial output enabled
+#if defined(DEBUG_SERIAL_OUTPUT_ONLY)
+
 void serialLog(const char *mes,...);
 #define amTrace(...) (serialLog(__VA_ARGS__))
-#elif (defined(DEBUG)||defined(DEBUG_SERIAL_OUTPUT)&&defined(DEBUG_FILE_OUTPUT))
-#warning general debug output enabled
+
+#elif (defined(DEBUG)||defined(DEBUG_SERIAL_OUTPUT) && defined(DEBUG_FILE_OUTPUT))
+
 void logd(const char *mes,...);
 #define amTrace(...) (logd(__VA_ARGS__))
+
 #else
-#warning DEBUG output disabled
 #define amTrace(...) ((void)0)
 #endif
 

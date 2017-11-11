@@ -23,14 +23,14 @@ U8 *filePath=0;
   printInfoScreen();
 
   // check parameters for compression
-  if(argc==2 && argv[1]!='\0'){
+  if( ((argc==2) && (strlen(argv[1])!=0))){
       printf("Trying to load %s\n",argv[1]);
-      filePath=argv[1];
+      filePath = argv[1];
 
-  }else if((argc==3)&&(argv[1]!='\0')&&(argv[2]!='\0')){
+  } else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0)){
 
-      if((strcmp("-c",(argv[1])==0))||(strcmp("--compress",(argv[1])==0))){
-       bEnableCompression=TRUE;
+      if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) )){
+       bEnableCompression = TRUE;
       }
 
       printf("Trying to load %s\n",argv[2]);
@@ -39,7 +39,7 @@ U8 *filePath=0;
   }else{
       printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
       deinitDebug();
-      int c=getchar();
+      int c = getchar();
       return 0;
   }
 
@@ -66,7 +66,7 @@ U8 *filePath=0;
            amMemSet(tempName,0,sizeof(U8)*MAX_GEMDOS_FILEPATH);
 
            // allocate working buffer for midi output
-           pOut=amMallocEx(MIDI_OUT_TEMP, PREFER_TT);
+           pOut = (U8 *)amMallocEx(MIDI_OUT_TEMP, PREFER_TT);
 
            // set midi output name
            U8 *pTempPtr=0;
@@ -83,7 +83,7 @@ U8 *filePath=0;
                printf("[Please Wait] [MUS->MID] Processing midi data..\n");
                S32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
-           } else{
+           } else {
 
                printf("[Error] Filename update failed.\n");
 

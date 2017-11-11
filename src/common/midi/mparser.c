@@ -992,7 +992,7 @@ S16 am_Sysex(sSequence_t *pSeq, U8 **pPtr,U32 delta, sTrack_t **pCurTrack){
       ulCount++;
     }
     pEvntBlock->bufferSize=ulCount; //size of data
-    pEvntBlock->pBuffer=amMallocEx(ulCount*sizeof(U8),PREFER_TT);
+    pEvntBlock->pBuffer = (U8 *)amMallocEx(ulCount*sizeof(U8),PREFER_TT);
 
     //copy ulCount of data
     amMemCpy(pEvntBlock->pBuffer,pTmpPtr,ulCount*sizeof(U8));
@@ -1078,12 +1078,12 @@ sEventBlock_t tempEvent;
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const U8*)"delta: %u\tMeta event: Sequence name: ",(unsigned long)delta);
 #endif
-        (*pPtr)++;
+        ++(*pPtr);
         ubLenght=readVLQ((*pPtr),&ubSize);
         /* set to the start of the string */
-        (*pPtr)++;
+        ++(*pPtr);
 
-        (*pCurTrack)->pTrackName=amMallocEx(128*sizeof(U8),PREFER_TT);
+        (*pCurTrack)->pTrackName = (U8 *)amMallocEx(128*sizeof(U8),PREFER_TT);
 
     if((*pCurTrack)->pTrackName!=NULL){
       amMemSet((*pCurTrack)->pTrackName,0,128*sizeof(U8));
@@ -1162,7 +1162,7 @@ sEventBlock_t tempEvent;
     tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->pMarkerName=amMallocEx(ubLenght+1,PREFER_TT);
+    pEvntBlock->pMarkerName = (U8 *)amMallocEx(ubLenght+1,PREFER_TT);
     amMemSet(pEvntBlock->pMarkerName,0,((ubLenght+1)*sizeof(U8)));
     amMemCpy(pEvntBlock->pMarkerName,(*pPtr),ubLenght*sizeof(U8));
     pEvntBlock->pMarkerName[ubLenght]='\0';
@@ -1209,7 +1209,7 @@ sEventBlock_t tempEvent;
     pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pCuePointName=0;
 
-    pEvntBlock->pCuePointName=amMallocEx(ubLenght+1,PREFER_TT);
+    pEvntBlock->pCuePointName = (U8 *)amMallocEx(ubLenght+1,PREFER_TT);
     amMemSet(pEvntBlock->pCuePointName,0,((ubLenght+1)*sizeof(U8)));
     amMemCpy(pEvntBlock->pCuePointName,(*pPtr),ubLenght*sizeof(U8));
     pEvntBlock->pCuePointName[ubLenght]='\0';

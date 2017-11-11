@@ -9,15 +9,22 @@
 #define __AMEMORY_TOS_H__
 
 #if !defined(FORCE_MALLOC)
+
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+
+#else
+
+#include <stdlib.h>
+
 #endif
 
-#include <string.h>
-#include <stdlib.h>
 
 #include "amlog.h"
 #include "c_vars.h"
+
+#include <string.h>
+
 
 /* memory allocation preference */
 
@@ -26,9 +33,9 @@ typedef enum {
   TT_RAM = MX_TTRAM,
   PREFER_ST = MX_PREFSTRAM,
   PREFER_TT = MX_PREFTTRAM,
-  PREFER_DSP = PREFER_TT+1,	   //f030 only, not used atm
-  PREFER_SUPERVIDEL = PREFER_TT+2, //f030 only, not used atm
-  PREFER_RADEON = PREFER_TT+3	   //f030 only, not used atm
+  PREFER_DSP = PREFER_TT+1,         //f030 only, not used atm
+  PREFER_SUPERVIDEL = PREFER_TT+2,  //f030 only, not used atm
+  PREFER_RADEON = PREFER_TT+3       //f030 only, not used atm
 } eMemoryFlag;
 
 #if defined (EXTERN_MEM_FUNCTIONS)
@@ -53,8 +60,14 @@ extern void*	Z_Malloc (int size, int tag, void *ptr);
 
 #else
 
+#if defined(TARGET_ST)
+#define amMallocEx(amount, flag) Malloc((amount));
+#define amMalloc(amount) Malloc((amount));
+#else
 #define amMallocEx(amount, flag) Mxalloc((amount),(flag));
 #define amMalloc(amount) Malloc((amount));
+#endif
+
 #define amFree(memPtr) if( (memPtr) != NULL ) Mfree(memPtr); (memPtr) = NULL;
 
 #endif // not extern mem functions

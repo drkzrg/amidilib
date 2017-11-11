@@ -16,6 +16,7 @@ minimal/\.sconsign\.dblite
 minimal/\nktlib/\src/\*
 minimal/\nktlib/\include/\*
 minimal/\nktlib/\lib/\*
+deps/\startup/\*
 
 
 *.tgz

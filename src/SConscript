@@ -50,6 +50,8 @@ use_libc = USE_LIBC
 debug_level = DEBUG_LEVEL
 enable_lto = ENABLE_LTO
 use_fpu = USE_FPU
+
+# helper paths
 rootdir = Dir('../').abspath
 projdir = Dir('#').abspath
 outputdir = Dir('.').abspath
@@ -79,14 +81,28 @@ if(TOOLSET=='GCC434'):
 # Linux cross compiler
     PREFIX = '/usr'
     compilerName = 'm68k-atari-mint-'
-    env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
-    env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
+
+    if(use_libc!='yes'):
+        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['LIBPATH'] = []
+    else:
+        env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
+        env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
+
 elif(TOOLSET=='GCC710'):
+    print projdir + '/../deps/startup/include'
+
 # Linux/Cygwin cross compiler
     PREFIX = '/usr'
     compilerName = 'm68k-ataribrowner-elf-'
-    env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
-    env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
+
+    if(use_libc!='yes'):
+        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['LIBPATH'] = []
+    else:
+        env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
+        env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
+
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
@@ -117,7 +133,6 @@ VASM_FLAGS=''
 CPPFLAGS=''
 CXXFLAGS=''
 
-LIB_POSTFIX='not_set'
 LIB_TARGET='not_set'
 
 STACK_SIZE=0
@@ -126,35 +141,34 @@ TARGET='-DTARGET_'
 CSTARTUP_FOLDER=''
 OBJ_FORMAT=''
 
+if(use_fpu == 'yes'):
+    fpu_flags = '-m68881 '
+    VASM_FLAGS += '-m68881 '
+else:
+    fpu_flags = '-msoft-float '
+    VASM_FLAGS += '-no-fpu '
+
 if(TOOLSET=='GCC434'):
     OBJ_FORMAT='aout'
     fpu_flags = ''
-
-    if(use_fpu == 'yes'):
-        fpu_flags = '-m68881 '
-    else:
-        fpu_flags = '-msoft-float '
 
     if(targetPlatform == 'ST'):
         CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT+'/' + build_mode + '/m68000/'
-
+        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/'
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
-        CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68030 -Wl,--traditional-format '
+        CFLAGS += '-m68020-40 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+        LDFLAGS += '-m68020-40 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
-
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68060/'
-
         LIB_TARGET = '060'
     else:
         print('Unsupported target. Exiting...')
@@ -162,17 +176,9 @@ if(TOOLSET=='GCC434'):
 elif(TOOLSET == 'GCC710'):
     OBJ_FORMAT='brownerelf'
 
-
-
-    if(use_fpu == 'yes'):
-        fpu_flags = '-m68881 '
-    else:
-        fpu_flags = '-msoft-float '
-
     if(enable_lto == 'yes'):
         CFLAGS += '-flto '
         LDFLAGS += '-flto '
-
 
     if(targetPlatform == 'ST'):
         CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
@@ -185,8 +191,8 @@ elif(TOOLSET == 'GCC710'):
         # floating point support
         env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
     elif(targetPlatform == 'F030'):
-        CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
-        LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
+        CFLAGS += '-m68020-40 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+        LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
 
@@ -222,8 +228,9 @@ else:
 TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
-if(use_libc == "no"):
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e__start ' 
+if(use_libc != 'yes'):
+    CFLAGS+='-I' + projdir + '/startup/include '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e__start '
 else:
     LDFLAGS+='-Wl,-e__start '
 
@@ -249,8 +256,11 @@ TIMINGS_TEST_NAME = 'midiseq'
 NKT_REPLAY_NAME = 'nktrep' 
 MID2NKT_NAME = 'mid2nkt' 
 
-env["CPPPATH"] = env["CPPPATH"] + [projdir + "/../include"] + [projdir + "/../include/lzo"] + [projdir + "/../include/ym2149"] + [projdir + "/../include/input"]
-env["LIBPATH"] = env["LIBPATH"] + [projdir+'/../deps']
+env["CPPPATH"] += [projdir + '/../include'] + [projdir + '/../include/lzo'] + [projdir + '/../include/ym2149'] + [projdir + '/../include/input']
+env["LIBPATH"] += [outputdir + '/']
+
+if(use_libc!='yes'):
+    env["LIBPATH"] += [projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68' + LIB_TARGET + '/']
 
 #############################################################################################################################
 # additional defines  
@@ -280,11 +290,9 @@ if ( build_mode == 'debug'):
   else:
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   
-  LIB_POSTFIX = LIB_TARGET+'d' 
 else:
     print "Release build... Code optimisation is turned on."
     CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O2 ' + ' -DUSE_INLINE '
-    LIB_POSTFIX = LIB_TARGET
     
 if(ikbd_direct_write == "yes"):
     print "Sending data directly via IKBD ENABLED"
@@ -322,7 +330,7 @@ lzo_src = ["common/lzo/minilzo.c"]
 amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
 # build library
-env.Library(LIBRARYNAME + LIB_POSTFIX, amidilib_src)
+env.Library(LIBRARYNAME, amidilib_src)
 
 #################### test programs entry points
 amidi_test_src = [projdir + "/../demo/midi_rep/main.c"]
@@ -340,17 +348,18 @@ if (gemdos_io_enable == "yes"):
 
 ADDLIBS=['']
 
-if(use_libc=="no"):
+if(use_libc!='yes'):
+    ADDLIBS= ['minilibc' + LIB_TARGET]
 
-    startup_obj = [CSTARTUP_FOLDER + 'mStartupAsmC.o', CSTARTUP_FOLDER +'mStartup.o', CSTARTUP_FOLDER + 'stdlib.o']
+    startup_obj = [CSTARTUP_FOLDER +'mStartup.o', CSTARTUP_FOLDER + 'mStartupAsmC.o' ]
 
-    print startup_obj
+    linkedLibs = [LIBRARYNAME] + ADDLIBS
 
     # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj  + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX=env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj  + env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
 else:
@@ -361,19 +370,17 @@ else:
         ADDLIBS = ['c']
         startup_obj = ['/usr/m68k-ataribrowner-elf/lib/crt0.o']
 
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + amidi_test_src + env.Object(input_src)] , LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX] , PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +midiOut_test_src + env.Object(input_src)], LIBS = ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +ym2149_test_src + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src)], LIBS=ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj +timings_test_src + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src)], LIBS=ADDLIBS + [LIBRARYNAME + LIB_POSTFIX], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj +nktReplay_src + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src)] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj +mid2nkt_src + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
-    OutDirPath = Dir('../').abspath
-
-    if(TOOLSET == 'GCC710'):
-        convertElf(AMIDI_TEST_NAME, build_mode, OutDirPath, '.ttp')
-        convertElf(MIDI_SEQ_TEST_NAME, build_mode, OutDirPath,'.tos')
-        convertElf(YM2149_TEST_NAME, build_mode, OutDirPath,'.tos')
-        convertElf(TIMINGS_TEST_NAME, build_mode, OutDirPath, '.tos')
-        convertElf(NKT_REPLAY_NAME, build_mode, OutDirPath, '.ttp')
-        convertElf(MID2NKT_NAME, build_mode, OutDirPath, '.ttp')
+if(TOOLSET == 'GCC710'):
+    convertElf(AMIDI_TEST_NAME, build_mode, rootdir, '.ttp')
+    convertElf(MIDI_SEQ_TEST_NAME, build_mode, rootdir,'.tos')
+    convertElf(YM2149_TEST_NAME, build_mode, rootdir,'.tos')
+    convertElf(TIMINGS_TEST_NAME, build_mode, rootdir, '.tos')
+    convertElf(NKT_REPLAY_NAME, build_mode, rootdir, '.ttp')
+    convertElf(MID2NKT_NAME, build_mode, rootdir, '.ttp')

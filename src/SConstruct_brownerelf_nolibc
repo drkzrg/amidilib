@@ -3,10 +3,10 @@
 # gcc 7.10 brownerelf release
 
 SConscript('SConscript',\
-variant_dir='../build/brownerelf/release', duplicate=0,\
+variant_dir='../build/brownerelf/debug', duplicate=0,\
 exports={\
 'TARGET_MACHINE':'F030',\
-'BUILD_MODE':'release',\
+'BUILD_MODE':'debug',\
 'IKBD_DIRECT_WRITE':'yes',\
 'USE_FPU':'no',\
 'TX_ENABLE':'no',\
@@ -18,4 +18,3 @@ exports={\
 'TOOLSET':'GCC710',\
 'DEBUG_LEVEL':'0',\
 })
-

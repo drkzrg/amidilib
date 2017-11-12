@@ -24,8 +24,8 @@ S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize);
 void pushStack(tStack *pPtr, void *newElement);
 void popStack(tStack *pPtr);
 void *getTopStackElement();
-BOOL isStackFull(tStack *pPtr);
-BOOL isStackEmpty(tStack *pPtr);
+const BOOL isStackFull(const tStack *pPtr);
+const BOOL isStackEmpty(const tStack *pPtr);
 void deinitStack(tStack *pPtr);
 
 

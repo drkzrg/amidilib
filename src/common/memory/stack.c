@@ -43,10 +43,8 @@ void pushStack(tStack *pPtr, void *newElement){
         puts("Warning: Stack overflow!\r\t");
       }
     return;
-  }
-  else{
-    U32 dst=0;
-    dst=((U32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
+  }else{
+    U32 dst=((U32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
     amMemCpy((void *)dst,newElement,pPtr->elementSize);
     return;
   }
@@ -72,14 +70,14 @@ void popStack(tStack *pPtr){
   }
 }
 
-BOOL isStackFull(tStack *pPtr){
+const BOOL isStackFull(const tStack *pPtr){
   if(pPtr->top==(pPtr->size-1)) 
     return TRUE;
   else 
     return FALSE;
 }
 
-BOOL isStackEmpty(tStack *pPtr){
+const BOOL isStackEmpty(const tStack *pPtr){
 
   if(pPtr->top==0) 
     return TRUE;

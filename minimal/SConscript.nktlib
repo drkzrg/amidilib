@@ -6,7 +6,7 @@
 import sys
 import os
 
-env = Environment(tools=['default'])
+env = Environment(ENV = os.environ,tools=['default'])
 
 Help("AMIDILIB Copyright 2007-2017 Pawel Goralski\n \
 Type: 'Set build variables in SConstruct'\n \
@@ -21,7 +21,7 @@ where name of 'TARGET_MACHINE' can be: \n \
  'CONOUT_ENABLE' - disable / enable console output,\n \
  'GEMDOS_IO_ENABLE' - uses gemdos i/o instead of standard libc file i/o,\n \
  'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
- 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 7.1 brownerelf.\n \
+ 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 7.xx brownerelf.\n \
  'ENABLE_LZO' - enable lzo support (packed data).\n \
  'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2),\n \
  'USE_CUSTOM_ALLOC' - use memory allocation functions provided by user \n")
@@ -70,6 +70,8 @@ if(TOOLSET=='GCC434'):
 elif(TOOLSET=='GCC710'):
 # Linux/Cygwin cross compiler
     PREFIX = '/usr'
+    GCC_VERSION_DIR='7.2.0'
+
     compilerName = 'm68k-ataribrowner-elf-'
     env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
     env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
@@ -159,7 +161,7 @@ elif(TOOLSET == 'GCC710'):
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68000/'
                 LIB_TARGET = '000'
                 # floating point support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
         elif(targetPlatform == 'F030'):
                 CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
@@ -170,10 +172,10 @@ elif(TOOLSET == 'GCC710'):
 
                 if(use_fpu == 'yes'):
                         # hardware fpu support
-                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
                 else:
                         # soft float
-                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
 
         elif(targetPlatform == 'CT60'):
                 CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
@@ -184,7 +186,7 @@ elif(TOOLSET == 'GCC710'):
                 LIB_TARGET = '060'
                 # floating point support
                 # hardware fpu support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/7.1.0/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
         else:
                 print('Unsupported target. Exiting...')
                 exit(-1)

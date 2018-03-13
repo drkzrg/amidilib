@@ -1,3 +1,3 @@
 #!/bin/bash
-scons --sconstruct=SConstruct_brownerelf -c
-scons --sconstruct=SConstruct_brownerelf
+scons --sconstruct=SConstruct_brownelf -c
+scons --sconstruct=SConstruct_brownelf

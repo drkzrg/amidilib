@@ -1,7 +1,7 @@
-# gcc 7.10 brownerelf debug
+# gcc 7.x.x brownelf debug
 
 SConscript('SConscript',\
-variant_dir='../build/brownerelf/debug', duplicate=0,\
+variant_dir='../build/brownelf/debug', duplicate=0,\
 exports={\
 'TARGET_MACHINE':'F030',\
 'BUILD_MODE':'debug',\
@@ -13,7 +13,7 @@ exports={\
 'USE_LIBC':'yes',\
 'ENABLE_LTO':'no',\
 'USE_CROSSCOMPILER':'yes',\
-'TOOLSET':'GCC710',\
+'TOOLSET':'GCCBROWNELF',\
 'DEBUG_LEVEL':'1',\
 })
 

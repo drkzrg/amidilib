@@ -9,7 +9,7 @@ import os
 
 env = Environment(ENV = os.environ,tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2017 Pawel Goralski\n \
+Help("AMIDILIB Copyright 2007-2018 Pawel Goralski\n \
 Type: 'Set build variables in SConstruct'\n \
 where name of 'TARGET_MACHINE' can be: \n \
     'F030' - for Atari Falcon030 / TT build\n \
@@ -22,7 +22,7 @@ where name of 'TARGET_MACHINE' can be: \n \
  'CONOUT_ENABLE' - disable / enable console output,\n \
  'GEMDOS_IO_ENABLE' - uses gemdos i/o instead of standard libc file i/o,\n \
  'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
- 'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 6.2 brownelf.\n \
+ 'ENABLE_LTO' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n \
  'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2), \n")
 
 Import('TARGET_MACHINE',\
@@ -50,6 +50,10 @@ use_libc = USE_LIBC
 debug_level = DEBUG_LEVEL
 enable_lto = ENABLE_LTO
 use_fpu = USE_FPU
+
+PREFIX = ''
+GCC_VERSION_STRING = ''
+GCC_PREFIX = ''
 
 # helper paths
 rootdir = Dir('../').abspath
@@ -80,7 +84,8 @@ if(TOOLSET=='GCC434'):
 #    PREFIX = '/opt/cross-mint'
 # Linux cross compiler
     PREFIX = '/usr'
-    compilerName = 'm68k-atari-mint-'
+    GCC_VERSION_STRING = '4.6.4'
+    GCC_PREFIX = 'm68k-atari-mint'
 
     if(use_libc!='yes'):
         env['CPPPATH'] = [projdir + '/../deps/startup/include']
@@ -89,35 +94,34 @@ if(TOOLSET=='GCC434'):
         env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
         env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
 
-elif(TOOLSET=='GCC710'):
+elif(TOOLSET=='GCCBROWNELF'):
     print projdir + '/../deps/startup/include'
 
 # Linux/Cygwin cross compiler
     PREFIX = '/usr'
-    GCC_VERSION_DIR='7.2.0'
-
-    compilerName = 'm68k-ataribrowner-elf-'
+    GCC_VERSION_STRING = '7.3.0'
+    GCC_PREFIX = 'm68k-ataribrown-elf'
 
     if(use_libc!='yes'):
         env['CPPPATH'] = [projdir + '/../deps/startup/include']
         env['LIBPATH'] = []
     else:
-        env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
-        env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
+        env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
+        env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
 
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
 
-env['CC'] = PREFIX + '/bin/' + compilerName + 'gcc'
-env['CXX'] = PREFIX + '/bin/' + compilerName + 'g++'
-env['OBJCOPY'] = PREFIX + '/bin/' + compilerName + 'objcopy'
-env['STRIP'] = PREFIX + '/bin/' + compilerName + 'strip -s'
-env['STACK'] = PREFIX + '/bin/' + compilerName + 'stack'
-env['AR'] = PREFIX + '/bin/' + compilerName + 'ar'
-env['RANLIB'] = PREFIX + '/bin/' + compilerName + 'ranlib'
+env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
+env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-g++'
+env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
+env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
+env['STACK'] = PREFIX + '/bin/' + GCC_PREFIX + '-stack'
+env['AR'] = PREFIX + '/bin/' + GCC_PREFIX + '-ar'
+env['RANLIB'] = PREFIX + '/bin/' + GCC_PREFIX + '-ranlib'
 
-if(TOOLSET == 'GCC710'):
+if(TOOLSET == 'GCCBROWNELF'):
     env['PROGSUFFIX'] = '.elf'
 else:
     env['PROGSUFFIX'] = '.tos'
@@ -175,8 +179,8 @@ if(TOOLSET=='GCC434'):
     else:
         print('Unsupported target. Exiting...')
         exit(-1)
-elif(TOOLSET == 'GCC710'):
-    OBJ_FORMAT='brownerelf'
+elif(TOOLSET == 'GCCBROWNELF'):
+    OBJ_FORMAT='brownelf'
 
     if(enable_lto == 'yes'):
         CFLAGS += '-flto '
@@ -186,12 +190,12 @@ elif(TOOLSET == 'GCC710'):
         CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/'
+        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/' 
 
         LIB_TARGET = '000'
 
         # floating point support
-        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/' + GCC_VERSION_DIR + '/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
+        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68000','/usr/' + GCC_PREFIX + '/lib/m68000']
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
@@ -203,10 +207,10 @@ elif(TOOLSET == 'GCC710'):
         # floating point support
         if(use_fpu == 'yes'):
             # hardware fpu support
-            env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/' + GCC_VERSION_DIR + '/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
+            env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68020', '/usr/' + GCC_PREFIX + '/lib/m68020']
         else:
             # soft float
-            env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/' + GCC_VERSION_DIR + '/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
+            env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68020/softfp', '/usr/' + GCC_PREFIX + '/lib/m68020/softfp']
 
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
@@ -218,7 +222,7 @@ elif(TOOLSET == 'GCC710'):
 
         # floating point support
         # hardware fpu support
-        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/' + GCC_VERSION_DIR + '/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
+        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68060', '/usr/' + GCC_PREFIX + '/lib/m68060']
 
     else:
         print('Unsupported target. Exiting...')
@@ -337,7 +341,7 @@ env.Library(LIBRARYNAME, amidilib_src)
 #################### test programs entry points
 amidi_test_src = [projdir + "/../demo/midi_rep/main.c"]
 midiOut_test_src = [projdir + "/../demo/midi_output/midiTest.c"]
-timings_test_src = [projdir + "/../demo/timings/timTest.c",projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
+timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
 ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
 nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
@@ -368,9 +372,9 @@ else:
     # build test programs and link them with amidilib
     startup_obj=[]
 
-    if(TOOLSET == 'GCC710'):
+    if(TOOLSET == 'GCCBROWNELF'):
         ADDLIBS = ['c']
-        startup_obj = ['/usr/m68k-ataribrowner-elf/lib/crt0.o']
+        startup_obj = ['/usr/' + GCC_PREFIX + '/lib/crt0.o']
 
     env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
@@ -379,7 +383,7 @@ else:
     env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
 
-if(TOOLSET == 'GCC710'):
+if(TOOLSET == 'GCCBROWNELF'):
     convertElf(AMIDI_TEST_NAME, build_mode, rootdir, '.ttp')
     convertElf(MIDI_SEQ_TEST_NAME, build_mode, rootdir,'.tos')
     convertElf(YM2149_TEST_NAME, build_mode, rootdir,'.tos')

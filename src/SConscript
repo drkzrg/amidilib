@@ -75,7 +75,6 @@ def convertElf(prgName, buildMode, outputDirPath, ext):
     return
 
 # environment 
-compilerName=''
 LIBRARYNAME = 'amidi'
 PREFIX=''
 

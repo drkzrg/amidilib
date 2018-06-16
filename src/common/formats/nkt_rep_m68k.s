@@ -251,11 +251,12 @@ _NktInstallReplayRoutNoTimers:
 .done:
     move.w 	  (sp)+,sr 		;restore Status Register
     movem.l (sp)+,d0-d7/a0-a6	;restore registers
-        rts
+    rts
 
 ; installs / deinstalls MIDI replay (single/multitrack) on selected Timer Interrupt
 
 ; #####################################################################################
+
 _NktInstallReplayRout:
         movem.l	d0-d7/a0-a6,-(sp)
 	move.w	sr,-(sp)	;save status register
@@ -269,6 +270,7 @@ _NktInstallReplayRout:
 	beq.s	.isSingleTrack
 	move.l	#_updateStepNktMt, updateStepRout
 	bra.s	.done
+
 .isSingleTrack:
 	move.l	#_updateStepNkt, updateStepRout
 .done:
@@ -294,13 +296,13 @@ _NktInstallReplayRout:
 	endif
 
 	move.l  #vectorTiC, $114.w	; install custom vector
-.done:
+
         move.l    stopTimerIntPtr,a0
         jsr       (a0)
         move.l    updateTimerIntPtr,a0
         jsr       (a0)
 .error:
-        move.w 	  (sp)+,sr 		;restore Status Register
+        move.w 	(sp)+,sr 		;restore Status Register
         movem.l (sp)+,d0-d7/a0-a6	;restore registers
         rts
 

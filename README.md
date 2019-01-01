@@ -24,7 +24,7 @@ Compilation from sources
 To compile library from sources following tools are needed:
 
 * [SCons build tool](http://scons.org/)
-* GCC cross compiler - [gcc 4.3.4](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) or [gcc 7.10 (brownerelf)](http://d-bug.mooo.com/beyondbrown/post/gcc7/)
+* GCC cross compiler - [gcc 4.3.4](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) or [gcc 7.x / 8.x (brownelf)](http://d-bug.mooo.com/beyondbrown/post/gcc7/)
 * [VASM m68k cross compiler](http://sun.hasenbraten.de/vasm/)
 * Environment like [Cygwin](https://www.cygwin.com/) under Windows or Linux.
 

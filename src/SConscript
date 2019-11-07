@@ -1,6 +1,6 @@
 
-#    Copyright 2007-2017 Pawel Goralski
-#    e-mail: pawel.goralski@nokturnal.pl
+#    Copyright 2007-2019 Pawel Goralski
+#    e-mail: pgoralski@nokturnal.pl
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
@@ -97,7 +97,7 @@ elif(TOOLSET=='GCCBROWNELF'):
     print projdir + '/../deps/startup/include'
 
 # Linux/Cygwin cross compiler
-    PREFIX = '/usr'
+    PREFIX = '/home/saulot/opt/'
     GCC_VERSION_STRING = '7.3.0'
     GCC_PREFIX = 'm68k-ataribrown-elf'
 
@@ -235,7 +235,7 @@ TARGET = TARGET + targetPlatform
 # indicate that we are not linking to standard libc libraries
 if(use_libc != 'yes'):
     CFLAGS+='-I' + projdir + '/startup/include '
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e__start '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
 else:
     LDFLAGS+='-Wl,-e__start '
 

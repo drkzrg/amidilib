@@ -80,9 +80,9 @@ PREFIX=''
 
 if(TOOLSET=='GCC434'):
 # Cygwin path
-#    PREFIX = '/opt/cross-mint'
+    PREFIX = '/opt/cross-mint'
 # Linux cross compiler
-    PREFIX = '/usr'
+#    PREFIX = '/usr'
     GCC_VERSION_STRING = '4.6.4'
     GCC_PREFIX = 'm68k-atari-mint'
 
@@ -373,7 +373,7 @@ else:
 
     if(TOOLSET == 'GCCBROWNELF'):
         ADDLIBS = ['c']
-        startup_obj = ['/usr/' + GCC_PREFIX + '/lib/crt0.o']
+        startup_obj = [PREFIX + GCC_PREFIX + '/lib/crt0.o']
 
     env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])

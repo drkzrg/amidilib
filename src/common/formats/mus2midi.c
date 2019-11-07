@@ -235,7 +235,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         // Handle events
 		switch ((event & 122) >> 4){
 		default:
-			assert(0);
+            //assert(0);
 			break;
 		case MUSEVENT_KEYOFF:
 			status |=  0x80;
@@ -256,7 +256,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 			break;
 		case MUSEVENT_CHANNELMODE:
 			status |= 0xB0;
-			assert(*cur < sizeof(MidiMap) / sizeof(MidiMap[0]));
+            //assert(*cur < sizeof(MidiMap) / sizeof(MidiMap[0]));
 			bit1 = MidiMap[*cur++];
 			bit2 = (*cur++ == 12) ? header.channels + 1 : 0x00;
 			break;
@@ -268,22 +268,22 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 				bitc = 1;
 			} else {
 				status |= 0xB0;
-				assert(*cur < sizeof(MidiMap) / sizeof(MidiMap[0]));
+              // assert((int)(*cur < sizeof(MidiMap) / sizeof(MidiMap[0])));
 				bit1 = MidiMap[*cur++];
 				bit2 = *cur++;
 			}
 			break;
 		case 5:	// Unknown
-			assert(0);
+        //	assert(0);
 			break;
 		case MUSEVENT_END:	// End
 			status = 0xff;
 			bit1 = 0x2f;
 			bit2 = 0x00;
-			assert(cur == end);
+            //assert(cur == end);
 			break;
 		case 7:	// Unknown
-			assert(0);
+            //assert(0);
 			break;
 		}
 

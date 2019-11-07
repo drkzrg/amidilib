@@ -121,8 +121,7 @@ if( ( (freq<=614400) && (freq>=2400)) ) {
   *data = (U8)((U32)2457600/temp);
   return;
 }
-
-
+ 
  return;
 }
 

@@ -1,4 +1,4 @@
-#SConscript('SConscript', variant_dir='../bin', duplicate=0, exports={'TARGET_MACHINE':'F030','BUILD_MODE':'debug','IKBD_DIRECT_WRITE':'yes','USE_FPU':'no','TX_ENABLE':'no','CONOUT_ENABLE':'yes','GEMDOS_IO_ENABLE':'yes','USE_LIBC':'yes','ENABLE_LTO':'no','USE_CROSSCOMPILER':'yes','TOOLSET':'GCCBROWNELF','DEBUG_LEVEL':'1'})
+# SConscript('SConscript', variant_dir='../bin', duplicate=0, exports={'TARGET_MACHINE':'F030','BUILD_MODE':'debug','IKBD_DIRECT_WRITE':'yes','USE_FPU':'no','TX_ENABLE':'no','CONOUT_ENABLE':'yes','GEMDOS_IO_ENABLE':'yes','USE_LIBC':'yes','ENABLE_LTO':'no','USE_CROSSCOMPILER':'yes','TOOLSET':'GCCBROWNELF','DEBUG_LEVEL':'1'})
 
 # gcc 7.x.x brownelf release
 

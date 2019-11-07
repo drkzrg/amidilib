@@ -13,18 +13,14 @@
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 
-#else
-
-#include <stdlib.h>
-
 #endif
 
 
 #include "amlog.h"
 #include "c_vars.h"
 
+#include <stdlib.h>
 #include <string.h>
-
 
 /* memory allocation preference */
 

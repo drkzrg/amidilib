@@ -59,6 +59,10 @@ compilerName=''
 LIBRARYNAME = 'nkt'
 PREFIX=''
 
+num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+SetOption('num_jobs', num_cpu)
+print "running with ", GetOption('num_jobs'), "jobs." 
+
 if(TOOLSET=='GCC434'):
 # Cygwin path
         PREFIX = '/opt/cross-mint'

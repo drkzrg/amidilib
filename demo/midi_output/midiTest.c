@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include <stdio.h>
 
 #include "c_vars.h"
 #include "amidilib.h"

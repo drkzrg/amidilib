@@ -21,6 +21,8 @@
 
 #include "minilzo.h" //lzo pack / depack
 
+#include <stdio.h>
+
 #ifdef ENABLE_GEMDOS_IO
 #include "fmio.h"
 #include <mint/ostruct.h>

@@ -6,6 +6,7 @@
 */
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "c_vars.h"
 #include "input/ikbd.h"

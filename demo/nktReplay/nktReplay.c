@@ -4,6 +4,8 @@
 #include "timing/mfp.h"
 #include "midi_send.h"
 
+#include <stdio.h>
+
 #ifdef MANUAL_STEP
 extern void updateStepNkt();
 #endif

@@ -14,6 +14,8 @@
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
 
+#include <stdio.h>
+
 #ifdef ENABLE_GEMDOS_IO
 #include "fmio.h"
 #include <mint/ostruct.h>

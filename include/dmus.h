@@ -6,7 +6,7 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-#include <c_vars.h>
+#include "c_vars.h"
 
 // mus header
 typedef struct tagMUSheader_t {

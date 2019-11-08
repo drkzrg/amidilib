@@ -98,7 +98,7 @@ void printInfoScreen(void){
   printf("Ready...\n");
 }
 
-void displayTuneInfo(){
+void displayTuneInfo(void){
 
   sNktSeq *pPtr=0;
   getCurrentSequence(&pPtr);

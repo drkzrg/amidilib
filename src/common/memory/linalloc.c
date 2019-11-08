@@ -1,7 +1,7 @@
 
-#include "memory/linalloc.h"
-#include "mintbind.h"
+#include <mintbind.h>
 
+#include "memory/linalloc.h"
 #include "memory.h"
 #include "amlog.h"
 
@@ -12,7 +12,7 @@ void linearBufferPrintInfo(const tLinearBuffer *buf){
 
 int32 createLinearBuffer(tLinearBuffer *buf, const uint32 bufferSize,const eMemoryFlag memType){
   
-  buf->pMemPtr = amMallocEx(bufferSize,memType);
+  buf->pMemPtr = (uint8 *)amMallocEx(bufferSize,memType);
   
   if(buf->pMemPtr!=0&&bufferSize>0){
     buf->memType=memType;

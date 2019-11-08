@@ -12,8 +12,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "assert.h"
-
 typedef uint8_t     uint8;
 typedef int8_t      int8;
 typedef uint16_t    uint16;
@@ -36,7 +34,31 @@ typedef void (*VOIDFUNCPTR)();
 #define FALSE false
 #endif
 
-// checks
+#ifdef USE_INLINE
+  #define INLINE inline        /* use standard inline */
+#else
+  #define INLINE              /* no inline */
+#endif
+
+#ifndef NDEBUG
+#include <assert.h>
+#include <stdlib.h>
+
+#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
+
+#define ASSERT(expr)                                                         \
+  ((void)((expr) ||                                                          \
+          (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
+                   #expr, __FILE__, __LINE__),                               \
+           ((int (*)(void))abort)())))
+#else
+#define assert(cond) 
+#define STATIC_ASSERT(cond, msg) 
+#define ASSERT(expr) (void)
+
+#endif
+
+// checks compiler builtin variable sizes 
 void compilerSanityCheck(void);
 
 // check processor endianess ( processor sanity check ;) )
@@ -44,12 +66,5 @@ void compilerSanityCheck(void);
 // TRUE - for little endian, x86, PS2
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 const bool checkEndianess();
-
-#ifdef USE_INLINE
-  #define INLINE inline        /* use standard inline */
-#else
-  #define INLINE              /* no inline */
-#endif
-
 
 #endif

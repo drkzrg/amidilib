@@ -176,7 +176,7 @@ volatile static bool endOfSequence=FALSE;
 volatile static uint32 TimeAdd=0;
 volatile static evntFuncPtr myFunc=NULL;
 volatile static uint32 currentDelta=0;
-volatile static const sEventList *pCurrentEvent=0;
+volatile static sEventList *pCurrentEvent=0;
 volatile static uint32 timeElapsed=0;
 volatile static sTrackState_t *pActiveTrackState=0;
 volatile static sTrack_t *pTrack=0;
@@ -421,7 +421,7 @@ void updateStepMulti(){
    #ifdef IKBD_MIDI_SEND_DIRECT
             //execute callback which copies data to midi buffer (_MIDIsendBuffer)
             myFunc=pCurrentEvent->eventBlock.copyEventCb.func;
-            printEventBlock(&pCurrentEvent->eventBlock);
+            //printEventBlock(&pCurrentEvent->eventBlock);
             (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
    #else
             //execute callback which sends data directly to midi out (XBIOS)

@@ -25,24 +25,26 @@
 extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT);
 
 // from mparser.c
-uint8  isMidiChannelEvent(uint8 byteEvent){
-    if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
-    {return 1;}
-    else return 0;
+uint8  isMidiChannelEvent(const uint8 byteEvent){
+    if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0))) {
+        return 1;
+    }
+    
+    return 0;
 }
 
-uint8  isMidiRTorSysex(uint8 byteEvent){
+uint8 isMidiRTorSysex(const uint8 byteEvent){
 
     if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) ){
       /* it is! */
         return (1);
     }
-    else /*no, it's not! */
-        return (0);
+ 
+  return (0);
 }
 
 /* combine bytes function for pitch bend */
-uint16 combineBytes(uint8 bFirst, uint8 bSecond){
+uint16 combineBytes(const uint8 bFirst, const uint8 bSecond){
     uint16 val;
     val = (uint16)bSecond;
     val<<=7;
@@ -358,7 +360,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                          amTrace("Update step for 200hz: %ld\n",precalc[i]);
                     } break;
                     default:{
-                        ASSERT(0,"[Error] Invalid timer update value");
+                        ASSERT(0);
                         amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };
@@ -715,7 +717,7 @@ pNewSeq = (sNktSeq *)amMallocEx(sizeof(sNktSeq),PREFER_TT);
 if(pNewSeq==0) {
     amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header.\n");
     amFree(arMidiInfo);
-    return -1;
+    return 0;
 }
 
 // clear memory
@@ -811,9 +813,9 @@ for(int i=0;i<nbOfTracks;++i){
 
 //save
  if(saveSequence(pNewSeq,pOutFileName,bCompress)<0){
-   amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n",pOutFileName);
+   amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n", pOutFileName);
  }else{
-   amTrace("[MIDI2NKT] Saved %s .\n",pOutFileName);
+   amTrace("[MIDI2NKT] Saved %s .\n", pOutFileName);
  }
 
 

@@ -5,8 +5,8 @@
     See license.txt for licensing information.
 */
 
-#ifndef __SAMPLE_SEQ_H__
-#define __SAMPLE_SEQ_H__
+#ifndef TIM_TEST_SAMPLE_SEQ_H_
+#define TIM_TEST_SAMPLE_SEQ_H_
 
 #include "c_vars.h"
 
@@ -40,7 +40,7 @@ typedef struct{
   uint16 playMode;  //play in loop, play once etc..
 }sCurrentSequenceState;
 
-sEvent *getTestSequenceChannel(uint8 chNb);
+sEvent *getTestSequenceChannel(const uint8 chNb);
 
 typedef enum{
  S_PLAY_LOOP=0,

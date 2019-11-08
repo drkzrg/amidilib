@@ -138,15 +138,15 @@ int16 am_Meta(sSequence_t *pSeq, uint8 **pPtr, uint32 delta, sTrack_t **pCurTrac
 *	@param byteEvent command byte
 *	@return 1 if true, 0 otherwise
 */
-uint8 am_isMidiChannelEvent(uint8 byteEvent);
+uint8 am_isMidiChannelEvent(const uint8 byteEvent);
 
 /** checks if byte is Sysex or System realtime command byte
 *	@param byteEvent pointer to VLQ data
 *	@return 1 if true, 0 otherwise
 */
-uint8 am_isMidiRTorSysex(uint8 byteEvent);
+uint8 am_isMidiRTorSysex(const uint8 byteEvent);
 
 /* combine bytes function (14 bit values) for pitch bend */
-uint16 combineBytes(uint8 bFirst, uint8 bSecond);
+uint16 combineBytes(const uint8 bFirst, const uint8 bSecond);
 
 #endif // MPARSER_H

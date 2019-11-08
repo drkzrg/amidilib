@@ -31,13 +31,13 @@
 
 
 #ifdef MANUAL_STEP
-extern void updateStepSingle();
-extern void updateStepMulti();
+extern void updateStepSingle(void);
+extern void updateStepMulti(void);
 #endif
 
 // display info screen
-void printInfoScreen(); 
-void displayTuneInfo();
+void printInfoScreen(void); 
+void displayTuneInfo(void);
 void mainLoop(sSequence_t *pSequence, const char *pFileName);
 
 #ifdef MIDI_PARSER_TEST
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 
 	  printf("Sequence name: %s\n",pMidiTune->pSequenceName);
 	  printf("Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-      printf("PPQN: %u\n",pMidiTune->timeDivision);
+    printf("PPQN: %u\n",pMidiTune->timeDivision);
 	  
 	  #ifdef MIDI_PARSER_TEST
         //output loaded midi file to screen/log
@@ -235,7 +235,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
 }
 
 
-void printInfoScreen(){
+void printInfoScreen(void){
   
   const sAMIDI_version *pInfo=am_getVersionInfo();
   
@@ -257,7 +257,7 @@ void printInfoScreen(){
   printf("Ready...\n");
 } 
 
-void displayTuneInfo(){
+void displayTuneInfo(void){
 
   sSequence_t *pPtr;
   getCurrentSeq(&pPtr);

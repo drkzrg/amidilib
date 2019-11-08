@@ -26,7 +26,6 @@
 
 #include "input/ikbd.h"
 #include "timing/mfp.h"
-
 #include <mint/osbind.h>
 
 extern void customSeqReplay(void);
@@ -39,17 +38,17 @@ bool ymOutputEnabled;
 void onTogglePlayMode(sCurrentSequenceState *pSeqPtr);
 void onTempoUp(sCurrentSequenceState *pSeqPtr);
 void onTempoDown(sCurrentSequenceState *pSeqPtr);
-void onToggleMidiEnable();
-void onToggleYmEnable();
+void onToggleMidiEnable(void);
+void onToggleYmEnable(void);
 void onTogglePlayPauseSequence(sCurrentSequenceState *pSeqPtr);
 void onStopSequence(sCurrentSequenceState *pSeqPtr);
 bool isEndSeq(sEvent *pEvent);
 
 // plays sample sequence 
 int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
-void updateSequenceStep(); 
-void onEndSeq(); //end sequence handler
-void printHelpScreen();
+void updateSequenceStep(void); 
+void onEndSeq(void); //end sequence handler
+void printHelpScreen(void);
 
 sCurrentSequenceState g_CurrentState; //current sequence
 
@@ -244,7 +243,7 @@ iCurrentTempo=pSeqPtr->currentTempo;
   handleTempoChange=TRUE;
 }
 
-void onToggleMidiEnable(){
+void onToggleMidiEnable(void){
   printf("MIDI output ");
   if(midiOutputEnabled==TRUE){
     midiOutputEnabled=FALSE;
@@ -256,7 +255,7 @@ void onToggleMidiEnable(){
    }
 }
 
-void onToggleYmEnable(){
+void onToggleYmEnable(void){
   printf("ym2149 output ");
   if(ymOutputEnabled==TRUE){
     ymOutputEnabled=FALSE;
@@ -308,7 +307,7 @@ bool isEndSeq(sEvent *pEvent){
     return FALSE;
 }
 
-void INLINE printHelpScreen(){
+void INLINE printHelpScreen(void){
   printf("===============================================\n");
   printf("/|\\ delta timing and sound output test..\n");
   printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
@@ -369,7 +368,7 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
 
 
 
-void updateSequenceStep(){
+void updateSequenceStep(void){
 static bool endOfSequence=FALSE;
 static bool bStopped=FALSE;
   
@@ -459,7 +458,7 @@ static bool bStopped=FALSE;
   }
 }
 
-void onEndSeq(){
+void onEndSeq(void){
 
   if(g_CurrentState.playMode==S_PLAY_ONCE){
       //reset set state to stopped 

@@ -11,7 +11,7 @@
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
 
-void printInfoScreen();
+void printInfoScreen(void);
 
 int main(int argc, char *argv[]){
 
@@ -145,7 +145,7 @@ uint8 *filePath=0;
 }
 
 
-void printInfoScreen(){
+void printInfoScreen(void){
     printf("\n== MID / MUS to NKT converter v.1.4 =========\n");
     printf("date: %s %s\n",__DATE__,__TIME__);
     printf("==========================================\n");

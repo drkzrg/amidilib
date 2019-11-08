@@ -9,7 +9,7 @@
 
 /* Compiler sanity check */
 
-void compilerSanityCheck(){
+void compilerSanityCheck(void){
 
  /* check compiler sanity */
  /* if something below will be not right then compiler will moan ;)) ..*/
@@ -32,7 +32,7 @@ void compilerSanityCheck(){
 // TRUE - for little endian, x86, PS2
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 
-const bool checkEndianess(){
+const bool checkEndianess(void){
   uint16 word16=1;
 
  if (*(uint8 *)&word16==1){

@@ -179,14 +179,14 @@ switch(fileTypeFlag){
  return 0;
 }
 
-uint8 am_isMidiChannelEvent(uint8 byteEvent){
+uint8 am_isMidiChannelEvent(const uint8 byteEvent){
 
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
     {return 1;}
     else return 0;
 }
 
-uint8 am_isMidiRTorSysex(uint8 byteEvent){
+uint8 am_isMidiRTorSysex(const uint8 byteEvent){
 
     if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) ){
       /* it is! */
@@ -197,7 +197,7 @@ uint8 am_isMidiRTorSysex(uint8 byteEvent){
 }
 
 /* combine bytes function for pitch bend */
-uint16 combineBytes(uint8 bFirst, uint8 bSecond){
+uint16 combineBytes(const uint8 bFirst, const uint8 bSecond){
     uint16 val;
     val = (uint16)bSecond;
     val<<=7;

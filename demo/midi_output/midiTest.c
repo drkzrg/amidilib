@@ -19,7 +19,7 @@
 #include "input/scancode.h"	// scancode definitions
 #include "input/ikbd.h"
 
-void printHelpScreen(){
+void printHelpScreen(void){
   printf("===============================================\n");
   printf("/|\\ midi output test..\n");
   printf("[q-h] - play note\n");
@@ -56,7 +56,7 @@ void printHelpScreen(){
 }
 
 
-void changeCurrentInstrument(uint8 channel,uint8 bank,uint8 pn){  
+void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 pn){  
     
   switch(getGlobalConfig()->connectedDeviceType){
     case DT_LA_SOUND_SOURCE:     

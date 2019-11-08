@@ -3,8 +3,8 @@
 #define AMLOG_H_
 
 /**
-    Copyright 2010-2013 Pawel Goralski
-    e-mail: pawel.goralski@nokturnal.pl
+    Copyright 2010-2019 Pawel Goralski
+    
     See license.txt for licensing information.
 */
 

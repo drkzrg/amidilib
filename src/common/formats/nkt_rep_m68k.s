@@ -1,5 +1,5 @@
-;    Copyright 2015 Pawel Goralski
-;    e-mail: pawel.goralski@nokturnal.pl
+;    Copyright 2019 Pawel Goralski
+;    
 ;    This file is part of AMIDILIB.
 ;    See license.txt for licensing information.
 

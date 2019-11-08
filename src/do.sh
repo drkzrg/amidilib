@@ -1,8 +1,8 @@
 #!/bin/bash
 # build helper script
 
-#    Copyright 2007-2017 Pawel Goralski
-#    e-mail: pawel.goralski@nokturnal.pl
+#    Copyright 2007-2019 Pawel Goralski
+#    
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 

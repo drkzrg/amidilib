@@ -6,7 +6,7 @@
   void  mouseInit(void);
   void  mouseDeinit(void);
   void	mouseSpriteRestore(void);
-  void  mouseSpriteDraw(void *logScrn,U16 mx,U16 my);
+  void  mouseSpriteDraw(void *logScrn,uint16 mx,uint16 my);
   void  mouseSwapBuffers(void);
 
 #endif

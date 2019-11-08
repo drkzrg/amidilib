@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include <stdio.h>
 
 #include "c_vars.h"
 #include "amidilib.h"
@@ -19,7 +19,7 @@
 #include "input/scancode.h"	// scancode definitions
 #include "input/ikbd.h"
 
-void printHelpScreen(){
+void printHelpScreen(void){
   printf("===============================================\n");
   printf("/|\\ midi output test..\n");
   printf("[q-h] - play note\n");
@@ -56,7 +56,7 @@ void printHelpScreen(){
 }
 
 
-void changeCurrentInstrument(U8 channel,U8 bank,U8 pn){  
+void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 pn){  
     
   switch(getGlobalConfig()->connectedDeviceType){
     case DT_LA_SOUND_SOURCE:     
@@ -102,18 +102,18 @@ void decreaseGlobalMasterVolume(){
 
 //======================================================================================================
 int main(void) {
-  U32 i, quit;
-  U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
-  U8 currentOctave=3;	
-  U8 currentVelocity=127;
-  U8 currentChannel=0;
-  U8 currentPN=1;
-  U8 currentBankSelect=0;
+  uint32 i, quit;
+  uint8 noteBaseArray[]={24,36,48,60,72,84,96,108};
+  uint8 currentOctave=3;	
+  uint8 currentVelocity=127;
+  uint8 currentChannel=0;
+  uint8 currentPN=1;
+  uint8 currentBankSelect=0;
 
   turnOffKeyclick();
 
   /* init library */
-  U32 iError=am_init();
+  uint32 iError=am_init();
  
   if(iError!=1) return -1;
   

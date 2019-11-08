@@ -24,22 +24,23 @@
 #include "config.h"
 
 #include <mint/ostruct.h>
+#include <stdio.h>
 
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
 #ifdef DEBUG_BUILD
-static const U8 outputFilename[] = "amidi.log";
+static const uint8 outputFilename[] = "amidi.log";
 #endif
 
 //default configuration filename
-static const U8 configFilename[] = "amidi.cfg";
+static const uint8 configFilename[] = "amidi.cfg";
 
 unsigned long begin;
 unsigned long end;
 long usp;
 
 /* */ 
-static const U8 *g_arMidiDeviceTypeName[]={
+static const uint8 *g_arMidiDeviceTypeName[]={
   "Roland MT-32",       
   "Roland CM-32L/CM-64",
   "GS/GM",       
@@ -53,9 +54,9 @@ const sAMIDI_version *am_getVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-S16 am_getHeaderInfo(const void *pMidiPtr){
+int16 am_getHeaderInfo(const void *pMidiPtr){
     sMThd *pMidiInfo=0;
-    amTrace((const U8 *)"Checking header info... ");
+    amTrace((const uint8 *)"Checking header info... ");
     pMidiInfo=(sMThd *)pMidiPtr;
   
 /* check midi header */
@@ -63,32 +64,32 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
         switch(pMidiInfo->format){
 	 case T_MIDI0:
 	  /* Midi Format 0 detected */
-	  amTrace((const U8*)"MIDI type 0 found\n");
+	  amTrace((const uint8*)"MIDI type 0 found\n");
       return T_MIDI0;
 	 break;
 
 	case T_MIDI1:
 	 /* Midi Format 1 detected */
-	 amTrace((const U8*)"MIDI type 1 found\n");
+	 amTrace((const uint8*)"MIDI type 1 found\n");
      
      return T_MIDI1;
 	 break;
 
     case T_MIDI2:
 	/* Midi Format 2 detected */
-	amTrace((const U8*)"MIDI type 2 found\n");
+	amTrace((const uint8*)"MIDI type 2 found\n");
       return T_MIDI2;
 	break;
    };
 }else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
       /* possible XMIDI*/
-      amTrace((const U8*)"XMIDI file possibly..\n");
+      amTrace((const uint8*)"XMIDI file possibly..\n");
       return T_XMIDI;
 }else{
      MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
 
      if(((pMusHeader->ID)>>8)==MUS_ID){
-      amTrace((const U8*)"Doom MUS found.\n");
+      amTrace((const uint8*)"Doom MUS found.\n");
       return T_MUS ;
      }
 }
@@ -96,17 +97,17 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
  return(-1);
 }
 
-S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequence_t **pSequence){
-    S16 iNumTracks=0;
-    S16 iError=0;
-    U16 iTimeDivision=0;
+int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSequence_t **pSequence){
+    int16 iNumTracks=0;
+    int16 iError=0;
+    uint16 iTimeDivision=0;
     void *startPtr=pMidiPtr;
     
     (*pSequence)=0;
     (*pSequence)=(sSequence_t *) amMallocEx( sizeof(sSequence_t), PREFER_TT);
     
     if((*pSequence)==0){
-      amTrace((const U8*)"Error: Cannot allocate memory for sequence.\n");
+      amTrace((const uint8*)"Error: Cannot allocate memory for sequence.\n");
       printf( "Error: Cannot allocate memory for sequence.\n");
       return -1;
     }
@@ -114,8 +115,8 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
    amMemSet((*pSequence),0,sizeof(sSequence_t));
    (*pSequence)->ubActiveTrack=0;
     
-   tMEMSIZE memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
-   amTrace((const U8 *)"am_handleMIDIfile() trying to allocate %d Kb\n",memSize/1024);
+   MemSize memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
+   amTrace((const uint8 *)"am_handleMIDIfile() trying to allocate %d Kb\n",memSize/1024);
 
 #ifdef EVENT_LINEAR_BUFFER
    if(createLinearBuffer(&((*pSequence)->eventBuffer), memSize, PREFER_TT)<0){
@@ -130,12 +131,12 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
     
    if(iRet==-1){
     /* not MIDI file, do nothing */
-    amTrace((const U8*)"It's not valid MIDI file...\n");
+    amTrace((const uint8*)"It's not valid MIDI file...\n");
     printf( "It's not valid MIDI file...\n");
     return -1;
    } else if(iRet==-2){
     /* unsupported MIDI type format, do nothing*/
-    amTrace((const U8*)"Unsupported MIDI file format...\n");
+    amTrace((const uint8*)"Unsupported MIDI file format...\n");
     printf( "Unsupported MIDI file format...\n");
    return -1; 
    }
@@ -167,7 +168,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-            startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+            startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
 
             /* create one track list only */
             (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
@@ -207,7 +208,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
         iTimeDivision = am_getTimeDivision(pMidiPtr);
         (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
-        startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+        startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
                 	
         /* Store time division for sequence, TODO: SMPTE handling */
         (*pSequence)->ubNumTracks=iNumTracks;
@@ -240,7 +241,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
         iTimeDivision = am_getTimeDivision(pMidiPtr);
         (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
-        startPtr=(void *)((U32)startPtr+sizeof(sMThd));
+        startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
 		
         /* Store time division for sequence, TODO: SMPTE handling */
         (*pSequence)->ubNumTracks=iNumTracks;
@@ -284,18 +285,18 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 
       printf("Converting MUS to MIDI\n");
 
-      U8 *pOut=0;
+      uint8 *pOut=0;
       char tempName[128]={0};
-      U32 len=0;
+      uint32 len=0;
 
 
       // allocate 64kb working buffer for midi output
-      pOut = (U8 *)amMallocEx(64*1024,PREFER_TT);
+      pOut = (uint8 *)amMallocEx(64*1024,PREFER_TT);
 
      // set midi output name
      if(pFileName){
 	     char *pTempPtr=0;
-         S16 len=strlen(pFileName);
+         int16 len=strlen(pFileName);
          strncpy(tempName,pFileName,(len>128)?(128-1):len);
          pTempPtr=strrchr(tempName,'.');
          memcpy(pTempPtr+1,"mid",4);
@@ -328,7 +329,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
             (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-            startPtr=(void *)((U32)pOut+sizeof(sMThd));
+            startPtr=(void *)((uint32)pOut+sizeof(sMThd));
 
            /* create one track list only */
             (*pSequence)->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
@@ -353,7 +354,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 	
 	default:{
 	  /* unknown error, do nothing */
-	  amTrace((const U8*)"Unknown error.\n");
+	  amTrace((const uint8*)"Unknown error.\n");
 	  printf( "Unknown error ...\n");
         
 	  return(-1);
@@ -364,7 +365,7 @@ S16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, U32 lenght, sSequenc
 }
 
 //TODO: rework interface or remove this function at all
-S16 am_getNbOfTracks(void *pMidiPtr, S16 type){
+int16 am_getNbOfTracks(void *pMidiPtr, int16 type){
     switch(type){
      case T_MIDI0:
      case T_MIDI1:
@@ -414,17 +415,17 @@ return -1;
 }
 
 #ifndef IKBD_MIDI_SEND_DIRECT
-static U8 g_arMidiBuffer[MIDI_SENDBUFFER_SIZE];
+static uint8 g_arMidiBuffer[MIDI_SENDBUFFER_SIZE];
 
 /* Midi buffers system info */
 static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
 #endif
 
-extern BOOL CON_LOG;
+extern bool CON_LOG;
 extern FILE *ofp;
 
-S16 am_init(){
+int16 am_init(){
     
 #ifdef DEBUG_BUILD
  // init logger
@@ -443,7 +444,7 @@ S16 am_init(){
   
 #ifndef IKBD_MIDI_SEND_DIRECT
   /* clear our new XBIOS buffer */
- U32 usp=0L;
+ uint32 usp=0L;
  amMemSet(g_arMidiBuffer,0,MIDI_SENDBUFFER_SIZE);
 
  usp=Super(0L);
@@ -462,8 +463,8 @@ S16 am_init(){
  (*g_psMidiBufferInfo).ibufsiz = getGlobalConfig()->midiBufferSize;
  (*g_psMidiBufferInfo).ibufhd=0;	/* first byte index to write */
  (*g_psMidiBufferInfo).ibuftl=0;	/* first byte to read(remove) */
- (*g_psMidiBufferInfo).ibuflow=(U16) MIDI_LWM;
- (*g_psMidiBufferInfo).ibufhi=(U16) MIDI_HWM;
+ (*g_psMidiBufferInfo).ibuflow=(uint16) MIDI_LWM;
+ (*g_psMidiBufferInfo).ibufhi=(uint16) MIDI_HWM;
  SuperToUser(usp);
 #endif
 
@@ -483,7 +484,7 @@ void am_deinit(){
 #endif
 
 #ifndef IKBD_MIDI_SEND_DIRECT
-  U32 usp=Super(0L);
+  uint32 usp=Super(0L);
  
   /* restore standard MIDI buffer */
   (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
@@ -501,14 +502,14 @@ void am_deinit(){
  /* end sequence */
 }
 
-void getDeviceInfoResponse(U8 channel){
+void getDeviceInfoResponse(uint8 channel){
   //TODO: rework it
   return;
 
-  static U8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7};
-  //U8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
+  static uint8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7};
+  //uint8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   
-  BOOL bTimeout=FALSE;
+  bool bTimeout=FALSE;
 
   /* calculate checksum */
   getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
@@ -524,8 +525,8 @@ void getDeviceInfoResponse(U8 channel){
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
 #endif    
-//   BOOL bFlag=FALSE;
-//   U32 data=0;
+//   bool bFlag=FALSE;
+//   uint32 data=0;
   
 //getTimeStamp(); // get current timestamp
 	
@@ -537,24 +538,24 @@ void getDeviceInfoResponse(U8 channel){
 //	 if(data!=0){
 	  
 //	  if(bFlag==FALSE){
-//		amTrace((const U8*)"Received device info on ch: %d\t",channel);
+//		amTrace((const uint8*)"Received device info on ch: %d\t",channel);
 // 	    bFlag=TRUE;
 //	}
 	
-//		amTrace((const U8*)"%x\t",(unsigned int)data);
+//		amTrace((const uint8*)"%x\t",(unsigned int)data);
 //    }
 
 //}
 
- if(bTimeout==TRUE) amTrace((const U8*)"Timeout on ch: %d\t",channel);
+ if(bTimeout==TRUE) amTrace((const uint8*)"Timeout on ch: %d\t",channel);
 
 }
 /* gets info about connected devices via MIDI interface */
-const S8 *getConnectedDeviceInfo(void){
-  U8 channel;
+const int8 *getConnectedDeviceInfo(void){
+  uint8 channel;
   
   /*  request on all channels */
-  amTrace((const U8*)"Quering connected MIDI device...\n");
+  amTrace((const uint8*)"Quering connected MIDI device...\n");
   
   for(channel=0;channel<0x7f;channel++){
     getDeviceInfoResponse(channel);
@@ -563,7 +564,7 @@ const S8 *getConnectedDeviceInfo(void){
  return NULL;
 }
 
-const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
+const uint8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
  return g_arMidiDeviceTypeName[device];
 }
 
@@ -571,24 +572,24 @@ const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
 /* variable quantity reading test */
 void VLQtest(void){
 /* VLQ test */
-    U32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
-    U32 iCounter;
+    uint32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
+    uint32 iCounter;
     
-    U8 valsize;
+    uint8 valsize;
     
-    amTrace((const U8*)"VLQ decoding test\n");
+    amTrace((const uint8*)"VLQ decoding test\n");
     
     for (iCounter=0;iCounter<10;iCounter++)   {
-        U8 *pValPtr=NULL;
+        uint8 *pValPtr=NULL;
 		valsize=0;
-		U32 result=0;
+		uint32 result=0;
  		
-		pValPtr=(U8 *)(&val[iCounter]);
+		pValPtr=(uint8 *)(&val[iCounter]);
         
 		while((*pValPtr)==0x00){pValPtr++;}
         
 		result = readVLQ(pValPtr,&valsize);
-     	amTrace((const U8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
+     	amTrace((const uint8*)"VLQ value:%x, decoded: %x, size: %d\n",(unsigned int)val[iCounter], (unsigned int)result, valsize );
     }
     /* End of VLQ test */
 }

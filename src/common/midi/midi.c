@@ -7,7 +7,7 @@
 /* notes are mapped from 21 to 108 */
 
 
-const U8 *arMIDI2key[]={
+const uint8 *arMIDI2key[]={
 /*0 */ "C-1",
 /*1 */ "C-1#",
 /*2 */ "D-1",
@@ -138,7 +138,7 @@ const U8 *arMIDI2key[]={
 /* 127 */ "C8"
 };
 
-const U8 *arMIDIcontrollers[]={
+const uint8 *arMIDIcontrollers[]={
 "Bank Select",
 "Modulation",
 "Breath Controller",
@@ -273,7 +273,7 @@ const U8 *arMIDIcontrollers[]={
 "Poly Mode On (Mono Off; also causes ANO)"
 };
 
-const U8 *getMidiNoteName(const U8 noteNb){
+const uint8 *getMidiNoteName(const uint8 noteNb){
     if((noteNb<=127)) /* 0-127 range check */
         return(arMIDI2key[noteNb]);
     else
@@ -281,7 +281,7 @@ const U8 *getMidiNoteName(const U8 noteNb){
 }
 
 //returns note name or rhytm part name if current channel is 9
-const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNumber){
+const uint8 *getNoteName(const uint8 currentChannel,const uint8 currentPN,const uint8 noteNumber){
     /* 0-127 range check */
   if(noteNumber<=127) {
     if((currentChannel==9&&currentPN==128)){
@@ -294,7 +294,7 @@ const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNu
 }
 
 
-const U8 *getMidiControllerName(const U8 noteNb){
+const uint8 *getMidiControllerName(const uint8 noteNb){
     return arMIDIcontrollers[noteNb];
 }
 

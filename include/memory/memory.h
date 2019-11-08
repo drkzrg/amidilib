@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2014 Pawel Goralski
+/**  Copyright 2007-2019 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -70,22 +70,22 @@ extern void*	Z_Malloc (int size, int tag, void *ptr);
 
 #endif
 
-static inline int amMemCmp ( void *pSrc1, void *pSrc2, const tMEMSIZE iNum){
+static inline int amMemCmp ( const void *pSrc1, const void *pSrc2, const MemSize iNum){
   return memcmp(pSrc1,pSrc2,iNum);
 }
 
-static inline void *amMemMove (void *pDest,void *pSrc,const tMEMSIZE iSize){
+static inline void *amMemMove (void *pDest, const void *pSrc, const MemSize iSize){
  return memmove(pDest,pSrc,iSize);
 }
 
 
-static inline void *amMemCpy (void *pDest, void *pSrc,const tMEMSIZE iSize){
-  U8 *pbDest=(U8 *)pDest;
-  U8 *pbSrc=(U8 *)pSrc;
+static inline void *amMemCpy (void *pDest, const void *pSrc, const MemSize iSize){
+  uint8 *pbDest=(uint8 *)pDest;
+  uint8 *pbSrc=(uint8 *)pSrc;
 
   if( (pbSrc<pbDest && (pbSrc + iSize)>pbDest ) || (pbDest<pbSrc && (pbDest +iSize) >pbSrc)){
     #ifdef DEBUG_MEM
-      amTrace((const U8 *)"\tamMemCpy() overlaps. Using amMemMove()\n");
+      amTrace((const uint8 *)"\tamMemCpy() overlaps. Using amMemMove()\n");
     #endif
     return amMemMove(pDest,pSrc,iSize);
   }
@@ -93,31 +93,30 @@ static inline void *amMemCpy (void *pDest, void *pSrc,const tMEMSIZE iSize){
   return memcpy(pDest,pSrc,iSize);
 }
 
-static inline void *amMemSet ( void *pSrc, const S32 iCharacter,const tMEMSIZE iNum){
-void *pPtr=0;
-
-  pPtr=memset(pSrc,iCharacter,iNum);
+static inline void *amMemSet ( void *pSrc, const int32 iCharacter, const MemSize iNum){
+  void *pPtr=0;
+  pPtr = memset(pSrc,iCharacter,iNum);
 
   #ifdef DEBUG_MEM
-    if(pPtr!=pSrc) amTrace((const U8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
+    if(pPtr!=pSrc) amTrace((const uint8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
     else{
-      amTrace((const U8 *)"\tamMemSet() memory: %p, %d value written: %x!\n",pSrc,iNum,iCharacter);
+      amTrace((const uint8 *)"\tamMemSet() memory: %p, %d value written: %x!\n",pSrc,iNum,iCharacter);
     }
   #endif
 
   return pPtr;
 }
 
-static inline void *amMemChr ( void *pSrc,const S32 iCharacter,const tMEMSIZE iNum){
+static inline void *amMemChr ( void *pSrc, const int32 iCharacter, const MemSize iNum){
   return memchr(pSrc,iCharacter,iNum);
 }
 
 
-static inline void *amCalloc(const tMEMSIZE nelements,const tMEMSIZE elementSize){
+static inline void *amCalloc(const MemSize nelements, const MemSize elementSize){
   return calloc(nelements,elementSize);
 }
 
-static inline void *amRealloc( void *pPtr, const tMEMSIZE newSize){
+static inline void *amRealloc( void *pPtr, const MemSize newSize){
  return realloc(pPtr,newSize);
 }
 
@@ -128,7 +127,7 @@ static inline void *amRealloc( void *pPtr, const tMEMSIZE newSize){
  * @param memFlag memory allocation preference flag
  * @return 0L - if no memory available, 0L< otherwise
  */
-U32 getFreeMem(const eMemoryFlag memFlag);
+uint32 getFreeMem(const eMemoryFlag memFlag);
 
 
 #ifdef DEBUG_BUILD
@@ -140,10 +139,10 @@ void memoryCheck(void);
 #endif
 
 // helpers writes a byte/short/long and returns the buffer
-U8* WriteByte(void* buf, S8 b);
-U8* WriteShort(void* b, U16 s);
-U8* WriteInt(void* b, U32 i);
-S32 UpdateBytesWritten(S32* bytes_written, S32 to_add, S32 max);
+uint8* WriteByte(void* buf, int8 b);
+uint8* WriteShort(void* b, uint16 s);
+uint8* WriteInt(void* b, uint32 i);
+int32 UpdateBytesWritten(int32* bytes_written, int32 to_add, int32 max);
 
 #endif
 

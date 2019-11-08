@@ -12,6 +12,7 @@
  
 #include <stdio.h>
 #include <ctype.h> 
+#include <stdio.h>
 
 #include "amidilib.h"
 
@@ -25,32 +26,29 @@
 
 #include "input/ikbd.h"
 #include "timing/mfp.h"
-
 #include <mint/osbind.h>
 
 extern void customSeqReplay(void);
-extern void playNote(U8 channel,U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput);
-
-
-volatile BOOL handleTempoChange;
-BOOL midiOutputEnabled;
-BOOL ymOutputEnabled;
+extern void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput);
+volatile bool handleTempoChange;
+bool midiOutputEnabled;
+bool ymOutputEnabled;
 
 // functions
 void onTogglePlayMode(sCurrentSequenceState *pSeqPtr);
 void onTempoUp(sCurrentSequenceState *pSeqPtr);
 void onTempoDown(sCurrentSequenceState *pSeqPtr);
-void onToggleMidiEnable();
-void onToggleYmEnable();
+void onToggleMidiEnable(void);
+void onToggleYmEnable(void);
 void onTogglePlayPauseSequence(sCurrentSequenceState *pSeqPtr);
 void onStopSequence(sCurrentSequenceState *pSeqPtr);
-BOOL isEndSeq(sEvent *pEvent);
+bool isEndSeq(sEvent *pEvent);
 
 // plays sample sequence 
 int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr);
-void updateSequenceStep(); 
-void onEndSeq(); //end sequence handler
-void printHelpScreen();
+void updateSequenceStep(void); 
+void onEndSeq(void); //end sequence handler
+void printHelpScreen(void);
 
 sCurrentSequenceState g_CurrentState; //current sequence
 
@@ -58,7 +56,7 @@ int main(void){
   ymChannelData ch[3];
   midiOutputEnabled=FALSE;
   ymOutputEnabled=TRUE;
-  BOOL bQuit=FALSE;
+  bool bQuit=FALSE;
 
   //set up ym2149 sound
   /////////////////////////////////////
@@ -82,7 +80,7 @@ int main(void){
   ////////////////////////////////////////
   
   /* init library */
-  U32 iError=am_init();
+  uint32 iError=am_init();
  
   if(iError!=1) return -1;
   
@@ -105,7 +103,7 @@ int main(void){
   //enter main loop
   while(bQuit==FALSE){
     
-  for (U16 i=0; i<128; ++i) {
+  for (uint16 i=0; i<128; ++i) {
      
      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -136,12 +134,12 @@ int main(void){
 	    onTogglePlayPauseSequence(&g_CurrentState);
 	  }break;
 	  case SC_SPACEBAR:{
-	    onStopSequence(&g_CurrentState);
+	      onStopSequence(&g_CurrentState);
         sEvent *ch1=getTestSequenceChannel(0);
         sEvent *ch2=getTestSequenceChannel(1);
         sEvent *ch3=getTestSequenceChannel(2);
 
-        initSequence(ch1,ch2,ch3,&g_CurrentState);
+        initSampleSequence(ch1,ch2,ch3,&g_CurrentState);
 	  }break;
 	  
 	} //end switch
@@ -190,8 +188,8 @@ void onTogglePlayMode(sCurrentSequenceState *pState){
 }
 
 void onTempoUp(sCurrentSequenceState *pSeqPtr){
-U32 iCurrentStep=0L;
-U32 iCurrentTempo=0L;
+uint32 iCurrentStep=0L;
+uint32 iCurrentTempo=0L;
 
   if(handleTempoChange!=FALSE) return;
 
@@ -222,8 +220,8 @@ U32 iCurrentTempo=0L;
 }
 
 void onTempoDown(sCurrentSequenceState *pSeqPtr){
-U32 iCurrentStep=0L;
-U32 iCurrentTempo=0L;
+uint32 iCurrentStep=0L;
+uint32 iCurrentTempo=0L;
 
 if(handleTempoChange!=FALSE) return;
 
@@ -245,7 +243,7 @@ iCurrentTempo=pSeqPtr->currentTempo;
   handleTempoChange=TRUE;
 }
 
-void onToggleMidiEnable(){
+void onToggleMidiEnable(void){
   printf("MIDI output ");
   if(midiOutputEnabled==TRUE){
     midiOutputEnabled=FALSE;
@@ -257,7 +255,7 @@ void onToggleMidiEnable(){
    }
 }
 
-void onToggleYmEnable(){
+void onToggleYmEnable(void){
   printf("ym2149 output ");
   if(ymOutputEnabled==TRUE){
     ymOutputEnabled=FALSE;
@@ -293,7 +291,7 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
 
   pSeqPtr->timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
   
-  for (U16 i=0;i<3;++i){
+  for (uint16 i=0;i<3;++i){
       pSeqPtr->tracks[i].seqPosIdx=0UL;
       pSeqPtr->tracks[i].timeElapsedInt=0UL;
   }  
@@ -302,14 +300,14 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
   ymSoundOff();
 }
 
-BOOL isEndSeq(sEvent *pEvent){
+bool isEndSeq(sEvent *pEvent){
   if((pEvent->delta==0&&pEvent->note==0))
     return TRUE;
   else 
     return FALSE;
 }
 
-void INLINE printHelpScreen(){
+void INLINE printHelpScreen(void){
   printf("===============================================\n");
   printf("/|\\ delta timing and sound output test..\n");
   printf("[arrow up/ arrow down] - change tempo \n\t500 ms/PQN and 96PPQN\n");
@@ -326,8 +324,8 @@ void INLINE printHelpScreen(){
 
 // plays sample sequence 
 int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceState *pSeqPtr){
-  static BOOL bPlayModeInit=FALSE;
-  U8 mode=0,data=0;
+  static bool bPlayModeInit=FALSE;
+  uint8 mode=0,data=0;
   handleTempoChange=FALSE;
   VOIDFUNCPTR replayRout=customSeqReplay;
  
@@ -352,7 +350,7 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
   pSeqPtr->currentBPM=DEFAULT_BPM;
  
   pSeqPtr->timeElapsedFrac=0;
-  pSeqPtr->timeStep=am_calculateTimeStep((U16)DEFAULT_BPM, (U16)DEFAULT_PPQN, (U16)SEQUENCER_UPDATE_HZ);
+  pSeqPtr->timeStep=am_calculateTimeStep((uint16)DEFAULT_BPM, (uint16)DEFAULT_PPQN, (uint16)SEQUENCER_UPDATE_HZ);
   
    if(bPlayModeInit==FALSE){
      //init but only once, user can switch this option during runtime
@@ -370,9 +368,9 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
 
 
 
-void updateSequenceStep(){
-static BOOL endOfSequence=FALSE;
-static BOOL bStopped=FALSE;
+void updateSequenceStep(void){
+static bool endOfSequence=FALSE;
+static bool bStopped=FALSE;
   
   //check sequence state if paused do nothing
   if(g_CurrentState.state==PS_PAUSED) {
@@ -388,7 +386,7 @@ static BOOL bStopped=FALSE;
   if((g_CurrentState.state==PS_STOPPED&&bStopped==FALSE)){
     bStopped=TRUE;
     //repeat for each track
-    for (U16 i=0;i<3;++i){
+    for (uint16 i=0;i<3;++i){
       g_CurrentState.tracks[i].seqPosIdx=0;
       g_CurrentState.tracks[i].timeElapsedInt=0UL;
     }
@@ -417,14 +415,14 @@ static BOOL bStopped=FALSE;
   }
   
    g_CurrentState.timeElapsedFrac += g_CurrentState.timeStep;
-   U32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
+   uint32 TimeAdd = g_CurrentState.timeElapsedFrac >> 16;
    g_CurrentState.timeElapsedFrac &= 0xffff;
    
   //repeat for each track
-  for (U16 i=0;i<3;++i){
+  for (uint16 i=0;i<3;++i){
 
      //for each active track
-      U32 count=g_CurrentState.tracks[i].seqPosIdx;
+      uint32 count=g_CurrentState.tracks[i].seqPosIdx;
       sEvent *pEvent=&(g_CurrentState.tracks[i].seqPtr[count]);
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
@@ -460,7 +458,7 @@ static BOOL bStopped=FALSE;
   }
 }
 
-void onEndSeq(){
+void onEndSeq(void){
 
   if(g_CurrentState.playMode==S_PLAY_ONCE){
       //reset set state to stopped 
@@ -476,7 +474,7 @@ void onEndSeq(){
       g_CurrentState.timeElapsedFrac=0UL;
       g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
   
-      for (U16 i=0;i<3;++i){
+      for (uint16 i=0;i<3;++i){
         g_CurrentState.tracks[i].seqPosIdx=0UL;
         g_CurrentState.tracks[i].timeElapsedInt=0UL;
        }

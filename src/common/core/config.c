@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <amidilib.h>
 #include <fmio.h>
@@ -16,57 +17,57 @@
 //internal configuration
 static tAmidiConfig configuration;
 
-static const U16 CONFIG_VERSION = 4; 	// config version, changed default event memory pools for events
+static const uint16 CONFIG_VERSION = 4; 	// config version, changed default event memory pools for events
                                         // +1 removed EOT threshold, trackstate on bitfield, removed LZO from config
-static const U8 TRUE_TAG[] = "true";
-static const U8 FALSE_TAG[] = "false";
+static const uint8 TRUE_TAG[] = "true";
+static const uint8 FALSE_TAG[] = "false";
 
 //configuration tags
-static const U8 versionTag[]={"ver"};
-static const U8 connectedDeviceTag[]={"deviceType"};
-static const U8 operationModeTag[]={"deviceOperationMode"};
-static const U8 midiChannelTag[]={"midiChannel"}; 
-static const U8 initialTrackStateTag[]={"defaultInitialTrackState"};
-static const U8 playStateTag[]={"defaultPlayState"};
+static const uint8 versionTag[]={"ver"};
+static const uint8 connectedDeviceTag[]={"deviceType"};
+static const uint8 operationModeTag[]={"deviceOperationMode"};
+static const uint8 midiChannelTag[]={"midiChannel"}; 
+static const uint8 initialTrackStateTag[]={"defaultInitialTrackState"};
+static const uint8 playStateTag[]={"defaultPlayState"};
 
 #ifdef EVENT_LINEAR_BUFFER
-static const U8 eventPoolSizeTag[]={"eventPoolSize"};
-static const U8 eventDataAllocatorSizeTag[]={"eventDataAllocatorSize"};   
+static const uint8 eventPoolSizeTag[]={"eventPoolSize"};
+static const uint8 eventDataAllocatorSizeTag[]={"eventDataAllocatorSize"};   
 #endif
 
-static const U8 midiBufferSizeTag[]={"midiBufferSize"};
-static const U8 midiConnectionTimeoutTag[]={"midiConnectionTimeout"};
-static const U8 handshakeCommunicationEnabledTag[]={"handshakeEnabled"};
-static const U8 streamedTag[]={"streamingEnabled"};
-static const U8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
+static const uint8 midiBufferSizeTag[]={"midiBufferSize"};
+static const uint8 midiConnectionTimeoutTag[]={"midiConnectionTimeout"};
+static const uint8 handshakeCommunicationEnabledTag[]={"handshakeEnabled"};
+static const uint8 streamedTag[]={"streamingEnabled"};
+static const uint8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
 
 // default values
 #ifdef EVENT_LINEAR_BUFFER
-static const U32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
-static const U32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
+static const uint32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
+static const uint32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
 #endif
 
-static const S32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    // default operation mode (not used yet)
+static const int32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    // default operation mode (not used yet)
 
-static const U16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    // default connected device
-static const U16 DEFAULT_MIDI_CHANNEL = 1;                                      // default midi channel
-static const U16 DEFAULT_OP_MODE = 0;                                           // default operation mode //TODO: make it on strings / human readable
-static const U16 DEFAULT_TRACK_STATE = TM_PLAY_ONCE;
-static const U16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                           // external midi module connection timeout
-static const BOOL DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
-static const BOOL DEFAULT_USE_STREAMING = FALSE;                                // not used atm
+static const uint16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    // default connected device
+static const uint16 DEFAULT_MIDI_CHANNEL = 1;                                      // default midi channel
+static const uint16 DEFAULT_OP_MODE = 0;                                           // default operation mode //TODO: make it on strings / human readable
+static const uint16 DEFAULT_TRACK_STATE = TM_PLAY_ONCE;
+static const uint16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                           // external midi module connection timeout
+static const bool DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
+static const bool DEFAULT_USE_STREAMING = FALSE;                                // not used atm
 
-static const U16 CONFIG_SIZE = 512;		    //should be sufficient		 
+static const uint16 CONFIG_SIZE = 512;		    //should be sufficient		 
 
 
-S32 parseConfig (const U8* pData, const tMEMSIZE bufferLenght);
+int32 parseConfig (const uint8* pData, const MemSize bufferLenght);
 
-S32 saveConfig(const U8 *configFileName){
-  U8 configData[CONFIG_SIZE]; 
+int32 saveConfig(const uint8 *configFileName){
+  uint8 configData[CONFIG_SIZE]; 
   configData[0]='\0';
   
   //prepare data
-  U32 length = 0;
+  uint32 length = 0;
   
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %x\r\n", versionTag,configuration.version);
   length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", connectedDeviceTag,configuration.connectedDeviceType);
@@ -93,11 +94,11 @@ S32 saveConfig(const U8 *configFileName){
   return -1L;
 }
 
-S32 loadConfig(const U8 *configFileName){
+int32 loadConfig(const uint8 *configFileName){
 //check if config file exists
 //if not exit else parse it and set config
 void *cfgData=0;
-U32 cfgLen=0;
+uint32 cfgLen=0;
  
   cfgData=loadFile(configFileName,PREFER_TT,&cfgLen);
   
@@ -170,16 +171,16 @@ const tAmidiConfig *getGlobalConfig(){
   return &configuration;
 }
 
-S32 parseConfig(const U8* pData, U32 bufferLenght){
+int32 parseConfig(const uint8* pData, const MemSize bufferLenght){
   
-  S32 iError=0;
+  int32 iError=0;
   
   //config version 
   iError=getUShortVal(versionTag,pData,bufferLenght,&configuration.version); 
    
    // check version if ok then proceed if not throw error
    if((iError>=0 && configuration.version!=CONFIG_VERSION)){
-     printf("Wrong configuration version. Reseting to defaults.\n");  
+     printf("Wrong configuration version. Resetting to defaults.\n");  
      iError=-1;
      return (iError);
   }
@@ -231,12 +232,12 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
     configuration.midiBufferSize=DEFAULT_MIDI_BUFFER_SIZE;
   }
 
-  iError=getBoolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled); 
+  iError=getboolVal(handshakeCommunicationEnabledTag,pData,bufferLenght,&configuration.handshakeModeEnabled); 
   if(iError<0){
     configuration.handshakeModeEnabled=DEFAULT_HANDSHAKEMODE_ENABLED;
   }
   
-  iError=getBoolVal(streamedTag,pData,bufferLenght,&configuration.streamed);
+  iError=getboolVal(streamedTag,pData,bufferLenght,&configuration.streamed);
   
   if(iError<0){
     configuration.streamed=DEFAULT_USE_STREAMING;
@@ -247,13 +248,13 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
 
 
 // helper functions
-S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, BOOL *val){
+int32 getboolVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, bool *val){
   
-  U8 *substrPtr=(U8 *)strstr((const char*)data, (const char*) tagName );
+  uint8 *substrPtr=(uint8 *)strstr((const char*)data, (const char*) tagName );
    
   if(substrPtr) {
       
-       U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
+       uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
        if(rval!=NULL){
             ++rval;
@@ -273,17 +274,17 @@ S32 getBoolVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, B
   return -1;
 }
 
-S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U32 *val){
-  U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
+int32 getUIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, uint32 *val){
+  uint8 *substrPtr=(uint8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
+	uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
 	 rval++;
 	 rval++;
 	 
-	 *val=(U32)strtol(rval,(char **)NULL, 10);
+	 *val=(uint32)strtol(rval,(char **)NULL, 10);
 	 return 0; 
 	}else{
 	  return -1;
@@ -296,17 +297,17 @@ S32 getUIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U
   return -1;
 }
 
-S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S32 *val){
-  U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
+int32 getIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, int32 *val){
+  uint8 *substrPtr=(uint8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
        
-	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
+	uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
 	  rval++;
 	  rval++;
-	  *val=(S32)strtol(rval,(char **)NULL, 10);
+	  *val=(int32)strtol(rval,(char **)NULL, 10);
 	return 0; 
 	}else{
 	  return -1;
@@ -317,18 +318,18 @@ S32 getIntVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S3
   return -1;
 }
 
-S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, U16 *val){
+int32 getUShortVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, uint16 *val){
   
-  U8 *substrPtr=(U8 *) strstr((const char*)data, (const char*) tagName );
+  uint8 *substrPtr=(uint8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
       
-	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
+	uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
 	  rval++;
 	  rval++;
-	  *val=(U16)strtol(rval,(char **)NULL, 10);
+	  *val=(uint16)strtol(rval,(char **)NULL, 10);
 	  return 0; 
 	}else{
 	  return -1;
@@ -339,17 +340,17 @@ S32 getUShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght,
   return -1;
 }
 
-S32 getShortVal(const U8* tagName, const U8 *data, const tMEMSIZE bufferLenght, S16 *val){
+int32 getShortVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, int16 *val){
   
-  U8 *substrPtr=(U8 *)strstr((const char*)data, (const char*) tagName );
+  uint8 *substrPtr=(uint8 *)strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {
-	U8 *rval =(U8 *)strchr((data + (tMEMSIZE)(substrPtr - data)),'=');
+	uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
 	if(rval!=NULL){
 	 rval++;
 	 rval++;
-	 *val = (S16)strtol(rval,(char **)NULL, 10);
+	 *val = (int16)strtol(rval,(char **)NULL, 10);
 	 return 0; 
 	}else{
 	  return -1;

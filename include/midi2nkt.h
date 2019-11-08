@@ -4,6 +4,6 @@
 #include "c_vars.h"
 #include "nkt.h"
 
-sNktSeq *Midi2Nkt(const void *pMidiData, const U8 *pOutFileName, const BOOL bCompress);
+sNktSeq *Midi2Nkt(const void *pMidiData, const uint8 *pOutFileName, const bool bCompress);
 
 #endif // MIDI2NKT_H

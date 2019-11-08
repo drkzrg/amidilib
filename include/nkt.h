@@ -15,20 +15,20 @@
 
 typedef enum{
     // play mode
-    NKT_PLAY_ONCE  = (U16)(0b00000001), // play once if set, loop otherwise
+    NKT_PLAY_ONCE  = (uint16)(0b00000001), // play once if set, loop otherwise
 
     // track state
-    NKT_PS_PLAYING = (U16)(0b00000010), // playing if set, stopped otherwise
-    NKT_PS_PAUSED  = (U16)(0b00000100), // paused if set
+    NKT_PS_PLAYING = (uint16)(0b00000010), // playing if set, stopped otherwise
+    NKT_PS_PAUSED  = (uint16)(0b00000100), // paused if set
 }eNktTrackState;
 
 // custom binary midi replay format
 typedef enum{
-  NKT_MIDIDATA      = (U16)(0b00000001),
-  NKT_TEMPO_CHANGE  = (U16)(0b00000010),
-  NKT_JUMP          = (U16)(0b00000100),          //not used atm
-  NKT_TRIGGER       = (U16)(0b00001000),
-  NKT_END           = (U16)(0b00010000),
+  NKT_MIDIDATA      = (uint16)(0b00000001),
+  NKT_TEMPO_CHANGE  = (uint16)(0b00000010),
+  NKT_JUMP          = (uint16)(0b00000100),          //not used atm
+  NKT_TRIGGER       = (uint16)(0b00001000),
+  NKT_END           = (uint16)(0b00010000),
   NKT_MAX_EVENT = 5
 } eNktMsgType;
 
@@ -43,28 +43,28 @@ typedef enum {
 
 // Nkt structure in memory / disc / big endian
 typedef struct __attribute__((packed)) NktBlock_t  {
-  U16 msgType;        // msgType
-  U16 blockSize;      // block size (data start: (U32) eventDataPtr+0, data end: (U32) eventDataPtr + blockSize(? -1) )
-  U32 bufferOffset;   // offset to data start in linear buffer (eventDataPtr)
+  uint16 msgType;        // msgType
+  uint16 blockSize;      // block size (data start: (uint32) eventDataPtr+0, data end: (uint32) eventDataPtr + blockSize(? -1) )
+  uint32 bufferOffset;   // offset to data start in linear buffer (eventDataPtr)
 } sNktBlock_t;
 
 typedef struct __attribute__((packed)) NktTempo{
-  U32 tempo;                    // quaternote duration in ms, 500ms default
-  U32 tuTable[NKT_UMAX];        // precalculated timesteps for 50, 100, 200hz updates for given tempo
+  uint32 tempo;                    // quaternote duration in ms, 500ms default
+  uint32 tuTable[NKT_UMAX];        // precalculated timesteps for 50, 100, 200hz updates for given tempo
 } sNktTempo;                    // to avoid timestep calculation during runtime
 
 typedef struct NktTrack{
-    U32 nbOfBlocks;            // nb of event blocks
-    U32 currentBlockId;        // currently replayed block id 0-xxxx
-    U32 eventsBlockBufferSize; // nb of bytes used for events buffer
-    U32 dataBufferSize;        // nb of bytes used for event's data buffer
-    U32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
+    uint32 nbOfBlocks;            // nb of event blocks
+    uint32 currentBlockId;        // currently replayed block id 0-xxxx
+    uint32 eventsBlockBufferSize; // nb of bytes used for events buffer
+    uint32 dataBufferSize;        // nb of bytes used for event's data buffer
+    uint32 eventsBlockOffset;     // current track offset relative to eventBlocksPtr ( move it to separate track state? )
 
-    U32 timeElapsedFrac;	   // sequence elapsed time fraction
-    U32 timeElapsedInt;		   // sequence elapsed time
+    uint32 timeElapsedFrac;	   // sequence elapsed time fraction
+    uint32 timeElapsedInt;		   // sequence elapsed time
 
-    U8 *eventBlocksPtr;        // pointer to start of events block
-    U8 *eventDataPtr;          // pointer to start of event's data block
+    uint8 *eventBlocksPtr;        // pointer to start of events block
+    uint8 *eventDataPtr;          // pointer to start of event's data block
 
     tLinearBuffer lbDataBuffer;  // linear buffer for event data info
     tLinearBuffer lbEventsBuffer; // linear buffer for events block info
@@ -72,37 +72,37 @@ typedef struct NktTrack{
 
 
 typedef struct NktSeq{
-    U16 version;               // version
-    U16 timeDivision;          // track time division
-    U16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval
-    U16 nbOfTracks;            // number of tracks
-    U16 sequenceState;         // bitfield with sequence state
+    uint16 version;               // version
+    uint16 timeDivision;          // track time division
+    uint16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval
+    uint16 nbOfTracks;            // number of tracks
+    uint16 sequenceState;         // bitfield with sequence state
     sNktTempo defaultTempo;	   // initial tempo, quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
     sNktTempo currentTempo;    // current tempo: quaternote duration in ms, 500ms default/ current bpm, precalculated timesteps
 
-    U32 timeStep;              // sequence timestep
+    uint32 timeStep;              // sequence timestep
     sNktTrack *pTracks;        // array of tracks
 } sNktSeq;
 
 #define ID_NKT 0x4E4F4B54  /*('N','O','K','T')*/
-#define NKT_VERSION ((U16)4)
+#define NKT_VERSION ((uint16)4)
 
 // stuff for file reading
 // binary header, big endian
 
 typedef struct __attribute__((packed)) NktHd{
-    U32 id;                         // always ID_NKT
-    U16 division;                   // time division
-    U16 version;                    // format version
-    U16 nbOfTracks;                 // number of tracks
+    uint32 id;                         // always ID_NKT
+    uint16 division;                   // time division
+    uint16 version;                    // format version
+    uint16 nbOfTracks;                 // number of tracks
 } sNktHd;
 
 typedef struct __attribute__((packed)) NktTrackInfo{
-    U32 nbOfBlocks;                 // nb of event blocks in file
-    U32 eventsBlockBufSize;         // (event vlq delta * NbOfBlocks) +  ( NbOfBlocks * sizeof(sNktBlk_t) )
-    U32 eventsBlockPackedSize;      // if packed, size of packed data, contigous event block, 0 otherwise
-    U32 eventDataBufSize;           // nb of bytes for data in event blocks
-    U32 eventDataBlockPackedSize;   // if packed, size of packed data, contigous event data block, 0 otherwise
+    uint32 nbOfBlocks;                 // nb of event blocks in file
+    uint32 eventsBlockBufSize;         // (event vlq delta * NbOfBlocks) +  ( NbOfBlocks * sizeof(sNktBlk_t) )
+    uint32 eventsBlockPackedSize;      // if packed, size of packed data, contigous event block, 0 otherwise
+    uint32 eventDataBufSize;           // nb of bytes for data in event blocks
+    uint32 eventDataBlockPackedSize;   // if packed, size of packed data, contigous event data block, 0 otherwise
 } sNktTrackInfo;
 
 // file layout:
@@ -118,7 +118,7 @@ typedef struct __attribute__((packed)) NktTrackInfo{
 /////////////////////////////////////////////
 
 /** library initialisation, setup of extrernal device on specified channel */
-void NktInit(const eMidiDeviceType devType, const U8 channel);
+void NktInit(const eMidiDeviceType devType, const uint8 channel);
 
 /** library cleanup / deinitialisation */
 void NktDeinit();
@@ -133,32 +133,32 @@ extern void NktInstallReplayRoutNoTimers();
 extern void NktDeinstallReplayRout();
 
 void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq, U16 initialState, BOOL bInstallUpdate);
+void initSequence(sNktSeq *seq, uint16 initialState, bool bInstallUpdate);
 
-sNktSeq *loadSequence(const U8 *filepath);
+sNktSeq *loadSequence(const uint8 *filepath);
 
 void destroySequence(sNktSeq *pSeq);
 
 // replay control
-BOOL isSequencePlaying(void);
+bool isSequencePlaying(void);
 void stopSequence(void);
 void pauseSequence();
 void playSequence(void);
 void switchReplayMode(void);
 
-void setMidiMasterVolume(U8 vol);
-void setMidiMasterBalance(U8 bal);
+void setMidiMasterVolume(uint8 vol);
+void setMidiMasterBalance(uint8 bal);
 
-U8 getMidiMasterVolume();
-U8 getMidiMasterBalance();
+uint8 getMidiMasterVolume();
+uint8 getMidiMasterBalance();
 
 #ifdef DEBUG_BUILD
 //debug helpers
 #ifdef MANUAL_STEP
-void initSequenceManual(sNktSeq *pSeq, U16 initialState);
+void initSequenceManual(sNktSeq *pSeq, uint16 initialState);
 #endif
 void printNktSequenceState();
-const U8 *getEventTypeName(U16 type);
+const uint8 *getEventTypeName(uint16 type);
 #endif
 
 #endif // NKT_H

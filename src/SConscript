@@ -321,10 +321,10 @@ midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
-discio_src = ["tos/discio/fmio.c"]
-timing_src = ["tos/timing/mfp.c","common/timing/miditim.c","tos/common.s"]
-midi_src = ["tos/midi/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
-memory_src = ["tos/memory/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+discio_src = ["tos/fmio.c"]
+timing_src = ["tos/mfp.c","common/timing/miditim.c","tos/common.s"]
+midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
+memory_src = ["tos/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]

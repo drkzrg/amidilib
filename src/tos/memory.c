@@ -19,61 +19,61 @@
  * @param memFlag memory allocation preference flag
  * @return 0L - if no memory available, 0L< otherwise
  */
-U32 getFreeMem(eMemoryFlag memFlag){
+uint32 getFreeMem(eMemoryFlag memFlag){
   void *pMem=0;
   pMem=(void *)Mxalloc( -1L, memFlag);
-  return((U32)pMem);
+  return((uint32)pMem);
 }
 
 
 #ifdef DEBUG_BUILD
-static U32 g_memAlloc=0;
-static U32 g_memAllocTT=0;
-static U32 g_memDealloc=0;
+static uint32 g_memAlloc=0;
+static uint32 g_memAllocTT=0;
+static uint32 g_memDealloc=0;
 
 void memoryCheck(void){
-    U32 mem=0;
-    amTrace((const U8*)"System memory check:\n");
+    uint32 mem=0;
+    amTrace((const uint8*)"System memory check:\n");
 	
     /* mem tst */
     mem=getFreeMem(ST_RAM);
-    amTrace((const U8*)"ST-RAM: %u\n",(U32)mem);
+    amTrace((const uint8*)"ST-RAM: %u\n",(uint32)mem);
 	
     mem=getFreeMem(TT_RAM);
-    amTrace((const U8*)"TT-RAM: %u\n",(U32)mem);
+    amTrace((const uint8*)"TT-RAM: %u\n",(uint32)mem);
 	
     mem=getFreeMem(PREFER_ST);
-    amTrace((const U8*)"Prefered ST-RAM: %u\n",(U32)mem);
+    amTrace((const uint8*)"Prefered ST-RAM: %u\n",(uint32)mem);
 	
     mem=getFreeMem(PREFER_TT);
-    amTrace((const U8*)"Prefered TT-RAM: %u\n",(U32)mem);
+    amTrace((const uint8*)"Prefered TT-RAM: %u\n",(uint32)mem);
 }
 #endif
 
 
 // writes a byte, and returns the buffer
-U8* WriteByte(void* buf, S8 b){
-    U8* buffer = (unsigned char*)buf;
+uint8* WriteByte(void* buf, int8 b){
+    uint8* buffer = (unsigned char*)buf;
     *buffer = b;
     ++buffer;
     return buffer;
 }
 
-U8* WriteShort(void* b, U16 s){
-    U16* buffer = (unsigned short*)b;
+uint8* WriteShort(void* b, uint16 s){
+    uint16* buffer = (unsigned short*)b;
     *buffer = s;
     ++buffer;
-    return (U8 *)buffer;
+    return (uint8 *)buffer;
 }
 
-U8* WriteInt(void* b, U32 i){
- U32* buffer = (U32*)b;
+uint8* WriteInt(void* b, uint32 i){
+ uint32* buffer = (uint32*)b;
  *buffer = i;
  ++buffer;
- return (U8 *)buffer;
+ return (uint8 *)buffer;
 }
 
-S32 UpdateBytesWritten(S32* bytes_written, S32 to_add, S32 max){
+int32 UpdateBytesWritten(int32* bytes_written, int32 to_add, int32 max){
     *bytes_written += to_add;
 
     if(max==-1) return 1;

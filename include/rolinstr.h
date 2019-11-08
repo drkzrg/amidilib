@@ -11,14 +11,14 @@
 #include "c_vars.h"
 
 /* Roland modules header */
-const U8 *getMT32InstrName(const U8 ubInstrNb);
-const U8 *getMT32RhythmName(const U8 ubNoteNb);
+const uint8 *getMT32InstrName(const uint8 ubInstrNb);
+const uint8 *getMT32RhythmName(const uint8 ubNoteNb);
 
 /* MT-32, CM-32L, CM-64 */
-const U8 *getCM32LInstrName(const U8 ubInstrNb);
-const U8 *getCM32LRhythmName(const U8 ubNoteNb);
+const uint8 *getCM32LInstrName(const uint8 ubInstrNb);
+const uint8 *getCM32LRhythmName(const uint8 ubNoteNb);
 
 /* CM-500 */
-const U8 *getCM500SFXName(const U8 ubNoteNb);
+const uint8 *getCM500SFXName(const uint8 ubNoteNb);
 
 #endif // ROLINSTR_H

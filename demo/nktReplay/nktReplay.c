@@ -4,17 +4,19 @@
 #include "timing/mfp.h"
 #include "midi_send.h"
 
+#include <stdio.h>
+
 #ifdef MANUAL_STEP
-extern void updateStepNkt();
+extern void updateStepNkt(void);
 #endif
 
-void printInfoScreen();
+void printInfoScreen(void);
 
 void mainLoop(sNktSeq *pSequence);
 
 int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
-S16 iError=0;
+int16 iError=0;
 
     if( (argc>=1) && strlen(argv[1])!='0' ){
         printf("Trying to load %s\n",argv[1]);
@@ -79,7 +81,7 @@ S16 iError=0;
   return 0;
 }
 
-void printInfoScreen(){
+void printInfoScreen(void){
 
   printf("\n===== NKT replay demo v.1.21 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
@@ -96,7 +98,7 @@ void printInfoScreen(){
   printf("Ready...\n");
 }
 
-void displayTuneInfo(){
+void displayTuneInfo(void){
 
   sNktSeq *pPtr=0;
   getCurrentSequence(&pPtr);
@@ -109,7 +111,7 @@ void displayTuneInfo(){
 }
 
 void mainLoop(sNktSeq *pSequence){
-    BOOL bQuit=FALSE;
+    bool bQuit=FALSE;
 #ifdef MANUAL_STEP
     initSequenceManual(pSequence, NKT_PLAY_ONCE);
 #else
@@ -127,7 +129,7 @@ void mainLoop(sNktSeq *pSequence){
       while(bQuit==FALSE){
 
         //check keyboard input
-        for (U16 i=0; i<128; ++i) {
+        for (uint16 i=0; i<128; ++i) {
 
           if (Ikbd_keyboard[i]==KEY_PRESSED) {
           Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -162,7 +164,7 @@ void mainLoop(sNktSeq *pSequence){
          // adjust master volume
          case SC_ARROW_UP:{
 
-              U8 _midiMasterVolume=getMidiMasterVolume();
+              uint8 _midiMasterVolume=getMidiMasterVolume();
 
               if(_midiMasterVolume<127){
                   ++_midiMasterVolume;
@@ -172,7 +174,7 @@ void mainLoop(sNktSeq *pSequence){
 
          }break;
           case SC_ARROW_DOWN:{
-              U8 _midiMasterVolume=getMidiMasterVolume();
+              uint8 _midiMasterVolume=getMidiMasterVolume();
 
               if(_midiMasterVolume>0){
                 --_midiMasterVolume;
@@ -185,7 +187,7 @@ void mainLoop(sNktSeq *pSequence){
           // adjust balance
           case SC_ARROW_LEFT:{
 
-              U8 _midiMasterBalance=getMidiMasterBalance();
+              uint8 _midiMasterBalance=getMidiMasterBalance();
 
               if(_midiMasterBalance>0){
                   --_midiMasterBalance;
@@ -196,7 +198,7 @@ void mainLoop(sNktSeq *pSequence){
           }break;
           case SC_ARROW_RIGHT:{
 
-              U8 _midiMasterBalance=getMidiMasterBalance();
+              uint8 _midiMasterBalance=getMidiMasterBalance();
 
               if(_midiMasterBalance<127){
                   ++_midiMasterBalance;

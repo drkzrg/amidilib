@@ -419,10 +419,10 @@ typedef union { lzo_bytep a; lzo_uint32_t_t b; } __lzo_pu32_u;
 #  define __LZO_i386 1
 #endif
 
-#if defined(LZO_OS_DOS16)
+#if defined(LZO_OS_DOint16)
 #  define __LZO_DOS 1
-#  define __LZO_DOS16 1
-#elif defined(LZO_OS_DOS32)
+#  define __LZO_DOint16 1
+#elif defined(LZO_OS_DOint32)
 #  define __LZO_DOS 1
 #elif defined(LZO_OS_WIN16)
 #  define __LZO_WIN 1

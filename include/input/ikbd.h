@@ -33,19 +33,19 @@
 
 /* Variables */
 
-extern U8	Ikbd_keyboard[128];	/* Keyboard table */
-extern U16	Ikbd_mouseb;		/* Mouse on port 0, buttons */
-extern S16 	Ikbd_mousex;		/* Mouse X relative motion */
-extern S16 	Ikbd_mousey;		/* Mouse Y relative motion */
-extern U16	Ikbd_joystick;		/* Joystick on port 1 */
+extern uint8	Ikbd_keyboard[128];	/* Keyboard table */
+extern uint16	Ikbd_mouseb;		/* Mouse on port 0, buttons */
+extern int16 	Ikbd_mousex;		/* Mouse X relative motion */
+extern int16 	Ikbd_mousey;		/* Mouse Y relative motion */
+extern uint16	Ikbd_joystick;		/* Joystick on port 1 */
 				
 /* Functions */ 
 extern void IkbdInstall(void);
 extern void IkbdUninstall(void);
 extern void turnOffKeyclick(void);
 
-static const U8 KEY_PRESSED = 0xff;
-static const U8 KEY_UNDEFINED = 0x80;
-static const U8 KEY_RELEASED = 0x00;
+static const uint8 KEY_PRESSED = 0xff;
+static const uint8 KEY_UNDEFINED = 0x80;
+static const uint8 KEY_RELEASED = 0x00;
 
 #endif /* _IKBD_H */

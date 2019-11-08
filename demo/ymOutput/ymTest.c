@@ -6,6 +6,7 @@
 */
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "c_vars.h"
 #include "input/ikbd.h"
@@ -40,17 +41,17 @@ int main(void) {
 
   ymChannelData ymRegisters[3];
   
-  U8 noteBaseArray[]={24,36,48,60,72,84,96,108};
+  uint8 noteBaseArray[]={24,36,48,60,72,84,96,108};
   
-  BOOL bQuitFlag=FALSE;
-  U16 input=0L;
-  U8 idx=0;
+  bool bQuitFlag=FALSE;
+  uint16 input=0L;
+  uint8 idx=0;
   
-  U8 currentBaseIdx=0;
+  uint8 currentBaseIdx=0;
 
-  U8 currentEnvIdx=0;
-  U8 noisegenPeriod=15;
-  U8 channelAmp=15; 
+  uint8 currentEnvIdx=0;
+  uint8 noisegenPeriod=15;
+  uint8 channelAmp=15; 
   ymRegisters[CH_A].amp=channelAmp;
   ymRegisters[CH_B].amp=channelAmp;
   ymRegisters[CH_C].amp=channelAmp;
@@ -63,16 +64,16 @@ int main(void) {
   ymRegisters[CH_B].toneEnable=1;
   ymRegisters[CH_C].toneEnable=1;
   
-  U8 noteBase=noteBaseArray[currentBaseIdx];
-  U8 currentEnvelope=getEnvelopeId(currentEnvIdx);
+  uint8 noteBase=noteBaseArray[currentBaseIdx];
+  uint8 currentEnvelope=getEnvelopeId(currentEnvIdx);
   
   while(bQuitFlag!=TRUE){
     
-      input=(U16)Crawcin();
+      input=(uint16)Crawcin();
 
       if(input!=0){
     
-      switch(toupper((U8)input)){
+      switch(toupper((uint8)input)){
     
 	case 0x1b:{
 	  bQuitFlag=TRUE;

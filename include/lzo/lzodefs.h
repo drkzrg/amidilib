@@ -361,13 +361,13 @@
 #  define LZO_OS_QNX            1
 #  define LZO_INFO_OS           "qnx"
 #elif defined(__BORLANDC__) && defined(__DPMI32__) && (__BORLANDC__ >= 0x0460)
-#  define LZO_OS_DOS32          1
+#  define LZO_OS_DOint32          1
 #  define LZO_INFO_OS           "dos32"
 #elif defined(__BORLANDC__) && defined(__DPMI16__)
-#  define LZO_OS_DOS16          1
+#  define LZO_OS_DOint16          1
 #  define LZO_INFO_OS           "dos16"
 #elif defined(__ZTC__) && defined(DOS386)
-#  define LZO_OS_DOS32          1
+#  define LZO_OS_DOint32          1
 #  define LZO_INFO_OS           "dos32"
 #elif defined(__OS2__) || defined(__OS2V2__)
 #  if (UINT_MAX == LZO_0xffffL)
@@ -400,17 +400,17 @@
 #  endif
 #elif defined(__DOS__) || defined(__MSDOS__) || defined(_MSDOS) || defined(MSDOS) || (defined(__PACIFIC__) && defined(DOS))
 #  if (UINT_MAX == LZO_0xffffL)
-#    define LZO_OS_DOS16        1
+#    define LZO_OS_DOint16        1
 #    define LZO_INFO_OS         "dos16"
 #  elif (UINT_MAX == LZO_0xffffffffL)
-#    define LZO_OS_DOS32        1
+#    define LZO_OS_DOint32        1
 #    define LZO_INFO_OS         "dos32"
 #  else
 #    error "check your limits.h header"
 #  endif
 #elif defined(__WATCOMC__)
 #  if defined(__NT__) && (UINT_MAX == LZO_0xffffL)
-#    define LZO_OS_DOS16        1
+#    define LZO_OS_DOint16        1
 #    define LZO_INFO_OS         "dos16"
 #  elif defined(__NT__) && (__WATCOMC__ < 1100)
 #    define LZO_OS_WIN32        1
@@ -510,7 +510,7 @@
 #  endif
 #endif
 #endif
-#if (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#if (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #  if (UINT_MAX != LZO_0xffffL)
 #    error "unexpected configuration - check your compiler defines"
 #  endif
@@ -518,7 +518,7 @@
 #    error "unexpected configuration - check your compiler defines"
 #  endif
 #endif
-#if (LZO_OS_DOS32 || LZO_OS_OS2 || LZO_OS_WIN32 || LZO_OS_WIN64)
+#if (LZO_OS_DOint32 || LZO_OS_OS2 || LZO_OS_WIN32 || LZO_OS_WIN64)
 #  if (UINT_MAX != LZO_0xffffffffL)
 #    error "unexpected configuration - check your compiler defines"
 #  endif
@@ -812,7 +812,7 @@
 #if !defined(__LZO_ARCH_OVERRIDE)
 #if (LZO_ARCH_GENERIC)
 #  define LZO_INFO_ARCH             "generic"
-#elif (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#elif (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #  define LZO_ARCH_I086             1
 #  define LZO_INFO_ARCH             "i086"
 #elif defined(__aarch64__) || defined(_M_ARM64)
@@ -865,7 +865,7 @@
 #  define LZO_ARCH_I386             1
 #  define LZO_ARCH_IA32             1
 #  define LZO_INFO_ARCH             "i386"
-#elif (LZO_OS_DOS32 && LZO_CC_HIGHC) && defined(_I386)
+#elif (LZO_OS_DOint32 && LZO_CC_HIGHC) && defined(_I386)
 #  define LZO_ARCH_I386             1
 #  define LZO_ARCH_IA32             1
 #  define LZO_INFO_ARCH             "i386"
@@ -965,7 +965,7 @@
 #  undef  LZO_INFO_ARCH
 #  define LZO_INFO_ARCH             "arm_thumb2"
 #endif
-#if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_DOS32 || LZO_OS_OS2)
+#if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_DOint32 || LZO_OS_OS2)
 #  error "FIXME - missing define for CPU architecture"
 #endif
 #if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_WIN32)
@@ -976,11 +976,11 @@
 #endif
 #if (LZO_OS_OS216 || LZO_OS_WIN16)
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOS16 && defined(BLX286))
+#elif 1 && (LZO_OS_DOint16 && defined(BLX286))
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOS16 && defined(DOSX286))
+#elif 1 && (LZO_OS_DOint16 && defined(DOSX286))
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOS16 && LZO_CC_BORLANDC && defined(__DPMI16__))
+#elif 1 && (LZO_OS_DOint16 && LZO_CC_BORLANDC && defined(__DPMI16__))
 #  define LZO_ARCH_I086PM           1
 #endif
 #if (LZO_ARCH_AMD64 && !LZO_ARCH_X64)
@@ -1141,7 +1141,7 @@
 #else
 #  error "unknown LZO_ARCH_I086 memory model"
 #endif
-#if (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#if (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #define LZO_HAVE_MM_HUGE_PTR        1
 #define LZO_HAVE_MM_HUGE_ARRAY      1
 #if (LZO_MM_TINY)
@@ -1161,7 +1161,7 @@
 #  undef LZO_HAVE_MM_HUGE_ARRAY
 #endif
 #if (LZO_ARCH_I086PM) && !(LZO_HAVE_MM_HUGE_PTR)
-#  if (LZO_OS_DOS16)
+#  if (LZO_OS_DOint16)
 #    error "unexpected configuration - check your compiler defines"
 #  elif (LZO_CC_ZORTECHC)
 #  else
@@ -1183,7 +1183,7 @@ extern "C" {
 #elif (LZO_CC_TURBOC && (__TURBOC__ >= 0x0295))
    extern void __near __cdecl _AHSHIFT(void);
 #  define LZO_MM_AHSHIFT      ((unsigned) _AHSHIFT)
-#elif ((LZO_CC_AZTECC || LZO_CC_PACIFICC || LZO_CC_TURBOC) && LZO_OS_DOS16)
+#elif ((LZO_CC_AZTECC || LZO_CC_PACIFICC || LZO_CC_TURBOC) && LZO_OS_DOint16)
 #  define LZO_MM_AHSHIFT      12
 #elif (LZO_CC_WATCOMC)
    extern unsigned char _HShift;
@@ -2013,7 +2013,7 @@ extern "C" { LZO_COMPILE_TIME_ASSERT_HEADER(2 == 2) }
 #endif
 LZO_COMPILE_TIME_ASSERT_HEADER(3 == 3)
 #endif
-#if (LZO_ARCH_I086 || LZO_ARCH_I386) && (LZO_OS_DOS16 || LZO_OS_DOS32 || LZO_OS_OS2 || LZO_OS_OS216 || LZO_OS_WIN16 || LZO_OS_WIN32 || LZO_OS_WIN64)
+#if (LZO_ARCH_I086 || LZO_ARCH_I386) && (LZO_OS_DOint16 || LZO_OS_DOint32 || LZO_OS_OS2 || LZO_OS_OS216 || LZO_OS_WIN16 || LZO_OS_WIN32 || LZO_OS_WIN64)
 #  if (LZO_CC_GNUC || LZO_CC_HIGHC || LZO_CC_NDPC || LZO_CC_PACIFICC)
 #  elif (LZO_CC_DMC || LZO_CC_SYMANTECC || LZO_CC_ZORTECHC)
 #    define __lzo_cdecl                 __cdecl
@@ -2560,7 +2560,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #  define LZO_INFO_LIBC         "default"
 #endif
 #endif
-#if (LZO_ARCH_I386 && (LZO_OS_DOS32 || LZO_OS_WIN32) && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
+#if (LZO_ARCH_I386 && (LZO_OS_DOint32 || LZO_OS_WIN32) && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
 #  define LZO_ASM_SYNTAX_MSC 1
 #elif (LZO_OS_WIN64 && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
 #elif (LZO_ARCH_I386 && LZO_CC_GNUC && (LZO_CC_GNUC == 0x011f00ul))

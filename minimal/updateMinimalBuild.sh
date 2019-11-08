@@ -15,12 +15,12 @@ if [ ! -d "./nktlib/src" ]; then
 mkdir ./nktlib/src
 fi
 
-cp ../src/tos/discio/fmio.c ./nktlib/src/
+cp ../src/tos/fmio.c ./nktlib/src/
 cp ../src/common/formats/nkt_rep.c  ./nktlib/src/
 cp ../src/common/formats/nkt_rep_m68k.s ./nktlib/src/
 cp ../src/common/roland/rol_ptch.c ./nktlib/src/
 cp ../src/tos/common.s ./nktlib/src/
-cp ../src/tos/memory/memory.c ./nktlib/src/
+cp ../src/tos/memory.c ./nktlib/src/
 cp ../src/common/memory/linalloc.c ./nktlib/src/
 cp ../src/common/formats/midi2nkt.c ./nktlib/src/
 cp ../src/common/formats/mus2midi.c ./nktlib/src/

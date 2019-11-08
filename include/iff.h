@@ -3,9 +3,7 @@
 
 // iff parser adapted from amiga sources
 
-#include <c_vars.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "c_vars.h"
 
 #define NO_64_BIT_SCALARS
 

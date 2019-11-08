@@ -7,12 +7,12 @@
 
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
-
 #include "memory/memory.h"
-
 #include "fmio.h"
 
-static S16 g_lastGDOSerror=0;
+#include <stdio.h>
+
+static int16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 
   "No error.",\
@@ -55,13 +55,13 @@ static const char *g_arGEMDOSerror[71]= {
 };
 
 
-const U8 *getLastGemdosError(){
+const uint8 *getLastGemdosError(){
     return getGemdosError(g_lastGDOSerror);
 }
 
-const U8 *getGemdosError(const S16 iErr){
+const uint8 *getGemdosError(const int16 iErr){
 
-U16 idx=1;
+uint16 idx=1;
 
     switch(iErr){
         case GDOS_OK:{
@@ -219,22 +219,22 @@ U16 idx=1;
         break;
     }
 
- return ((const U8*)g_arGEMDOSerror[idx]);
+ return ((const uint8*)g_arGEMDOSerror[idx]);
 }
 
 /* loads file to specified type memory */
-void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
+void *loadFile(const uint8 *szFileName, eMemoryFlag memFlag,  uint32 *fileLenght){
 
     amTrace("[GEMDOS] load file: %s\n",szFileName);
 
-    S16 fileHandle=GDOS_INVALID_HANDLE;
+    int16 fileHandle=GDOS_INVALID_HANDLE;
     _DTA *pDTA=NULL;
 
     fileHandle = Fopen( szFileName, S_READWRITE );
     *fileLenght=0L;
 
     if((fileHandle)>0){
-	S16 iRet=0;
+	int16 iRet=0;
 	
     pDTA=Fgetdta();
     iRet=Fsfirst( szFileName, 0 );
@@ -247,17 +247,17 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
     *fileLenght=pDTA->dta_size;
 
     /* allocate buffer */
-     pData=(void *)amMallocEx((tMEMSIZE)(*fileLenght)+1,memFlag);
+     pData=(void *)amMallocEx((MemSize)(*fileLenght)+1,memFlag);
      
      if(pData!=NULL){
-      S32 lRet=0L;
+      int32 lRet=0L;
       amMemSet(pData,0,(*fileLenght)+1);
 
       lRet=Fread(fileHandle, (*fileLenght), pData );
 
       if(lRet<0){
             //GEMDOS ERROR TODO, display error for now
-            amTrace("[GEMDOS] Error: %s\n",getGemdosError((S16)lRet));
+            amTrace("[GEMDOS] Error: %s\n",getGemdosError((int16)lRet));
       }else{
           /* not all data being read */
           if(lRet!=(*fileLenght)){
@@ -272,7 +272,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
 
       amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
 
-      S16 err=Fclose(fileHandle);
+      int16 err=Fclose(fileHandle);
 
       if(err!=GDOS_OK){
         amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
@@ -290,7 +290,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
     }else{
       amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
 
-      S16 err=Fclose(fileHandle);
+      int16 err=Fclose(fileHandle);
 
       if(err!=GDOS_OK){
         amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
@@ -310,12 +310,12 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag,  U32 *fileLenght){
     }
 }
 
-S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize){
+int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBlockSize){
 
-  S16 fileHandle = Fcreate( szFileName, 0 );
+  int16 fileHandle = Fcreate( szFileName, 0 );
     
     if(fileHandle>0){
-	 S32 iRet=0;
+	 int32 iRet=0;
      amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
 
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
@@ -329,7 +329,7 @@ S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize)
 
      amTrace("[GEMDOS] Closing file handle : [%d] \n", fileHandle);
 
-      S16 err=Fclose(fileHandle);
+      int16 err=Fclose(fileHandle);
 
       if(err!=GDOS_OK){
         amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
@@ -338,8 +338,8 @@ S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize)
       return 0L;   
     }else{
        /* print GEMDOS error code */
-        printf("[GEMDOS] Error: %s\n", getGemdosError((S16)fileHandle));
-	return -1L;  
+        printf("[GEMDOS] Error: %s\n", getGemdosError((int16)fileHandle));
+	     return -1L;  
     }
  
 }

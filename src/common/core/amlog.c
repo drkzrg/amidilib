@@ -20,7 +20,7 @@
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-static S16 fh=GDOS_OK;
+static int16 fh=GDOS_OK;
 #else
 static FILE *ofp=0;
 #endif
@@ -33,7 +33,7 @@ static FILE *ofp=0;
 // 6 - st compatible serial (Modem 1, works with hatari),
 // 7 - scc (modem 2, doesn't work under hatari)
 
-static const  U8 SERIAL_OUTPUT_CHANNEL=7;
+static const  uint8 SERIAL_OUTPUT_CHANNEL=7;
 
 #if (defined(DEBUG)||defined(DEBUG_BUILD)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
 static char buffer[OUTPUT_BUFFER_SIZE];
@@ -156,7 +156,7 @@ void deinitDebug(){
 #ifdef ENABLE_GEMDOS_IO
     printf("Deinit debug: [%d] \n", fh);
 
-    S16 err=Fclose(fh);
+    int16 err=Fclose(fh);
 
     if(err!=GDOS_OK){
       printf("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));

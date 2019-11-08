@@ -57,14 +57,14 @@
  #define GDOS_MOUNT_POINT_CROSSED -200  /*Mount point crossed*/
  
  
- const U8 *getGemdosError(const S16 iErr);
+ const uint8 *getGemdosError(const int16 iErr);
 
 /**
  * gets text description of last GEMDOS error that occured.
  *
  * @return pointer to const char * array with error description
  */
-const U8 *getLastGemdosError(void);
+const uint8 *getLastGemdosError(void);
 
 /**
  * loads file to specific type of memory(ST/TT RAM).
@@ -76,7 +76,7 @@ const U8 *getLastGemdosError(void);
  * valid pointer - if file was loaded.
  */
 
-void *loadFile(const U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
+void *loadFile(const uint8 *szFileName, eMemoryFlag memFlag, uint32 *fileLenght);
 
 /**
  * loads gets text description of actual GEMDOS error.
@@ -85,7 +85,7 @@ void *loadFile(const U8 *szFileName, eMemoryFlag memFlag, U32 *fileLenght);
  * @return pointer to const char * array with error description
  */
 
-S32 saveFile(const U8 *szFileName, const void *memBlock, const U32 memBlockSize);
+int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBlockSize);
 
 
 #endif

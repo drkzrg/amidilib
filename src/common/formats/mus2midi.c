@@ -24,7 +24,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 
 /|\ m68k / atari version / cleanup / customisation:
-Copyright (C) 2013-2017 Pawel Goralski [nokturnal@nokturnal.pl]
+Copyright (C) 2013-2019 Pawel Goralski
 
 ===========================================================================
 */
@@ -75,13 +75,13 @@ unsigned char* Midi_WriteTempo(unsigned char* buffer){
     buffer = WriteByte(buffer, 0xa3);
     buffer = WriteByte(buffer, 0x1a);
 
-    amTrace("Midi_WriteTempo() Mus2Midi: 0x%lx\n",0x00FFFFFF&*((U32 *)(buffer-4)));
+    amTrace("Midi_WriteTempo() Mus2Midi: 0x%lx\n",0x00FFFFFF&*((uint32 *)(buffer-4)));
 
 	return buffer;
 }
 
 
-static const U8 MidiMap[] = {
+static const uint8 MidiMap[] = {
     0,		//      prog change
     0,		//      bank sel
     1,      //2		// mod pot
@@ -100,9 +100,9 @@ static const U8 MidiMap[] = {
 };
 
 // The MUS data is stored in little-endian, m68k is big endian
-static inline U16 LittleToNative(const U16 value){
-    U16 val=value;
-    U16 result;
+static inline uint16 LittleToNative(const uint16 value){
+    uint16 val=value;
+    uint16 result;
   
   result=value<<8;
   val=val>>8;
@@ -110,7 +110,7 @@ static inline U16 LittleToNative(const U16 value){
   return result;
 }
 
-S32 Mus2Midi(U8* bytes, U8* out, const S8 *pOutMidName,U32* len){
+int32 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len){
 // mus header and instruments
 MUSheader_t header;
 
@@ -122,7 +122,7 @@ sMThd midiHeader;
 // Midi track header, only 1 needed(format 0)
 sChunkHeader midiTrackHeader;
 // Stores the position of the midi track header(to change the size)
-U8* midiTrackHeaderOut=0;
+uint8* midiTrackHeaderOut=0;
 
 //zero mem
 amMemSet(&midiHeader,0,sizeof(sMThd));
@@ -130,11 +130,11 @@ amMemSet(&midiTrackHeader,0,sizeof(sChunkHeader));
 amMemSet(&header,0,sizeof(MUSheader_t));
 
 // Delta time for midi event
-S32 delta_time = 0;
-S32 temp=0;
-S32 channel_volume[MIDI_MAXCHANNELS] = {0};
-S32 bytes_written = 0;
-S32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
+int32 delta_time = 0;
+int32 temp=0;
+int32 channel_volume[MIDI_MAXCHANNELS] = {0};
+int32 bytes_written = 0;
+int32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
 
 // read the mus header
 amMemCpy(&header, cur, sizeof(MUSheader_t));
@@ -200,13 +200,13 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	out = WriteByte(out, 127);
 
 	// Main Loop
-    U8 temp_buffer[32];	// temp buffer for current iterator
-    U8 *out_local=0;
+    uint8 temp_buffer[32];	// temp buffer for current iterator
+    uint8 *out_local=0;
     
 	while (cur < end) {
-    U8 event;
-	U8 channel=0;
-	U8 status=0, bit1=0, bit2=0, bitc = 2;
+    uint8 event;
+	uint8 channel=0;
+	uint8 status=0, bit1=0, bit2=0, bitc = 2;
 
     status=0, bit1=0, bit2=0, bitc = 2;
     out_local = temp_buffer;
@@ -320,10 +320,10 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("bytes written %lu\n",(U32)(*len));
+       printf("bytes written %lu\n",(uint32)(*len));
 #endif
 
-    amTrace("bytes written %lu\n",(U32)(*len));
+    amTrace("bytes written %lu\n",(uint32)(*len));
 
      if(pOutMidName){
 
@@ -334,16 +334,16 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         amTrace("Writing MIDI output to file: %s\n", pOutMidName);
 
 #ifdef ENABLE_GEMDOS_IO
-        S16 fileHandle = Fcreate(pOutMidName, 0);
+        int16 fileHandle = Fcreate(pOutMidName, 0);
 
         if(fileHandle>0){
             amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
 
-            S32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
+            int32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
             amTrace("Saved to file: [%d] bytes to gemdos handle %d. \n", bytesWritten,fileHandle);
 
             amTrace("Closing gemdos handle %d \n", fileHandle);
-            S16 err=Fclose(fileHandle);
+            int16 err=Fclose(fileHandle);
 
             if(err!=GDOS_OK){
               amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));

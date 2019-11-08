@@ -146,16 +146,16 @@ static const ymData g_arMIDI2ym2149Tone[128]={
 /* 127 */ {0x0000,0x00,0x00}  /* undefined */
 };
 
-static const U8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
+static const uint8 envelopeArray[8]={ENV_1,ENV_2,ENV_3,ENV_4,ENV_5,ENV_6,ENV_7,ENV_8 };
 
-eYMenvelope getEnvelopeId(const U8 id){
+eYMenvelope getEnvelopeId(const uint8 id){
   return envelopeArray[id];
 }
 
 
-void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod,U8 affectChannels){
+void ymDoSound(ymChannelData ch[3],uint8 envelope, uint16 envPeriod,uint8 noiseGenPeriod,uint8 affectChannels){
   
-    U8 mixerSet=0b11111111; 				// all off
+    uint8 mixerSet=0b11111111; 				// all off
     mixerSet=Giaccess(0,MIXER);
     
     if(affectChannels==CH_A||affectChannels==CH_ALL){
@@ -210,8 +210,8 @@ void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod,
     Giaccess(noiseGenPeriod,NOISE_GEN+128);
 
     //set envelope period
-    U8 lPeriod=(U8)(0x00FF&envPeriod);
-    U8 hPeriod=(U8)(0x00FF&(envPeriod>>4));
+    uint8 lPeriod=(uint8)(0x00FF&envPeriod);
+    uint8 hPeriod=(uint8)(0x00FF&(envPeriod>>4));
 
     Giaccess(lPeriod,LB_ENV_PERIOD+128);
     Giaccess(hPeriod,HB_ENV_PERIOD+128);
@@ -240,11 +240,11 @@ void ymSoundOff(){
   Giaccess(0,HB_OSC3+128);
 }
 
-void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod){
-     U8 hByte=g_arMIDI2ym2149Tone[noteIdx].highbyte;
-     U8 lByte=g_arMIDI2ym2149Tone[noteIdx].lowbyte;
-     U8 envelope=envelopeArray[currentEnvelopeIdx];
-     U16 period=g_arMIDI2ym2149Tone[noteIdx].period;
+void setYm2149(ymChannelData ch[3],int noteIdx,uint8 currentEnvelopeIdx, uint8 noisegenPeriod){
+     uint8 hByte=g_arMIDI2ym2149Tone[noteIdx].highbyte;
+     uint8 lByte=g_arMIDI2ym2149Tone[noteIdx].lowbyte;
+     uint8 envelope=envelopeArray[currentEnvelopeIdx];
+     uint16 period=g_arMIDI2ym2149Tone[noteIdx].period;
 	  
      ch[CH_A].oscFreq=lByte;
      ch[CH_A].oscStepSize=hByte;
@@ -253,17 +253,17 @@ void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisege
      ch[CH_C].oscFreq=lByte;
      ch[CH_C].oscStepSize=hByte;
 	    
-     ymDoSound(ch,envelope,period,noisegenPeriod,(U8)CH_ALL);
+     ymDoSound(ch,envelope,period,noisegenPeriod,(uint8)CH_ALL);
 }
 
 //plays given note and outputs it to midi/ym2149
-void playNote(U8 channel,U8 noteNb, BOOL bMidiOutput, BOOL bYmOutput){
+void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput){
 ymChannelData ch[3];
 
   
-     U8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
-     U8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
-     U16 period=g_arMIDI2ym2149Tone[noteNb].period;
+     uint8 hByte=g_arMIDI2ym2149Tone[noteNb].highbyte;
+     uint8 lByte=g_arMIDI2ym2149Tone[noteNb].lowbyte;
+     uint16 period=g_arMIDI2ym2149Tone[noteNb].period;
 	  
      
      switch(channel){

@@ -7,8 +7,6 @@
     See license.txt for licensing information.
 */
 
-#include <assert.h>
-
 #include "config.h"
 #include "amidilib.h"
 #include "timing/miditim.h"
@@ -16,6 +14,7 @@
 #include "midi_send.h"
 #include "list/list.h"
 
+#include <stdio.h>
 
 static sSequence_t *g_CurrentSequence=0;
 
@@ -27,10 +26,10 @@ void initSeq(sSequence_t *seq, eTimerType timerType){
  g_CurrentSequence=0;
 
 if(seq!=0){
-    U8 mode=0,data=0;
+    uint8 mode=0,data=0;
     sTrack_t *pTrack=0;
     sTrackState_t *pTrackState=0;
-    U8 activeTrack=seq->ubActiveTrack;
+    uint8 activeTrack=seq->ubActiveTrack;
 
     g_CurrentSequence=seq;
 
@@ -84,12 +83,12 @@ void initSeqManual(sSequence_t *seq){
 
  if(seq!=0){
 	sTrackState_t *pTrackState=0;
-    //U8 activeTrack=seq->ubActiveTrack;
+    //uint8 activeTrack=seq->ubActiveTrack;
 
     g_CurrentSequence=0;
     g_CurrentSequence=seq;
 
-    for(U16 i=0;i<seq->ubNumTracks;++i){
+    for(uint16 i=0;i<seq->ubNumTracks;++i){
 	 sTrack_t *pTrack=0;
      pTrack=seq->arTracks[i];
 
@@ -107,7 +106,7 @@ void initSeqManual(sSequence_t *seq){
   
     seq->timeElapsedFrac=0L;
     seq->timeStep=0L;
-    seq->timeStep=am_calculateTimeStep(seq->arTracks[0]->currentState.currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+    seq->timeStep = am_calculateTimeStep(seq->arTracks[0]->currentState.currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         Supexec(flushMidiSendBuffer);
@@ -118,7 +117,7 @@ void initSeqManual(sSequence_t *seq){
  return;
 }
 
-BOOL isEOT(volatile const sEventList *pPtr){
+bool isEOT(volatile const sEventList *pPtr){
   if(pPtr->eventBlock.type==T_META_EOT) return TRUE;
 
   return FALSE;
@@ -130,7 +129,7 @@ sTrackState_t *pTrackState=0;
 sTrack_t *pTrack=0;
 
 if(g_CurrentSequence){
-	U8 activeTrack=0;
+	uint8 activeTrack=0;
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrackState=&(g_CurrentSequence->arTracks[activeTrack]->currentState);
 
@@ -147,7 +146,7 @@ if(g_CurrentSequence){
 
         am_allNotesOff(16);
 
-        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
 
           pTrack=g_CurrentSequence->arTracks[i];
 
@@ -169,16 +168,16 @@ if(g_CurrentSequence){
 
 }
 
-volatile static BOOL bEventSent=FALSE;
-volatile static BOOL bSend=FALSE;
-volatile static BOOL bEOTflag=FALSE;
-volatile static BOOL bStopped=FALSE;
-volatile static BOOL endOfSequence=FALSE;
-volatile static U32 TimeAdd=0;
+volatile static bool bEventSent=FALSE;
+volatile static bool bSend=FALSE;
+volatile static bool bEOTflag=FALSE;
+volatile static bool bStopped=FALSE;
+volatile static bool endOfSequence=FALSE;
+volatile static uint32 TimeAdd=0;
 volatile static evntFuncPtr myFunc=NULL;
-volatile static U32 currentDelta=0;
-volatile static const sEventList *pCurrentEvent=0;
-volatile static U32 timeElapsed=0;
+volatile static uint32 currentDelta=0;
+volatile static sEventList *pCurrentEvent=0;
+volatile static uint32 timeElapsed=0;
 volatile static sTrackState_t *pActiveTrackState=0;
 volatile static sTrack_t *pTrack=0;
 
@@ -339,7 +338,7 @@ void updateStepMulti(){
 
     if(g_CurrentSequence==0) return;
 
-    U8 numOfTracks=g_CurrentSequence->ubNumTracks;
+    uint8 numOfTracks=g_CurrentSequence->ubNumTracks;
 
 // get status from first track
     pTrack=g_CurrentSequence->arTracks[0];
@@ -422,7 +421,7 @@ void updateStepMulti(){
    #ifdef IKBD_MIDI_SEND_DIRECT
             //execute callback which copies data to midi buffer (_MIDIsendBuffer)
             myFunc=pCurrentEvent->eventBlock.copyEventCb.func;
-            printEventBlock(&pCurrentEvent->eventBlock);
+            //printEventBlock(&pCurrentEvent->eventBlock);
             (*myFunc)((void *)pCurrentEvent->eventBlock.dataPtr);
    #else
             //execute callback which sends data directly to midi out (XBIOS)
@@ -495,10 +494,10 @@ void updateStepMulti(){
 }
 
 //replay control
-BOOL isSeqPlaying(void){
+bool isSeqPlaying(void){
   if(g_CurrentSequence!=0){
 	sTrack_t *pTrack=0;
-    U8 activeTrack=g_CurrentSequence->ubActiveTrack;
+    uint8 activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
@@ -516,7 +515,7 @@ void stopSeq(void){
   sTrack_t *pTrack=0;
 
   if(g_CurrentSequence!=0){
-    U8 activeTrack=g_CurrentSequence->ubActiveTrack;
+    uint8 activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
@@ -540,7 +539,7 @@ void stopSeq(void){
 void pauseSeq(){
   //printf("Pause/Resume.\n");
   if(g_CurrentSequence!=0){
-    U8 activeTrack=0;
+    uint8 activeTrack=0;
 	sTrack_t *pTrack=0;
     // TODO: handling individual tracks for MIDI 2 type
     // for one sequence( single / multichannel) we will check state of the first track only
@@ -548,18 +547,18 @@ void pauseSeq(){
     pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-         U16 state=pTrack->currentState.playState;
+         uint16 state=pTrack->currentState.playState;
 
          if((state&TS_PS_PLAYING)&&(!(state&TS_PS_PAUSED)))
          {
-          pTrack->currentState.playState&=(U16)(~TS_PS_PLAYING);
-          pTrack->currentState.playState|=(U16)TS_PS_PAUSED;
+          pTrack->currentState.playState&=(uint16)(~TS_PS_PLAYING);
+          pTrack->currentState.playState|=(uint16)TS_PS_PAUSED;
 
           printf("Pause sequence\n");
           return;
          }else if( !(state&TS_PS_PLAYING)&&(state&TS_PS_PAUSED) ){
-           pTrack->currentState.playState&=(U16)(~TS_PS_PAUSED); //unpause
-           pTrack->currentState.playState|=(U16)TS_PS_PLAYING;  //set playing state
+           pTrack->currentState.playState&=(uint16)(~TS_PS_PAUSED); //unpause
+           pTrack->currentState.playState|=(uint16)TS_PS_PLAYING;  //set playing state
            printf("Resume sequence\n");
          }
     }
@@ -570,11 +569,11 @@ void pauseSeq(){
 void playSeq(void){
  if(g_CurrentSequence!=0){
     //set state
-    U8 activeTrack=g_CurrentSequence->ubActiveTrack;
+    uint8 activeTrack=g_CurrentSequence->ubActiveTrack;
     sTrack_t *pTrack=g_CurrentSequence->arTracks[activeTrack];
 
     if(pTrack){
-        U16 state=pTrack->currentState.playState;
+        uint16 state=pTrack->currentState.playState;
 
         if(!(state&TS_PS_PLAYING)) {
 
@@ -594,7 +593,7 @@ void playSeq(void){
   }
 }
 
-void muteTrack(const U16 trackNb,const BOOL bMute){
+void muteTrack(const uint16 trackNb,const bool bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
     if(bMute!=FALSE){
         g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
@@ -609,12 +608,12 @@ void muteTrack(const U16 trackNb,const BOOL bMute){
 void toggleReplayMode(void){
 
   if(g_CurrentSequence!=0){
-    U8 activeTrack=0;
+    uint8 activeTrack=0;
 	sTrack_t *pTrack=0;
 	
     activeTrack=g_CurrentSequence->ubActiveTrack;
     pTrack=g_CurrentSequence->arTracks[activeTrack];
-    U16 state=pTrack->currentState.playState;
+    uint16 state=pTrack->currentState.playState;
 
     if(state&TM_PLAY_ONCE){
        pTrack->currentState.playState&=(~TM_PLAY_ONCE);
@@ -628,7 +627,7 @@ void toggleReplayMode(void){
 
 void am_destroySequence (sSequence_t **pPtr){
   #ifdef DEBUG_BUILD
-    amTrace((const U8 *)"am_destroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
+    amTrace((const uint8 *)"am_destroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
   #endif
 
   //go to the end of sequence
@@ -637,7 +636,7 @@ void am_destroySequence (sSequence_t **pPtr){
   }
 
   //destroy all tracks
-   for (U16 i=0;i<AMIDI_MAX_TRACKS;++i){
+   for (uint16 i=0;i<AMIDI_MAX_TRACKS;++i){
      if((*pPtr)->arTracks[i]!=0){
      if((*pPtr)->arTracks[i]->pTrackName!=0) amFree(((*pPtr)->arTracks[i]->pTrackName));
 
@@ -654,7 +653,7 @@ void am_destroySequence (sSequence_t **pPtr){
   //destroy sequence and nullify it
   amFree(*pPtr);
   #ifdef DEBUG_BUILD
-    amTrace((const U8 *)"am_destroySequence() done. \n");
+    amTrace((const uint8 *)"am_destroySequence() done. \n");
   #endif
 }
 
@@ -696,7 +695,7 @@ if(g_CurrentSequence){
         printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
         printf("Cur BPM: %lu\n",pTrackState->currentBPM);
 
-        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
             pTrack=g_CurrentSequence->arTracks[i];
             pTrackState=0;
 
@@ -713,7 +712,7 @@ if(g_CurrentSequence){
         printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
         printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
 
-        for (U16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
+        for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
             pTrack=g_CurrentSequence->arTracks[i];
 				sTrackState_t *pTrackState=0;
                 printf("Track[%d]\n",i);
@@ -736,7 +735,7 @@ if(g_CurrentSequence){
 
 }
 
-const U8 *getPlayStateStr(const U16 state){
+const uint8 *getPlayStateStr(const uint16 state){
 
     if( !(state&TS_PS_PLAYING) && (state&TS_PS_PAUSED) ){
        return "Paused";

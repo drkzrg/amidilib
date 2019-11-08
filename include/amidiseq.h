@@ -1,5 +1,5 @@
-#ifndef __AMIDI_SEQ_H__
-#define __AMIDI_SEQ_H__
+#ifndef AMIDI_SEQ_H_
+#define AMIDI_SEQ_H_
 
 /**  Copyright 2007-2019 Pawel Goralski
     
@@ -41,28 +41,28 @@ typedef struct EventList{
 } sEventList;
 
 typedef struct TrackState_t{
- U32 currentTempo;		      // quaternote duration in ms, 500ms default
- U32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
- U32 timeElapsedInt;		  // track elapsed time
+ uint32 currentTempo;		             // quaternote duration in ms, 500ms default
+ uint32 currentBPM;	                 // beats per minute (60 000000 / currentTempo)
+ uint32 timeElapsedInt;		  // track elapsed time
  sEventList *currEventPtr;
- U16 playState;                   // bitfield with sequence state
-                                  // sets the active track, by default 0
+ uint16 playState;                   // bitfield with sequence state
+                              // sets the active track, by default 0
 } sTrackState_t;
 
  typedef struct Track_t{
   sTrackState_t currentState;       /* current sequence state */
   sEventList *pTrkEventList;  		/* track event list */
-  U8 *pTrackName;                   /* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
+  uint8 *pTrackName;                   /* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
 } sTrack_t;
 
 typedef struct Sequence_t{
    /** internal midi data storage format */
-   U8 *pSequenceName;                       // NULL terminated string */
-   U32 timeElapsedFrac;                     // sequence elapsed time
-   U32 timeStep;                            // sequence time step
-   U16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
-   U16 ubNumTracks;                         // number of tracks 1->AMIDI_MAX_TRACKS */
-   U16 ubActiveTrack;                       // range 0-(ubNumTracks-1) tracks */
+   uint8 *pSequenceName;                       // NULL terminated string */
+   uint32 timeElapsedFrac;                     // sequence elapsed time
+   uint32 timeStep;                            // sequence time step
+   uint16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
+   uint16 ubNumTracks;                         // number of tracks 1->AMIDI_MAX_TRACKS */
+   uint16 ubActiveTrack;                       // range 0-(ubNumTracks-1) tracks */
    sTrack_t *arTracks[AMIDI_MAX_TRACKS];	// up to AMIDI_MAX_TRACKS tracks available */
    eSequenceType seqType;                   // sequence: single, multitrack, separate
 

@@ -11,20 +11,20 @@
 #include "c_vars.h"
 
 // ym2149 registers constants
-static const U8 LB_OSC1=0;
-static const U8 HB_OSC1=1;
-static const U8 LB_OSC2=2;
-static const U8 HB_OSC2=3;
-static const U8 LB_OSC3=4;
-static const U8 HB_OSC3=5;
-static const U8 NOISE_GEN=6;
-static const U8 MIXER=7;
-static const U8 AMP_OSC1=8;
-static const U8 AMP_OSC2=9;
-static const U8 AMP_OSC3=10;
-static const U8 LB_ENV_PERIOD=11;
-static const U8 HB_ENV_PERIOD=12;
-static const U8 ENV_SELECT=13;
+static const uint8 LB_OSC1=0;
+static const uint8 HB_OSC1=1;
+static const uint8 LB_OSC2=2;
+static const uint8 HB_OSC2=3;
+static const uint8 LB_OSC3=4;
+static const uint8 HB_OSC3=5;
+static const uint8 NOISE_GEN=6;
+static const uint8 MIXER=7;
+static const uint8 AMP_OSC1=8;
+static const uint8 AMP_OSC2=9;
+static const uint8 AMP_OSC3=10;
+static const uint8 LB_ENV_PERIOD=11;
+static const uint8 HB_ENV_PERIOD=12;
+static const uint8 ENV_SELECT=13;
 
 // envelopes
 typedef enum{
@@ -40,17 +40,17 @@ typedef enum{
 } eYMenvelope;
 
 typedef struct  {
-  U16 period;
-  U8 highbyte;
-  U8 lowbyte;
+  uint16 period;
+  uint8 highbyte;
+  uint8 lowbyte;
 } ymData;
 
 typedef struct{
- U8 amp;	
- U8 oscFreq;		// if 4th bit is set, current envelope is used
- U8 oscStepSize;	// period lenght, pitch  //TODO: change it to bitfield
- U8 noiseEnable;	// 0-disabled, 1-enabled
- U8 toneEnable;		// 0-disabled, 1-enabled
+ uint8 amp;	
+ uint8 oscFreq;		// if 4th bit is set, current envelope is used
+ uint8 oscStepSize;	// period lenght, pitch  //TODO: change it to bitfield
+ uint8 noiseEnable;	// 0-disabled, 1-enabled
+ uint8 toneEnable;		// 0-disabled, 1-enabled
 } ymChannelData;
 
 enum{
@@ -60,11 +60,11 @@ enum{
   CH_ALL
 };
 
-void ymDoSound(ymChannelData ch[3],U8 envelope, U16 envPeriod,U8 noiseGenPeriod,U8 affectsChannels);
-void setYm2149(ymChannelData ch[3],int noteIdx,U8 currentEnvelopeIdx, U8 noisegenPeriod);
+void ymDoSound(ymChannelData ch[3],uint8 envelope, uint16 envPeriod,uint8 noiseGenPeriod,uint8 affectsChannels);
+void setYm2149(ymChannelData ch[3],int noteIdx,uint8 currentEnvelopeIdx, uint8 noisegenPeriod);
 void ymSoundOff();
 
-eYMenvelope getEnvelopeId(const U8 id);
+eYMenvelope getEnvelopeId(const uint8 id);
 
 #endif
 

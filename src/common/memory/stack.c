@@ -8,7 +8,7 @@
 #include "memory/memory.h"
 
 // if initialMaxSize==0, then maximal initial size is set to DEFAULT_MAXSTACK
-S32 initStack(tStack *pPtr, tMEMSIZE initialMaxSize, U32 elementSize){
+int32 initStack(tStack *pPtr, MemSize initialMaxSize, uint32 elementSize){
   pPtr->top=0;  
   pPtr->stack=0;
   pPtr->elementSize=elementSize;
@@ -44,7 +44,7 @@ void pushStack(tStack *pPtr, void *newElement){
       }
     return;
   }else{
-    U32 dst=((U32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
+    uint32 dst=((uint32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
     amMemCpy((void *)dst,newElement,pPtr->elementSize);
     return;
   }
@@ -53,7 +53,7 @@ void pushStack(tStack *pPtr, void *newElement){
 void *getTopStackElement(tStack *pPtr){
   
   //we assume stack is not empty
-    U32 adr=((U32)pPtr->stack)+(pPtr->top*pPtr->elementSize);
+    uint32 adr=((uint32)pPtr->stack)+(pPtr->top*pPtr->elementSize);
 
    //return removed element 
     return (void *)adr;
@@ -70,14 +70,14 @@ void popStack(tStack *pPtr){
   }
 }
 
-const BOOL isStackFull(const tStack *pPtr){
+const bool isStackFull(const tStack *pPtr){
   if(pPtr->top==(pPtr->size-1)) 
     return TRUE;
   else 
     return FALSE;
 }
 
-const BOOL isStackEmpty(const tStack *pPtr){
+const bool isStackEmpty(const tStack *pPtr){
 
   if(pPtr->top==0) 
     return TRUE;

@@ -21,20 +21,20 @@
 // we need info about overall number of blocks and buffer size for data storage
 
 typedef struct sMidiTrackInfo{
- U32 nbOfBlocks;        // nb of event blocks
- U32 bufPos;            // dummy buffer writing position
+ uint32 nbOfBlocks;        // nb of event blocks
+ uint32 bufPos;            // dummy buffer writing position
                         // cleared after midi event data block
- U32 eventsBlockSize;
- U32 dataBlockSize;
+ uint32 eventsBlockSize;
+ uint32 dataBlockSize;
 
 } sMidiTrackInfo_t;
 
 typedef struct sRunningStatus{
-  U16 recallRS;
-  U8 runningStatus;
+  uint16 recallRS;
+  uint8 runningStatus;
 } sRunningStatus_t;
 
 
-S32 saveSequence(sNktSeq *pSeq,const U8 *filepath,BOOL bCompressed);
+int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath,bool bCompressed);
 
 #endif

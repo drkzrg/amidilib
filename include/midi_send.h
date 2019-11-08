@@ -17,22 +17,22 @@
 
 //midi data sending, platform specific
 
-static INLINE U16 amMidiDataReady(U8 deviceNo){
+static INLINE uint16 amMidiDataReady(uint8 deviceNo){
   return Bconstat(deviceNo);
 }
 
-static INLINE U32 amMidiSendByte(U8 deviceNo,U8 data){
-  return Bconout(deviceNo,(S16)data);
+static INLINE uint32 amMidiSendByte(uint8 deviceNo,uint8 data){
+  return Bconout(deviceNo,(int16)data);
 }
 
-static INLINE void amMidiSendData(const U16 count,const U8 *data){
+static INLINE void amMidiSendData(const uint16 count,const uint8 *data){
  //use xbios function
  Midiws(count,data);
  return; 
 }
 
-static INLINE U8 amMidiGetData(U8 deviceId){
-  return (U8)Bconin(deviceId); 
+static INLINE uint8 amMidiGetData(uint8 deviceId){
+  return (uint8)Bconin(deviceId); 
 } 
 
 /* returns != 0 if data are in system MIDI buffer */
@@ -48,8 +48,8 @@ static INLINE U8 amMidiGetData(U8 deviceId){
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA amMidiGetData(DEV_MIDI)
 
-extern volatile U8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
-extern volatile U16 MIDIbytesToSend;
+extern uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
+extern volatile uint16 MIDIbytesToSend;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
 extern void clearMidiOutputBuffer();
@@ -58,7 +58,7 @@ extern void flushMidiSendBuffer();
 //clears custom midi output buffer
 static void clearMidiOutputBuffer(){
     MIDIbytesToSend=0;
-    amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(U8));
+    amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(uint8));
 }
 
 static INLINE void flushMidiSendBuffer(){

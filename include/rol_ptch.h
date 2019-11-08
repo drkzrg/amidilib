@@ -18,16 +18,16 @@ typedef enum ReverbMode{
 #define NO_CHANGE 255
 
 typedef struct midiModuleSettings{
-    U8 vendorID;
-    U8 deviceID;
-    U8 modelID;
-    U8 masterVolume;
-    U8 masterBalance;  // only GM / GS
+    uint8 vendorID;
+    uint8 deviceID;
+    uint8 modelID;
+    uint8 masterVolume;
+    uint8 masterBalance;  // only GM / GS
 
     /* MT-32 only */
-    U8 reverbMode;
-    U8 reverbTime;
-    U8 reverbLevel;
+    uint8 reverbMode;
+    uint8 reverbTime;
+    uint8 reverbLevel;
 
 } sMidiModuleSettings;
 
@@ -35,7 +35,7 @@ typedef struct midiModuleSettings{
 void MT32Reset(void);
 
 /** patch MT-32 module to GM timbres */
-void patchMT32toGM(const BOOL bStandardGMDrumset);
+void patchMT32toGM(const bool bStandardGMDrumset);
 
 /* these two functions turn parts (channels) 2-10 off on Roland CM-300 and CM-500 modules,
 as well as many other Roland GS devices.
@@ -55,11 +55,11 @@ void  allPartsOff(void);
 *	@param buf_end pointer to an end of SysEx message buffer
 *	@return calculated checksum */
 
-U8 am_calcRolandChecksum(U8 *buf_start, U8 *buf_end);
+uint8 am_calcRolandChecksum(uint8 *buf_start, uint8 *buf_end);
 
 // sets custom text message on mt-32 lcd screen
-void setMT32Message(const U8 *msg);
+void setMT32Message(const uint8 *msg);
 
-void setupMidiDevice(const eMidiDeviceType device, const U8 channel);
+void setupMidiDevice(const eMidiDeviceType device, const uint8 channel);
 
 #endif // ROL_PTCH_H

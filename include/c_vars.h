@@ -8,52 +8,31 @@
 #ifndef C_VARS_H_
 #define C_VARS_H_
 
-/* ###################################################################################
-#  INCLUDES
-################################################################################### */
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
-#include	<stdio.h>
+typedef uint8_t     uint8;
+typedef int8_t      int8;
+typedef uint16_t    uint16;
+typedef int16_t     int16;
+typedef uint32_t    uint32;
+typedef int32_t     int32;
+typedef float 		fp32;
+typedef double 		fp64;
+typedef int64_t     int64; 			//non-standard!
+typedef unsigned long long 	uint64; //non-standard!
 
-#ifdef DEBUG_BUILD
-#include <assert.h>
-#endif
-
-/* ###################################################################################
-#  TYPEDEFS
-################################################################################### */
-
-typedef unsigned char 		U8;
-typedef signed char 		S8;
-typedef unsigned short int 	U16;
-typedef signed short int 	S16;
-typedef unsigned long U32;
-typedef signed long 		S32;
-typedef	float 			F32;
-typedef float 			FP32;
-typedef double 			FP64;
-typedef unsigned short int  BOOL;
-typedef signed long long	S64; //non-standard!
-typedef unsigned long long 	U64; //non-standard!
-
-typedef size_t tMEMSIZE;
+typedef size_t MemSize;
 typedef void (*VOIDFUNCPTR)();
 
 #ifndef TRUE
-#define TRUE 1
+#define TRUE true
 #endif
 
 #ifndef FALSE
-#define FALSE 0
+#define FALSE false
 #endif
-
-void compilerSanityCheck(void);
-
-// check processor endianess ( processor sanity check ;) )
-
-// returns:
-// TRUE - for little endian, x86, PS2
-// FALSE / for big endian - // Big Endian - GameCube, Atari
-const BOOL checkEndianess();
 
 #ifdef USE_INLINE
   #define INLINE inline        /* use standard inline */
@@ -61,6 +40,31 @@ const BOOL checkEndianess();
   #define INLINE              /* no inline */
 #endif
 
-#define STATIC_ASSERT(cond,str) _Static_assert (cond, str);
+#ifndef NDEBUG
+#include <assert.h>
+#include <stdlib.h>
+
+#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
+
+#define ASSERT(expr)                                                         \
+  ((void)((expr) ||                                                          \
+          (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
+                   #expr, __FILE__, __LINE__),                               \
+           ((int (*)(void))abort)())))
+#else
+#define assert(cond) 
+#define STATIC_ASSERT(cond, msg) 
+#define ASSERT(expr) (void)
+
+#endif
+
+// checks compiler builtin variable sizes 
+void compilerSanityCheck(void);
+
+// check processor endianess ( processor sanity check ;) )
+// returns:
+// TRUE - for little endian, x86, PS2
+// FALSE / for big endian - // Big Endian - GameCube, Atari
+const bool checkEndianess();
 
 #endif

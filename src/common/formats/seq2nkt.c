@@ -14,6 +14,8 @@
 #include "timing/miditim.h"
 #include "memory/linalloc.h"
 
+#include <stdio.h>
+
 #ifdef ENABLE_GEMDOS_IO
 #include "fmio.h"
 #include <mint/ostruct.h>
@@ -21,7 +23,7 @@
 #endif
 
 
-void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSize){
+void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *bufDataSize){
     // write data to out data block
 
     switch(pCurEvent->eventBlock.type){
@@ -31,7 +33,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             sNoteOn_EventBlock_t *pEventBlk=(sNoteOn_EventBlock_t *)(pCurEvent->eventBlock.dataPtr);
             amTrace("T_NOTEON ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
             // write to output buffer
-            *(tab + (*bufPos))= (U8)(EV_NOTE_ON)|pEventBlk->ubChannelNb; (*bufPos)++;
+            *(tab + (*bufPos))= (uint8)(EV_NOTE_ON)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
             (*bufDataSize)+=3;
@@ -41,7 +43,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
             // dump data
             sNoteOff_EventBlock_t *pEventBlk=(sNoteOff_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             amTrace("T_NOTEOFF ch: %d n: %d vel:%d \n",pEventBlk->ubChannelNb, pEventBlk->eventData.noteNb, pEventBlk->eventData.velocity);
-            tab[(*bufPos)]=(U8)(EV_NOTE_OFF)|(pEventBlk->ubChannelNb); (*bufPos)++;
+            tab[(*bufPos)]=(uint8)(EV_NOTE_OFF)|(pEventBlk->ubChannelNb); (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.velocity; (*bufPos)++;
             (*bufDataSize)+=3;
@@ -135,7 +137,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
          amTrace("T_SYSEX \n");
         // format depends on connected device
           sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
-          amTrace((const U8*)"Copy SysEX Message.\n");
+          amTrace((const uint8*)"Copy SysEX Message.\n");
           //TODO: check buffer overflow
           amMemCpy(&tab[(*bufPos)],pEventBlk->pBuffer,pEventBlk->bufferSize);
           (*bufDataSize)+=pEventBlk->bufferSize;
@@ -154,7 +156,7 @@ void processSeqEvent(sEventList *pCurEvent, U8 *tab,U32 *bufPos, U32 *bufDataSiz
 };
 
 
-U8 seq2nktMap[]={
+uint8 seq2nktMap[]={
     NKT_MIDIDATA,       //  T_NOTEON=0,
     NKT_MIDIDATA,       //	T_NOTEOFF,
     NKT_MIDIDATA,       //	T_NOTEAFT,
@@ -172,21 +174,21 @@ U8 seq2nktMap[]={
 
 
 #ifdef ENABLE_GEMDOS_IO
-static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, S16 *fh,U32 *blocksWritten, U32 *bytesWritten)
+static int32 handleSingleTrack(const sSequence_t *pSeq, const bool bCompress, int16 *fh,uint32 *blocksWritten, uint32 *bytesWritten)
 #else
-static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file,U32 *blocksWritten, U32 *bytesWritten)
+static int32 handleSingleTrack(const sSequence_t *pSeq, const bool bCompress, FILE **file,uint32 *blocksWritten, uint32 *bytesWritten)
 #endif
 {
 //TODO
     /*
     printf("Processing single track ...\n");
-    U8 tempBuffer[32 * 1024]={0};
+    uint8 tempBuffer[32 * 1024]={0};
 
-    U32 bufPos=0;
-    U32 bufDataSize=0;
+    uint32 bufPos=0;
+    uint32 bufDataSize=0;
     sTrack_t *pTrack=pSeq->arTracks[0];
     sEventList *eventPtr=pTrack->pTrkEventList;
-    U32 currDelta=0;
+    uint32 currDelta=0;
     sNktBlk stBlock;
 
     while(eventPtr!=NULL){
@@ -205,22 +207,22 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
-                U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+                uint32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
 
                 amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                stBlock.blockSize=sizeof(U32);
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.blockSize=sizeof(uint32);
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
-                U32 VLQdeltaTemp=0;
+                uint32 VLQdeltaTemp=0;
 
                 // write VLQ delta
-                S32 count=0;
-                count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                int32 count=0;
+                count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
 
 #ifdef ENABLE_GEMDOS_IO
-                S32 bw=0;
+                int32 bw=0;
 
                 bw = Fwrite(*fh,count,&VLQdeltaTemp);
                 *bytesWritten+= bw;
@@ -228,12 +230,12 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                 bw = Fwrite(*fh,sizeof(stBlock),&stBlock);
                 *bytesWritten+= bw;
 
-                bw = Fwrite(*fh,sizeof(U32),&tempo);
+                bw = Fwrite(*fh,sizeof(uint32),&tempo);
                 *bytesWritten+= bw;
 #else
                 *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
                 *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-                *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                *bytesWritten+=fwrite(&tempo,sizeof(uint32),1,*file);
 #endif
 
                 ++(*blocksWritten);
@@ -246,15 +248,15 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                 amTrace("Write End of Track \n");
                 stBlock.blockSize=0;
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 // write block to file
                 // write VLQ delta
-                U32 VLQdeltaTemp=0;
-                S32 count=0;
-                count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                uint32 VLQdeltaTemp=0;
+                int32 count=0;
+                count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
 #ifdef ENABLE_GEMDOS_IO
-                S32 bw = 0;
+                int32 bw = 0;
 
                 bw = Fwrite(*fh,count,&VLQdeltaTemp);;
                 *bytesWritten+= bw;
@@ -274,7 +276,7 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                 // process events as normal
                 processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 // next event
                 eventPtr=eventPtr->pNext;
@@ -290,22 +292,22 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 
                     if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
                         printf("Write Set Tempo: %lu, event delta 0\n",((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal);
-                        U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+                        uint32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
 
                         amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                        stBlock.blockSize=sizeof(U32);
-                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                        stBlock.blockSize=sizeof(uint32);
+                        stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                         //write block to file
 
                         // write VLQ delta
-                        S32 count=0;
-                        U32 VLQdeltaTemp=0;
+                        int32 count=0;
+                        uint32 VLQdeltaTemp=0;
 
-                        count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                        count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
 #ifdef ENABLE_GEMDOS_IO
-                        S32 bw = 0;
+                        int32 bw = 0;
 
                         bw=Fwrite(*fh, count, &VLQdeltaTemp);
                         *bytesWritten+= bw;
@@ -313,12 +315,12 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                         bw=Fwrite(*fh, sizeof(stBlock),&stBlock);
                         *bytesWritten+= bw;
 
-                        bw=Fwrite(*fh, sizeof(U32),&tempo);
+                        bw=Fwrite(*fh, sizeof(uint32),&tempo);
                         *bytesWritten+= bw;
 #else
                         *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
                         *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-                        *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                        *bytesWritten+=fwrite(&tempo,sizeof(uint32),1,*file);
 #endif
 
 
@@ -332,13 +334,13 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                         printf("Write End of Track, event delta 0\n");
 
                         stBlock.blockSize=0;
-                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                        stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                         // write block to file
                         // write VLQ data
-                        U32 VLQdeltaTemp=0;
-                        S32 count=0;
-                        count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                        uint32 VLQdeltaTemp=0;
+                        int32 count=0;
+                        count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
 
 #ifdef ENABLE_GEMDOS_IO
                         *bytesWritten+=Fwrite(*fh, count, &VLQdeltaTemp);
@@ -378,14 +380,14 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
                     //write block to file
 
                     // write VLQ delta
-                    S32 count=0;
-                    U32 VLQdeltaTemp=0;
+                    int32 count=0;
+                    uint32 VLQdeltaTemp=0;
 
-                    count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                    count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
                     amTrace("Write block size %d\n",stBlock.blockSize);
 
 #ifdef ENABLE_GEMDOS_IO
-                    S32 bw = 0;
+                    int32 bw = 0;
 
                     bw=Fwrite(*fh, count, &VLQdeltaTemp);;
                     *bytesWritten+=bw;
@@ -430,20 +432,20 @@ static S32 handleSingleTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE
 }
 
 #ifdef ENABLE_GEMDOS_IO
-static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, S16 *fh, U32 *bytesWritten, U32 *blocksWritten){
+static int32 handleMultiTrack(const sSequence_t *pSeq, const bool bCompress, int16 *fh, uint32 *bytesWritten, uint32 *blocksWritten){
 #else
-static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE **file, U32 *bytesWritten, U32 *blocksWritten){
+static int32 handleMultiTrack(const sSequence_t *pSeq, const bool bCompress, FILE **file, uint32 *bytesWritten, uint32 *blocksWritten){
 #endif
 /*
 //TODO
     printf("Processing multi track sequence\n");
-    U8 tempBuffer[32 * 1024]={0};
+    uint8 tempBuffer[32 * 1024]={0};
 
-    U32 bufPos=0;
-    U32 bufDataSize=0;
+    uint32 bufPos=0;
+    uint32 bufDataSize=0;
     sTrack_t *pTrack=pSeq->arTracks[0];
     sEventList *eventPtr=pTrack->pTrkEventList;
-    U32 currDelta=0;
+    uint32 currDelta=0;
     sNktBlk stBlock;
 
     while(eventPtr!=NULL){
@@ -462,24 +464,24 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
             }
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
-                U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+                uint32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
 
                 amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                stBlock.blockSize=sizeof(U32);
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.blockSize=sizeof(uint32);
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
-                U32 VLQdeltaTemp=0;
+                uint32 VLQdeltaTemp=0;
                 if(file!=NULL){
 
                    // write VLQ delta
-                   S32 count=0;
-                   count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                   int32 count=0;
+                   count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
                    *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
 
                    *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-                   *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                   *bytesWritten+=fwrite(&tempo,sizeof(uint32),1,*file);
                  }
                 ++(*blocksWritten);
 
@@ -491,14 +493,14 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
 
                 amTrace("Write End of Track \n");
                 stBlock.blockSize=0;
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 //write block to file
                 if(file!=NULL){
                     // write VLQ delta
-                    U32 VLQdeltaTemp=0;
-                    S32 count=0;
-                    count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                    uint32 VLQdeltaTemp=0;
+                    int32 count=0;
+                    count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
                     *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
 
                     *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
@@ -513,7 +515,7 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
 
                 // process events as normal
                 processSeqEvent(eventPtr, &tempBuffer[0], &bufPos, &bufDataSize);
-                stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                 // next event
                 eventPtr=eventPtr->pNext;
@@ -529,25 +531,25 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
 
                     if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_SET_TEMPO)){
                         printf("Write Set Tempo: %lu, event delta 0\n",((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal);
-                        U32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
+                        uint32 tempo = ((sTempo_EventBlock_t *)(eventPtr->eventBlock.dataPtr))->eventData.tempoVal;
 
                         amTrace("Write Set Tempo: %lu event\n",tempo);
 
-                        stBlock.blockSize=sizeof(U32);
-                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                        stBlock.blockSize=sizeof(uint32);
+                        stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                         //write block to file
 
                         if(file!=NULL){
                            // write VLQ delta
-                           S32 count=0;
-                           U32 VLQdeltaTemp=0;
+                           int32 count=0;
+                           uint32 VLQdeltaTemp=0;
 
-                           count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                           count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
                            *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
 
                            *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
-                           *bytesWritten+=fwrite(&tempo,sizeof(U32),1,*file);
+                           *bytesWritten+=fwrite(&tempo,sizeof(uint32),1,*file);
                          }
                         ++(*blocksWritten);
 
@@ -559,14 +561,14 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
                         printf("Write End of Track, event delta 0\n");
 
                         stBlock.blockSize=0;
-                        stBlock.msgType=(U16)seq2nktMap[eventPtr->eventBlock.type];
+                        stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
                         //write block to file
                         if(file!=NULL){
                             // write VLQ data
-                            U32 VLQdeltaTemp=0;
-                            S32 count=0;
-                            count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                            uint32 VLQdeltaTemp=0;
+                            int32 count=0;
+                            count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
 
                             *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
                             *bytesWritten+=fwrite(&stBlock,sizeof(stBlock),1,*file);
@@ -602,10 +604,10 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
 
                     if(file!=NULL){
                       // write VLQ delta
-                      S32 count=0;
-                      U32 VLQdeltaTemp=0;
+                      int32 count=0;
+                      uint32 VLQdeltaTemp=0;
 
-                      count=WriteVarLen((S32)currDelta, (U8 *)&VLQdeltaTemp);
+                      count=WriteVarLen((int32)currDelta, (uint8 *)&VLQdeltaTemp);
                       *bytesWritten+=fwrite(&VLQdeltaTemp,count,1,*file);
 
                       amTrace("Write block size %d\n",stBlock.blockSize);
@@ -641,14 +643,14 @@ static S32 handleMultiTrack(const sSequence_t *pSeq, const BOOL bCompress, FILE 
 
 
 //converts sequence to nkt file, optionally writes file named out
-S32 Seq2NktFile(const sSequence_t *pSeq, const U8 *pOutFileName, const BOOL bCompress){
-U32 bytes_written = 0;
-U32 blocks_written = 0;
-BOOL error=FALSE;
+int32 Seq2NktFile(const sSequence_t *pSeq, const uint8 *pOutFileName, const bool bCompress){
+uint32 bytes_written = 0;
+uint32 blocks_written = 0;
+bool error=FALSE;
 sNktHd nktHead;
 /*
 #ifdef ENABLE_GEMDOS_IO
-S16 fh=GDOS_INVALID_HANDLE;
+int16 fh=GDOS_INVALID_HANDLE;
 #else
 FILE* file=0;
 #endif
@@ -718,17 +720,17 @@ FILE* file=0;
 
        if(fh>0){
 
-        S32 offset=Fseek(0, fh, SEEK_SET);
+        int32 offset=Fseek(0, fh, SEEK_SET);
 
         if(offset<0){
-            amTrace("[GEMDOS] Fseek error, %s",getGemdosError((S16)offset));
+            amTrace("[GEMDOS] Fseek error, %s",getGemdosError((int16)offset));
         }
 
         // update header
         Fwrite(fh, sizeof(sNktHd), &nktHead);
         amTrace("[GEMDOS] Closing file handle : [%d] \n", fh);
 
-        S16 err=Fclose(fh);
+        int16 err=Fclose(fh);
 
         if(err!=GDOS_OK){
             amTrace("[GEMDOS] Error closing file handle : [%d] \n", fh, getGemdosError(err));

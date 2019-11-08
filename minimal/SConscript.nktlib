@@ -59,6 +59,10 @@ compilerName=''
 LIBRARYNAME = 'nkt'
 PREFIX=''
 
+num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+SetOption('num_jobs', num_cpu)
+print "running with ", GetOption('num_jobs'), "jobs." 
+
 if(TOOLSET=='GCC434'):
 # Cygwin path
         PREFIX = '/opt/cross-mint'
@@ -67,14 +71,16 @@ if(TOOLSET=='GCC434'):
         compilerName = 'm68k-atari-mint-'
         env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
         env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
-elif(TOOLSET=='GCC710'):
+elif(TOOLSET=='GCCBROWNELF'):
 # Linux/Cygwin cross compiler
-    PREFIX = '/usr'
-    GCC_VERSION_DIR='7.2.0'
-
-    compilerName = 'm68k-ataribrowner-elf-'
-    env['CPPPATH'] = [PREFIX + '/m68k-ataribrowner-elf/include']
-    env['LIBPATH'] = [PREFIX + '/m68k-ataribrowner-elf/lib']
+# Cygwin path
+    PREFIX = '/home/saulot/opt/'
+#Linux
+#  PREFIX = '/usr'
+    GCC_VERSION_DIR='7.3.0'
+    compilerName = 'm68k-ataribrown-elf-'
+    env['CPPPATH'] = [PREFIX + '/m68k-ataribrown-elf/include']
+    env['LIBPATH'] = [PREFIX + '/m68k-ataribrown-elf/lib']
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
@@ -87,7 +93,7 @@ env['STACK'] = PREFIX + '/bin/' + compilerName + 'stack'
 env['AR'] = PREFIX + '/bin/' + compilerName + 'ar'
 env['RANLIB'] = PREFIX + '/bin/' + compilerName + 'ranlib'
 
-if(TOOLSET == 'GCC710'):
+if(TOOLSET == 'GCCBROWNELF'):
     env['PROGSUFFIX'] = '.elf'
 else:
     env['PROGSUFFIX'] = '.tos'
@@ -146,7 +152,7 @@ if(TOOLSET=='GCC434'):
         else:
                 print('Unsupported target. Exiting...')
                 exit(-1)
-elif(TOOLSET == 'GCC710'):
+elif(TOOLSET == 'GCCBROWNELF'):
         fpu_flags = ''
 
         if(use_fpu == 'yes'):
@@ -161,7 +167,7 @@ elif(TOOLSET == 'GCC710'):
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68000/'
                 LIB_TARGET = '000'
                 # floating point support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68000','/usr/m68k-ataribrowner-elf/lib/m68000']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68000','/usr/m68k-ataribrown-elf/lib/m68000']
         elif(targetPlatform == 'F030'):
                 CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
@@ -172,10 +178,10 @@ elif(TOOLSET == 'GCC710'):
 
                 if(use_fpu == 'yes'):
                         # hardware fpu support
-                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68020', '/usr/m68k-ataribrowner-elf/lib/m68020']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68020', '/usr/m68k-ataribrown-elf/lib/m68020']
                 else:
                         # soft float
-                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68020/softfp', '/usr/m68k-ataribrowner-elf/lib/m68020/softfp']
+                        env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68020/softfp', '/usr/m68k-ataribrown-elf/lib/m68020/softfp']
 
         elif(targetPlatform == 'CT60'):
                 CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
@@ -186,7 +192,7 @@ elif(TOOLSET == 'GCC710'):
                 LIB_TARGET = '060'
                 # floating point support
                 # hardware fpu support
-                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrowner-elf/'+ GCC_VERSION_DIR + '/m68060', '/usr/m68k-ataribrowner-elf/lib/m68060']
+                env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68060', '/usr/m68k-ataribrown-elf/lib/m68060']
         else:
                 print('Unsupported target. Exiting...')
                 exit(-1)
@@ -257,7 +263,7 @@ env["LINKFLAGS"] = LDFLAGS
 env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
-if(TOOLSET == 'GCC710'):
+if(TOOLSET == 'GCCBROWNELF'):
     lib_dir='./lib/elf/'
 else:
     lib_dir='./lib/aout/'

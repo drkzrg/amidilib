@@ -4,9 +4,6 @@
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-    
-#include <assert.h>
-#include <string.h>
 
 #include "amidilib.h"
 #include "amlog.h"

@@ -14,7 +14,7 @@
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
 */
-BOOL isSeqPlaying(void);
+bool isSeqPlaying(void);
 
 /** stops sequence replay */
 void stopSeq(void);
@@ -33,7 +33,7 @@ void initSeq(sSequence_t *seq, eTimerType timerType);
 void initSeqManual(sSequence_t *seq);
 
 /** mutes selected track or first one if there is only one */
-void muteTrack(const U16 trackNb,const BOOL bMute);
+void muteTrack(const uint16 trackNb,const bool bMute);
 
 /** toggles between replay modes. 
  * "play once"(replay stops after end of tracks) and "play in loop" 
@@ -55,6 +55,6 @@ void am_destroySequence (sSequence_t **pPtr);
 /** Outputs current sequence state. */
 void printSequenceState();
 
-const U8 *getPlayStateStr(const U16 mode);
+const uint8 *getPlayStateStr(const uint16 mode);
 
 #endif

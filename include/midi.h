@@ -35,17 +35,17 @@ typedef enum{
 */
 
 typedef struct __attribute__((packed)) ChunkHeader{
-  U32 id;
-  U32 headLenght;
+  uint32 id;
+  uint32 headLenght;
 } sChunkHeader,*pChunkHeader;
 
 
 typedef struct __attribute__((packed)) MThd{
-	U32 id;
-	U32 headLenght;
-	U16 format;
-	U16 nTracks;
-	U16 division;
+	uint32 id;
+	uint32 headLenght;
+	uint16 format;
+	uint16 nTracks;
+	uint16 division;
 } sMThd;
 
 
@@ -54,8 +54,8 @@ typedef struct __attribute__((packed)) MThd{
  */
 
 typedef struct __attribute__((packed)) MTrk {
-    U32 id;
-	U32 headLenght;
+    uint32 id;
+	uint32 headLenght;
 	/* offset track event data 0x08 offset */
 } sMTrk;
 
@@ -66,76 +66,76 @@ typedef struct __attribute__((packed)) MTrk {
 */
 
 typedef struct __attribute__((packed)) DeviceInfo{
-  U8 nChannel;                  /* channel number on which device receives data */
-  U8 pad[4];
-  U16 mID;                      /* vendor id, complete list in VENDORS.H */
-  U16 deviceFamilyID;           /* ff ff	Device family code (14 bits, LSB first) */
-  U16 deviceFamilyMC;           /* dd dd	Device family member code (14 bits, LSB first) */
-  U16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
+  uint8 nChannel;                  /* channel number on which device receives data */
+  uint8 pad[4];
+  uint16 mID;                      /* vendor id, complete list in VENDORS.H */
+  uint16 deviceFamilyID;           /* ff ff	Device family code (14 bits, LSB first) */
+  uint16 deviceFamilyMC;           /* dd dd	Device family member code (14 bits, LSB first) */
+  uint16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
 } sDeviceInfo,*pDeviceInfo;
 
 
 /* SMPTE OFFSET struct */
 typedef struct __attribute__((packed)) SMPTEoffset{
-    U8 hr;
-    U8 mn;
-    U8 se;
-    U8 fr;
-    U8 ff;
+    uint8 hr;
+    uint8 mn;
+    uint8 se;
+    uint8 fr;
+    uint8 ff;
   } sSMPTEoffset;
 
 /* Time signature struct */
 
 typedef struct __attribute__((packed)) TimeSignature{
- U8 nn;
- U8 dd;
- U8 cc;
- U8 bb;
+ uint8 nn;
+ uint8 dd;
+ uint8 cc;
+ uint8 bb;
 } sTimeSignature;
 
 /*************** event structs */
 typedef struct __attribute__((packed)) NoteOn_t{
- S8 noteNb;
- S8 velocity;
+ int8 noteNb;
+ int8 velocity;
 }  sNoteOn_t;
 
 typedef struct __attribute__((packed)) NoteOff_t{
- S8 noteNb;
- S8 velocity;
+ int8 noteNb;
+ int8 velocity;
 } sNoteOff_t;
 
 typedef struct __attribute__((packed)) NoteAft_t{
- S8 noteNb;
- S8 pressure;
+ int8 noteNb;
+ int8 pressure;
 } sNoteAft_t;
 
 typedef struct __attribute__((packed)) Controller_t{
- S8 controllerNb;
- S8 value;
+ int8 controllerNb;
+ int8 value;
 } sController_t;
 
 typedef struct __attribute__((packed)) ProgramChange_t {
- S8 programNb;
+ int8 programNb;
 } sProgramChange_t;
 
 typedef struct __attribute__((packed)) ChannelAft_t{
- S8 pressure;
+ int8 pressure;
 } sChannelAft_t;
 
 typedef struct __attribute__((packed)) PitchBend_t{
- S8  LSB;
- S8  MSB;
+ int8  LSB;
+ int8  MSB;
 } sPitchBend_t;
 
 typedef struct __attribute__((packed)) Tempo_t{
- U32 tempoVal;
+ uint32 tempoVal;
 } sTempo_t;
 
-const U8 *getMidiNoteName(const U8 NoteNb);
-const U8 *getMidiControllerName(const U8 NoteNb);
+const uint8 *getMidiNoteName(const uint8 NoteNb);
+const uint8 *getMidiControllerName(const uint8 NoteNb);
 
 //returns note name or rhytm part name if current channel is 9
-const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNumber);
+const uint8 *getNoteName(const uint8 currentChannel,const uint8 currentPN,const uint8 noteNumber);
 
 /** read MIDI Variable lenght quantity
 *  @param pVLQdata pointer to VLQ data
@@ -144,9 +144,9 @@ const U8 *getNoteName(const U8 currentChannel,const U8 currentPN,const U8 noteNu
 */
 
 /* reads Variable Lenght Quantity */
-static inline U32 readVLQ(U8 *pChar,U8 *ubSize){
+static inline uint32 readVLQ(uint8 *pChar,uint8 *ubSize){
 // TODO: rewrite this in assembly
-U32 value=0;
+uint32 value=0;
 (*ubSize)=0;
 value = (*pChar);
 
@@ -156,7 +156,7 @@ if ( (value & 0x80) ){
 /* get next byte */
 pChar++;
 (*ubSize)++;
-  U8 c=0;
+  uint8 c=0;
        do{
 	     value = (value << 7);
          c = (*pChar);
@@ -172,13 +172,13 @@ return(value);
 }
 
 // reads a variable length integer
-// TODO: remove it and replace with U32 readVLQ(U8 *pChar,U8 *ubSize)
-static inline U32 ReadVarLen(S8* buffer){
-U32 value;
+// TODO: remove it and replace with uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
+static inline uint32 ReadVarLen(int8* buffer){
+uint32 value;
 
 if ((value = *buffer++) & 0x80) {
   value &= 0x7f;
-  U8 c;
+  uint8 c;
   do  {
 	  
     value = (value << 7) + ((c = *buffer++) & 0x7f);
@@ -188,8 +188,8 @@ if ((value = *buffer++) & 0x80) {
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
-static inline S32 WriteVarLen( S32 value, U8* out ){
-    S32 buffer, count = 0;
+static inline int32 WriteVarLen( int32 value, uint8* out ){
+    int32 buffer, count = 0;
 
     buffer = value & 0x7f;
 
@@ -201,7 +201,7 @@ static inline S32 WriteVarLen( S32 value, U8* out ){
 
     while (1) {
         ++count;
-        *out = (U8)buffer;
+        *out = (uint8)buffer;
         ++out;
         if (buffer & 0x80)
             buffer >>= 8;

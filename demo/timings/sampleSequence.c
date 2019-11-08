@@ -63,7 +63,7 @@
   {0L,0,0xAD}
 };
 
- sEvent *getTestSequenceChannel(U8 chNb){
+ sEvent *getTestSequenceChannel(uint8 chNb){
      switch(chNb){
         case 0: return &testSequenceChannel1[0]; break;
         case 1: return &testSequenceChannel2[0]; break;

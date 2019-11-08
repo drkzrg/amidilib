@@ -14,7 +14,7 @@
 /* UPS - update interval (updates per second) */
 /* music resolution are in PPQ */
 
-float  am_calculateTimeStepFlt(const U16 qpm,const U16 ppq,const U16 ups){
+float  am_calculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups){
     float ppu=0;
     float temp=0;
     ppu=(float)qpm*(float)ppq;
@@ -34,40 +34,40 @@ float  am_calculateTimeStepFlt(const U16 qpm,const U16 ppq,const U16 ups){
     MicrosPerPPQN = SubFramesPerPPQN * Frames * SubFrames
 */
 
-U16 am_decodeTimeDivisionInfo(U16 timeDivision){
+uint16 am_decodeTimeDivisionInfo(uint16 timeDivision){
   
   if(timeDivision&0x8000){
     
     /* SMPTE */
-	U8 subframe=0;
+	uint8 subframe=0;
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
-    amTrace((const U8*)"Timing (SMPTE): %x, %u\n", subframe,(timeDivision&0x00FF));
+    amTrace((const uint8*)"Timing (SMPTE): %x, %u\n", subframe,(timeDivision&0x00FF));
     return 0;		//todo:
   }else{
     /* PPQN */
-    amTrace((const U8*)"Timing (PPQN): %u\n", timeDivision);
+    amTrace((const uint8*)"Timing (PPQN): %u\n", timeDivision);
     return timeDivision;
    }
 }
 
-static U32 begin;
-static  U32 end;
-static  S32 usp;
+static uint32 begin;
+static  uint32 end;
+static  int32 usp;
 
 void getTimeStamp(){
 // get Atari native system 200hz counter
      usp=Super(0L);
-     begin=*((S32 *)0x4ba);
+     begin=*((int32 *)0x4ba);
      SuperToUser(usp);
 }
 
-U32 getTimeDelta(){
-U32 delta=0L;
+uint32 getTimeDelta(){
+uint32 delta=0L;
 
 //calculate delta in seconds
     usp=Super(0L);
-    end=*((S32 *)0x4ba);
+    end=*((int32 *)0x4ba);
     delta=(end-begin)/200;
     SuperToUser(usp);
 

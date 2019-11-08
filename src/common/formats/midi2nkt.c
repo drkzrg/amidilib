@@ -20,18 +20,18 @@
 #include "fmio.h"
 #endif
 
-extern U32 collectMidiTrackInfo(void *pMidiData, U16 trackNb, sMidiTrackInfo_t *pBufInfo, BOOL *bEOT);
+extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT);
 
 // from mparser.c
-U8  isMidiChannelEvent(U8 byteEvent){
+uint8  isMidiChannelEvent(uint8 byteEvent){
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
     {return 1;}
     else return 0;
 }
 
-U8  isMidiRTorSysex(U8 byteEvent){
+uint8  isMidiRTorSysex(uint8 byteEvent){
 
-    if( ((byteEvent>=(U8)0xF0)&&(byteEvent<=(U8)0xFF)) ){
+    if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) ){
       /* it is! */
         return (1);
     }
@@ -40,11 +40,11 @@ U8  isMidiRTorSysex(U8 byteEvent){
 }
 
 /* combine bytes function for pitch bend */
-U16 combineBytes(U8 bFirst, U8 bSecond){
-    U16 val;
-    val = (U16)bSecond;
+uint16 combineBytes(uint8 bFirst, uint8 bSecond){
+    uint16 val;
+    val = (uint16)bSecond;
     val<<=7;
-    val|=(U16)bFirst;
+    val|=(uint16)bFirst;
  return(val);
 }
 
@@ -52,16 +52,16 @@ U16 combineBytes(U8 bFirst, U8 bSecond){
 #define OUT_BUFFER_SIZE 1024  // should be sufficient if there are no big SysEx messages
                               // TODO: make it configurable (?)
 typedef struct sBufferInfo{
- U8 buffer[OUT_BUFFER_SIZE];  // temp buffer for gathering data that go to data buffer
- U32 bufPos;                  // buffer[] writing position
+ uint8 buffer[OUT_BUFFER_SIZE];  // temp buffer for gathering data that go to data buffer
+ uint32 bufPos;                  // buffer[] writing position
 
- U32 eventsBlockOffset; //where we are writing in events block buffer
- U32 dataBlockOffset;   // where we are writing in data block buffer
+ uint32 eventsBlockOffset; //where we are writing in events block buffer
+ uint32 dataBlockOffset;   // where we are writing in data block buffer
 
 } sBufferInfo_t;
 
 
-void processNoteOff(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processNoteOff(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
     sNoteOff_t *pNoteOff=0;
 
     if(rs->recallRS==0){
@@ -93,7 +93,7 @@ void processNoteOff(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferI
 }
 
 
-void processNoteOn(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processNoteOn(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
     sNoteOn_t *pNoteOn=0;
 
     if(rs->recallRS==0){
@@ -119,7 +119,7 @@ void processNoteOn(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferIn
 
 }
 
-void processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processNoteAft(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
   sNoteAft_t *pNoteAft=0;
 
   if(rs->recallRS==0){
@@ -143,7 +143,7 @@ void processNoteAft(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferI
 }
 
 
-void processControllerEvent(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processControllerEvent(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
     sController_t *pContrEv=0;
 
     if(rs->recallRS==0){
@@ -166,7 +166,7 @@ void processControllerEvent(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t*
     (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
-void processProgramChange(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+void processProgramChange(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
     sProgramChange_t *pPC=0;
 
     if(rs->recallRS==0){
@@ -188,7 +188,7 @@ void processProgramChange(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* b
     (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
-void processChannelAft(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
+void processChannelAft(uint8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
 sChannelAft_t *pChAft=0;
 
     if(rs->recallRS==0){
@@ -211,7 +211,7 @@ sChannelAft_t *pChAft=0;
     (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
-void processPitchBend(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
+void processPitchBend(uint8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* bufferInfo){
     sPitchBend_t *pPitchBend=0;
 
     if(rs->recallRS==0){
@@ -235,17 +235,17 @@ void processPitchBend(U8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* buffer
     (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 }
 
-void processMetaEvent( U32 delta, U8 **pMidiData, sNktSeq *pSeq, U16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, BOOL *bEOT){
+void processMetaEvent( uint32 delta, uint8 **pMidiData, sNktSeq *pSeq, uint16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, bool *bEOT){
 
-U8 size=0;
-U32 metaLenght=0;
+uint8 size=0;
+uint32 metaLenght=0;
 sNktBlock_t stBlock;
 
 sNktTrack *pTrk=&pSeq->pTracks[trackIdx];
 
 /*get meta event type */
 ++(*pMidiData);
-U8 metaType=*(*pMidiData);
+uint8 metaType=*(*pMidiData);
 
 ++(*pMidiData);
 
@@ -264,12 +264,12 @@ metaLenght=readVLQ((*pMidiData),&size);
         stBlock.bufferOffset=0; //we don't mind
 
          // write VLQ
-         U32 eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-         S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
+         uint32 eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+         int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
          bufferInfo->eventsBlockOffset+=count;
 
          // write event info block
-         eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+         eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
          amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
          bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
 
@@ -282,12 +282,12 @@ metaLenght=readVLQ((*pMidiData),&size);
             amTrace("Meta Set Tempo\n");
 
             stBlock.msgType = NKT_TEMPO_CHANGE;
-            stBlock.blockSize = 5 * sizeof(U32);   //U32 tempo value + 4*U32 values (25,50,100,200hz timesteps)
+            stBlock.blockSize = 5 * sizeof(uint32);   //uint32 tempo value + 4*uint32 values (25,50,100,200hz timesteps)
             stBlock.bufferOffset=bufferInfo->dataBlockOffset;
 
-            U8 ulVal[3] = {0};   /* for retrieving set tempo info */
-            U32 val1=0, val2=0, val3=0;
-            amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(U8) );
+            uint8 ulVal[3] = {0};   /* for retrieving set tempo info */
+            uint32 val1=0, val2=0, val3=0;
+            amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(uint8) );
 
             val1 = ulVal[0], val2 = ulVal[1],val3 = ulVal[2];
             val1=(val1<<16)&0x00FF0000L;
@@ -299,24 +299,24 @@ metaLenght=readVLQ((*pMidiData),&size);
             amTrace("%lu ms per quarter-note\n", val1);
 
             // write VLQ delta
-            U32 eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-            S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
+            uint32 eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+            int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
             bufferInfo->eventsBlockOffset+=count;
 
             // write event info block
-            eventsBufPos=((U32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+            eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
             amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
             bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
 
             // write tempo value to data buffer
-            eventsBufPos=((U32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
-            amMemCpy((void *)eventsBufPos,&val1,sizeof(U32));
-            bufferInfo->dataBlockOffset+=sizeof(U32);
+            eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
+            amMemCpy((void *)eventsBufPos,&val1,sizeof(uint32));
+            bufferInfo->dataBlockOffset+=sizeof(uint32);
 
-            U32 precalc[NKT_UMAX]={0L};
-            U32 td = pSeq->timeDivision;
-            U32 bpm = 60000000UL / val1;
-            U32 tempPPU = bpm * td;
+            uint32 precalc[NKT_UMAX]={0L};
+            uint32 td = pSeq->timeDivision;
+            uint32 bpm = 60000000UL / val1;
+            uint32 tempPPU = bpm * td;
 
             amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
            // precalculate valuies for different update steps
@@ -357,7 +357,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                     } break;
                     default:{
                         //assert(0);
-                        amTrace((const U8*)"[Error] Invalid timer update value %d\n", i);
+                        amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };
 
@@ -365,9 +365,9 @@ metaLenght=readVLQ((*pMidiData),&size);
 
            // write precalculated values to data buffer
 
-           eventsBufPos=((U32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
-           amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(U32));
-           bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(U32);
+           eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
+           amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(uint32));
+           bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(uint32);
 
     }break;
 
@@ -394,9 +394,9 @@ metaLenght=readVLQ((*pMidiData),&size);
 
 }
 
-void processSysex(U8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
-U32 ulCount=0L;
-U8 *pDataPtr=0;
+void processSysex(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo){
+uint32 ulCount=0L;
+uint8 *pDataPtr=0;
 
 pDataPtr=(*pMidiData); //save SysEX start
 
@@ -412,10 +412,10 @@ while( (*(*pMidiData))!=EV_EOX){
 }
 
 
-void processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, U16 trackNbToProcess, BOOL *bEOT){
- U8 usSwitch=0;
- U8 ubSize=0;
- U32 iError=0;
+void processMidiEvent(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, uint16 trackNbToProcess, bool *bEOT){
+ uint8 usSwitch=0;
+ uint8 ubSize=0;
+ uint32 iError=0;
 
  /* handling of running status */
  /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
@@ -479,36 +479,36 @@ void processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferI
              case SC_MTCQF:
                amTrace("delta: %lu SC_MTCQF\n", delta);
                rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
-               amTrace((const U8*)"Event: System common MIDI time code qt frame\n");
+               amTrace((const uint8*)"Event: System common MIDI time code qt frame\n");
                ++(*pCmd);
                ++(*pCmd);
              break;
            case SC_SONG_POS_PTR:
-               amTrace((const U8*)"Event: System common Song position pointer\n");
+               amTrace((const uint8*)"Event: System common Song position pointer\n");
                rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
                 ++(*pCmd);
                 ++(*pCmd);
                 ++(*pCmd);
              break;
              case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-               amTrace((const U8*)"Event: System common Song select\n");
+               amTrace((const uint8*)"Event: System common Song select\n");
                rs->recallRS=0;
                ++(*pCmd);
                ++(*pCmd);
              break;
              case SC_UNDEF1:                   /* undefined */
              case SC_UNDEF2:                   /* undefined */
-               amTrace((const U8*)"Event: System common not defined.\n");
+               amTrace((const uint8*)"Event: System common not defined.\n");
                rs->recallRS=0;
                ++(*pCmd);
              break;
              case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-               amTrace((const U8*)"Event: System tune request.\n");
+               amTrace((const uint8*)"Event: System tune request.\n");
                rs->recallRS=0;
               ++(*pCmd);
              break;
              default:{
-               amTrace((const U8*)"Event: Unknown type: %d\n",(*pCmd));
+               amTrace((const uint8*)"Event: Unknown type: %d\n",(*pCmd));
                /* unknown event, do nothing or maybe throw error? */
              }break;
   } //end switch
@@ -516,13 +516,13 @@ void processMidiEvent(const U32 delta, U8 **pCmd, sRunningStatus_t *rs, sBufferI
 }
 
 
-U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
+uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProcess){
 
     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
     sChunkHeader *pTrackHd=0;
-    U32 trackChunkSize=0;
+    uint32 trackChunkSize=0;
 
-    void *startTrkPtr=(void *)(((U8 *)pMidiData)+sizeof(sMThd));
+    void *startTrkPtr=(void *)(((uint8 *)pMidiData)+sizeof(sMThd));
     void *endTrkPtr=0;
 
     pTrackHd=(sChunkHeader *)startTrkPtr;
@@ -537,8 +537,8 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
     trackChunkSize = pTrackHd->headLenght;
 
     // adjust to track start
-    startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-    endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
+    startTrkPtr=(void *)( ((uint8 *)pTrackHd) + sizeof(sChunkHeader));
+    endTrkPtr=(void *)((uint8*)startTrkPtr + trackChunkSize);
     pTrackHd=(sChunkHeader *)endTrkPtr;
 
     for(int i=0;i<trackNbToProcess;++i){
@@ -551,17 +551,17 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
         trackChunkSize=pTrackHd->headLenght;
 
         // adjust to track start
-        startTrkPtr=(void *)( ((U8 *)pTrackHd) + sizeof(sChunkHeader));
-        endTrkPtr=(void *)((U8*)startTrkPtr + trackChunkSize);
+        startTrkPtr=(void *)( ((uint8 *)pTrackHd) + sizeof(sChunkHeader));
+        endTrkPtr=(void *)((uint8*)startTrkPtr + trackChunkSize);
         pTrackHd=(sChunkHeader *)endTrkPtr; //next
     }
 
 
  // process track events
- U32 delta=0L;
- BOOL bEOT=FALSE;
- U8 *pCmd=(U8 *)startTrkPtr;
- U8 ubSize=0;
+ uint32 delta=0L;
+ bool bEOT=FALSE;
+ uint8 *pCmd=(uint8 *)startTrkPtr;
+ uint8 ubSize=0;
  sNktBlock_t stBlock;
  sRunningStatus_t rs;
  sBufferInfo_t tempBufInfo;
@@ -580,7 +580,7 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
 
   processMidiEvent(delta, &pCmd, &rs, &tempBufInfo ,pSeq, trackNbToProcess, &bEOT);
 
-  U32 currentDelta = readVLQ(pCmd,&ubSize);
+  uint32 currentDelta = readVLQ(pCmd,&ubSize);
 
   while((currentDelta==0)&&(pCmd!=endTrkPtr)&&(bEOT!=TRUE)){
     pCmd+=ubSize;
@@ -611,20 +611,20 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
       amTrace("[Write event block]: d: [%lu] type: [%d] size: [%d] startOffset: [%lu]\n",delta,stBlock.msgType,tempBufInfo.bufPos,stBlock.bufferOffset);
 
       // write VLQ
-      U32 eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-      S32 count=WriteVarLen((S32)delta,(U8 *)eventsBufPos);
+      uint32 eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+      int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
       amTrace("[E] delta vlq at [%lu]\n",tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=count;
 
       // write event info block
-      eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+      eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
       amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
       amTrace("[E] event info at [%lu]\n",tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
 
       // write to data buffer
 
-      eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventDataPtr)+tempBufInfo.dataBlockOffset;
+      eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventDataPtr)+tempBufInfo.dataBlockOffset;
       amMemCpy((void *)eventsBufPos, &tempBufInfo.buffer[0], stBlock.blockSize);
       amTrace("[D] event data at [%lu]\n",tempBufInfo.dataBlockOffset);
 
@@ -649,12 +649,12 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
         stBlock.bufferOffset=0; //we don't mind
 
         // write VLQ
-        U32 eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-        S32 count=WriteVarLen((S32)0,(U8 *)pSeq->pTracks[trackNbToProcess].eventBlocksPtr);
+        uint32 eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        int32 count=WriteVarLen((int32)0,(uint8 *)pSeq->pTracks[trackNbToProcess].eventBlocksPtr);
         tempBufInfo.eventsBlockOffset+=count;
 
         // write event info block
-        eventsBufPos=((U32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+        eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
         amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
         tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
  }
@@ -663,12 +663,12 @@ U32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, U16 trackNbToProcess){
  return 0;
 }
 
-sNktSeq *Midi2Nkt(void *pMidiData, const U8 *pOutFileName, const BOOL bCompress){
+sNktSeq *Midi2Nkt(void *pMidiData, const uint8 *pOutFileName, const bool bCompress){
 
 sBufferInfo_t BufferInfo;
 sNktSeq *pNewSeq=0;
-BOOL bEOT=FALSE;
-U16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
+bool bEOT=FALSE;
+uint16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
 
 sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)amMallocEx(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT);
 
@@ -682,7 +682,7 @@ amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
 amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 
 //collect track info from each track
-for(U16 i=0;i<nbOfTracks;++i){
+for(uint16 i=0;i<nbOfTracks;++i){
 
     if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT)!=0){
         amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting...\n",i);
@@ -766,17 +766,17 @@ for(int i=0;i<nbOfTracks;++i){
     amTrace("[MIDI2NKT] Reserve memory track: [%d]:\nNb of events: %lu\nEvents block: %ld\nData block: %ld bytes\n",i, pTrk->nbOfBlocks, pTrk->eventsBlockBufferSize, pTrk->dataBufferSize);
 
     // allocate contigous / linear memory for pNewSeq->NbOfBlocks events
-    U32 lbAllocAdr=0;
-    lbAllocAdr=(U32) linearBufferAlloc(&(pTrk->lbEventsBuffer), pTrk->eventsBlockBufferSize+255);
+    uint32 lbAllocAdr=0;
+    lbAllocAdr=(uint32) linearBufferAlloc(&(pTrk->lbEventsBuffer), pTrk->eventsBlockBufferSize+255);
     lbAllocAdr+=255;
     lbAllocAdr&=0xfffffff0;
-    pTrk->eventBlocksPtr = (U8 *)lbAllocAdr;
+    pTrk->eventBlocksPtr = (uint8 *)lbAllocAdr;
 
     // alloc memory for data buffer from linear allocator
-    lbAllocAdr=(U32)linearBufferAlloc(&(pTrk->lbDataBuffer), pTrk->dataBufferSize+255);
+    lbAllocAdr=(uint32)linearBufferAlloc(&(pTrk->lbDataBuffer), pTrk->dataBufferSize+255);
     lbAllocAdr+=255;
     lbAllocAdr&=0xfffffff0;
-    pTrk->eventDataPtr = (U8*)lbAllocAdr;
+    pTrk->eventDataPtr = (uint8*)lbAllocAdr;
 
     if(pTrk->eventBlocksPtr==0||pTrk->eventDataPtr==0){
         amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for events block / events data.\n");
@@ -801,7 +801,7 @@ for(int i=0;i<nbOfTracks;++i){
    amTrace("[MID->NKT] processing data ...\n");
 
    // reserve memory for all tracks
-   U32 error = 0;
+   uint32 error = 0;
 
    for(int i=0;i<nbOfTracks;++i){
         error = midiTrackDataToNkt(pMidiData, pNewSeq, i);

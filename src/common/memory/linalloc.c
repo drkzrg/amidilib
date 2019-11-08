@@ -10,7 +10,7 @@ void linearBufferPrintInfo(const tLinearBuffer *buf){
   amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);
 }
 
-S32 createLinearBuffer(tLinearBuffer *buf, const U32 bufferSize,const eMemoryFlag memType){
+int32 createLinearBuffer(tLinearBuffer *buf, const uint32 bufferSize,const eMemoryFlag memType){
   
   buf->pMemPtr = amMallocEx(bufferSize,memType);
   
@@ -20,9 +20,9 @@ S32 createLinearBuffer(tLinearBuffer *buf, const U32 bufferSize,const eMemoryFla
     buf->offset=0L;
     
     #ifdef DEBUG_MEM
-      amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+      amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
     #else
-      amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+      amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
     #endif      
     
   return 0L;
@@ -44,9 +44,9 @@ void destroyLinearBuffer(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
 #else
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
 #endif 
       if(buf->pMemPtr!=0) amFree(buf->pMemPtr);
     }break;
@@ -62,11 +62,11 @@ void destroyLinearBuffer(tLinearBuffer *buf){
 }
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(tLinearBuffer *buf, const U32 size){
+void *linearBufferAlloc(tLinearBuffer *buf, const uint32 size){
 
   if(!buf||!size) return NULL;
   
-  U32 newOffset=buf->offset+size;
+  uint32 newOffset=buf->offset+size;
   
   if(newOffset<=buf->totalSize){
       void *ptr=buf->pMemPtr+buf->offset;
@@ -78,10 +78,10 @@ void *linearBufferAlloc(tLinearBuffer *buf, const U32 size){
 }
 
 // non aligned allocation from linear buffer (TODO)
-void *linearBufferAllocAlign(tLinearBuffer *buf, const U32 size,const U32 alignFlag){
+void *linearBufferAllocAlign(tLinearBuffer *buf, const uint32 size,const uint32 alignFlag){
   if(!buf||!size) return NULL;
   
-  U32 newOffset=buf->offset+size;
+  uint32 newOffset=buf->offset+size;
   
   if(newOffset<=buf->totalSize){
       void *ptr=buf->pMemPtr+buf->offset;
@@ -101,9 +101,9 @@ void linearBufferFree(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
 #else
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(tMEMSIZE)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
 #endif      
     }break;
     case PREFER_DSP:

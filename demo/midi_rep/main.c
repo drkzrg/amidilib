@@ -50,8 +50,8 @@ void midiParserTest(sSequence_t *pSequence);
 int main(int argc, char *argv[]){
   
     void *pMidi=NULL;
-    U16 iRet=0;
-    S16 iError=0;
+    uint16 iRet=0;
+    int16 iError=0;
     sSequence_t *pMidiTune=0;	//here we store our sequence data
     
     /* init library */
@@ -66,8 +66,8 @@ int main(int argc, char *argv[]){
     }
     
     // load midi file into memory 
-    U32 ulFileLenght=0L;
-    pMidi=loadFile((U8 *)argv[1], PREFER_TT, &ulFileLenght);
+    uint32 ulFileLenght=0L;
+    pMidi=loadFile((uint8 *)argv[1], PREFER_TT, &ulFileLenght);
 
     if(pMidi!=NULL){
      printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]){
 	  am_destroySequence(&pMidiTune);
 	  //END of MAINLOOP	
       }else{
-        amTrace((const U8*)"Error while parsing. Exiting... \n");
+        amTrace((const uint8*)"Error while parsing. Exiting... \n");
         //unload sequence
         am_destroySequence(&pMidiTune);
         am_deinit(); //deinit our stuff
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
       }
      
     }else{ /* MIDI loading failed */
-      amTrace((const U8*)"Error: Couldn't read %s file...\n",argv[1]);
+      amTrace((const uint8*)"Error: Couldn't read %s file...\n",argv[1]);
       printf( "Error: Couldn't read %s file...\n",argv[1]);
       am_deinit();	//deinit our stuff
       return(-1);
@@ -132,13 +132,13 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
 	   
 	  /* Install our asm ikbd handler */
 	  Supexec(IkbdInstall);
-	  BOOL bQuit=FALSE;
+	  bool bQuit=FALSE;
 	  
 	  //####
       while(bQuit==FALSE){
 
 	    //check keyboard input  
-	    for (U16 i=0; i<128; ++i) {
+	    for (uint16 i=0; i<128; ++i) {
 	    
 	      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;
@@ -262,16 +262,16 @@ void displayTuneInfo(){
   sSequence_t *pPtr;
   getCurrentSeq(&pPtr);
   
-  U32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
-  U16 td=pPtr->timeDivision;
-  U16 numTrk=pPtr->ubNumTracks;
+  uint32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
+  uint16 td=pPtr->timeDivision;
+  uint16 numTrk=pPtr->ubNumTracks;
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
   printf("PPQN: %u\t",td);
   printf("Tempo: %lu [ms]\n",tempo);
   
   printf("Number of tracks: %d\n",numTrk);
-  U8 *pTrkName=0;
+  uint8 *pTrkName=0;
   for(int i=0;i<numTrk;i++){
     pTrkName=pPtr->arTracks[i]->pTrackName;
     printf("[Track no. %d] %s\n",(i+1),pTrkName);
@@ -283,20 +283,20 @@ void displayTuneInfo(){
 
 #ifdef MIDI_PARSER_TEST
 void midiParserTest(sSequence_t *pSequence){
-   amTrace((const U8*)"Parsed MIDI read test\n");
-   amTrace((const U8*)"Sequence name: %s\n",pSequence->pSequenceName);
-   amTrace((const U8*)"Nb of tracks: %d\n",pSequence->ubNumTracks);
-   amTrace((const U8*)"Td/PPQN: %u\n",pSequence->timeDivision);
-   amTrace((const U8*)"Active track: %d\n",pSequence->ubActiveTrack);
+   amTrace((const uint8*)"Parsed MIDI read test\n");
+   amTrace((const uint8*)"Sequence name: %s\n",pSequence->pSequenceName);
+   amTrace((const uint8*)"Nb of tracks: %d\n",pSequence->ubNumTracks);
+   amTrace((const uint8*)"Td/PPQN: %u\n",pSequence->timeDivision);
+   amTrace((const uint8*)"Active track: %d\n",pSequence->ubActiveTrack);
 	  
 	  //output data loaded in each track
-  for (U16 i=0;i<pSequence->ubNumTracks;++i){
+  for (uint16 i=0;i<pSequence->ubNumTracks;++i){
     sTrack_t *p=pSequence->arTracks[i];
     
     if(p!=0){
-	amTrace((const U8*)"Track #[%d] \t",i+1);
-	amTrace((const U8*)"Track name: %s\n",p->pTrackName);
-	amTrace((const U8*)"Track ptr %p\n",p->pTrkEventList);
+	amTrace((const uint8*)"Track #[%d] \t",i+1);
+	amTrace((const uint8*)"Track name: %s\n",p->pTrackName);
+	amTrace((const uint8*)"Track ptr %p\n",p->pTrkEventList);
 	
 	//print out all events
 	if(p->pTrkEventList!=0){

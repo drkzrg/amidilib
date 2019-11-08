@@ -4,26 +4,26 @@
     See license.txt for licensing information.
 */
 
-#ifndef __AMIDILIB_H__
-#define __AMIDILIB_H__
+#ifndef _AMIDILIB_H_
+#define _AMIDILIB_H_
 
 #include "c_vars.h"
 #include "midi_rep.h"
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2014 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
+#define AMIDI_INFO "(c)2007-2019 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
 
 #define AMIDI_MAJOR_VERSION 1
-#define AMIDI_MINOR_VERSION 2
+#define AMIDI_MINOR_VERSION 3
 #define AMIDI_PATCHLEVEL 0
 
 /* current version info struct */
 typedef struct AMIDI_version {
-	U16 major;
-	U16 minor;
-	U16 pad;
-	U16 patch;
+	uint16 major;
+	uint16 minor;
+	uint16 pad;
+	uint16 patch;
 } sAMIDI_version;
 
 #define AMIDI_VERSION(X) \
@@ -65,7 +65,7 @@ const sAMIDI_version *am_getVersionInfo(void);
  * @return returns 0 if everything is OK, -1 if error occured
  **/
 
-S16 am_handleMIDIfile(const char *pFilename, void *pMidiPtr, U32 lenght, sSequence_t **pSequence);
+int16 am_handleMIDIfile(const char *pFilename, void *pMidiPtr, uint32 lenght, sSequence_t **pSequence);
 
 /**
  * gets number of tracks in MIDI file
@@ -77,7 +77,7 @@ S16 am_handleMIDIfile(const char *pFilename, void *pMidiPtr, U32 lenght, sSequen
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
-S16 am_init(void);
+int16 am_init(void);
 
 /** Deinits system, restores standard MIDI buffer
 */
@@ -85,17 +85,17 @@ S16 am_init(void);
 void am_deinit(void);
 
 /** returns info about connected devices  */
-const S8 *getConnectedDeviceInfo(void);
+const int8 *getConnectedDeviceInfo(void);
 
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range
 */
-const U8 *am_getMIDInoteName(U8 ubNoteNb);
+const uint8 *am_getMIDInoteName(uint8 ubNoteNb);
 
-void getDeviceInfoResponse(U8 channel);
+void getDeviceInfoResponse(uint8 channel);
 
 /** returns meaningful name for Midi Device type enumeration.  */
-const U8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
+const uint8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
 
 
 #ifdef DEBUG_BUILD

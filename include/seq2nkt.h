@@ -4,6 +4,6 @@
 #include "amidiseq.h"
 #include "nkt.h"
 
-S32 Seq2NktFile(const sSequence_t *pSeq, const U8 *pOutFileName, const BOOL bCompress);
+int32 Seq2NktFile(const sSequence_t *pSeq, const uint8 *pOutFileName, const bool bCompress);
 
 #endif // SEQ2NKT_H

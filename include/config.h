@@ -14,26 +14,26 @@
 #include "mdevtype.h"
 
 typedef struct _amidiConfig{
-  U16 version;              //config version
-  U32 configSize;           //sizeof tAmidiConfig
-  U16 connectedDeviceType;	//as in eMidiDeviceTypes
-  U16 operationMode;		//we can have connected device with different operating modes(LA/GS/GM etc..) 
-  U16 midiChannel;          //which midi channel we want to use? (1-16)
-  U16 initialTrackState;	// initial play state bitfield is track stopped/playing/paused/loop/play once
+  uint16 version;              //config version
+  uint32 configSize;           //sizeof tAmidiConfig
+  uint16 connectedDeviceType;	//as in eMidiDeviceTypes
+  uint16 operationMode;		//we can have connected device with different operating modes(LA/GS/GM etc..) 
+  uint16 midiChannel;          //which midi channel we want to use? (1-16)
+  uint16 initialTrackState;	// initial play state bitfield is track stopped/playing/paused/loop/play once
 
 #ifdef EVENT_LINEAR_BUFFER
-  U32 eventPoolSize;            //how big memory pool we want for midi events in the beginning
-  U32 eventDataAllocatorSize;   //how big linear data allocator we want to have in the beginning for event data we want to have? 
+  uint32 eventPoolSize;            //how big memory pool we want for midi events in the beginning
+  uint32 eventDataAllocatorSize;   //how big linear data allocator we want to have in the beginning for event data we want to have? 
 #endif
 
-  S32 midiBufferSize;           //sets internal midi buffer to larger one than the system one
-  S32 midiConnectionTimeOut;    //sets timeout in seconds for handshake connection 
-  BOOL handshakeModeEnabled; 	//set to true if your module is connected to computers midi in [not yet implemented]
-  BOOL streamed;                //stream everything from raw, not preprocessed files or preload everything to memory? [not yet implemented]
+  int32 midiBufferSize;           //sets internal midi buffer to larger one than the system one
+  int32 midiConnectionTimeOut;    //sets timeout in seconds for handshake connection 
+  bool handshakeModeEnabled; 	//set to true if your module is connected to computers midi in [not yet implemented]
+  bool streamed;                //stream everything from raw, not preprocessed files or preload everything to memory? [not yet implemented]
 } tAmidiConfig;
 
-S32 saveConfig(const U8 *config);
-S32 loadConfig(const U8 *config);
+int32 saveConfig(const uint8 *config);
+int32 loadConfig(const uint8 *config);
 void setGlobalConfig(tAmidiConfig *newConfig);
 void setDefaultConfig();
 
@@ -41,10 +41,10 @@ void setConnectedDeviceType(eMidiDeviceType type);
 const tAmidiConfig *getGlobalConfig();
 
 // parsing helper functions
-S32 getBoolVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, BOOL *val);
-S32 getUIntVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, U32 *val);
-S32 getIntVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, S32 *val);
-S32 getUShortVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, U16 *val);
-S32 getShortVal(const U8* tagName, const U8 *buffer, const tMEMSIZE bufferLenght, S16 *val);
+int32 getboolVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, bool *val);
+int32 getUIntVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, uint32 *val);
+int32 getIntVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, int32 *val);
+int32 getUShortVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, uint16 *val);
+int32 getShortVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, int16 *val);
 
 #endif

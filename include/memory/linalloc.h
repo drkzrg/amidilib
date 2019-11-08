@@ -13,19 +13,19 @@
 
 // event linear buffer
 typedef struct _LinearBuffer{
-  U8 *pMemPtr;          // linear memory pointer start
-  U32 totalSize;        // total linear memory size in bytes
-  U32 offset;
+  uint8 *pMemPtr;          // linear memory pointer start
+  uint32 totalSize;        // total linear memory size in bytes
+  uint32 offset;
   eMemoryFlag memType;  // memory type
 } tLinearBuffer;
 
-S32 createLinearBuffer(tLinearBuffer *buf,const U32 bufferSize,const eMemoryFlag memType);
+int32 createLinearBuffer(tLinearBuffer *buf,const uint32 bufferSize,const eMemoryFlag memType);
 void destroyLinearBuffer (tLinearBuffer *buf);
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(tLinearBuffer *buf, const U32 size);
+void *linearBufferAlloc(tLinearBuffer *buf, const uint32 size);
 void linearBufferFree(tLinearBuffer *buf); //clears all linear buffer
-void *linearBufferAllocAlign(tLinearBuffer *buf, const U32 size,const U32 alignFlag);
+void *linearBufferAllocAlign(tLinearBuffer *buf, const uint32 size,const uint32 alignFlag);
 void linearBufferPrintInfo(const tLinearBuffer *buf);
 
 

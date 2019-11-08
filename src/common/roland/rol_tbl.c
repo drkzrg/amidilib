@@ -7,7 +7,7 @@
 * instruments can be assigned to 1-8 part (channel 2-9, can be remmaped to channel 1-8)
 */
 
-const U8 *arCM32Linstruments[]={
+const uint8 *arCM32Linstruments[]={
 "AcouPiano 1",
 "AcouPiano 2",
 "AcouPiano 3",
@@ -143,7 +143,7 @@ const U8 *arCM32Linstruments[]={
 * the mapping is key note -> sound, program number 128
 */
 
-const U8 *arCM32Lrhythm[]={
+const uint8 *arCM32Lrhythm[]={
 "00 [no sound]",
 "01 [no sound]",
 "02 [no sound]",
@@ -276,7 +276,7 @@ const U8 *arCM32Lrhythm[]={
 
 
 // program number #57
-const U8 *arCM500sfx[]={
+const uint8 *arCM500sfx[]={
 "0 [no sound]",
 "1 [no sound]",
 "2 [no sound]",
@@ -408,7 +408,7 @@ const U8 *arCM500sfx[]={
 "128 [no sound]"
 };
 
-const U8 *arMT32instruments[]={
+const uint8 *arMT32instruments[]={
 "AcouPiano 1",
 "AcouPiano 2",
 "AcouPiano 3",
@@ -539,7 +539,7 @@ const U8 *arMT32instruments[]={
 "JungleTune"
 };
 
-const U8 *arMT32rhythm[]={
+const uint8 *arMT32rhythm[]={
 "00 [no sound]",
 "01 [no sound]",
 "02 [no sound]",
@@ -672,15 +672,15 @@ const U8 *arMT32rhythm[]={
 
 /* module default settings table */
 // CM-32L specific
-const U8 *getCM32LInstrName(U8 ubInstrNb){
+const uint8 *getCM32LInstrName(uint8 ubInstrNb){
  return(arCM32Linstruments[ubInstrNb]);
 }
 
-const U8 *getCM32LRhythmName(U8 ubNoteNb){
+const uint8 *getCM32LRhythmName(uint8 ubNoteNb){
  return(arCM32Lrhythm[ubNoteNb]);
 }
 
 // cm-500 specific
-const U8 *getCM500SFXName(U8 ubNoteNb){
+const uint8 *getCM500SFXName(uint8 ubNoteNb){
  return(arCM500sfx[ubNoteNb]);
 }

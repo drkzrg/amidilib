@@ -5,6 +5,8 @@
 #include "memory.h"
 #include "amlog.h"
 
+#define DEBUGFILL 0x000000FF
+
 void linearBufferPrintInfo(const tLinearBuffer *buf){
   if(buf==NULL) return;
   amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);
@@ -20,7 +22,7 @@ int32 createLinearBuffer(tLinearBuffer *buf, const uint32 bufferSize,const eMemo
     buf->offset=0L;
     
     #ifdef DEBUG_MEM
-      amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
+      amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
     #else
       amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
     #endif      
@@ -44,7 +46,7 @@ void destroyLinearBuffer(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
 #else
       if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
 #endif 
@@ -101,7 +103,7 @@ void linearBufferFree(tLinearBuffer *buf){
     case PREFER_ST:
     case PREFER_TT:{
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0xDEADBEEF,(MemSize)buf->totalSize);
+      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
 #else
       if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
 #endif      

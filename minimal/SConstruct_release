@@ -16,6 +16,6 @@ variant_dir='./nktlib', duplicate=0, exports={\
 'ENABLE_LZO':'no',\
 'USE_CUSTOM_ALLOC':'yes',\
 'USE_CROSSCOMPILER':'yes',\
-'TOOLSET':'GCC710',\
+'TOOLSET':'GCCBROWNELF',\
 'DEBUG_LEVEL':'1'\
 })

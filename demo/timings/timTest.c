@@ -31,8 +31,6 @@
 
 extern void customSeqReplay(void);
 extern void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput);
-
-
 volatile bool handleTempoChange;
 bool midiOutputEnabled;
 bool ymOutputEnabled;
@@ -142,7 +140,7 @@ int main(void){
         sEvent *ch2=getTestSequenceChannel(1);
         sEvent *ch3=getTestSequenceChannel(2);
 
-        initSequence(ch1,ch2,ch3,&g_CurrentState);
+        initSampleSequence(ch1,ch2,ch3,&g_CurrentState);
 	  }break;
 	  
 	} //end switch

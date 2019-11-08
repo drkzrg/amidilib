@@ -39,7 +39,7 @@ typedef struct SysEX_t{
 
 //////////////////////////////////////////////////////////////////////////////
 // helper functions for copying midi data to internal buffer
-extern volatile uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
+extern uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
 extern volatile uint16 MIDIbytesToSend;
 
 // sends SysEX message without recalculating the checksum

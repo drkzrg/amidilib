@@ -47,8 +47,8 @@ void setMT32Message(const uint8 *msg){
 
     if(len>20)len=20;
 
-    memset(&_mt32TextMsg[0],0,sizeof(uint8)*20);
-    memcpy(&_mt32TextMsg[0],msg,sizeof(uint8)*len);
+    amMemSet(&_mt32TextMsg[0],0,sizeof(uint8)*20);
+    amMemCpy(&_mt32TextMsg[0],msg,sizeof(uint8)*len);
 }
 
 // MT-32 setup data

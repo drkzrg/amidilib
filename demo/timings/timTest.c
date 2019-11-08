@@ -137,7 +137,7 @@ int main(void){
 	    onTogglePlayPauseSequence(&g_CurrentState);
 	  }break;
 	  case SC_SPACEBAR:{
-	    onStopSequence(&g_CurrentState);
+	      onStopSequence(&g_CurrentState);
         sEvent *ch1=getTestSequenceChannel(0);
         sEvent *ch2=getTestSequenceChannel(1);
         sEvent *ch3=getTestSequenceChannel(2);

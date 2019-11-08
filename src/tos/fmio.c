@@ -10,6 +10,8 @@
 #include "memory/memory.h"
 #include "fmio.h"
 
+#include <stdio.h>
+
 static int16 g_lastGDOSerror=0;
 
 static const char *g_arGEMDOSerror[71]= { 

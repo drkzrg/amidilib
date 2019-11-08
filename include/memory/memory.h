@@ -70,16 +70,16 @@ extern void*	Z_Malloc (int size, int tag, void *ptr);
 
 #endif
 
-static inline int amMemCmp ( void *pSrc1, void *pSrc2, const MemSize iNum){
+static inline int amMemCmp ( const void *pSrc1, const void *pSrc2, const MemSize iNum){
   return memcmp(pSrc1,pSrc2,iNum);
 }
 
-static inline void *amMemMove (void *pDest,void *pSrc,const MemSize iSize){
+static inline void *amMemMove (void *pDest, const void *pSrc, const MemSize iSize){
  return memmove(pDest,pSrc,iSize);
 }
 
 
-static inline void *amMemCpy (void *pDest, void *pSrc,const MemSize iSize){
+static inline void *amMemCpy (void *pDest, const void *pSrc, const MemSize iSize){
   uint8 *pbDest=(uint8 *)pDest;
   uint8 *pbSrc=(uint8 *)pSrc;
 
@@ -93,10 +93,9 @@ static inline void *amMemCpy (void *pDest, void *pSrc,const MemSize iSize){
   return memcpy(pDest,pSrc,iSize);
 }
 
-static inline void *amMemSet ( void *pSrc, const int32 iCharacter,const MemSize iNum){
-void *pPtr=0;
-
-  pPtr=memset(pSrc,iCharacter,iNum);
+static inline void *amMemSet ( void *pSrc, const int32 iCharacter, const MemSize iNum){
+  void *pPtr=0;
+  pPtr = memset(pSrc,iCharacter,iNum);
 
   #ifdef DEBUG_MEM
     if(pPtr!=pSrc) amTrace((const uint8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
@@ -108,12 +107,12 @@ void *pPtr=0;
   return pPtr;
 }
 
-static inline void *amMemChr ( void *pSrc,const int32 iCharacter,const MemSize iNum){
+static inline void *amMemChr ( void *pSrc, const int32 iCharacter, const MemSize iNum){
   return memchr(pSrc,iCharacter,iNum);
 }
 
 
-static inline void *amCalloc(const MemSize nelements,const MemSize elementSize){
+static inline void *amCalloc(const MemSize nelements, const MemSize elementSize){
   return calloc(nelements,elementSize);
 }
 

@@ -14,6 +14,8 @@
 #include "midi_send.h"
 #include "list/list.h"
 
+#include <stdio.h>
+
 static sSequence_t *g_CurrentSequence=0;
 
 void getCurrentSeq(sSequence_t **pSeq){

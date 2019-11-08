@@ -20,6 +20,8 @@
 #include "fmio.h"
 #endif
 
+#include <stdio.h>
+
 extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT);
 
 // from mparser.c
@@ -356,7 +358,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                          amTrace("Update step for 200hz: %ld\n",precalc[i]);
                     } break;
                     default:{
-                        //assert(0);
+                        ASSERT(0,"[Error] Invalid timer update value");
                         amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };

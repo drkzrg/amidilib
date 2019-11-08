@@ -254,7 +254,7 @@ volatile uint8 requestedMasterBalance;
 volatile static uint16 sequenceState;
 
 volatile sMidiModuleSettings _moduleSettings;
-volatile uint8 _mt32TextMsg[20];
+uint8 _mt32TextMsg[20];
 
 enum{
   IDX_VENDOR=1,
@@ -302,14 +302,14 @@ __attribute__((always_inline)) static inline void handleMasterSettings() {
 
             if(_mt32TextMsg[0]!=0){
 
-                memset((void *)&(arSetTextMT32.data[8]),0,sizeof(uint8)*20);
+                amMemSet((void *)&(arSetTextMT32.data[8]),0,sizeof(uint8)*20);
 
                 arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
                 arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
                 arSetTextMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
                 arSetTextMT32.data[IDX_CMD_ID]=0x12;
 
-                memcpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(uint8)*20);
+                amMemCpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(uint8)*20);
                 arSetTextMT32.data[28]=am_calcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
 
                 // update text
@@ -320,7 +320,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings() {
                 #endif
 
                 // reset text
-                memset(&_mt32TextMsg[0],0,sizeof(uint8)*20);
+                amMemSet(&_mt32TextMsg[0],0,sizeof(uint8)*20);
             }
 
 
@@ -376,7 +376,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings() {
 
 //update step for single track replay
 
-void updateStepNkt(){
+void updateStepNkt(void){
 
  // handle master volume, balance, reverb, mt32 text
  handleMasterSettings();

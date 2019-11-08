@@ -48,7 +48,7 @@ static INLINE uint8 amMidiGetData(uint8 deviceId){
 /* reads 1 unsigned byte from MIDI input */
 #define GET_MIDI_DATA amMidiGetData(DEV_MIDI)
 
-extern volatile uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
+extern uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data from the events once per frame
 extern volatile uint16 MIDIbytesToSend;
 
 #ifdef IKBD_MIDI_SEND_DIRECT

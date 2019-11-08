@@ -7,10 +7,10 @@
 #include <stdio.h>
 
 #ifdef MANUAL_STEP
-extern void updateStepNkt();
+extern void updateStepNkt(void);
 #endif
 
-void printInfoScreen();
+void printInfoScreen(void);
 
 void mainLoop(sNktSeq *pSequence);
 
@@ -81,7 +81,7 @@ int16 iError=0;
   return 0;
 }
 
-void printInfoScreen(){
+void printInfoScreen(void){
 
   printf("\n===== NKT replay demo v.1.21 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);

@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <mint/ostruct.h>
+#include <stdio.h>
 
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 

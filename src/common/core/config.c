@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <amidilib.h>
 #include <fmio.h>
@@ -170,7 +171,7 @@ const tAmidiConfig *getGlobalConfig(){
   return &configuration;
 }
 
-S32 parseConfig(const U8* pData, U32 bufferLenght){
+S32 parseConfig(const U8* pData, const tMEMSIZE bufferLenght){
   
   S32 iError=0;
   
@@ -179,7 +180,7 @@ S32 parseConfig(const U8* pData, U32 bufferLenght){
    
    // check version if ok then proceed if not throw error
    if((iError>=0 && configuration.version!=CONFIG_VERSION)){
-     printf("Wrong configuration version. Reseting to defaults.\n");  
+     printf("Wrong configuration version. Resetting to defaults.\n");  
      iError=-1;
      return (iError);
   }

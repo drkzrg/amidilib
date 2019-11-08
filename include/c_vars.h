@@ -12,7 +12,9 @@
 #  INCLUDES
 ################################################################################### */
 
-#include	<stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 #ifdef DEBUG_BUILD
 #include <assert.h>
@@ -22,28 +24,28 @@
 #  TYPEDEFS
 ################################################################################### */
 
-typedef unsigned char 		U8;
-typedef signed char 		S8;
-typedef unsigned short int 	U16;
-typedef signed short int 	S16;
-typedef unsigned long U32;
-typedef signed long 		S32;
-typedef	float 			F32;
-typedef float 			FP32;
-typedef double 			FP64;
-typedef unsigned short int  BOOL;
-typedef signed long long	S64; //non-standard!
+typedef uint8_t     U8;
+typedef int8_t      S8;
+typedef uint16_t    U16;
+typedef int16_t     S16;
+typedef uint32_t    U32;
+typedef int32_t     S32;
+typedef	float 		F32;
+typedef float 		FP32;
+typedef double 		FP64;
+typedef bool        BOOL;
+typedef int64_t     S64; //non-standard!
 typedef unsigned long long 	U64; //non-standard!
 
 typedef size_t tMEMSIZE;
 typedef void (*VOIDFUNCPTR)();
 
 #ifndef TRUE
-#define TRUE 1
+#define TRUE true
 #endif
 
 #ifndef FALSE
-#define FALSE 0
+#define FALSE false
 #endif
 
 void compilerSanityCheck(void);

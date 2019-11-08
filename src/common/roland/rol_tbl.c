@@ -672,15 +672,15 @@ const uint8 *arMT32rhythm[]={
 
 /* module default settings table */
 // CM-32L specific
-const uint8 *getCM32LInstrName(uint8 ubInstrNb){
+const uint8 *getCM32LInstrName(const uint8 ubInstrNb){
  return(arCM32Linstruments[ubInstrNb]);
 }
 
-const uint8 *getCM32LRhythmName(uint8 ubNoteNb){
+const uint8 *getCM32LRhythmName(const uint8 ubNoteNb){
  return(arCM32Lrhythm[ubNoteNb]);
 }
 
 // cm-500 specific
-const uint8 *getCM500SFXName(uint8 ubNoteNb){
+const uint8 *getCM500SFXName(const uint8 ubNoteNb){
  return(arCM500sfx[ubNoteNb]);
 }

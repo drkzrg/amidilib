@@ -24,7 +24,10 @@ typedef int64_t     int64; 			//non-standard!
 typedef unsigned long long 	uint64; //non-standard!
 
 typedef size_t MemSize;
-typedef void (*VOIDFUNCPTR)();
+
+// function pointers
+typedef void (*funcPtrVoidVoid)();
+typedef void (*funcPtrVoidConstUint)(const uint32);
 
 #ifndef TRUE
 #define TRUE true
@@ -33,6 +36,12 @@ typedef void (*VOIDFUNCPTR)();
 #ifndef FALSE
 #define FALSE false
 #endif
+
+// TODO: make it more cross-compiler friendly
+// atm it's gcc specific
+#define PACK_ATTR __attribute__((packed))
+#define FORCE_INLINE inline __attribute__((always_inline))
+#define FAST_CALL __attribute__((fastcall))
 
 #ifdef USE_INLINE
   #define INLINE inline        /* use standard inline */

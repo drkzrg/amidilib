@@ -327,7 +327,7 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
   static bool bPlayModeInit=FALSE;
   uint8 mode=0,data=0;
   handleTempoChange=FALSE;
-  VOIDFUNCPTR replayRout=customSeqReplay;
+  funcPtrVoidVoid replayRout=customSeqReplay;
  
   pSeqPtr->tracks[0].seqPtr=ch1;	
   pSeqPtr->tracks[0].state.bIsActive=TRUE;

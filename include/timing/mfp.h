@@ -41,7 +41,7 @@ extern void installReplayRout(const uint8 mode, const uint8 data, const bool isM
 extern void deinstallReplayRout(void);
 
 /** installs sequence replay routine (hooked to timer B atm) [to remove] */
-extern void installReplayRoutGeneric(uint8 mode,uint8 data,VOIDFUNCPTR func);
+extern void installReplayRoutGeneric(uint8 mode,uint8 data,funcPtrVoidVoid func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
 extern void deinstallReplayRoutGeneric(void);

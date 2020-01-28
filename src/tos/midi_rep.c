@@ -123,7 +123,7 @@ bool isEOT(volatile const sEventList *pPtr){
   return FALSE;
 }
 
-void onEndSequence(){
+void onEndSequence(void){
 
 sTrackState_t *pTrackState=0;
 sTrack_t *pTrack=0;
@@ -182,7 +182,7 @@ volatile static sTrackState_t *pActiveTrackState=0;
 volatile static sTrack_t *pTrack=0;
 
 // single track handler
-void updateStepSingle(){
+void updateStepSingle(void){
  bStopped=FALSE;
 
  if(g_CurrentSequence==0) return;
@@ -333,7 +333,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 } //end UpdateStep()
 
 // multitrack handler
-void updateStepMulti(){
+void updateStepMulti(void){
     bStopped=FALSE;
 
     if(g_CurrentSequence==0) return;
@@ -536,7 +536,7 @@ void stopSeq(void){
 
 }
 
-void pauseSeq(){
+void pauseSeq(void){
   //printf("Pause/Resume.\n");
   if(g_CurrentSequence!=0){
     uint8 activeTrack=0;
@@ -593,7 +593,7 @@ void playSeq(void){
   }
 }
 
-void muteTrack(const uint16 trackNb,const bool bMute){
+void muteTrack(const uint16 trackNb, const bool bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
     if(bMute!=FALSE){
         g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
@@ -657,7 +657,7 @@ void am_destroySequence (sSequence_t **pPtr){
   #endif
 }
 
-void printSequenceState(){
+void printSequenceState(void){
 
 if(g_CurrentSequence){
 

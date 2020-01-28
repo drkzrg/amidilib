@@ -53,7 +53,7 @@ void getCurrentSeq(sSequence_t **);
 void am_destroySequence (sSequence_t **pPtr);
 
 /** Outputs current sequence state. */
-void printSequenceState();
+void printSequenceState(void);
 
 const uint8 *getPlayStateStr(const uint16 mode);
 

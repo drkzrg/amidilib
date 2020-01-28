@@ -84,19 +84,19 @@ void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 p
 }
 
 
-void changeGlobalChorusSettings(){
+void changeGlobalChorusSettings(void){
   printf("Change global chorus settings:\n");
 }
 
-void changeGlobalReverbSettings(){
+void changeGlobalReverbSettings(void){
   printf("Change global reverb settings:\n");
 }
 
-void increaseGlobalMasterVolume(){
+void increaseGlobalMasterVolume(void){
   printf("Increase global Master volume\n");
 }
 
-void decreaseGlobalMasterVolume(){
+void decreaseGlobalMasterVolume(void){
   printf("Decrease global Master volume\n");
 }
 

@@ -12,7 +12,7 @@
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2019 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
+#define AMIDI_INFO "(c)2007-2019 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 3
@@ -90,12 +90,12 @@ const int8 *getConnectedDeviceInfo(void);
 /** returns null terminated string with note name according to ASA ISO 
 *   @param ubNoteNb - note number in 0-127 range
 */
-const uint8 *am_getMIDInoteName(uint8 ubNoteNb);
+const uint8 *am_getMIDInoteName(const uint8 ubNoteNb);
 
-void getDeviceInfoResponse(uint8 channel);
+void getDeviceInfoResponse(const uint8 channel);
 
 /** returns meaningful name for Midi Device type enumeration.  */
-const uint8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
+const uint8 *am_getMidiDeviceTypeName(const eMidiDeviceType device);
 
 
 #ifdef DEBUG_BUILD

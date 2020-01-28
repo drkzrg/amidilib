@@ -60,9 +60,9 @@ enum{
   CH_ALL
 };
 
-void ymDoSound(ymChannelData ch[3],uint8 envelope, uint16 envPeriod,uint8 noiseGenPeriod,uint8 affectsChannels);
-void setYm2149(ymChannelData ch[3],int noteIdx,uint8 currentEnvelopeIdx, uint8 noisegenPeriod);
-void ymSoundOff();
+void ymDoSound(ymChannelData ch[3], const uint8 envelope, const uint16 envPeriod,const uint8 noiseGenPeriod, const uint8 affectsChannels);
+void setYm2149(ymChannelData ch[3],const int noteIdx,const uint8 currentEnvelopeIdx, const uint8 noisegenPeriod);
+void ymSoundOff(void);
 
 eYMenvelope getEnvelopeId(const uint8 id);
 

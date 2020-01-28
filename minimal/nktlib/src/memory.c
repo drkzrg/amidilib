@@ -19,7 +19,7 @@
  * @param memFlag memory allocation preference flag
  * @return 0L - if no memory available, 0L< otherwise
  */
-uint32 getFreeMem(eMemoryFlag memFlag){
+uint32 getFreeMem(const eMemoryFlag memFlag){
   void *pMem=0;
   pMem=(void *)Mxalloc( -1L, memFlag);
   return((uint32)pMem);

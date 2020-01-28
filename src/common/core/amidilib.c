@@ -365,7 +365,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
 }
 
 //TODO: rework interface or remove this function at all
-int16 am_getNbOfTracks(void *pMidiPtr, int16 type){
+int16 am_getNbOfTracks(void *pMidiPtr, const int16 type){
     switch(type){
      case T_MIDI0:
      case T_MIDI1:
@@ -425,7 +425,7 @@ static _IOREC *g_psMidiBufferInfo;
 extern bool CON_LOG;
 extern FILE *ofp;
 
-int16 am_init(){
+int16 am_init(void){
     
 #ifdef DEBUG_BUILD
  // init logger
@@ -476,7 +476,7 @@ int16 am_init(){
  return 1;
 }
 
-void am_deinit(){
+void am_deinit(void){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
@@ -502,7 +502,7 @@ void am_deinit(){
  /* end sequence */
 }
 
-void getDeviceInfoResponse(uint8 channel){
+void getDeviceInfoResponse(const uint8 channel){
   //TODO: rework it
   return;
 
@@ -564,7 +564,7 @@ const int8 *getConnectedDeviceInfo(void){
  return NULL;
 }
 
-const uint8 *am_getMidiDeviceTypeName(eMidiDeviceType device){
+const uint8 *am_getMidiDeviceTypeName(const eMidiDeviceType device){
  return g_arMidiDeviceTypeName[device];
 }
 
@@ -594,11 +594,4 @@ void VLQtest(void){
     /* End of VLQ test */
 }
 #endif
-
-
-
-
-
-
-
 

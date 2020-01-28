@@ -22,7 +22,7 @@ void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
 }
 
-void initSeq(sSequence_t *seq, eTimerType timerType){
+void initSeq(sSequence_t *seq, const eTimerType timerType){
  g_CurrentSequence=0;
 
 if(seq!=0){

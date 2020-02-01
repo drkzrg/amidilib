@@ -11,6 +11,23 @@
 /* XMIDI contain midi events */
 #include "midi.h"
 
+// make ID
+#define	MAKE_ID(a,b,c,d) ((uint32_t) (a)<<24 | (uint32_t) (b)<<16 | (uint32_t) (c)<<8 | (uint32_t) (d))
+
+/* Universal IFF identifiers */
+#define ID_FORM  MAKE_ID('F','O','R','M')
+#define ID_LIST  MAKE_ID('L','I','S','T')
+#define ID_CAT   MAKE_ID('C','A','T',' ')
+#define ID_PROP  MAKE_ID('P','R','O','P')
+#define ID_NULL  MAKE_ID(' ',' ',' ',' ')
+
+/* Identifier codes for universally recognized ContextInfo nodes */
+#define IFF_CI_PROPCHUNK        MAKE_ID('p','r','o','p')
+#define IFF_CI_COLLECTIONCHUNK  MAKE_ID('c','o','l','l')
+#define IFF_CI_ENTRYHANDLER     MAKE_ID('e','n','h','d')
+#define IFF_CI_EXITHANDLER      MAKE_ID('e','x','h','d')
+
+
 /* define XMIDI specific chunk defs */
 #define ID_XDIR 0x58444952  /* XDIR */
 #define ID_XMID 0x584D4944  /* XMID */

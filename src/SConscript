@@ -316,7 +316,7 @@ env['VASM_FLAGS'] = VASM_FLAGS
 core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
-midiformats_src = ["common/formats/iff.c","common/formats/mus2midi.c"] + nkt_format_src
+midiformats_src = ["common/formats/xmidi.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src = ["tos/common.s"]

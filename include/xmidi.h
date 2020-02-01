@@ -7,10 +7,6 @@
 
 #ifndef __AXMIDI_H__
 #define __AXMIDI_H__
-/* MIDI file definitions */
-
-/* Some standard EA IFF definitions */
-#include "iff.h"
 
 /* XMIDI contain midi events */
 #include "midi.h"

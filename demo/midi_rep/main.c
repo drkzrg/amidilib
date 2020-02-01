@@ -55,13 +55,13 @@ int main(int argc, char *argv[]){
     sSequence_t *pMidiTune=0;	//here we store our sequence data
     
     /* init library */
-    iError=am_init();
+    iError=amInit();
     
     if( ((argc>=1) && strlen(argv[1])!=0)){
       printf("Trying to load %s\n",argv[1]);
     }else{
       printf("No specified midi filename! exiting\n");
-      am_deinit();
+      amDeinit();
       return 0;
     }
     
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
      /* check midi header */
       printf("Please wait...\n");
 
-      iError=am_handleMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
+      iError=amLoadMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(pMidi);
@@ -96,25 +96,25 @@ int main(int argc, char *argv[]){
       mainLoop(pMidiTune,argv[1]);
 	  
 	  //unload sequence
-	  am_destroySequence(&pMidiTune);
+	  amDestroySequence(&pMidiTune);
 	  //END of MAINLOOP	
       }else{
         amTrace((const uint8*)"Error while parsing. Exiting... \n");
         //unload sequence
-        am_destroySequence(&pMidiTune);
-        am_deinit(); //deinit our stuff
+        amDestroySequence(&pMidiTune);
+        amDeinit(); //deinit our stuff
         return(-1);
       }
      
     }else{ /* MIDI loading failed */
       amTrace((const uint8*)"Error: Couldn't read %s file...\n",argv[1]);
       printf( "Error: Couldn't read %s file...\n",argv[1]);
-      am_deinit();	//deinit our stuff
+      amDeinit();	//deinit our stuff
       return(-1);
     }
 
  deinstallReplayRout();   
- am_deinit();
+ amDeinit();
  return (0);
 }
 
@@ -237,7 +237,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName){
 
 void printInfoScreen(void){
   
-  const sAMIDI_version *pInfo=am_getVersionInfo();
+  const sAMIDI_version *pInfo=amGetVersionInfo();
   
   printf("\n=========================================\n");
   printf(LIB_NAME);

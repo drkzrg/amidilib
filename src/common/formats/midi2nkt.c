@@ -44,7 +44,7 @@ uint8 isMidiRTorSysex(const uint8 byteEvent){
 }
 
 /* combine bytes function for pitch bend */
-uint16 combineBytes(const uint8 bFirst, const uint8 bSecond){
+uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond){
     uint16 val;
     val = (uint16)bSecond;
     val<<=7;

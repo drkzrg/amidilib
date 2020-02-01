@@ -14,7 +14,7 @@
 /* UPS - update interval (updates per second) */
 /* music resolution are in PPQ */
 
-float  am_calculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups){
+float  amCalculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups){
     float ppu=0;
     float temp=0;
     ppu=(float)qpm*(float)ppq;
@@ -34,7 +34,7 @@ float  am_calculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 up
     MicrosPerPPQN = SubFramesPerPPQN * Frames * SubFrames
 */
 
-uint16 am_decodeTimeDivisionInfo(uint16 timeDivision){
+uint16 amDecodeTimeDivisionInfo(uint16 timeDivision){
   
   if(timeDivision&0x8000){
     
@@ -55,14 +55,14 @@ static uint32 begin;
 static  uint32 end;
 static  int32 usp;
 
-void getTimeStamp(void){
+void amGetTimeStamp(void){
 // get Atari native system 200hz counter
      usp=Super(0L);
      begin=*((int32 *)0x4ba);
      SuperToUser(usp);
 }
 
-uint32 getTimeDelta(void){
+uint32 amGetTimeDelta(void){
 uint32 delta=0L;
 
 //calculate delta in seconds

@@ -50,11 +50,11 @@ static const uint8 *g_arMidiDeviceTypeName[]={
   "Yamaha XG GM mode"
 };
 
-const sAMIDI_version *am_getVersionInfo(void){
+const sAMIDI_version *amGetVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-int16 am_getHeaderInfo(const void *pMidiPtr){
+int16 amGetHeaderInfo(const void *pMidiPtr){
     sMThd *pMidiInfo=0;
     amTrace((const uint8 *)"Checking header info... ");
     pMidiInfo=(sMThd *)pMidiPtr;
@@ -97,7 +97,7 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
  return(-1);
 }
 
-int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSequence_t **pSequence){
+int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSequence_t **pSequence){
     int16 iNumTracks=0;
     int16 iError=0;
     uint16 iTimeDivision=0;
@@ -116,7 +116,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
    (*pSequence)->ubActiveTrack=0;
     
    MemSize memSize=getGlobalConfig()->eventPoolSize*getGlobalConfig()->eventDataAllocatorSize;
-   amTrace((const uint8 *)"am_handleMIDIfile() trying to allocate %d Kb\n",memSize/1024);
+   amTrace((const uint8 *)"amLoadMIDIfile() trying to allocate %d Kb\n",memSize/1024);
 
 #ifdef EVENT_LINEAR_BUFFER
    if(createLinearBuffer(&((*pSequence)->eventBuffer), memSize, PREFER_TT)<0){
@@ -127,7 +127,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
 #endif
 
    int iRet=0;
-   iRet=am_getHeaderInfo(pMidiPtr);
+   iRet=amGetHeaderInfo(pMidiPtr);
     
    if(iRet==-1){
     /* not MIDI file, do nothing */
@@ -144,7 +144,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
     switch(iRet){
         case T_MIDI0:{
             /* handle MIDI type 0 */
-            iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI0);
+            iNumTracks=amGetNbOfTracks(pMidiPtr,T_MIDI0);
 
             if(iNumTracks!=1){
                 return(-1);
@@ -164,8 +164,8 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
             /* get time division for timing */
 
             /* Store time division for sequence, TODO: SMPTE handling */
-            iTimeDivision = am_getTimeDivision(pMidiPtr);
-            (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+            iTimeDivision = amGetTimeDivision(pMidiPtr);
+            (*pSequence)->timeDivision=amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
             startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
@@ -197,7 +197,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
          /* handle MIDI type 1 */
         /* several tracks, one sequence */
         /* prepare our structure */
-        iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI1);
+        iNumTracks=amGetNbOfTracks(pMidiPtr,T_MIDI1);
 	  
         /* init sequence table */
         for(int iLoop=0;iLoop<AMIDI_MAX_TRACKS;iLoop++){
@@ -205,8 +205,8 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
             (*pSequence)->arTracks[iLoop]=NULL;
         }
 	  
-        iTimeDivision = am_getTimeDivision(pMidiPtr);
-        (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+        iTimeDivision = amGetTimeDivision(pMidiPtr);
+        (*pSequence)->timeDivision=amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
         startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
                 	
@@ -237,9 +237,9 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
                 (*pSequence)->arTracks[iLoop]=NULL;
         }
 	  
-        iNumTracks=am_getNbOfTracks(pMidiPtr,T_MIDI2);
-        iTimeDivision = am_getTimeDivision(pMidiPtr);
-        (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+        iNumTracks=amGetNbOfTracks(pMidiPtr,T_MIDI2);
+        iTimeDivision = amGetTimeDivision(pMidiPtr);
+        (*pSequence)->timeDivision=amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
         startPtr=(void *)((uint32)startPtr+sizeof(sMThd));
 		
@@ -264,8 +264,8 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
         }break;
 	case T_XMIDI:{
          /* handle XMIDI */
-         iNumTracks=am_getNbOfTracks(pMidiPtr,T_XMIDI);
-         iTimeDivision = am_getTimeDivision(pMidiPtr);
+         iNumTracks=amGetNbOfTracks(pMidiPtr,T_XMIDI);
+         iTimeDivision = amGetTimeDivision(pMidiPtr);
 
          /* processing (X)MIDI file */
          /* TODO: handle + process */
@@ -306,7 +306,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
       printf("Processing midi data..\n");
         // the rest is like in MIDI type 0
         /* handle MIDI type 0 */
-            iNumTracks=am_getNbOfTracks(pOut,T_MIDI0);
+            iNumTracks=amGetNbOfTracks(pOut,T_MIDI0);
 
             if(iNumTracks!=1){
                 /* invalid number of tracks, there can be only one! */
@@ -325,8 +325,8 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
 		 
             /* OK! valid number of tracks */
             /* get time division for timing */
-            iTimeDivision = am_getTimeDivision(pOut);
-            (*pSequence)->timeDivision=am_decodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+            iTimeDivision = amGetTimeDivision(pOut);
+            (*pSequence)->timeDivision=amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
             startPtr=(void *)((uint32)pOut+sizeof(sMThd));
@@ -365,7 +365,7 @@ int16 am_handleMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSe
 }
 
 //TODO: rework interface or remove this function at all
-int16 am_getNbOfTracks(void *pMidiPtr, const int16 type){
+int16 amGetNbOfTracks(void *pMidiPtr, const int16 type){
     switch(type){
      case T_MIDI0:
      case T_MIDI1:
@@ -425,7 +425,7 @@ static _IOREC *g_psMidiBufferInfo;
 extern bool CON_LOG;
 extern FILE *ofp;
 
-int16 am_init(void){
+int16 amInit(void){
     
 #ifdef DEBUG_BUILD
  // init logger
@@ -476,7 +476,7 @@ int16 am_init(void){
  return 1;
 }
 
-void am_deinit(void){
+void amDeinit(void){
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
@@ -502,7 +502,7 @@ void am_deinit(void){
  /* end sequence */
 }
 
-void getDeviceInfoResponse(const uint8 channel){
+void amGetDeviceInfoResponse(const uint8 channel){
   //TODO: rework it
   return;
 
@@ -512,9 +512,9 @@ void getDeviceInfoResponse(const uint8 channel){
   bool bTimeout=FALSE;
 
   /* calculate checksum */
-  getInfoSysEx[5]=am_calcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
+  getInfoSysEx[5]=amCalcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
   getInfoSysEx[5]=channel;
-  getInfoSysEx[8]=am_calcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
+  getInfoSysEx[8]=amCalcRolandChecksum(&getInfoSysEx[5],&getInfoSysEx[7]);  
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   for(int i=0;i<10;i++){
@@ -528,12 +528,12 @@ void getDeviceInfoResponse(const uint8 channel){
 //   bool bFlag=FALSE;
 //   uint32 data=0;
   
-//getTimeStamp(); // get current timestamp
+//amGetTimeStamp(); // get current timestamp
 	
 //    /* get reply or there was timeout */
-//    while((MIDI_DATA_READY&&(getTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
+//    while((MIDI_DATA_READY&&(amGetTimeDelta()<getGlobalConfig()->midiConnectionTimeOut))) {
 //	data = GET_MIDI_DATA;
-//	begin=getTimeStamp(); // data received, reset timestamp
+//	begin=amGetTimeStamp(); // data received, reset timestamp
       
 //	 if(data!=0){
 	  
@@ -551,20 +551,20 @@ void getDeviceInfoResponse(const uint8 channel){
 
 }
 /* gets info about connected devices via MIDI interface */
-const int8 *getConnectedDeviceInfo(void){
+const int8 *amGetConnectedDeviceInfo(void){
   uint8 channel;
   
   /*  request on all channels */
   amTrace((const uint8*)"Quering connected MIDI device...\n");
   
   for(channel=0;channel<0x7f;channel++){
-    getDeviceInfoResponse(channel);
+    amGetDeviceInfoResponse(channel);
    }
 
  return NULL;
 }
 
-const uint8 *am_getMidiDeviceTypeName(const eMidiDeviceType device){
+const uint8 *amGetMidiDeviceTypeName(const eMidiDeviceType device){
  return g_arMidiDeviceTypeName[device];
 }
 

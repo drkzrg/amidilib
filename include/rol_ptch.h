@@ -55,7 +55,7 @@ void  allPartsOff(void);
 *	@param buf_end pointer to an end of SysEx message buffer
 *	@return calculated checksum */
 
-uint8 am_calcRolandChecksum(uint8 *buf_start, uint8 *buf_end);
+uint8 amCalcRolandChecksum(uint8 *buf_start, uint8 *buf_end);
 
 // sets custom text message on mt-32 lcd screen
 void setMT32Message(const uint8 *msg);

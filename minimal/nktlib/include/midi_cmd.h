@@ -525,7 +525,7 @@ static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly){
 *   @param numChannels - number of channel
 */
 
-static INLINE void am_allNotesOff(uint16 numChannels){
+static INLINE void amAllNotesOff(uint16 numChannels){
 uint16 iCounter;
   for(iCounter=0;iCounter<numChannels;++iCounter){
     all_notes_off(iCounter);

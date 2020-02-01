@@ -12,7 +12,7 @@
 *   @param qpm QPM - quaternotes per minute
 */
 
-static inline uint32 am_calculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups){
+static inline uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups){
     static uint32 ppu=0;
     static uint32 temp=0;
 
@@ -34,7 +34,7 @@ static inline uint32 am_calculateTimeStep(const uint16 qpm,const uint16 ppq,cons
 *   @param PPQ - parts per quaternote
 *   @param qpm QPM - quaternotes per minute
 */
-float am_calculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups);
+float amCalculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups);
 
 /** Simple time division to console function
 *   with example of handling timeDivision data
@@ -42,7 +42,7 @@ float am_calculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups
 *   @return decoded time division in PPQN or FPS
 */
 
-uint16 am_decodeTimeDivisionInfo(const uint16 timeDivision);
+uint16 amDecodeTimeDivisionInfo(const uint16 timeDivision);
 
 /******************** time measuring functions */
 
@@ -50,12 +50,12 @@ uint16 am_decodeTimeDivisionInfo(const uint16 timeDivision);
 * @return none
 */
 
-void getTimeStamp(void);
+void amGetTimeStamp(void);
 
 /** Utility function for measuring delta time  
- *   @return delta time since last getTimeStamp() function call in ms
+ *   @return delta time since last amGetTimeStamp() function call in ms
  */
-uint32 getTimeDelta(void);
+uint32 amGetTimeDelta(void);
 
 #define DEFAULT_MPQN 500000	   	// microsecs per quaternote
 #define DEFAULT_PPQN 96	   		// default pulses per quater note (resolution)

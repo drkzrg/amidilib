@@ -766,7 +766,7 @@ void patchMT32toGM(const bool bStandardGMDrumset){
 }
 
 // all
-uint8 am_calcRolandChecksum(uint8 *buf_start, uint8 *buf_end){
+uint8 amCalcRolandChecksum(uint8 *buf_start, uint8 *buf_end){
 uint8 total = 0 ;
 uint8 mask  = 0x7F ;
 
@@ -894,7 +894,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
     };
 
     // all notes off
-    am_allNotesOff(16);
+    amAllNotesOff(16);
 
     // set initial volume balance (on GM/GS only)
     setMidiMasterVolume(requestedMasterVolume);        // half volume

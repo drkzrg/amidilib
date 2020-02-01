@@ -49,7 +49,7 @@ static void fSetTempo(const void *pEvent){
    pCurTrackState->currentTempo=pPtr->eventData.tempoVal;
    amTrace("fSetTempo %lu\n",pCurTrackState->currentTempo);
    pCurTrackState->currentBPM=60000000/pCurTrackState->currentTempo;
-   seq->timeStep=am_calculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+   seq->timeStep=amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
  }
 }
 

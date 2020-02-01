@@ -16,7 +16,7 @@
 static uint8 g_runningStatus=0;
 
 //////////////////////////////////////////////////////
-uint16 am_getTimeDivision (const void *pMidiPtr){
+uint16 amGetTimeDivision (const void *pMidiPtr){
 sMThd *pMidiInfo=(sMThd *)pMidiPtr;
 
 /* check midi header */
@@ -73,7 +73,6 @@ switch(fileTypeFlag){
       if(*iError<0) {
         return NULL;
       }
-
 
     }
     break;
@@ -179,14 +178,14 @@ switch(fileTypeFlag){
  return 0;
 }
 
-uint8 am_isMidiChannelEvent(const uint8 byteEvent){
+uint8 amIsMidiChannelEvent(const uint8 byteEvent){
 
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
     {return 1;}
     else return 0;
 }
 
-uint8 am_isMidiRTorSysex(const uint8 byteEvent){
+uint8 amIsMidiRTorSysex(const uint8 byteEvent){
 
     if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) ){
       /* it is! */
@@ -197,7 +196,7 @@ uint8 am_isMidiRTorSysex(const uint8 byteEvent){
 }
 
 /* combine bytes function for pitch bend */
-uint16 combineBytes(const uint8 bFirst, const uint8 bSecond){
+uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond){
     uint16 val;
     val = (uint16)bSecond;
     val<<=7;
@@ -229,7 +228,7 @@ bool bEOF=FALSE;
       /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
       /* else set recallStatus = 0 and do nothing special */
       ubSize=(*pCmd);
-      if( (!(am_isMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(am_isMidiRTorSysex(ubSize))))){
+      if( (!(amIsMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(amIsMidiRTorSysex(ubSize))))){
     /*recall last cmd byte */
         usSwitch=g_runningStatus;
         usSwitch=(usSwitch&0xF0);
@@ -237,7 +236,7 @@ bool bEOF=FALSE;
     /* check if the new cmd is the system one*/
     recallStatus=0;
 
-   if((am_isMidiRTorSysex(ubSize))){
+   if((amIsMidiRTorSysex(ubSize))){
         usSwitch=ubSize;
       }else{
         usSwitch=ubSize;
@@ -248,32 +247,32 @@ bool bEOF=FALSE;
     /* decode event and write it to our custom structure */
     switch(usSwitch){
       case EV_NOTE_OFF:
-        *iError=am_noteOff(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteOff(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_NOTE_ON:
-        *iError=am_noteOn(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteOn(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_NOTE_AFTERTOUCH:
-        *iError=am_noteAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_CONTROLLER:
-        *iError=am_Controller(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amController(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_PROGRAM_CHANGE:
-        *iError=am_PC(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amProgramChange(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_CHANNEL_AFTERTOUCH:
-        *iError=am_ChannelAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amChannelAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_PITCH_BEND:
-        *iError=am_PitchBend(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amPitchBend(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
       break;
       case EV_META:
-        *iError=am_Meta(pSeq,&pCmd, delta, pCurTrack,&bEOF);
+        *iError=amMetaEvent(pSeq,&pCmd, delta, pCurTrack,&bEOF);
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
         recallStatus=0; 	                /* cancel out midi running status */
-        *iError=(int16)am_Sysex(pSeq,&pCmd,delta, pCurTrack);
+        *iError=(int16)amSysexMsg(pSeq,&pCmd,delta, pCurTrack);
       break;
       case SC_MTCQF:
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
@@ -317,7 +316,7 @@ bool bEOF=FALSE;
 }
 
 
-int16 am_noteOff(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOff(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
@@ -418,7 +417,7 @@ if((*recallRS)==0){
 }
 
 //
-int16 am_noteOn(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOn(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
  sEventBlock_t tempEvent;
 
  uint8 channel=0;
@@ -519,7 +518,7 @@ int16 am_noteOn(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sT
  return retCode;
 }
 
-int16 am_noteAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
 uint8 pressure=0;
@@ -604,7 +603,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-int16 am_Controller(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amController(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
     sEventBlock_t tempEvent;
     int16 retCode = 0;
     uint8 channelNb=0;
@@ -692,7 +691,7 @@ int16 am_Controller(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta
    return retCode;
 }
 
-int16 am_PC(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amProgramChange(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
   uint8 channel=0;
@@ -783,7 +782,7 @@ sEventBlock_t tempEvent;
     return retCode;
  }
 
-int16 am_ChannelAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amChannelAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 int16 retCode=0;
 
@@ -863,7 +862,7 @@ int16 retCode=0;
  return retCode;
 }
 
-int16 am_PitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
@@ -955,7 +954,7 @@ tempEvent.dataPtr=0;
   return retCode;
 }
 
-int16 am_Sysex(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack){
+int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack){
   sEventBlock_t tempEvent;
   sSysEX_EventBlock_t *pEvntBlock=0;
   uint8 *pTmpPtr=0;
@@ -1009,7 +1008,7 @@ int16 am_Sysex(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrac
 #endif
 }
 
-int16 am_Meta(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack, bool *bEOT){
+int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack, bool *bEOT){
 sEventBlock_t tempEvent;
 
  uint32 addr;

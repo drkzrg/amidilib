@@ -44,7 +44,7 @@ void getCurrentSequence(sNktSeq **pSeq){
 
 static void resetMidiDevice(void){
 
-    am_allNotesOff(16);
+    amAllNotesOff(16);
 
     // reset all controllers
     for(uint8 i=0;i<16;++i){
@@ -289,7 +289,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
                 arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
                 arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
-                arSetMasterVolumeMT32.data[9]=am_calcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
+                arSetMasterVolumeMT32.data[9]=amCalcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
 
                 sendSysEX(&arSetMasterVolumeMT32);
 
@@ -310,7 +310,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
                 arSetTextMT32.data[IDX_CMD_ID]=0x12;
 
                 amMemCpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(uint8)*20);
-                arSetTextMT32.data[28]=am_calcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
+                arSetTextMT32.data[28]=amCalcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
 
                 // update text
                 sendSysEX(&arSetTextMT32);
@@ -339,7 +339,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
                 arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
                 arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
-                arSetMasterVolumeGM.data[9]=am_calcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
+                arSetMasterVolumeGM.data[9]=amCalcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
 
                 sendSysEX(&arSetMasterVolumeGM);
 
@@ -360,7 +360,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
             arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
             arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
             arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
-            arSetMasterBalanceGM.data[9]=am_calcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
+            arSetMasterBalanceGM.data[9]=amCalcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
 
             sendSysEX(&arSetMasterBalanceGM);
 
@@ -393,7 +393,7 @@ void updateStepNkt(void){
         bStopped=FALSE;
 
         // all notes off but only once
-        am_allNotesOff(16);
+        amAllNotesOff(16);
 
         #ifdef IKBD_MIDI_SEND_DIRECT
              Supexec(flushMidiSendBuffer);
@@ -544,7 +544,7 @@ void updateStepNktMt(void){
         bStopped=FALSE;
 
         // all notes off but only once
-        am_allNotesOff(16);
+        amAllNotesOff(16);
 
         #ifdef IKBD_MIDI_SEND_DIRECT
              Supexec(flushMidiSendBuffer);

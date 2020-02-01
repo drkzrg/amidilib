@@ -14,7 +14,7 @@
 #include "midi.h"
 
 // make ID
-#define	MAKE_ID(a,b,c,d) ((uint32_t) (a)<<24 | (uint32_t) (b)<<16 | (uint32_t) (c)<<8 | (uint32_t) (d))
+#define	MAKE_ID(a,b,c,d) ((uint32) (a)<<24 | (uint32) (b)<<16 | (uint32) (c)<<8 | (uint32) (d))
 
 /* Universal IFF identifiers */
 #define ID_FORM  MAKE_ID('F','O','R','M')
@@ -31,11 +31,11 @@
 
 /* define XMIDI specific chunk defs */
 #define ID_XDIR MAKE_ID('X','D','I','R')
-#define ID_XMID MAKE_ID('X','M','I','D')  
-#define ID_INFO MAKE_ID('I','N','F','O')  
-#define ID_TIMB MAKE_ID('T','I','M','B')  
-#define ID_RBRN MAKE_ID('R','B','R','N')  
-#define ID_EVNT MAKE_ID('E','V','N','T') 
+#define ID_XMID MAKE_ID('X','M','I','D') 
+#define ID_INFO MAKE_ID('I','N','F','O') 
+#define ID_TIMB MAKE_ID('T','I','M','B') 
+#define ID_RBRN MAKE_ID('R','B','R','N') 
+#define ID_EVNT MAKE_ID('E','V','N','T')
 
 /* XMIDI additional controllers */
 #define C_CH_LOCK           0x6e        /* Channel Lock */
@@ -50,10 +50,12 @@
 #define C_CALL_TRIGGER      0x77        /* Callback Trigger */
 #define C_SEQ_BRA_IDX       0x78        /* Sequence Branch Index */
 
-typedef struct {
-	int8 id;
+typedef int8 IFF_ID[4];
+
+typedef struct IFFCHUNK {
+	IFF_ID id;
 	int32 size; 	
 	uint8 data[]; 	
-} iffChunk;
+} sIffChunk;
 
 #endif

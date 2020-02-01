@@ -49,7 +49,7 @@ static void fSetTempo(const void *pEvent){
    pCurTrackState->currentTempo=pPtr->eventData.tempoVal;
    amTrace("fSetTempo %lu\n",pCurTrackState->currentTempo);
    pCurTrackState->currentBPM=60000000/pCurTrackState->currentTempo;
-   seq->timeStep=am_calculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+   seq->timeStep=amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
  }
 }
 
@@ -86,7 +86,7 @@ static void fHandleSignatureChange(const void *pEvent){
 
 /*returns pointer to NULL terminated string with event name */
 /* id is enumerated value from eEventType */
-const uint8 *getEventName(uint32 id){
+const uint8 *getEventName(const uint32 id){
   if(id<T_EVT_COUNT)
     return ((const uint8 *)arEventNames[id]);
   else return 0;

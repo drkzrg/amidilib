@@ -35,10 +35,10 @@ typedef struct _amidiConfig{
 int32 saveConfig(const uint8 *config);
 int32 loadConfig(const uint8 *config);
 void setGlobalConfig(tAmidiConfig *newConfig);
-void setDefaultConfig();
+void setDefaultConfig(void);
 
-void setConnectedDeviceType(eMidiDeviceType type);
-const tAmidiConfig *getGlobalConfig();
+void setConnectedDeviceType(const eMidiDeviceType type);
+const tAmidiConfig *getGlobalConfig(void);
 
 // parsing helper functions
 int32 getboolVal(const uint8* tagName, const uint8 *buffer, const MemSize bufferLenght, bool *val);

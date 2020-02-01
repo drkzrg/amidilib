@@ -84,19 +84,19 @@ void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 p
 }
 
 
-void changeGlobalChorusSettings(){
+void changeGlobalChorusSettings(void){
   printf("Change global chorus settings:\n");
 }
 
-void changeGlobalReverbSettings(){
+void changeGlobalReverbSettings(void){
   printf("Change global reverb settings:\n");
 }
 
-void increaseGlobalMasterVolume(){
+void increaseGlobalMasterVolume(void){
   printf("Increase global Master volume\n");
 }
 
-void decreaseGlobalMasterVolume(){
+void decreaseGlobalMasterVolume(void){
   printf("Decrease global Master volume\n");
 }
 
@@ -113,7 +113,7 @@ int main(void) {
   turnOffKeyclick();
 
   /* init library */
-  uint32 iError=am_init();
+  uint32 iError=amInit();
  
   if(iError!=1) return -1;
   
@@ -291,7 +291,7 @@ int main(void) {
 				  //change active channel/part 0-15
 				  case SC_LT: {
 				    if(currentChannel!=0){
-				      am_allNotesOff(16);
+				      amAllNotesOff(16);
 				      currentChannel--;
 				      program_change(currentChannel, currentPN);
                       printf("active channel: %d \n",currentChannel);
@@ -301,7 +301,7 @@ int main(void) {
 				 
 				  case SC_GT:{
 				    if(currentChannel!=15){
-                        am_allNotesOff(16);
+                        amAllNotesOff(16);
                         currentChannel++;
 				        program_change(currentChannel, currentPN);
                         printf("Current channel: %d \n",currentChannel);
@@ -447,7 +447,7 @@ int main(void) {
 				
 				  case SC_SPACEBAR:{
 				    printf("Silence...\n");
-				    am_allNotesOff(16);
+				    amAllNotesOff(16);
 				  
 				  }break;
 				  
@@ -466,7 +466,7 @@ int main(void) {
 	Supexec(IkbdUninstall);
 
 /* clean up, free internal library buffers etc..*/
- am_deinit();
+ amDeinit();
  return 0;
 }
 

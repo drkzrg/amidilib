@@ -22,7 +22,7 @@ void getCurrentSeq(sSequence_t **pSeq){
   *pSeq=g_CurrentSequence;
 }
 
-void initSeq(sSequence_t *seq, eTimerType timerType){
+void initSeq(sSequence_t *seq, const eTimerType timerType){
  g_CurrentSequence=0;
 
 if(seq!=0){
@@ -52,7 +52,7 @@ if(seq!=0){
     seq->timeElapsedFrac=0L;
     seq->timeStep=0L;
     pTrackState=&(seq->arTracks[activeTrack]->currentState);
-    seq->timeStep=am_calculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+    seq->timeStep=amCalculateTimeStep(pTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         Supexec(flushMidiSendBuffer);
@@ -106,7 +106,7 @@ void initSeqManual(sSequence_t *seq){
   
     seq->timeElapsedFrac=0L;
     seq->timeStep=0L;
-    seq->timeStep = am_calculateTimeStep(seq->arTracks[0]->currentState.currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
+    seq->timeStep = amCalculateTimeStep(seq->arTracks[0]->currentState.currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
         Supexec(flushMidiSendBuffer);
@@ -117,13 +117,13 @@ void initSeqManual(sSequence_t *seq){
  return;
 }
 
-bool isEOT(volatile const sEventList *pPtr){
+bool isEOT(const sEventList *pPtr){
   if(pPtr->eventBlock.type==T_META_EOT) return TRUE;
 
   return FALSE;
 }
 
-void onEndSequence(){
+void onEndSequence(void){
 
 sTrackState_t *pTrackState=0;
 sTrack_t *pTrack=0;
@@ -144,7 +144,7 @@ if(g_CurrentSequence){
 
         // reset all controllers
 
-        am_allNotesOff(16);
+        amAllNotesOff(16);
 
         for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
 
@@ -163,7 +163,7 @@ if(g_CurrentSequence){
 #endif
         // reset all tracks state
         g_CurrentSequence->timeElapsedFrac=0L;
-        g_CurrentSequence->timeStep=am_calculateTimeStep(pTrackState->currentBPM, g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+        g_CurrentSequence->timeStep=amCalculateTimeStep(pTrackState->currentBPM, g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
     }
 
 }
@@ -182,7 +182,7 @@ volatile static sTrackState_t *pActiveTrackState=0;
 volatile static sTrack_t *pTrack=0;
 
 // single track handler
-void updateStepSingle(){
+void updateStepSingle(void){
  bStopped=FALSE;
 
  if(g_CurrentSequence==0) return;
@@ -193,7 +193,7 @@ void updateStepSingle(){
 
  //check sequence state if paused do nothing
   if(pActiveTrackState->playState&TS_PS_PAUSED) {
-    am_allNotesOff(16);
+    amAllNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   flushMidiSendBuffer();
@@ -229,7 +229,7 @@ void updateStepSingle(){
           g_CurrentSequence->timeStep=0L;
 
           //reset tempo to initial valueas taken during start(get them from main sequence?)
-          g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+          g_CurrentSequence->timeStep=amCalculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
           //rewind to the first event
           while(pActiveTrackState->currEventPtr->pPrev!=0){
@@ -333,7 +333,7 @@ if(bEOTflag==FALSE&&bSend!=FALSE){
 } //end UpdateStep()
 
 // multitrack handler
-void updateStepMulti(){
+void updateStepMulti(void){
     bStopped=FALSE;
 
     if(g_CurrentSequence==0) return;
@@ -346,7 +346,7 @@ void updateStepMulti(){
 
     //check sequence state if paused do nothing
      if(pActiveTrackState->playState&TS_PS_PAUSED) {
-       am_allNotesOff(16);
+       amAllNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   flushMidiSendBuffer();
@@ -381,7 +381,7 @@ void updateStepMulti(){
              g_CurrentSequence->timeStep=0L;
 
              //reset tempo to initial valueas taken during start(get them from main sequence?)
-             g_CurrentSequence->timeStep=am_calculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
+             g_CurrentSequence->timeStep=amCalculateTimeStep(pActiveTrackState->currentBPM,g_CurrentSequence->timeDivision, SEQUENCER_UPDATE_HZ);
 
              //rewind to the first event
              while(pActiveTrackState->currEventPtr->pPrev!=0){
@@ -528,7 +528,7 @@ void stopSeq(void){
   }
 
   //all notes off
-  am_allNotesOff(16);
+  amAllNotesOff(16);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
   Supexec(flushMidiSendBuffer);
@@ -536,7 +536,7 @@ void stopSeq(void){
 
 }
 
-void pauseSeq(){
+void pauseSeq(void){
   //printf("Pause/Resume.\n");
   if(g_CurrentSequence!=0){
     uint8 activeTrack=0;
@@ -593,7 +593,7 @@ void playSeq(void){
   }
 }
 
-void muteTrack(const uint16 trackNb,const bool bMute){
+void muteTrack(const uint16 trackNb, const bool bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
     if(bMute!=FALSE){
         g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
@@ -625,9 +625,9 @@ void toggleReplayMode(void){
   }
 }
 
-void am_destroySequence (sSequence_t **pPtr){
+void amDestroySequence (sSequence_t **pPtr){
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"am_destroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
+    amTrace((const uint8 *)"amDestroySequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
   #endif
 
   //go to the end of sequence
@@ -653,11 +653,11 @@ void am_destroySequence (sSequence_t **pPtr){
   //destroy sequence and nullify it
   amFree(*pPtr);
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"am_destroySequence() done. \n");
+    amTrace((const uint8 *)"amDestroySequence() done. \n");
   #endif
 }
 
-void printSequenceState(){
+void printSequenceState(void){
 
 if(g_CurrentSequence){
 

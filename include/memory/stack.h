@@ -2,7 +2,6 @@
 #define __STACK_H__
 
 // (c)Pawel Goralski 12'2011
-// e-mail: nokturnal@nokturnal.pl
 
 #include "c_vars.h"
 
@@ -18,12 +17,12 @@ typedef struct {
 } tStack;
 
 //if initialMaxSize==0, then maximal initial size is set to DEFAULT_MAXSTACK
-int32 initStack(tStack *pPtr, MemSize initialMaxSize, uint32 elementSize);
+int32 initStack(tStack *pPtr, const MemSize initialMaxSize, const uint32 elementSize);
 
 //void element has to be of the constant size
 void pushStack(tStack *pPtr, void *newElement);
 void popStack(tStack *pPtr);
-void *getTopStackElement();
+void *getTopStackElement(tStack *pPtr);
 const bool isStackFull(const tStack *pPtr);
 const bool isStackEmpty(const tStack *pPtr);
 void deinitStack(tStack *pPtr);

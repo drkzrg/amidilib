@@ -12,7 +12,7 @@
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2019 Pawel Goralski\ne-mail: nokturnal@nokturnal.pl\n"
+#define AMIDI_INFO "(c)2007-2020 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 3
@@ -52,50 +52,45 @@ typedef struct AMIDI_version {
  * @return version info structure
  */
 
-const sAMIDI_version *am_getVersionInfo(void);
+const sAMIDI_version *amGetVersionInfo(void);
 
 /**
  * handles loaded into the memory (X)MIDI file
  *
  * @param pMidi	memory pointer where midi file is stored,
  * @param type - type of MIDI file to handle (0,1,2 supported), XMIDI.
- *        Value is returned by am_getHeaderInfo() function.
+ *        Value is returned by amGetHeaderInfo() function.
  * @param lenght - lenght of (X)MIDI block memory size in bytes
  * @param pSequence - pointer to AMIDI sequence structure to fill (needed to play our tune)
  * @return returns 0 if everything is OK, -1 if error occured
  **/
 
-int16 am_handleMIDIfile(const char *pFilename, void *pMidiPtr, uint32 lenght, sSequence_t **pSequence);
+int16 amLoadMIDIfile(const char *pFilename, void *pMidiPtr, uint32 lenght, sSequence_t **pSequence);
 
 /**
  * gets number of tracks in MIDI file
  *
  * @param pMidi	memory pointer where (X)Midi file is stored.
- * @param type data type: MIDI 0,1,2 or XMIDI. Data type is returned by am_getHeaderInfo() function.
+ * @param type data type: MIDI 0,1,2 or XMIDI. Data type is returned by amGetHeaderInfo() function.
  * @return number of tracks in loaded MIDI file, -1 if error occured
  */
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
-int16 am_init(void);
+int16 amInit(void);
 
 /** Deinits system, restores standard MIDI buffer
 */
 
-void am_deinit(void);
+void amDeinit(void);
 
 /** returns info about connected devices  */
-const int8 *getConnectedDeviceInfo(void);
+const int8 *amGetConnectedDeviceInfo(void);
 
-/** returns null terminated string with note name according to ASA ISO 
-*   @param ubNoteNb - note number in 0-127 range
-*/
-const uint8 *am_getMIDInoteName(uint8 ubNoteNb);
-
-void getDeviceInfoResponse(uint8 channel);
+void amGetDeviceInfoResponse(const uint8 channel);
 
 /** returns meaningful name for Midi Device type enumeration.  */
-const uint8 *am_getMidiDeviceTypeName(eMidiDeviceType device);
+const uint8 *amGetMidiDeviceTypeName(const eMidiDeviceType device);
 
 
 #ifdef DEBUG_BUILD

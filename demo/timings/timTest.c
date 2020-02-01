@@ -80,7 +80,7 @@ int main(void){
   ////////////////////////////////////////
   
   /* init library */
-  uint32 iError=am_init();
+  uint32 iError=amInit();
  
   if(iError!=1) return -1;
   
@@ -151,7 +151,7 @@ int main(void){
     
   }//end while
 
-  am_allNotesOff(16);
+  amAllNotesOff(16);
   Supexec(flushMidiSendBuffer);
   
   ymSoundOff();
@@ -161,7 +161,7 @@ int main(void){
   Supexec(IkbdUninstall);
 
   /* clean up, free internal library buffers etc..*/
-  am_deinit();
+  amDeinit();
    
  return 0;
 }
@@ -247,7 +247,7 @@ void onToggleMidiEnable(void){
   printf("MIDI output ");
   if(midiOutputEnabled==TRUE){
     midiOutputEnabled=FALSE;
-    am_allNotesOff(16);
+    amAllNotesOff(16);
     printf("disabled.\n");
    }else{
     midiOutputEnabled=TRUE;
@@ -289,14 +289,14 @@ void onStopSequence(sCurrentSequenceState *pSeqPtr){
   pSeqPtr->currentPPQN=DEFAULT_PPQN;
   pSeqPtr->timeElapsedFrac=0UL;
 
-  pSeqPtr->timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
+  pSeqPtr->timeStep=amCalculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
   
   for (uint16 i=0;i<3;++i){
       pSeqPtr->tracks[i].seqPosIdx=0UL;
       pSeqPtr->tracks[i].timeElapsedInt=0UL;
   }  
   
-  am_allNotesOff(16);
+  amAllNotesOff(16);
   ymSoundOff();
 }
 
@@ -350,7 +350,7 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
   pSeqPtr->currentBPM=DEFAULT_BPM;
  
   pSeqPtr->timeElapsedFrac=0;
-  pSeqPtr->timeStep=am_calculateTimeStep((uint16)DEFAULT_BPM, (uint16)DEFAULT_PPQN, (uint16)SEQUENCER_UPDATE_HZ);
+  pSeqPtr->timeStep=amCalculateTimeStep((uint16)DEFAULT_BPM, (uint16)DEFAULT_PPQN, (uint16)SEQUENCER_UPDATE_HZ);
   
    if(bPlayModeInit==FALSE){
      //init but only once, user can switch this option during runtime
@@ -374,7 +374,7 @@ static bool bStopped=FALSE;
   
   //check sequence state if paused do nothing
   if(g_CurrentState.state==PS_PAUSED) {
-    if(midiOutputEnabled==TRUE) am_allNotesOff(16);
+    if(midiOutputEnabled==TRUE) amAllNotesOff(16);
     if(ymOutputEnabled==TRUE) ymSoundOff();
     return;
   }
@@ -396,9 +396,9 @@ static bool bStopped=FALSE;
     g_CurrentState.currentBPM=DEFAULT_BPM;
     g_CurrentState.timeElapsedFrac=0UL;
     
-    g_CurrentState.timeStep=am_calculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
+    g_CurrentState.timeStep=amCalculateTimeStep(DEFAULT_BPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ);
     
-    if(midiOutputEnabled==TRUE) am_allNotesOff(16);
+    if(midiOutputEnabled==TRUE) amAllNotesOff(16);
     if(ymOutputEnabled==TRUE) ymSoundOff();
     
     return;
@@ -409,7 +409,7 @@ static bool bStopped=FALSE;
   
   if(handleTempoChange==TRUE){
     g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;
-    g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
+    g_CurrentState.timeStep=amCalculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
     //amTrace("\nSet new timestep:%d\n",g_CurrentState.timeStep);
     handleTempoChange=FALSE;
   }
@@ -472,14 +472,14 @@ void onEndSeq(void){
       g_CurrentState.currentPPQN=DEFAULT_PPQN;
       g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;  //do not reset current tempo !!!!
       g_CurrentState.timeElapsedFrac=0UL;
-      g_CurrentState.timeStep=am_calculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
+      g_CurrentState.timeStep=amCalculateTimeStep(g_CurrentState.currentBPM, DEFAULT_PPQN, SEQUENCER_UPDATE_HZ); 
   
       for (uint16 i=0;i<3;++i){
         g_CurrentState.tracks[i].seqPosIdx=0UL;
         g_CurrentState.tracks[i].timeElapsedInt=0UL;
        }
        
-       if(midiOutputEnabled==TRUE) am_allNotesOff(16);
+       if(midiOutputEnabled==TRUE) amAllNotesOff(16);
        if(ymOutputEnabled==TRUE) ymSoundOff();
        
          

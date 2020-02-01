@@ -220,7 +220,7 @@ void ymDoSound(ymChannelData ch[3],uint8 envelope, uint16 envPeriod,uint8 noiseG
     Giaccess(envelope,ENV_SELECT+128);
 }
 
-void ymSoundOff(){
+void ymSoundOff(void){
   Giaccess(0b11111111,MIXER+128);
   
   //turn off envelope period
@@ -240,7 +240,7 @@ void ymSoundOff(){
   Giaccess(0,HB_OSC3+128);
 }
 
-void setYm2149(ymChannelData ch[3],int noteIdx,uint8 currentEnvelopeIdx, uint8 noisegenPeriod){
+void setYm2149(ymChannelData ch[3],const int noteIdx,const uint8 currentEnvelopeIdx, const uint8 noisegenPeriod){
      uint8 hByte=g_arMIDI2ym2149Tone[noteIdx].highbyte;
      uint8 lByte=g_arMIDI2ym2149Tone[noteIdx].lowbyte;
      uint8 envelope=envelopeArray[currentEnvelopeIdx];
@@ -257,7 +257,7 @@ void setYm2149(ymChannelData ch[3],int noteIdx,uint8 currentEnvelopeIdx, uint8 n
 }
 
 //plays given note and outputs it to midi/ym2149
-void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput){
+void playNote(const uint8 channel,const uint8 noteNb, const bool bMidiOutput, const bool bYmOutput){
 ymChannelData ch[3];
 
   

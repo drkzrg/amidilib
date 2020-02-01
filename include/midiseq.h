@@ -137,7 +137,7 @@ typedef struct SysEx_t{
 } sSysEx_t;
 
 //inline functions for sending data to external module
-const uint8 *getEventName(uint32 id);
+const uint8 *getEventName(const uint32 id);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
  /* returns the info struct about event: size and pointer to the handler  */

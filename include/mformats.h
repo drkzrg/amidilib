@@ -16,7 +16,7 @@ typedef enum EMIDIFILETYPES
   T_NKT,    /* NKT custom binary format */
   T_MIDIFTMAX,
   T_INVALID = -1,    
-  T_UNKNOWN = -2,    
+  T_UNSUPPORTED = -2,    
   
 } eMidiFileType;
 

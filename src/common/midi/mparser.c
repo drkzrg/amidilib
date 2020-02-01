@@ -35,7 +35,7 @@ because we have to know if we have to dump event data to one eventlist or severa
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
 
-void *processMidiTrackData(void *startPtr, const uint32 fileTypeFlag,const uint32 numTracks, sSequence_t **pCurSequence, int16 *iError )
+void *processMidiTrackData(void *startPtr, const eMidiFileType fileTypeFlag, const uint32 numTracks, sSequence_t **pCurSequence, int16 *iError )
 {
 uint32 trackCounter=0;
 uint32 endAddr=0L;
@@ -316,7 +316,7 @@ bool bEOF=FALSE;
 }
 
 
-int16 amNoteOff(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
@@ -417,7 +417,7 @@ if((*recallRS)==0){
 }
 
 //
-int16 amNoteOn(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
  sEventBlock_t tempEvent;
 
  uint8 channel=0;
@@ -518,7 +518,7 @@ int16 amNoteOn(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTr
  return retCode;
 }
 
-int16 amNoteAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
 uint8 pressure=0;
@@ -603,7 +603,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-int16 amController(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
     sEventBlock_t tempEvent;
     int16 retCode = 0;
     uint8 channelNb=0;
@@ -691,7 +691,7 @@ int16 amController(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta,
    return retCode;
 }
 
-int16 amProgramChange(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
   uint8 channel=0;
@@ -782,7 +782,7 @@ sEventBlock_t tempEvent;
     return retCode;
  }
 
-int16 amChannelAft(sSequence_t *pSeq,uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 int16 retCode=0;
 
@@ -862,7 +862,7 @@ int16 retCode=0;
  return retCode;
 }
 
-int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS,uint32 delta, sTrack_t **pCurTrack){
+int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
 sEventBlock_t tempEvent;
 
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
@@ -954,7 +954,7 @@ tempEvent.dataPtr=0;
   return retCode;
 }
 
-int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack){
+int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack){
   sEventBlock_t tempEvent;
   sSysEX_EventBlock_t *pEvntBlock=0;
   uint8 *pTmpPtr=0;
@@ -1008,7 +1008,7 @@ int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTr
 #endif
 }
 
-int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr,uint32 delta, sTrack_t **pCurTrack, bool *bEOT){
+int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack, bool *bEOT){
 sEventBlock_t tempEvent;
 
  uint32 addr;

@@ -91,13 +91,13 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
         int32 chunkSize = ReadBE32(iffdata.size);
     } else {
       amTrace((const uint8*)"Invalid XMIDI file ..\n");
-      return(-1);
+      return T_INVALID;
     }
   */  
     /* possible XMIDI*/
     amTrace((const uint8*)"XMIDI file possibly..\n");
     return T_XMIDI;
-}else{
+ } else{
      MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
 
      if(((pMusHeader->ID)>>8)==MUS_ID){
@@ -106,10 +106,10 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
      }
 }
 //unsupported format  
- return(-1);
+ return T_UNSUPPORTED;
 }
 
-int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSequence_t **pSequence){
+int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, sSequence_t **pSequence){
     int16 iNumTracks=0;
     int16 iError=0;
     uint16 iTimeDivision=0;
@@ -138,15 +138,15 @@ int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSeque
    }
 #endif
 
-   eMidiFileType midiType = T_UNKNOWN;
+   eMidiFileType midiType = T_UNSUPPORTED;
    midiType = amGetHeaderInfo(pMidiPtr);
     
-   if(midiType==T_INVALID){
+   if(midiType == T_INVALID){
     /* not MIDI file, do nothing */
     amTrace((const uint8*)"It's not valid (X)MIDI file...\n");
     printf( "It's not valid MIDI file...\n");
     return -1;
-   } else if(midiType==T_UNKNOWN){
+   } else if(midiType == T_UNSUPPORTED){
     /* unsupported MIDI type format, do nothing*/
     amTrace((const uint8*)"Unsupported (X)MIDI file format...\n");
     printf( "Unsupported MIDI file format...\n");
@@ -377,7 +377,7 @@ int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSeque
 }
 
 //TODO: rework interface or remove this function at all
-int16 amGetNbOfTracks(void *pMidiPtr, const int16 type){
+int16 amGetNbOfTracks(void *pMidiPtr, const eMidiFileType type){
     switch(type){
      case T_MIDI0:
      case T_MIDI1:
@@ -387,12 +387,12 @@ int16 amGetNbOfTracks(void *pMidiPtr, const int16 type){
         
 	/* check midi header */
         if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
-	  return (pMidiInfo->nTracks);
+	       return (pMidiInfo->nTracks);
         }
      }
      break;
 
-     case T_XMIDI:{
+     case T_XMIDI: {
         sIffChunk *pXmidiInfo=0;
 	
 	     return -1;

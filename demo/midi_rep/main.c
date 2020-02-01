@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
      /* check midi header */
       printf("Please wait...\n");
 
-      iError=amLoadMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
+      iError=amLoadMIDIfile(argv[1],pMidi,&pMidiTune);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(pMidi);

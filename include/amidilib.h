@@ -65,7 +65,7 @@ const sAMIDI_version *amGetVersionInfo(void);
  * @return returns 0 if everything is OK, -1 if error occured
  **/
 
-int16 amLoadMIDIfile(const char *pFilename, void *pMidiPtr, uint32 lenght, sSequence_t **pSequence);
+int16 amLoadMIDIfile(const char *pFilename, void *pMidiPtr, sSequence_t **pSequence);
 
 /**
  * gets number of tracks in MIDI file

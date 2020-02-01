@@ -15,7 +15,7 @@
 #include "amidiseq.h"
 #include "mformats.h"
 
-int16 amGetNbOfTracks(void *pMidiPtr, int16 type);
+int16 amGetNbOfTracks(void *pMidiPtr, eMidiFileType type);
 
 /**
  * gets time division from MIDI header data
@@ -52,7 +52,7 @@ eMidiFileType amGetHeaderInfo(const void *pMidiPtr);
 *	@param pCurSequence pointer to AMIDI sequence structure
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
-void *processMidiTrackData(void *startPtr, const uint32 fileTypeFlag,const uint32 numTracks, sSequence_t **pCurSequence, int16 *iError);
+void *processMidiTrackData(void *startPtr, const eMidiFileType fileTypeFlag, const uint32 numTracks, sSequence_t **pCurSequence, int16 *iError);
 
 /** processes the MIDI track events
 *	@param startPtr TODO
@@ -67,7 +67,7 @@ void *processMIDItrackEvents(sSequence_t *pSeq, void**startPtr, const void *endA
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode note on message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -75,7 +75,7 @@ int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, 
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode note aftertouch/pressure message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -83,7 +83,7 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, s
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode control change message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -91,7 +91,7 @@ int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, 
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amController(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amController(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode program change message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -99,7 +99,7 @@ int16 amController(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delt
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode channel aftertouch/pressure message
 *	@param pPtr pointer to the pointer with midi data to read
@@ -107,7 +107,7 @@ int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 d
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode pitch bend message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -115,7 +115,7 @@ int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delt
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta, sTrack_t **pCurTrack);
+int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode sysex message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -123,7 +123,7 @@ int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, uint32 delta
 *   @param delta current event delta
 *   @param pCurTrack pointer to track structure where event will be stored
 */
-int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, uint32 delta, sTrack_t **pCurTrack);
+int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack);
 
 /** read/decode meta event message
 *   @param pPtr pointer to the pointer with midi data to read
@@ -132,7 +132,7 @@ int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, uint32 delta, sTrack_t **pCurT
 *   @param pCurTrack pointer to track structure where event will be stored
 *   @return bool flag TRUE if end of track (EOT) occured, FALSE otherwise.
 */
-int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, uint32 delta, sTrack_t **pCurTrack, bool *bEOT);
+int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack, bool *bEOT);
 
 /** checks if byte is midi channel
 *	@param byteEvent command byte

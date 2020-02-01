@@ -131,12 +131,12 @@ int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSeque
     
    if(iRet==-1){
     /* not MIDI file, do nothing */
-    amTrace((const uint8*)"It's not valid MIDI file...\n");
+    amTrace((const uint8*)"It's not valid (X)MIDI file...\n");
     printf( "It's not valid MIDI file...\n");
     return -1;
    } else if(iRet==-2){
     /* unsupported MIDI type format, do nothing*/
-    amTrace((const uint8*)"Unsupported MIDI file format...\n");
+    amTrace((const uint8*)"Unsupported (X)MIDI file format...\n");
     printf( "Unsupported MIDI file format...\n");
    return -1; 
    }

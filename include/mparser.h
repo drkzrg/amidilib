@@ -13,6 +13,7 @@
 
 #include "c_vars.h"
 #include "amidiseq.h"
+#include "mformats.h"
 
 int16 amGetNbOfTracks(void *pMidiPtr, int16 type);
 
@@ -39,11 +40,10 @@ extern uint32 amReadVarLen(void);
  * (1) - MIDI file type 1,
  * (2) - MIDI file type 2,
  * (3) - Miles Sound system XMIDI
- * (-1) - not MIDI file,
- * (-2) - not recognized MIDI file type format
+ * (-1) - unknown MIDI file,
  */
 
-int16 amGetHeaderInfo(const void *pMidiPtr);
+eMidiFileType amGetHeaderInfo(const void *pMidiPtr);
 
 /** processes the MIDI track data
 *	@param startPtr pointer to the start of Track MIDI chunk

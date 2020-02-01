@@ -5,14 +5,16 @@
     See license.txt for licensing information.
 */
 
-#ifndef __AXMIDI_H__
-#define __AXMIDI_H__
+#ifndef AXMIDI_H
+#define AXMIDI_H
+
+#include "c_vars.h"
 
 /* XMIDI contain midi events */
 #include "midi.h"
 
 // make ID
-#define	MAKE_ID(a,b,c,d) ((uint32_t) (a)<<24 | (uint32_t) (b)<<16 | (uint32_t) (c)<<8 | (uint32_t) (d))
+#define	MAKE_ID(a,b,c,d) ((uint32) (a)<<24 | (uint32) (b)<<16 | (uint32) (c)<<8 | (uint32) (d))
 
 /* Universal IFF identifiers */
 #define ID_FORM  MAKE_ID('F','O','R','M')
@@ -27,15 +29,13 @@
 #define IFF_CI_ENTRYHANDLER     MAKE_ID('e','n','h','d')
 #define IFF_CI_EXITHANDLER      MAKE_ID('e','x','h','d')
 
-
 /* define XMIDI specific chunk defs */
-#define ID_XDIR 0x58444952  /* XDIR */
-#define ID_XMID 0x584D4944  /* XMID */
-#define ID_INFO 0x494E464F  /* INFO */
-#define ID_TIMB 0x54494D42  /* TIMB */
-#define ID_RBRN 0x5242524E  /* RBRN */
-#define ID_EVNT 0x45564E54  /* EVNT */
-
+#define ID_XDIR MAKE_ID('X','D','I','R')
+#define ID_XMID MAKE_ID('X','M','I','D') 
+#define ID_INFO MAKE_ID('I','N','F','O') 
+#define ID_TIMB MAKE_ID('T','I','M','B') 
+#define ID_RBRN MAKE_ID('R','B','R','N') 
+#define ID_EVNT MAKE_ID('E','V','N','T')
 
 /* XMIDI additional controllers */
 #define C_CH_LOCK           0x6e        /* Channel Lock */
@@ -49,5 +49,13 @@
 #define C_CLEAR_BAR_COUNT   0x76        /* Clear Beat/Bar Count */
 #define C_CALL_TRIGGER      0x77        /* Callback Trigger */
 #define C_SEQ_BRA_IDX       0x78        /* Sequence Branch Index */
+
+typedef int8 IFF_ID[4];
+
+typedef struct IFFCHUNK {
+	IFF_ID id;
+	int32 size; 	
+	uint8 data[]; 	
+} sIffChunk;
 
 #endif

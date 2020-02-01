@@ -2,8 +2,9 @@
 #define MFORMATS_H
 
 /** for internal use, midi file types  */
-typedef enum _midiFileTypes{
-  T_MIDI0=0,
+typedef enum EMIDIFILETYPES 
+{
+  T_MIDI0 = 0,
   T_MIDI1,
   T_MIDI2,
   T_XMIDI,
@@ -13,8 +14,10 @@ typedef enum _midiFileTypes{
   T_SNG,
   T_MUS,	/* e.g Doom MIDI music format */
   T_NKT,    /* NKT custom binary format */
-  T_MIDIFTMAX
-} eMidiFileTypes;
-
+  T_MIDIFTMAX,
+  T_INVALID = -1,    
+  T_UNKNOWN = -2,    
+  
+} eMidiFileType;
 
 #endif // MFORMATS_H

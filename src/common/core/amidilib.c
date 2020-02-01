@@ -54,7 +54,7 @@ const sAMIDI_version *amGetVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-int16 amGetHeaderInfo(const void *pMidiPtr){
+eMidiFileType amGetHeaderInfo(const void *pMidiPtr){
     sMThd *pMidiInfo=0;
     amTrace((const uint8 *)"Checking header info... ");
     pMidiInfo=(sMThd *)pMidiPtr;
@@ -82,9 +82,21 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
 	break;
    };
 }else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
-      /* possible XMIDI*/
-      amTrace((const uint8*)"XMIDI file possibly..\n");
-      return T_XMIDI;
+      
+    sIffChunk *iffdata = (sIffChunk *)pMidiPtr;
+/*
+    if((uint32)iffdata.ID==ID_FORM)
+        int32 chunkSize = ReadBE32(iffdata.size);
+    }else if((uint32)iffdata.ID==ID_CAT)
+        int32 chunkSize = ReadBE32(iffdata.size);
+    } else {
+      amTrace((const uint8*)"Invalid XMIDI file ..\n");
+      return(-1);
+    }
+  */  
+    /* possible XMIDI*/
+    amTrace((const uint8*)"XMIDI file possibly..\n");
+    return T_XMIDI;
 }else{
      MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
 
@@ -126,22 +138,22 @@ int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSeque
    }
 #endif
 
-   int iRet=0;
-   iRet=amGetHeaderInfo(pMidiPtr);
+   eMidiFileType midiType = T_UNKNOWN;
+   midiType = amGetHeaderInfo(pMidiPtr);
     
-   if(iRet==-1){
+   if(midiType==T_INVALID){
     /* not MIDI file, do nothing */
-    amTrace((const uint8*)"It's not valid MIDI file...\n");
+    amTrace((const uint8*)"It's not valid (X)MIDI file...\n");
     printf( "It's not valid MIDI file...\n");
     return -1;
-   } else if(iRet==-2){
+   } else if(midiType==T_UNKNOWN){
     /* unsupported MIDI type format, do nothing*/
-    amTrace((const uint8*)"Unsupported MIDI file format...\n");
+    amTrace((const uint8*)"Unsupported (X)MIDI file format...\n");
     printf( "Unsupported MIDI file format...\n");
-   return -1; 
+    return -1; 
    }
 
-    switch(iRet){
+    switch(midiType){
         case T_MIDI0:{
             /* handle MIDI type 0 */
             iNumTracks=amGetNbOfTracks(pMidiPtr,T_MIDI0);
@@ -264,7 +276,7 @@ int16 amLoadMIDIfile(const char *pFileName,void *pMidiPtr, uint32 lenght, sSeque
         }break;
 	case T_XMIDI:{
          /* handle XMIDI */
-         iNumTracks=amGetNbOfTracks(pMidiPtr,T_XMIDI);
+         iNumTracks = amGetNbOfTracks(pMidiPtr,T_XMIDI);
          iTimeDivision = amGetTimeDivision(pMidiPtr);
 
          /* processing (X)MIDI file */
@@ -381,13 +393,9 @@ int16 amGetNbOfTracks(void *pMidiPtr, const int16 type){
      break;
 
      case T_XMIDI:{
-        /*TODO: ! not implemented */
-    //sIFF_Chunk *pXmidiInfo=0;
+        sIffChunk *pXmidiInfo=0;
 	
-	
-	
-
-	return -1;
+	     return -1;
      }
      case T_RMID:{
      return -1;/*TODO: ! not implemented */

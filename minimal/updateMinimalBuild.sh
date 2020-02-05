@@ -1,7 +1,6 @@
 #!/bin/bash
 # copies all needed files for building minimal, standalone nkt replay library.
 
-
 echo Target directory cleanup
 find ./nktlib/ -name "*.s" -type f|xargs rm -f
 find ./nktlib/ -name "*.inc" -type f|xargs rm -f
@@ -68,6 +67,7 @@ fi
 
 cp ../include/memory/linalloc.h ./nktlib/include/memory/
 cp ../include/memory/memory.h ./nktlib/include/memory/
+cp ../include/memory/endian.h ./nktlib/include/memory/
 
 if [ ! -d "./nktlib/include/lzo/" ]; then
 mkdir ./nktlib/include/lzo/

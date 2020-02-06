@@ -121,11 +121,11 @@ uint32 cfgLen=0;
   }
 }
 
-void setConnectedDeviceType(eMidiDeviceType type){
+void setConnectedDeviceType(const eMidiDeviceType type){
   configuration.connectedDeviceType=type;
 }
 
-void setDefaultConfig(){
+void setDefaultConfig(void){
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType = DEFAULT_CONNECTED_DEVICE_TYPE; 	//default is CM32L output device with extra patches	
@@ -167,7 +167,7 @@ void setGlobalConfig(tAmidiConfig *newConfig){
 
 }
 
-const tAmidiConfig *getGlobalConfig(){
+const tAmidiConfig *getGlobalConfig(void){
   return &configuration;
 }
 

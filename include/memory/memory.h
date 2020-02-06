@@ -15,7 +15,6 @@
 
 #endif
 
-
 #include "amlog.h"
 #include "c_vars.h"
 
@@ -24,27 +23,26 @@
 
 /* memory allocation preference */
 
-typedef enum {
+typedef enum EMEMORYFLAG {
   ST_RAM = MX_STRAM,
   TT_RAM = MX_TTRAM,
   PREFER_ST = MX_PREFSTRAM,
   PREFER_TT = MX_PREFTTRAM,
-  PREFER_DSP = PREFER_TT+1,         //f030 only, not used atm
-  PREFER_SUPERVIDEL = PREFER_TT+2,  //f030 only, not used atm
-  PREFER_RADEON = PREFER_TT+3       //f030 only, not used atm
+  PREFER_DSP = PREFER_TT + 1,         // f030 only, not used atm
+  PREFER_SUPERVIDEL = PREFER_TT + 2,  // f030 + CT60 only, not used atm
+  PREFER_RADEON = PREFER_TT + 3       // f030 + CT60 only, not used atm
 } eMemoryFlag;
 
 #if defined (EXTERN_MEM_FUNCTIONS)
-#warning "Extern memory functions enabled"
+#warning "Extern user memory functions enabled"
 
-#define PU_STATIC		1
+extern void  amUserFree (void* ptr);
+extern void* amUserMalloc (int size, void *ptr);
+extern void* amUserMallocEx (int size, int ramflag, void *ptr);
 
-extern void     Z_Free (void* ptr);
-extern void*	Z_Malloc (int size, int tag, void *ptr);
-
-#define amMallocEx(amount, flag) Z_Malloc((amount),PU_STATIC, NULL);
-#define amMalloc(amount) Z_Malloc((amount),PU_STATIC, NULL);
-#define amFree(memPtr) if( (memPtr) != NULL ) Z_Free(memPtr); (memPtr) = NULL;
+#define amMallocEx(amount, flag) amUserMallocEx(amount, flag, NULL);
+#define amMalloc(amount) amUserMalloc(amount, NULL);
+#define amFree(memPtr) if( (memPtr) != NULL ) amUserFree(memPtr); (memPtr) = NULL;
 
 #else
 

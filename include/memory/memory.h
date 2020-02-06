@@ -62,6 +62,7 @@ extern void*	Z_Malloc (int size, int tag, void *ptr);
 #else
 #define amMallocEx(amount, flag) Mxalloc((amount),(flag));
 #define amMalloc(amount) Malloc((amount));
+
 #endif
 
 #define amFree(memPtr) if( (memPtr) != NULL ) Mfree(memPtr); (memPtr) = NULL;

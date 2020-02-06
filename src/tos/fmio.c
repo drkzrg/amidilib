@@ -12,8 +12,6 @@
 
 #include <stdio.h>
 
-static int16 g_lastGDOSerror=0;
-
 static const char *g_arGEMDOSerror[71]= { 
   "No error.",\
   "Error.",\
@@ -54,12 +52,13 @@ static const char *g_arGEMDOSerror[71]= {
   "Mount point crossed."
 };
 
+static eGdosError g_lastGDOSerror = GDOS_OK;
 
 const uint8 *getLastGemdosError(void){
     return getGemdosError(g_lastGDOSerror);
 }
 
-const uint8 *getGemdosError(const int16 iErr){
+const uint8 *getGemdosError(const eGdosError iErr){
 
 uint16 idx=1;
 

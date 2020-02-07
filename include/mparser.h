@@ -15,7 +15,7 @@
 #include "amidiseq.h"
 #include "mformats.h"
 
-int16 amGetNbOfTracks(void *pMidiPtr, eMidiFileType type);
+uint16 amGetNbOfTracks(void *pMidiPtr, const eMidiFileType type);
 
 /**
  * gets time division from MIDI header data

@@ -43,7 +43,7 @@ static const uint8 lzoCompressionTag[]={"lzoDecompressionEnabled"};
 
 // default values
 #ifdef EVENT_LINEAR_BUFFER
-static const uint32 DEFAULT_EVENT_POOL_SIZE =  12000UL; //nb of events
+static const uint32 DEFAULT_EVENT_POOL_SIZE =  24000UL; //nb of events
 static const uint32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
 #endif
 

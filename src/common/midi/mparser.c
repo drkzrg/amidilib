@@ -27,147 +27,152 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
  return (0);
 }
 
-
-
 /* at this point pCurSequence should have the info about the type of file that resides in memory,
 because we have to know if we have to dump event data to one eventlist or several ones */
-
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
-
-void *processMidiTrackData(void *startPtr, const eMidiFileType fileTypeFlag, const uint32 numTracks, sSequence_t **pCurSequence, int16 *iError )
+void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iError )
 {
-uint32 trackCounter=0;
-uint32 endAddr=0L;
-uint32 ulChunkSize=0;
 
-sMThd *pMidiHeader=(sMThd *)startPtr;
-sChunkHeader *pHeader=0;
-sTrack_t **ppTrack=0;
-void *end=0;
+sChunkHeader *pHeader = (sChunkHeader *)trackStartPtr;
 
-amTrace((const uint8*)"Number of tracks to process: %d\n\n",numTracks);
+if(pHeader->id != ID_MTRK) 
+{
+  amTrace((const uint8*)"Fatal error: Wrong midi track id\n");
+  return 0;
+}
 
-pHeader=(sChunkHeader *)startPtr;
-startPtr=(uint8*)startPtr + sizeof(sChunkHeader);
-ulChunkSize=pHeader->headLenght;
-endAddr=(uint32)startPtr+ulChunkSize;
+uint32 ulChunkSize = pHeader->headLenght;
 
-switch(fileTypeFlag){
+trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader)); // get events start
+void *endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
 
-    case T_MIDI0:{
+sSequence_t * const sequence = *ppCurSequence;
+
+if(sequence==0) 
+{
+  amTrace((const uint8*)"Fatal error: Sequence pointer is null!\n");
+}
+
+const uint8 numTracks = sequence->ubNumTracks;
+
+amTrace((const uint8*)"Number of tracks to process: %d\n\n", numTracks);
+
+uint8 currentTrackNb = 0;
+
+switch(fileTypeFlag)
+{
+    case T_MIDI0:
+    {
       /* we have only one track data to process */
       /* add all of them to given track */
-      (*pCurSequence)->seqType=ST_SINGLE;
 
-      sTrack_t *pTempTrack=(*pCurSequence)->arTracks[0];
+      sequence->seqType = ST_SINGLE;
+
+      sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
       pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-      pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
-      pTempTrack->currentState.currentBPM=DEFAULT_BPM;
+      pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+      pTempTrack->currentState.currentBPM = DEFAULT_BPM;
 
-      ppTrack=&pTempTrack;
-      end=(void *)endAddr;
-
-      startPtr=processMIDItrackEvents(*pCurSequence,&startPtr,(const void *)end,ppTrack, iError );
+      trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
 
       if(*iError<0) {
         return NULL;
       }
 
-    }
-    break;
-     case T_MIDI1:{
-      (*pCurSequence)->seqType=ST_MULTI;
+    } break;
 
-      while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
-      /* we have got track data :)) */
-      /* add all of them to given track */
-      sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
+    case T_MIDI1:
+    {
 
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-      pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
-      pTempTrack->currentState.currentBPM=DEFAULT_BPM;
+      sequence->seqType = ST_MULTI;
 
-      ppTrack=&pTempTrack;
-      end=(void *)endAddr;
+      while(((pHeader!=0) && (pHeader->id==ID_MTRK) && (currentTrackNb<numTracks)))
+      {
+        /* we have got track data :)) */
+        /* add all of them to given track */
+        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
+        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
 
-      startPtr=processMIDItrackEvents(*pCurSequence,&startPtr,(const void *)end,ppTrack, iError );
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
 
-      if(*iError<0) {
-        return NULL;
+        if(*iError<0) {
+          return NULL;
+        }
+
+        /* increase current track counter */
+        ++currentTrackNb;
+
+        //prevent reading chunk after processing the last track
+        if(currentTrackNb < numTracks)
+        {
+          /* get next data chunk info */
+          pHeader=(sChunkHeader *)trackStartPtr;
+          ulChunkSize=pHeader->headLenght;
+
+          /* omit Track header */
+          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
+          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
+        } 
+        else
+        {
+            pHeader=0;
+        }
+     
       }
 
-      /* increase track counter */
-      ++trackCounter;
+     } break;
+    
+    case T_MIDI2:
+    {
+      /* handle MIDI 2, multitrack type */
+      /* create several track lists according to numTracks */
+      sequence->seqType = ST_MULTI_SUB;
 
-      //prevent reading chunk after processing the last track
-      if(trackCounter<numTracks){
-        /* get next data chunk info */
-        pHeader=(sChunkHeader *)startPtr;
-        ulChunkSize=pHeader->headLenght;
+      /* tracks inited, now insert track data */
+      while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(currentTrackNb<numTracks)))
+      {
+        /* we have got track data :)), add all of them to given track */
+        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
+        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
+    
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
 
-        /* omit Track header */
-        startPtr=(uint8*)startPtr+sizeof(sChunkHeader);
-        endAddr=(uint32)startPtr+ulChunkSize;
-      }else{
-        //just to play safe
-        pHeader=0;
-        ulChunkSize=0;
-        startPtr=0;
-        endAddr=0;
+        if(*iError<0) {
+          return NULL;
+        }
+
+        /* increase track counter */
+        ++currentTrackNb;
+
+        if(currentTrackNb < numTracks){
+          /* get next data chunk info */
+          pHeader = (sChunkHeader *)trackStartPtr;
+          ulChunkSize = pHeader->headLenght;
+
+          /* omit Track header */
+          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
+          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
+        }
+        else
+        {
+            pHeader=0;
+        }
+
       }
-    }
-    }break;
-    case T_MIDI2:{
-    /* handle MIDI 2, multitrack type */
-    /* create several track lists according to numTracks */
-    (*pCurSequence)->seqType=ST_MULTI_SUB;
+    } break;
 
-    /* tracks inited, now insert track data */
-    while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(trackCounter<numTracks))){
-      /* we have got track data :)) */
-      /* add all of them to given track */
-      sTrack_t *pTempTrack=(*pCurSequence)->arTracks[trackCounter];
+    case T_XMIDI:
+    case T_RMID:
+    case T_SMF:
+    case T_XMF:
+    case T_MUS:
 
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-      pTempTrack->currentState.currentTempo=DEFAULT_MPQN;
-      pTempTrack->currentState.currentBPM=DEFAULT_BPM;
-
-      ppTrack=&pTempTrack;
-      end=(void *)endAddr;
-
-      startPtr=processMIDItrackEvents(*pCurSequence,&startPtr,(const void *)end,ppTrack, iError );
-
-      if(*iError<0) {
-        return NULL;
-      }
-
-      /* increase track counter */
-      ++trackCounter;
-
-      if(trackCounter<numTracks){
-        /* get next data chunk info */
-        pHeader=(sChunkHeader *)startPtr;
-        ulChunkSize=pHeader->headLenght;
-
-        /* omit Track header */
-        startPtr=(uint8*)startPtr+sizeof(sChunkHeader);
-        endAddr=(uint32)startPtr+ulChunkSize;
-      }else{
-        //just to play safe
-        pHeader=0;
-        ulChunkSize=0;
-        startPtr=0;
-        endAddr=0;
-      }
-    }
-    }break;
-     case T_XMIDI:
-     case T_RMID:
-     case T_SMF:
-     case T_XMF:
-
-     default:
+    default:
     /*TODO: unimplemented
       except T_MUS, it is converted to Midi 0 format
     */
@@ -205,7 +210,7 @@ uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond){
 }
 
 /* handles the events in tracks and returns pointer to the next midi track */
-void *processMIDItrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, sTrack_t **pCurTrack, int16 *iError ){
+void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, int16 *iError ){
 uint8 usSwitch=0;
 uint16 recallStatus=0;
 
@@ -247,32 +252,32 @@ bool bEOF=FALSE;
     /* decode event and write it to our custom structure */
     switch(usSwitch){
       case EV_NOTE_OFF:
-        *iError=amNoteOff(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteOff(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_NOTE_ON:
-        *iError=amNoteOn(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteOn(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_NOTE_AFTERTOUCH:
-        *iError=amNoteAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amNoteAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_CONTROLLER:
-        *iError=amController(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amController(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_PROGRAM_CHANGE:
-        *iError=amProgramChange(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amProgramChange(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_CHANNEL_AFTERTOUCH:
-        *iError=amChannelAft(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amChannelAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_PITCH_BEND:
-        *iError=amPitchBend(pSeq,&pCmd,&recallStatus, delta, pCurTrack );
+        *iError=amPitchBend(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_META:
-        *iError=amMetaEvent(pSeq,&pCmd, delta, pCurTrack,&bEOF);
+        *iError=amMetaEvent(pSeq,&pCmd, delta, trackNb,&bEOF);
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
         recallStatus=0; 	                /* cancel out midi running status */
-        *iError=(int16)amSysexMsg(pSeq,&pCmd,delta, pCurTrack);
+        *iError=(int16)amSysexMsg(pSeq,&pCmd,delta, trackNb);
       break;
       case SC_MTCQF:
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
@@ -316,7 +321,8 @@ bool bEOF=FALSE;
 }
 
 
-int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
 sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
@@ -361,9 +367,9 @@ if((*recallRS)==0){
 
   /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 }else {
   /* recall last cmd status */
@@ -398,9 +404,9 @@ if((*recallRS)==0){
 
   /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
 }
@@ -417,7 +423,7 @@ if((*recallRS)==0){
 }
 
 //
-int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
  sEventBlock_t tempEvent;
 
  uint8 channel=0;
@@ -466,9 +472,9 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 d
 
   /* add event to list */
   #ifdef EVENT_LINEAR_BUFFER
-    retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+    retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
   #else
-     retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+     retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
   #endif
 
  }else{
@@ -500,9 +506,9 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 d
 
     /* add event to list */
     #ifdef EVENT_LINEAR_BUFFER
-      retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
     #else
-       retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+       retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
     #endif
 
  }
@@ -518,7 +524,8 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 d
  return retCode;
 }
 
-int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
 uint8 pressure=0;
@@ -560,9 +567,9 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
  }else{
@@ -590,9 +597,9 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
     }
 
@@ -603,7 +610,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
     sEventBlock_t tempEvent;
     int16 retCode = 0;
     uint8 channelNb=0;
@@ -646,9 +653,9 @@ int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint3
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
     } else {
@@ -678,9 +685,9 @@ int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint3
     ++(*pPtr);
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
     }
@@ -691,7 +698,8 @@ int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint3
    return retCode;
 }
 
-int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
+{
 sEventBlock_t tempEvent;
 
   uint8 channel=0;
@@ -733,9 +741,9 @@ sEventBlock_t tempEvent;
 
     /* add event to list */
     #ifdef EVENT_LINEAR_BUFFER
-      retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
     #else
-      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+      retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
     #endif
 
     } else {
@@ -765,9 +773,9 @@ sEventBlock_t tempEvent;
 
       /* add event to list */
       #ifdef EVENT_LINEAR_BUFFER
-        retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+        retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
       #else
-        retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+        retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
       #endif
 
      }
@@ -782,7 +790,8 @@ sEventBlock_t tempEvent;
     return retCode;
  }
 
-int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
 sEventBlock_t tempEvent;
 int16 retCode=0;
 
@@ -820,9 +829,9 @@ int16 retCode=0;
 
         /* add event to list */
         #ifdef EVENT_LINEAR_BUFFER
-            retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+            retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
         #else
-            retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+            retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
         #endif
 
     } else {
@@ -849,9 +858,9 @@ int16 retCode=0;
 
         /* add event to list */
         #ifdef EVENT_LINEAR_BUFFER
-            retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+            retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
         #else
-            retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+            retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
         #endif
     }
 
@@ -862,7 +871,8 @@ int16 retCode=0;
  return retCode;
 }
 
-int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, sTrack_t **pCurTrack){
+int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
 sEventBlock_t tempEvent;
 
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
@@ -907,9 +917,9 @@ tempEvent.dataPtr=0;
 
     /* add event to list */
    #ifdef EVENT_LINEAR_BUFFER
-     retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+     retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
    #else
-      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+      retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
    #endif
 
 
@@ -940,9 +950,9 @@ tempEvent.dataPtr=0;
 
     /* add event to list */
    #ifdef EVENT_LINEAR_BUFFER
-     retCode = addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+     retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
    #else
-      retCode = addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+      retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
    #endif
 
  }
@@ -954,7 +964,8 @@ tempEvent.dataPtr=0;
   return retCode;
 }
 
-int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack){
+int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb)
+{
   sEventBlock_t tempEvent;
   sSysEX_EventBlock_t *pEvntBlock=0;
   uint8 *pTmpPtr=0;
@@ -1002,13 +1013,13 @@ int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t *
 
  /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  return addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   return addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 }
 
-int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, sTrack_t **pCurTrack, bool *bEOT){
+int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb, bool *bEOT){
 sEventBlock_t tempEvent;
 
  uint32 addr;
@@ -1016,7 +1027,7 @@ sEventBlock_t tempEvent;
  uint8 textBuffer[64]={0};
  *bEOT=FALSE;
 
- tempEvent.dataPtr=0;
+ tempEvent.dataPtr = 0;
 
  /*get meta event type */
  (*pPtr)++;
@@ -1082,19 +1093,21 @@ sEventBlock_t tempEvent;
         /* set to the start of the string */
         ++(*pPtr);
 
-        (*pCurTrack)->pTrackName = (uint8 *)amMallocEx(128*sizeof(uint8),PREFER_TT);
+        sTrack_t *pTrack = pSeq->arTracks[trackNb];
 
-    if((*pCurTrack)->pTrackName!=NULL){
-      amMemSet((*pCurTrack)->pTrackName,0,128*sizeof(uint8));
-      strncpy((char *)(*pCurTrack)->pTrackName,(char *)(*pPtr),ubLenght);
-      (*pCurTrack)->pTrackName[ubLenght]='\0';
-      //amMemCpy((*pCurTrack)->pTrackName, (*pPtr),ubLenght*sizeof(uint8));
+        pTrack->pTrackName = (uint8 *)amMallocEx(128*sizeof(uint8),PREFER_TT);
+
+    if(pTrack->pTrackName!=NULL){
+      amMemSet(pTrack->pTrackName,0,128*sizeof(uint8));
+      strncpy((char *)pTrack->pTrackName,(char *)(*pPtr),ubLenght);
+      pTrack->pTrackName[ubLenght]='\0';
+      //amMemCpy(pTrack->pTrackName, (*pPtr),ubLenght*sizeof(uint8));
     }
 
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
         amTrace((const uint8*)"meta size: %d ",ubLenght);
-        amTrace((const uint8*)"%s \n",(*pCurTrack)->pTrackName);
+        amTrace((const uint8*)"%s \n",pTrack->pTrackName);
 #endif
     return 0;
     }break;
@@ -1169,9 +1182,9 @@ sEventBlock_t tempEvent;
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-   addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+   addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
 #ifdef MIDI_PARSER_DEBUG
@@ -1217,9 +1230,9 @@ sEventBlock_t tempEvent;
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-   addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+   addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
 #ifdef MIDI_PARSER_DEBUG
@@ -1333,9 +1346,9 @@ sEventBlock_t tempEvent;
     *bEOT=TRUE;
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  return addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   return addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
     }break;
     case MT_SET_TEMPO:{
@@ -1384,9 +1397,9 @@ sEventBlock_t tempEvent;
 #endif
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  return addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   return addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
     }
     break;
@@ -1449,9 +1462,9 @@ sEventBlock_t tempEvent;
 #endif
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  return addEvent(pSeq, &(*pCurTrack)->pTrkEventList, &tempEvent );
+  return addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   return addEvent(&(*pCurTrack)->pTrkEventList, &tempEvent );
+   return addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
     }break;

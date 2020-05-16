@@ -29,7 +29,6 @@
 
 #include "input/ikbd.h"
 
-
 #ifdef MANUAL_STEP
 extern void updateStepSingle(void);
 extern void updateStepMulti(void);
@@ -43,19 +42,19 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName);
 #ifdef MIDI_PARSER_TEST
 void midiParserTest(sSequence_t *pSequence);
 #endif
+
 /**
  * main program entry
  */
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
   
-    void *pMidi=NULL;
-    uint16 iRet=0;
-    int16 iError=0;
-    sSequence_t *pMidiTune=0;	//here we store our sequence data
+    uint16 iRet = 0;
+    int16 iError = 0;
     
     /* init library */
-    iError=amInit();
+    iError = amInit();
     
     if( ((argc>=1) && strlen(argv[1])!=0)){
       printf("Trying to load %s\n",argv[1]);
@@ -66,47 +65,52 @@ int main(int argc, char *argv[]){
     }
     
     // load midi file into memory 
-    uint32 ulFileLenght=0L;
-    pMidi=loadFile((uint8 *)argv[1], PREFER_TT, &ulFileLenght);
+    uint32 ulFileLenght = 0L;
+    void *pMidiData = loadFile((uint8 *)argv[1], PREFER_TT, &ulFileLenght);
 
-    if(pMidi!=NULL){
+    if(pMidiData!=NULL)
+    {
      printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
      
      /* process MIDI*/
-     /* check midi header */
       printf("Please wait...\n");
 
-      iError=amLoadMIDIfile(argv[1],pMidi, ulFileLenght,&pMidiTune);
+      sSequence_t *pMusicSeq=0; //here we store our sequence data
+      iError = amLoadMidiFile(argv[1], pMidiData, &pMusicSeq);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
-      amFree(pMidi);
+      amFree(pMidiData);
 
-      if(iError==0){
+      if(iError==0)
+      {
 
-	  printf("Sequence name: %s\n",pMidiTune->pSequenceName);
-	  printf("Nb of tracks: %d\n",pMidiTune->ubNumTracks);
-    printf("PPQN: %u\n",pMidiTune->timeDivision);
+	     printf("Sequence name: %s\n",pMusicSeq->pSequenceName);
+	     printf("Nb of tracks: %d\n",pMusicSeq->ubNumTracks);
+       printf("PPQN: %u\n",pMusicSeq->timeDivision);
 	  
-	  #ifdef MIDI_PARSER_TEST
+	     #ifdef MIDI_PARSER_TEST
         //output loaded midi file to screen/log
-        midiParserTest(pMidiTune);
-	  #endif
+        midiParserTest(pMusicSeq);
+	     #endif
 
-	  printInfoScreen();    
-      mainLoop(pMidiTune,argv[1]);
+	     printInfoScreen();    
+       mainLoop(pMusicSeq,argv[1]);
 	  
-	  //unload sequence
-	  amDestroySequence(&pMidiTune);
-	  //END of MAINLOOP	
-      }else{
+	     //unload sequence
+	     amDestroySequence(&pMusicSeq);
+	  
+      } else {
+
         amTrace((const uint8*)"Error while parsing. Exiting... \n");
+    
         //unload sequence
-        amDestroySequence(&pMidiTune);
+        amDestroySequence(&pMusicSeq);
         amDeinit(); //deinit our stuff
         return(-1);
+
       }
      
-    }else{ /* MIDI loading failed */
+    } else { /* MIDI loading failed */
       amTrace((const uint8*)"Error: Couldn't read %s file...\n",argv[1]);
       printf( "Error: Couldn't read %s file...\n",argv[1]);
       amDeinit();	//deinit our stuff
@@ -119,7 +123,8 @@ int main(int argc, char *argv[]){
 }
 
 
-void mainLoop(sSequence_t *pSequence, const char *pFileName){
+void mainLoop(sSequence_t *pSequence, const char *pFileName)
+{
       //install replay rout
 #ifdef MANUAL_STEP
     initSeqManual(pSequence);

@@ -707,7 +707,6 @@ for(uint16 i=0;i<nbOfTracks;++i){
 
 }
 
-
 // now MidiInfo holds information about number of event blocks
 // and amount of bytes wee need to store midi data
 

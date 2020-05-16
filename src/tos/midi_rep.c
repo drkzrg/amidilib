@@ -117,7 +117,7 @@ void initSeqManual(sSequence_t *seq){
  return;
 }
 
-bool isEOT(const sEventList *pPtr){
+bool isEOT(volatile const sEventList *pPtr){
   if(pPtr->eventBlock.type==T_META_EOT) return TRUE;
 
   return FALSE;

@@ -37,6 +37,8 @@ Copyright (C) 2013-2019 Pawel Goralski
 #include <dmus.h>
 #include <midi.h> 
 #include <memory/memory.h>
+#include <memory/endian.h>
+
 
 #ifdef ENABLE_GEMDOS_IO
 #include <mint/ostruct.h>
@@ -99,17 +101,6 @@ static const uint8 MidiMap[] = {
     0x79,	//14	// reset all controllers
 };
 
-// The MUS data is stored in little-endian, m68k is big endian
-static inline uint16 LittleToNative(const uint16 value){
-    uint16 val=value;
-    uint16 result;
-  
-  result=value<<8;
-  val=val>>8;
-  result=result|val;
-  return result;
-}
-
 int32 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len){
 // mus header and instruments
 MUSheader_t header;
@@ -140,12 +131,12 @@ int32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
 amMemCpy(&header, cur, sizeof(MUSheader_t));
 cur += sizeof(MUSheader_t);
 
-header.scoreLen = LittleToNative( header.scoreLen );
-header.scoreStart = LittleToNative( header.scoreStart );
-header.channels = LittleToNative( header.channels );
-header.sec_channels = LittleToNative( header.sec_channels );
-header.instrCnt = LittleToNative( header.instrCnt );
-header.dummy = LittleToNative( header.dummy );
+header.scoreLen = ReadLE16( header.scoreLen );
+header.scoreStart = ReadLE16( header.scoreStart );
+header.channels = ReadLE16( header.channels );
+header.sec_channels = ReadLE16( header.sec_channels );
+header.instrCnt = ReadLE16( header.instrCnt );
+header.dummy = ReadLE16( header.dummy );
 
 // only 15 supported
 if (header.channels > MIDI_MAXCHANNELS - 1) {

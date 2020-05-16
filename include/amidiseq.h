@@ -15,10 +15,10 @@
 #include "memory/linalloc.h"
 #endif
 
-#define AMIDI_MAX_TRACKS 16         // 16 should be enough
+#define AMIDI_MAX_TRACKS ((uint8)16)         // 16 should be enough
 
 /** sequence type*/
-typedef enum{
+typedef enum {
     ST_SINGLE=0,
     ST_MULTI,
     ST_MULTI_SUB
@@ -35,36 +35,36 @@ typedef enum {
 } eTrackState;
 
 
-typedef struct EventList{
+typedef struct EventList {
   struct EventList *pPrev,*pNext;
   sEventBlock_t eventBlock;
 } sEventList;
 
-typedef struct TrackState_t{
- uint32 currentTempo;		             // quaternote duration in ms, 500ms default
- uint32 currentBPM;	                 // beats per minute (60 000000 / currentTempo)
- uint32 timeElapsedInt;		  // track elapsed time
+typedef struct TrackState_t {
+ uint32 currentTempo;		      // quaternote duration in ms, 500ms default
+ uint32 currentBPM;	          // beats per minute (60 000000 / currentTempo)
+ uint32 timeElapsedInt;		    // track elapsed time
  sEventList *currEventPtr;
- uint16 playState;                   // bitfield with sequence state
+ uint16 playState;            // bitfield with sequence state
                               // sets the active track, by default 0
 } sTrackState_t;
 
- typedef struct Track_t{
-  sTrackState_t currentState;       /* current sequence state */
-  sEventList *pTrkEventList;  		/* track event list */
+ typedef struct Track_t {
+  sTrackState_t currentState;          /* current sequence state */
+  sEventList *pTrkEventList;  		     /* track event list */
   uint8 *pTrackName;                   /* NULL terminated string with instrument name, track data and other text from MIDI meta events .. */
 } sTrack_t;
 
-typedef struct Sequence_t{
+typedef struct Sequence_t {
    /** internal midi data storage format */
    uint8 *pSequenceName;                       // NULL terminated string */
    uint32 timeElapsedFrac;                     // sequence elapsed time
    uint32 timeStep;                            // sequence time step
-   uint16 timeDivision;                        // pulses per quater note /PPQN /pulses per quaternote
+   uint16 timeDivision;                        // pulses per quater note /PPQN 
    uint16 ubNumTracks;                         // number of tracks 1->AMIDI_MAX_TRACKS */
    uint16 ubActiveTrack;                       // range 0-(ubNumTracks-1) tracks */
-   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	// up to AMIDI_MAX_TRACKS tracks available */
-   eSequenceType seqType;                   // sequence: single, multitrack, separate
+   sTrack_t *arTracks[AMIDI_MAX_TRACKS];	     // up to AMIDI_MAX_TRACKS tracks available */
+   eSequenceType seqType;                      // sequence: single, multitrack, separate
 
 #ifdef EVENT_LINEAR_BUFFER
    tLinearBuffer eventBuffer;               // contigous, linear buffer for midi events

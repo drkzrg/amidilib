@@ -1,8 +1,7 @@
-#ifndef __MIDITIM_H__
-#define __MIDITIM_H__
+#ifndef _MIDITIM_H_
+#define _MIDITIM_H_
 
 #include "c_vars.h"
-#include "amlog.h"
 
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)
@@ -26,15 +25,6 @@ static inline uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const
 
  return ppu;
 }
-
-/** Calculate timestep function (float version)
-*   BPM - beats per minute (tempo)
-*   PPU=QPM * PPQ *(1/UPS)*(1 minute /60 seconds)
-*   @param ups UPS - update interval
-*   @param PPQ - parts per quaternote
-*   @param qpm QPM - quaternotes per minute
-*/
-float amCalculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups);
 
 /** Simple time division to console function
 *   with example of handling timeDivision data

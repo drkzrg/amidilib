@@ -43,18 +43,18 @@ extern uint32 amReadVarLen(void);
 
 eMidiFileType amGetHeaderInfo(const void *pMidiPtr);
 
-/** processes the MIDI track data
+/** processes the MIDI 0,1,2 track data
 *	@param trackStartPtr pointer to the start of Track MIDI chunk
 *	@param fileTypeFlag kind of file to preprocess
-*	@param numTracks number of track in given file to preprocess
-*	@param pCurSequence pointer to AMIDI sequence structure
+*	@param ppCurSequence pointer a pointer to AMIDI sequence structure
+*   @param iError pointer to error code, returned after events processing
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
 void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iError);
 
-/** processes the MIDI track events
+/** processes the MIDI 0,1,2 track events
 *	@param pSeq pointer to AMIDI sequence structure
-*	@param startPtr pointer to the start of Track MIDI chunk
+*	@param startPtr pointer to an address containing start of Track MIDI chunk
 *	@param endAddr address, where track data ends
 *	@param trackNb track number to process (from 0 to 15)
 *	@param iError pointer to error code, returned after events processing
@@ -65,7 +65,8 @@ void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, s
 void *processMidiTrackEvents(sSequence_t *pSeq, void** startPtr, const void *endAddr, const uint8 trackNb, int16 *iError);
 
 /** read/decode note off message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -73,7 +74,8 @@ void *processMidiTrackEvents(sSequence_t *pSeq, void** startPtr, const void *end
 int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode note on message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -81,7 +83,8 @@ int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 d
 int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode note aftertouch/pressure message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -89,7 +92,8 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 de
 int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode control change message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -97,7 +101,8 @@ int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 d
 int16 amController(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode program change message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -105,7 +110,8 @@ int16 amController(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint
 int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode channel aftertouch/pressure message
-*	@param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -113,7 +119,8 @@ int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const ui
 int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode pitch bend message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -121,7 +128,8 @@ int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint3
 int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32 delta, const uint8 trackNb);
 
 /** read/decode sysex message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored
@@ -129,7 +137,8 @@ int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr,uint16 *recallRS, const uint32
 int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb);
 
 /** read/decode meta event message
-*   @param pPtr pointer to the pointer with midi data to read
+*	@param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
 *   @param recallRS current recall running status
 *   @param delta current event delta
 *   @param trackNb index of track structure, where event will be stored

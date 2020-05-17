@@ -166,17 +166,7 @@ switch(fileTypeFlag)
 
       }
     } break;
-
-    case T_XMIDI:
-    case T_RMID:
-    case T_SMF:
-    case T_XMF:
-    case T_MUS:
-
     default:
-    /*TODO: unimplemented
-      except T_MUS, it is converted to Midi 0 format
-    */
      return NULL;
   };
 

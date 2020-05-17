@@ -2,7 +2,7 @@
 #include "timing/miditim.h"
 #include "mformats.h"
 #include "config.h"
-#include "list/list.h"
+#include "containers/list.h"
 #include "midi.h"
 #include "mparser.h"
 
@@ -52,6 +52,7 @@ sSequence_t * const sequence = *ppCurSequence;
 if(sequence==0) 
 {
   amTrace((const uint8*)"Fatal error: Sequence pointer is null!\n");
+  return 0;
 }
 
 const uint8 numTracks = sequence->ubNumTracks;
@@ -165,17 +166,7 @@ switch(fileTypeFlag)
 
       }
     } break;
-
-    case T_XMIDI:
-    case T_RMID:
-    case T_SMF:
-    case T_XMF:
-    case T_MUS:
-
     default:
-    /*TODO: unimplemented
-      except T_MUS, it is converted to Midi 0 format
-    */
      return NULL;
   };
 

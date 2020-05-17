@@ -8,7 +8,7 @@
 #include "amidilib.h"
 #include "mparser.h"
 #include "timing/miditim.h"
-#include "list/list.h"
+#include "containers/list.h"
 #include "mformats.h"
 #include "fmio.h"
 #include "midi_send.h"
@@ -199,8 +199,8 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
 
         case T_MIDI1:
         {
-         /* handle MIDI type 1 */
-        /* several tracks, one sequence */
+          /* handle MIDI type 1 */
+          /* several tracks, one sequence */
  
         const sMThd * const pMidiInfo = (sMThd *)pMidiPtr;
         const uint16 iTimeDivision = amGetTimeDivision(pMidiPtr);
@@ -256,10 +256,10 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
        {
          pMidiPtr = processMidiTracks(pMidiPtr, T_MIDI2, ppSequence, &iError);
         
-         if(iError<0) 
-          return iError;
-        }
-             return(0);
+          if(iError<0) 
+            return iError;
+          } return(0);
+
         } break;
 	
       case T_XMIDI:
@@ -277,13 +277,15 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
 	case T_SMF:{return(-1);}break;
 	case T_XMF:{return(-1);}break;
 	case T_SNG:{return(-1);}break;
-  case T_NKT:{
-    
-       const sNktSeq * const nktSeq = (sNktSeq *)pMidiPtr;
-       const uint16 iNumTracks = nktSeq->nbOfTracks;
-            //todo handle/setup replay
-        return(-1);
-    }break;
+  
+  case T_NKT:
+  {
+    const sNktSeq * const nktSeq = (sNktSeq *)pMidiPtr;
+    const uint16 iNumTracks = nktSeq->nbOfTracks;       //todo handle/setup replay
+            
+    return(-1);
+  } break;
+
 	case T_MUS:
   {
 

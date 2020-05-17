@@ -52,6 +52,7 @@ sSequence_t * const sequence = *ppCurSequence;
 if(sequence==0) 
 {
   amTrace((const uint8*)"Fatal error: Sequence pointer is null!\n");
+  return 0;
 }
 
 const uint8 numTracks = sequence->ubNumTracks;

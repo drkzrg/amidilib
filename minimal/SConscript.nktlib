@@ -1,4 +1,4 @@
-#    Copyright 2007-2019 Pawel Goralski
+#    Copyright 2007-2020 Pawel Goralski
 #    
 #    This file is part of AMIDILIB / BadMood.
 #    See license.txt for licensing information.
@@ -8,7 +8,7 @@ import os
 
 env = Environment(ENV = os.environ,tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2019 Pawel Goralski\n \
+Help("AMIDILIB Copyright 2007-2020 Pawel Goralski\n \
 Type: 'Set build variables in SConstruct'\n \
 where name of 'TARGET_MACHINE' can be: \n \
         'F030' - for Atari Falcon030 / TT build\n \

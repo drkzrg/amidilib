@@ -313,7 +313,8 @@ env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
-core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c","common/core/list.c"]
+core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
+containers_src = ["common/containers/stack.c","common/containers/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
 midiformats_src = ["common/formats/xmidi.c","common/formats/mus2midi.c"] + nkt_format_src
@@ -324,14 +325,14 @@ input_src =  ["tos/ikbd.s"]
 discio_src = ["tos/fmio.c"]
 timing_src = ["tos/mfp.c","common/timing/miditim.c","tos/common.s"]
 midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
-memory_src = ["tos/memory.c","common/memory/stack.c","common/memory/linalloc.c"]
+memory_src = ["tos/memory.c","common/memory/linalloc.c"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
 lzo_src = ["common/lzo/minilzo.c"]
 
 # main library 
-amidilib_src = core_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
+amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
 # build library
 env.Library(LIBRARYNAME, amidilib_src)

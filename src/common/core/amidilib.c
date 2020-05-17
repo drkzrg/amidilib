@@ -8,7 +8,7 @@
 #include "amidilib.h"
 #include "mparser.h"
 #include "timing/miditim.h"
-#include "list/list.h"
+#include "containers/list.h"
 #include "mformats.h"
 #include "fmio.h"
 #include "midi_send.h"

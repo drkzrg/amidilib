@@ -2,7 +2,7 @@
 #include "timing/miditim.h"
 #include "mformats.h"
 #include "config.h"
-#include "list/list.h"
+#include "containers/list.h"
 #include "midi.h"
 #include "mparser.h"
 

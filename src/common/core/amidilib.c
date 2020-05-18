@@ -12,6 +12,7 @@
 #include "mformats.h"
 #include "fmio.h"
 #include "midi_send.h"
+#include "memory/endian.h"
 
 /////////// formats
 #include "midi.h"
@@ -82,30 +83,35 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
       return T_MIDI2;
 	break;
    };
-}else if ((pMidiInfo->id==ID_FORM)||(pMidiInfo->id==ID_CAT)){
-      
-    sIffChunk *iffdata = (sIffChunk *)pMidiPtr;
-/*
-    if((uint32)iffdata.ID==ID_FORM)
-        int32 chunkSize = ReadBE32(iffdata.size);
-    }else if((uint32)iffdata.ID==ID_CAT)
-        int32 chunkSize = ReadBE32(iffdata.size);
-    } else {
-      amTrace((const uint8*)"Invalid XMIDI file ..\n");
-      return T_INVALID;
-    }
-  */  
+}
+
+/* check XMIDI */
+const sIffChunk *iffdata = (sIffChunk *)pMidiPtr;
+
+if ( (uint32)iffdata->id == ID_FORM)
+{
+  int32 chunkSize = ReadBE32(iffdata->size);
+  /* possible XMIDI*/
+   amTrace((const uint8*)"XMIDI file possibly..\n");
+   return T_XMIDI;
+
+} 
+else if((uint32)iffdata->id == ID_CAT)
+{
+    int32 chunkSize = ReadBE32(iffdata->size);
     /* possible XMIDI*/
     amTrace((const uint8*)"XMIDI file possibly..\n");
     return T_XMIDI;
- } else{
-     MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
+} 
 
-     if(((pMusHeader->ID)>>8) == MUS_ID){
-      amTrace((const uint8*)"Doom MUS found.\n");
-      return T_MUS ;
-     }
+/* Check MUS */
+MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
+
+if(((pMusHeader->ID)>>8) == MUS_ID){
+  amTrace((const uint8*)"Doom MUS found.\n");
+  return T_MUS ;
 }
+
 //unsupported format  
  return T_UNSUPPORTED;
 }
@@ -117,7 +123,6 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
  
     sSequence_t *sequence = *ppSequence;
     
-
     if(sequence==0)
     {
       amTrace((const uint8*)"Error: Cannot allocate memory for sequence.\n");
@@ -169,7 +174,6 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
             } 
             else
             {
-
               /* OK! valid number of tracks */
               /* get time division for timing */
 

@@ -12,6 +12,7 @@
 
 /* XMIDI contain midi events */
 #include "midi.h"
+#include "amidiseq.h"
 
 // make ID
 #define	MAKE_ID(a,b,c,d) ((uint32) (a)<<24 | (uint32) (b)<<16 | (uint32) (c)<<8 | (uint32) (d))
@@ -57,5 +58,13 @@ typedef struct IFFCHUNK {
 	int32 size; 	
 	uint8 data[]; 	
 } sIffChunk;
+
+uint16 processXMidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence);
+void *processXMidiForm(void *data, sSequence_t **ppCurSequence, int16 *iError);
+void *processXMidiList(void *data, sSequence_t **ppCurSequence, int16 *iError);
+void *processXMidiCat(void *data, sSequence_t **ppCurSequence, int16 *iError);
+void *processXMidiProp(void *data, sSequence_t **ppCurSequence, int16 *iError);
+
+
 
 #endif

@@ -15,7 +15,7 @@
 #define AMIDI_INFO "(c)2007-2020 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
-#define AMIDI_MINOR_VERSION 3
+#define AMIDI_MINOR_VERSION 4
 #define AMIDI_PATCHLEVEL 0
 
 /* current version info struct */
@@ -51,37 +51,24 @@ typedef struct AMIDI_version {
  * Returns AMIDI version info.
  * @return version info structure
  */
-
 const sAMIDI_version *amGetVersionInfo(void);
 
 /**
- * handles loaded into the memory (X)MIDI file
+ * processes loaded midi file data to amidilib sequence
  *
- * @param pMidi	memory pointer where midi file is stored,
- * @param type - type of MIDI file to handle (0,1,2 supported), XMIDI.
- *        Value is returned by amGetHeaderInfo() function.
- * @param lenght - lenght of (X)MIDI block memory size in bytes
- * @param pSequence - pointer to AMIDI sequence structure to fill (needed to play our tune)
+ * @param pFilename	- midi file name
+ * @param midiData - pointer to loaded midi file data
+ * @param midiDataSize - length of midi data in bytes
+ * @param ppSequence - pointer to a an adress containing AMIDI sequence to populate
  * @return returns 0 if everything is OK, -1 if error occured
  **/
-
-int16 amLoadMidiFile(const char *pFilename, void *pMidiPtr, sSequence_t **pSequence);
-
-/**
- * gets number of tracks in MIDI file
- *
- * @param pMidi	memory pointer where (X)Midi file is stored.
- * @param type data type: MIDI 0,1,2 or XMIDI. Data type is returned by amGetHeaderInfo() function.
- * @return number of tracks in loaded MIDI file, -1 if error occured
- */
+int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
 int16 amInit(void);
 
-/** Deinits system, restores standard MIDI buffer
-*/
-
+/** Deinits system, restores standard MIDI buffer */
 void amDeinit(void);
 
 /** returns info about connected devices  */
@@ -91,12 +78,5 @@ void amGetDeviceInfoResponse(const uint8 channel);
 
 /** returns meaningful name for Midi Device type enumeration.  */
 const uint8 *amGetMidiDeviceTypeName(const eMidiDeviceType device);
-
-
-#ifdef DEBUG_BUILD
-/** function for variable quantity reading test */
-void VLQtest(void);
-#endif
-
 
 #endif

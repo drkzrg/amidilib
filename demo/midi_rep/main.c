@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
       printf("Please wait...\n");
 
       sSequence_t *pMusicSeq=0; //here we store our sequence data
-      iError = amLoadMidiFile(argv[1], pMidiData, &pMusicSeq);
+      iError = amProcessMidiFileData(argv[1], pMidiData, ulFileLenght, &pMusicSeq);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(pMidiData);

@@ -90,17 +90,12 @@ const sIffChunk *iffdata = (sIffChunk *)pMidiPtr;
 
 if ( (uint32)iffdata->id == ID_FORM)
 {
-  int32 chunkSize = ReadBE32(iffdata->size);
-  /* possible XMIDI*/
-   amTrace((const uint8*)"XMIDI file possibly..\n");
-   return T_XMIDI;
-
+  amTrace((const uint8*)"XMIDI file .\n");
+  return T_XMIDI;
 } 
 else if((uint32)iffdata->id == ID_CAT)
 {
-    int32 chunkSize = ReadBE32(iffdata->size);
-    /* possible XMIDI*/
-    amTrace((const uint8*)"XMIDI file possibly..\n");
+    amTrace((const uint8*)"XMIDI file.\n");
     return T_XMIDI;
 } 
 
@@ -116,8 +111,8 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
  return T_UNSUPPORTED;
 }
 
-int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequence){
-    
+int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
+{
     int16 iError=0;
     (*ppSequence) = (sSequence_t *) amMallocEx( sizeof(sSequence_t), PREFER_TT);
  
@@ -130,11 +125,11 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
       return -1;
     }
    
-   amMemSet(sequence,0,sizeof(sSequence_t));
+   amMemSet(sequence, 0, sizeof(sSequence_t));
 
 #ifdef EVENT_LINEAR_BUFFER
    const MemSize memSize = getGlobalConfig()->eventPoolSize * getGlobalConfig()->eventDataAllocatorSize;
-   amTrace((const uint8 *)"amLoadMidiFile() trying to allocate %d Kb\n",memSize/1024);
+   amTrace((const uint8 *)"amProcessMidiFileData() trying to allocate %d Kb\n",memSize/1024);
 
    if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0){
        printf( "Error: Cannot allocate memory for sequence internal event buffer...\n");
@@ -144,7 +139,7 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
 #endif
 
    eMidiFileType midiType = T_UNSUPPORTED;
-   midiType = amGetHeaderInfo(pMidiPtr);
+   midiType = amGetHeaderInfo(midiData);
     
    if(midiType == T_INVALID)
    {
@@ -161,44 +156,43 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
     return -1; 
    }
 
-    switch(midiType)
-    {
+   switch(midiType)
+   {
         case T_MIDI0:
         {
-            /* handle MIDI type 0 */
-            const sMThd * const pMidiInfo = (sMThd *)pMidiPtr;
+          /* handle MIDI type 0 */
+          const sMThd * const pMidiInfo = (sMThd *)midiData;
             
-            if(pMidiInfo->nTracks != 1)
-            {
-                return(-1); /* invalid number of tracks, there can be only one! */
-            } 
-            else
-            {
-              /* OK! valid number of tracks */
-              /* get time division for timing */
+          if(pMidiInfo->nTracks != 1)
+          {
+            return(-1); /* invalid number of tracks, there can be only one! */
+          } 
+          else
+          {
+             /* OK! valid number of tracks */
+             /* get time division for timing */
 
-              const uint16 iTimeDivision = amGetTimeDivision(pMidiPtr);
+             const uint16 iTimeDivision = amGetTimeDivision(midiData);
               
-              /* prepare our structure */
-              sequence->ubNumTracks = pMidiInfo->nTracks;	/* one by default */
+             /* prepare our structure */
+             sequence->ubNumTracks = pMidiInfo->nTracks;	/* one by default */
 
-              /* Store time division for sequence, TODO: SMPTE handling */
-              sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+             /* Store time division for sequence, TODO: SMPTE handling */
+             sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
-              /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-              pMidiPtr = (void *)((uint32)pMidiPtr + sizeof(sMThd));
+             /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
+             midiData = (void *)((uint32)midiData + sizeof(sMThd));
 
-              /* create one track list only */
-              sequence->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-              amMemSet(sequence->arTracks[0],0,sizeof(sTrack_t));
-              sequence->arTracks[0]->pTrkEventList = 0;
+             /* create one track list only */
+             sequence->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+             amMemSet(sequence->arTracks[0], 0, sizeof(sTrack_t));
+             sequence->arTracks[0]->pTrkEventList = 0;
 
-              pMidiPtr = processMidiTracks(pMidiPtr, T_MIDI0, ppSequence, &iError);
+             midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iError);
                
-              if(iError<0) 
-                return iError;
-         }
-         return(0);
+             if(iError<0) return iError;
+          }
+          return 0;
         } break;
 
         case T_MIDI1:
@@ -206,168 +200,161 @@ int16 amLoadMidiFile(const char *pFileName, void *pMidiPtr, sSequence_t **ppSequ
           /* handle MIDI type 1 */
           /* several tracks, one sequence */
  
-        const sMThd * const pMidiInfo = (sMThd *)pMidiPtr;
-        const uint16 iTimeDivision = amGetTimeDivision(pMidiPtr);
+          const sMThd * const pMidiInfo = (sMThd *)midiData;
+          const uint16 iTimeDivision = amGetTimeDivision(midiData);
 
-        sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+          sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
-        pMidiPtr=(void *)((uint32)pMidiPtr + sizeof(sMThd));
+          midiData=(void *)((uint32)midiData + sizeof(sMThd));
                 	
-        /* Store time division for sequence, TODO: SMPTE handling */
-        sequence->ubNumTracks = pMidiInfo->nTracks;
+          /* Store time division for sequence, TODO: SMPTE handling */
+          sequence->ubNumTracks = pMidiInfo->nTracks;
 	  
-        /* create one track list only */
-        for(uint16 i=0;i<pMidiInfo->nTracks;i++){
+          /* create one track list only */
+          for(uint16 i=0;i<pMidiInfo->nTracks;++i)
+          {
             sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-            amMemSet(sequence->arTracks[i],0,sizeof(sTrack_t));
-            /* init event list */            
-        }
+            amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
+          }
 	  
-          while (pMidiPtr!=0){
-            pMidiPtr = processMidiTracks(pMidiPtr, T_MIDI1, ppSequence, &iError);
+          while (midiData!=0)
+          {
+            midiData = processMidiTracks(midiData, T_MIDI1, ppSequence, &iError);
             if(iError<0) return iError;
           }
-         return(0);
+
+          return 0;
         } break;
 
         case T_MIDI2:
         {
-            /* handle MIDI type 2 */
-            /* several tracks not tied to each others tracks */
-            const sMThd * const pMidiInfo = (sMThd *)pMidiPtr;
+           /* handle MIDI type 2 */
+           /* several tracks not tied to each others tracks */
+           const sMThd * const pMidiInfo = (sMThd *)midiData;
 
-            const uint16 iNumTracks = pMidiInfo->nTracks;
-            const uint16 iTimeDivision = amGetTimeDivision(pMidiPtr);
+           const uint16 iNumTracks = pMidiInfo->nTracks;
+           const uint16 iTimeDivision = amGetTimeDivision(midiData);
 
-            sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+           sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
 
-            pMidiPtr=(void *)((uint32)pMidiPtr + sizeof(sMThd));
+           midiData = (void *)((uint32)midiData + sizeof(sMThd));
 		
-            /* Store time division for sequence, TODO: SMPTE handling */
-            sequence->ubNumTracks = pMidiInfo->nTracks;
+           /* Store time division for sequence, TODO: SMPTE handling */
+           sequence->ubNumTracks = pMidiInfo->nTracks;
 	  
            /* create one track list only */
-           for(uint16 i=0;i<pMidiInfo->nTracks;i++)
+           for(uint16 i=0;i<pMidiInfo->nTracks;++i)
            {
-	             sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-               amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
+             sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
-               /* init event list */
-	             sequence->arTracks[i]->pTrkEventList=0;
-	         }
+             /* init event list */
+             sequence->arTracks[i]->pTrkEventList=0;
+          }
            
-       while (pMidiPtr!=0)
-       {
-         pMidiPtr = processMidiTracks(pMidiPtr, T_MIDI2, ppSequence, &iError);
-        
-          if(iError<0) 
-            return iError;
-          } return(0);
-
+          while (midiData!=0)
+          {
+            midiData = processMidiTracks(midiData, T_MIDI2, ppSequence, &iError);
+            if(iError<0) return iError;
+          } 
+          return 0;
         } break;
 	
-      case T_XMIDI:
-      {
-         /* handle XMIDI */
-         const uint16 iTimeDivision = amGetTimeDivision(pMidiPtr);
+        case T_XMIDI:
+        {
+          /* processing (X)MIDI file */
+          iError = processXMidiData(midiData, dataSize, ppSequence);
+          return iError; 
+        } break;
 
-         /* processing (X)MIDI file */
-         /* TODO: handle + process */
-
-         return(-1); /* xmidi isn't handled yet */
-      } break;
-
-	case T_RMID:{return(-1);}break; 
-	case T_SMF:{return(-1);}break;
-	case T_XMF:{return(-1);}break;
-	case T_SNG:{return(-1);}break;
+	      case T_RMID:
+	      case T_SMF:
+	      case T_XMF:
+	      case T_SNG:
+        {
+          return(-1);
+        } break;
   
-  case T_NKT:
-  {
-    const sNktSeq * const nktSeq = (sNktSeq *)pMidiPtr;
-    const uint16 iNumTracks = nktSeq->nbOfTracks;       //todo handle/setup replay
-            
-    return(-1);
-  } break;
+        case T_NKT:
+        {
+          const sNktSeq * const nktSeq = (sNktSeq *)midiData;
+          const uint16 iNumTracks = nktSeq->nbOfTracks;       //todo handle/setup replay
+          return(-1);
+        } break;
 
-	case T_MUS:
-  {
+	    case T_MUS:
+      {
+          printf("Converting MUS to MIDI\n");
 
-      printf("Converting MUS to MIDI\n");
+          uint8 *pOut = 0;
+          char tempName[128] = {0};
+          uint32 len = 0;
 
-      uint8 *pOut = 0;
-      char tempName[128] = {0};
-      uint32 len = 0;
+          // allocate 64kb working buffer for midi output
+          pOut = (uint8 *)amMallocEx(64*1024,PREFER_TT);
 
-      // allocate 64kb working buffer for midi output
-      pOut = (uint8 *)amMallocEx(64*1024,PREFER_TT);
-
-     // set midi output name
-     if(pFileName)
-     {
-	       char *pTempPtr = 0;
-         int16 len=strlen(pFileName);
-         strncpy(tempName,pFileName,(len>128)?(128-1):len);
-         pTempPtr = strrchr(tempName,'.');
-         memcpy(pTempPtr+1,"mid",4);
-     }
-
-      Mus2Midi(pMidiPtr,(unsigned char *)pOut,tempName,&len);
-
-      printf("Processing midi data..\n");
-        // the rest is like in MIDI type 0
-        /* handle MIDI type 0 */
-            const sMThd * const pMidiInfo = (sMThd *)pOut;
-
-            if(pMidiInfo->nTracks!=1)
-            {
-                /* invalid number of tracks, there can be only one! */
-                amTrace("Invalid number of tracks\n");
-                return(-1);
-            }
-            else
-            {
-
-              /* OK! valid number of tracks */
-              /* get time division for timing */
-              
-              const uint16 iTimeDivision = amGetTimeDivision(pOut);
-              sequence->ubNumTracks = pMidiInfo->nTracks; /* one by default */
-              sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
-
-              /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
-              pMidiPtr = (void *)((uint32)pOut + sizeof(sMThd));
-              const uint16 trackIdx = sequence->ubNumTracks-1;
-              
-              /* create one track list only */
-              sequence->arTracks[trackIdx] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-              amMemSet(sequence->arTracks[trackIdx],0,sizeof(sTrack_t));
-
-              /* init event list */
-              sequence->arTracks[trackIdx]->pTrkEventList=0;
-		  
-              pMidiPtr = processMidiTracks(pMidiPtr, T_MIDI0, ppSequence, &iError);
-
-              if(iError<0)
-                    return iError;
+          // set midi output name
+          if(filename)
+          {
+	          char *pTempPtr = 0;
+            int16 len=strlen(filename);
+            strncpy(tempName,filename,(len>128)?(128-1):len);
+            pTempPtr = strrchr(filename,'.');
+            memcpy(pTempPtr+1,"mid",4);
           }
 
-          // free up working buffer
-          amFree(pOut);
+          Mus2Midi(midiData,(unsigned char *)pOut,tempName,&len);
 
-	  return(0);
-	} break;
+          printf("Processing midi data..\n");
+          /* the rest is like in MIDI type 0, handle MIDI type 0 */
+          const sMThd * const pMidiInfo = (sMThd *)pOut;
+
+          if(pMidiInfo->nTracks!=1)
+          {
+            /* invalid number of tracks, there can be only one! */
+            amTrace("Invalid number of tracks\n");
+            return(-1);
+          }
+          else
+          {
+            /* OK! valid number of tracks */
+            /* get time division for timing */
+              
+            const uint16 iTimeDivision = amGetTimeDivision(pOut);
+            sequence->ubNumTracks = pMidiInfo->nTracks; /* one by default */
+            sequence->timeDivision = amDecodeTimeDivisionInfo(iTimeDivision);	/* PPQN */
+
+            /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
+            midiData = (void *)((uint32)pOut + sizeof(sMThd));
+            const uint16 trackIdx = sequence->ubNumTracks-1;
+              
+            /* create one track list only */
+            sequence->arTracks[trackIdx] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            amMemSet(sequence->arTracks[trackIdx], 0, sizeof(sTrack_t));
+
+            /* init event list */
+            sequence->arTracks[trackIdx]->pTrkEventList=0;
+            midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iError);
+
+            if(iError<0) return iError;
+          }
+
+    // free up working buffer
+    amFree(pOut);
+
+	  return 0;
+	  } break;
 	
-	default:
-  {
-	  /* unknown error, do nothing */
-	  amTrace((const uint8*)"Unknown error.\n");
-	  printf( "Unknown error ...\n");
-        
-	  return(-1);
-	}
-	/* unsupported file type */
- }
+	  default:
+    {
+	   /* unknown error, do nothing */
+	   amTrace((const uint8*)"Unknown error.\n");
+	   printf( "Unknown error ...\n");
+     return(-1);
+	  }
+	  /* unsupported file type */
+ }; //switch
+
  return(-1);
 }
 
@@ -442,7 +429,7 @@ void amDeinit(void){
 #endif
 
 #ifndef IKBD_MIDI_SEND_DIRECT
-  uint32 usp=Super(0L);
+  uint32 usp = Super(0L);
  
   /* restore standard MIDI buffer */
   (*g_psMidiBufferInfo).ibuf=g_sOldMidiBufferInfo.ibuf;
@@ -460,7 +447,8 @@ void amDeinit(void){
  /* end sequence */
 }
 
-void amGetDeviceInfoResponse(const uint8 channel){
+void amGetDeviceInfoResponse(const uint8 channel)
+{
   //TODO: rework it
   return;
 

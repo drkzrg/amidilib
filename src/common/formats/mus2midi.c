@@ -24,7 +24,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 
 /|\ m68k / atari version / cleanup / customisation:
-Copyright (C) 2013-2019 Pawel Goralski
+Copyright (C) 2007-2020 Pawel Goralski
 
 ===========================================================================
 */

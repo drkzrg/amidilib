@@ -56,15 +56,9 @@ typedef int8 IFF_ID[4];
 typedef struct IFFCHUNK {
 	IFF_ID id;
 	int32 size; 	
-	uint8 data[]; 	
+	uint8 *data; 	
 } sIffChunk;
 
-uint16 processXMidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence);
-void *processXMidiForm(void *data, sSequence_t **ppCurSequence, int16 *iError);
-void *processXMidiList(void *data, sSequence_t **ppCurSequence, int16 *iError);
-void *processXMidiCat(void *data, sSequence_t **ppCurSequence, int16 *iError);
-void *processXMidiProp(void *data, sSequence_t **ppCurSequence, int16 *iError);
-
-
+uint16 processXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

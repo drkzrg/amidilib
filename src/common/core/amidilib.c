@@ -263,7 +263,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
         case T_XMIDI:
         {
           /* processing (X)MIDI file */
-          iError = processXMidiData(midiData, dataSize, ppSequence);
+          iError = processXmidiData(midiData, dataSize, ppSequence);
           return iError; 
         } break;
 

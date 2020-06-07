@@ -22,7 +22,7 @@ typedef float 		fp32;
 typedef double 		fp64;
 typedef int64_t     int64; 			//non-standard!
 typedef unsigned long long 	uint64; //non-standard!
-
+typedef uintptr_t uintptr;
 typedef size_t MemSize;
 
 // function pointers

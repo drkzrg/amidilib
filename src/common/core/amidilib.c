@@ -56,48 +56,43 @@ const sAMIDI_version *amGetVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-eMidiFileType amGetHeaderInfo(const void *pMidiPtr){
-    sMThd *pMidiInfo=0;
-    amTrace((const uint8 *)"Checking header info... ");
-    pMidiInfo=(sMThd *)pMidiPtr;
+eMidiFileType amGetHeaderInfo(const void *pMidiPtr)
+{
+  sMThd *pMidiInfo=0;
+  amTrace((const uint8 *)"Checking header info... ");
+  pMidiInfo=(sMThd *)pMidiPtr;
   
-/* check midi header */
-if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
-        switch(pMidiInfo->format){
-	 case T_MIDI0:
-	  /* Midi Format 0 detected */
-	  amTrace((const uint8*)"MIDI type 0 found\n");
-      return T_MIDI0;
-	 break;
+  /* check midi header */
+  if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L)))
+  {
+     switch(pMidiInfo->format)
+     {
+  	 case T_MIDI0:
+  	  /* Midi Format 0 detected */
+  	 amTrace((const uint8*)"MIDI type 0 found\n");
+     return T_MIDI0;
+  	 break;
 
-	case T_MIDI1:
-	 /* Midi Format 1 detected */
-	 amTrace((const uint8*)"MIDI type 1 found\n");
-     
+  	case T_MIDI1:
+  	 /* Midi Format 1 detected */
+  	 amTrace((const uint8*)"MIDI type 1 found\n");
      return T_MIDI1;
-	 break;
+  	 break;
 
-    case T_MIDI2:
-	/* Midi Format 2 detected */
-	amTrace((const uint8*)"MIDI type 2 found\n");
-      return T_MIDI2;
-	break;
+      case T_MIDI2:
+  	/* Midi Format 2 detected */
+  	amTrace((const uint8*)"MIDI type 2 found\n");
+    return T_MIDI2;
+  	break;
    };
-}
+  }
 
-/* check XMIDI */
-const sIffChunk *iffdata = (sIffChunk *)pMidiPtr;
-
-if ( (uint32)iffdata->id == ID_FORM)
+/* check XMIDI file */
+if(isValidXmidiData(pMidiPtr))
 {
-  amTrace((const uint8*)"XMIDI file .\n");
+  amTrace((const uint8*)"XMIDI file found.\n");
   return T_XMIDI;
-} 
-else if((uint32)iffdata->id == ID_CAT)
-{
-    amTrace((const uint8*)"XMIDI file.\n");
-    return T_XMIDI;
-} 
+}
 
 /* Check MUS */
 MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;

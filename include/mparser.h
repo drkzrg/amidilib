@@ -41,7 +41,7 @@ extern uint32 amReadVarLen(void);
  * (-1) - unknown MIDI file,
  */
 
-eMidiFileType amGetHeaderInfo(const void *pMidiPtr);
+eMidiFileType amGetHeaderInfo( void *const pMidiPtr);
 
 /** processes the MIDI 0,1,2 track data
 *	@param trackStartPtr pointer to the start of Track MIDI chunk

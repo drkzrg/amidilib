@@ -56,7 +56,7 @@ const sAMIDI_version *amGetVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-eMidiFileType amGetHeaderInfo(const void *pMidiPtr)
+eMidiFileType amGetHeaderInfo(void * const pMidiPtr)
 {
   sMThd *pMidiInfo=0;
   amTrace((const uint8 *)"Checking header info... ");

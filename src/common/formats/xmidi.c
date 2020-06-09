@@ -12,6 +12,7 @@
 
 /* XMIDI contain midi events */
 #include "midi.h"
+#include <stdio.h>
 
 /* 
 
@@ -83,7 +84,6 @@ typedef struct IFFCHUNK {
 void *processIffChunks(sIffChunk *chunk, sSequence_t **ppCurSequence, int16 *iError);
 void *processXmidiForm(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
 void *processXmidiCat(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiInfo(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
 void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
 void *processXmidiRbrn(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
 void *processXmidiEvnt(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
@@ -96,20 +96,31 @@ static INLINE int32 roundUp(const int32 val)
 
 bool isValidXmidiData(void *midiData)
 {
-  bool isValid = false;
+    bool isValid = false;
 
-  const sIffChunk *iffdata = (sIffChunk *)midiData;
-  const uint32 iffId = *((uint32 *)iffdata->id);
+  	const sIffChunk *first_chunk = (sIffChunk *)midiData;
+  	const uint32 iffId = *((uint32 *)first_chunk->id);
 
 	if ( iffId == ID_FORM)  
 	{
-  		if( (uint32)iffdata->data == ID_FORM_XDIR) isValid = true;
+  		if( (uint32)first_chunk->data == ID_FORM_XDIR)
+  		{
+			const sIffChunk *infoChunk = (sIffChunk *)(((uintptr)&first_chunk->data) + sizeof(uint32));
+
+  			// get nb of XMID FORMS
+  			uint16 err=0;
+  			uint16 nbOfXmidiFiles = (uint16)(((uintptr)infoChunk->data>>16)&0x0000FFFF);
+  			nbOfXmidiFiles = ReadLE16(nbOfXmidiFiles);
+  			
+  			printf("XMidi files found: %d\n",nbOfXmidiFiles);
+ 			isValid = true;
+   		} 
   
   		if(isValid == true)
   		{
     		// check next chunk for xmidi cat after xdir
-    		const uint32 chunkSize = ReadBE32(iffdata->size) + roundUp(iffdata->size);
-    		sIffChunk *nextChunk = (sIffChunk *)((uintptr)midiData + (uintptr)chunkSize + 8);
+    		const uint32 chunkSize = ReadBE32(first_chunk->size) + roundUp(first_chunk->size);
+    		sIffChunk *nextChunk = (sIffChunk *)((uintptr)first_chunk + (uintptr)chunkSize + 8);
 
     		if(*((uint32 *)nextChunk->id) == ID_CAT)
     		{
@@ -121,7 +132,7 @@ bool isValidXmidiData(void *midiData)
 	} 
 	else if(iffId == ID_CAT)
 	{
-  		if((uint32)iffdata->data == ID_CAT_XMID)
+  		if((uint32)first_chunk->data == ID_CAT_XMID)
   		{
     		isValid = true;
   		}
@@ -171,7 +182,6 @@ void *processIffChunks(sIffChunk *chunk, sSequence_t **ppCurSequence, int16 *iEr
 	return nextAddr;
 }
 
-
 uint16 processXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
 {
 	int32 chunkSize = 0;
@@ -196,12 +206,6 @@ void *processXmidiForm(void *dataStart,void *dataEnd, sSequence_t **ppCurSequenc
 void *processXmidiCat(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
 {
 	amTrace("CAT"); //XMID
-	return dataEnd;
-}
-
-void *processXmidiInfo(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError){
-
-	amTrace("INFO");
 	return dataEnd;
 }
 

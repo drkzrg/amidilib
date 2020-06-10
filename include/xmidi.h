@@ -11,7 +11,8 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
-bool isValidXmidiData(void *xmidiData);
-uint16 processXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
+bool amIsValidXmidiData(void *xmidiData);
+uint16 amGetNbOfXmidiTracks(void *midiData);
+uint16 amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

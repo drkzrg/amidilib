@@ -88,7 +88,7 @@ eMidiFileType amGetHeaderInfo(void * const pMidiPtr)
   }
 
 /* check XMIDI file */
-if(isValidXmidiData(pMidiPtr))
+if(amIsValidXmidiData(pMidiPtr))
 {
   amTrace((const uint8*)"XMIDI file found.\n");
   return T_XMIDI;
@@ -133,8 +133,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
    }
 #endif
 
-   eMidiFileType midiType = T_UNSUPPORTED;
-   midiType = amGetHeaderInfo(midiData);
+   const eMidiFileType midiType = amGetHeaderInfo(midiData);
     
    if(midiType == T_INVALID)
    {
@@ -205,7 +204,6 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           /* Store time division for sequence, TODO: SMPTE handling */
           sequence->ubNumTracks = pMidiInfo->nTracks;
 	  
-          /* create one track list only */
           for(uint16 i=0;i<pMidiInfo->nTracks;++i)
           {
             sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
@@ -224,7 +222,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
         case T_MIDI2:
         {
            /* handle MIDI type 2 */
-           /* several tracks not tied to each others tracks */
+           /* several tracks not tied to each other */
            const sMThd * const pMidiInfo = (sMThd *)midiData;
 
            const uint16 iNumTracks = pMidiInfo->nTracks;
@@ -237,7 +235,6 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
            /* Store time division for sequence, TODO: SMPTE handling */
            sequence->ubNumTracks = pMidiInfo->nTracks;
 	  
-           /* create one track list only */
            for(uint16 i=0;i<pMidiInfo->nTracks;++i)
            {
              sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
@@ -257,8 +254,29 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 	
         case T_XMIDI:
         {
-          /* processing (X)MIDI file */
-          iError = processXmidiData(midiData, dataSize, ppSequence);
+          /* processing (X)MIDI file, similar to MIDI type 2 in concept */
+          const uint16 iNumTracks = amGetNbOfXmidiTracks(midiData);
+          sequence->ubNumTracks = iNumTracks;
+          
+          if(iNumTracks == 0) 
+          {
+            printf("Error: Invalid number of tracks!\n");
+            return(-1);
+          }
+
+          printf("XMIDI tracks to process: %d\n",iNumTracks);
+
+          for(uint16 i=0;i<iNumTracks;++i)
+          {
+            sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
+
+            /* init event list */
+            sequence->arTracks[i]->pTrkEventList=0;
+          }
+
+          iError = amProcessXmidiData(midiData, dataSize, ppSequence);
+
           return iError; 
         } break;
 

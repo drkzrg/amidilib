@@ -12,7 +12,6 @@
 
 /* XMIDI contain midi events */
 #include "midi.h"
-#include <stdio.h>
 
 /* 
 
@@ -29,7 +28,7 @@ may be repeated.
 [ 
 	FORM<len>XDIR 
 	{ 
-		INFO<len> UWORD # of FORMs XMID in file, 1-65535 
+		INFO<len> UWORD # of FORMs XMID in file, 1-65535 (little endian, because why not!)
 	} 
 ]
 
@@ -94,12 +93,12 @@ static INLINE int32 roundUp(const int32 val)
    return 1; // padded data
 }
 
-bool isValidXmidiData(void *midiData)
+uint16 amGetNbOfXmidiTracks(void *midiData)
 {
-    bool isValid = false;
+	uint16 nbOfXmidiForms = 0;
 
-  	const sIffChunk *first_chunk = (sIffChunk *)midiData;
-  	const uint32 iffId = *((uint32 *)first_chunk->id);
+	const sIffChunk *first_chunk = (sIffChunk *)midiData;
+	const uint32 iffId = *((uint32 *)first_chunk->id);
 
 	if ( iffId == ID_FORM)  
 	{
@@ -108,38 +107,19 @@ bool isValidXmidiData(void *midiData)
 			const sIffChunk *infoChunk = (sIffChunk *)(((uintptr)&first_chunk->data) + sizeof(uint32));
 
   			// get nb of XMID FORMS
-  			uint16 err=0;
   			uint16 nbOfXmidiFiles = (uint16)(((uintptr)infoChunk->data>>16)&0x0000FFFF);
-  			nbOfXmidiFiles = ReadLE16(nbOfXmidiFiles);
-  			
-  			printf("XMidi files found: %d\n",nbOfXmidiFiles);
- 			isValid = true;
+  			nbOfXmidiForms = ReadLE16(nbOfXmidiFiles);
    		} 
-  
-  		if(isValid == true)
-  		{
-    		// check next chunk for xmidi cat after xdir
-    		const uint32 chunkSize = ReadBE32(first_chunk->size) + roundUp(first_chunk->size);
-    		sIffChunk *nextChunk = (sIffChunk *)((uintptr)first_chunk + (uintptr)chunkSize + 8);
-
-    		if(*((uint32 *)nextChunk->id) == ID_CAT)
-    		{
-      			if( (uint32)nextChunk->data != ID_CAT_XMID) isValid = false;
-    		}
-
-  		}
-  
-	} 
+    } 
 	else if(iffId == ID_CAT)
 	{
   		if((uint32)first_chunk->data == ID_CAT_XMID)
   		{
-    		isValid = true;
+    		nbOfXmidiForms = 1;
   		}
 	}
-
- return isValid;
-}
+	return nbOfXmidiForms;
+ }
 
 void *processIffChunks(sIffChunk *chunk, sSequence_t **ppCurSequence, int16 *iError)
 {
@@ -182,10 +162,63 @@ void *processIffChunks(sIffChunk *chunk, sSequence_t **ppCurSequence, int16 *iEr
 	return nextAddr;
 }
 
-uint16 processXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
+bool amIsValidXmidiData(void *midiData)
+{
+    bool isValid = false;
+
+  	const sIffChunk *first_chunk = (sIffChunk *)midiData;
+  	const uint32 iffId = *((uint32 *)first_chunk->id);
+
+	if ( iffId == ID_FORM)  
+	{
+  		if( (uint32)first_chunk->data == ID_FORM_XDIR)
+  		{
+			const sIffChunk *infoChunk = (sIffChunk *)(((uintptr)&first_chunk->data) + sizeof(uint32));
+
+  			// get nb of XMID FORMS
+  			uint16 nbOfXmidiFiles = (uint16)(((uintptr)infoChunk->data>>16)&0x0000FFFF);
+  			nbOfXmidiFiles = ReadLE16(nbOfXmidiFiles);
+ 			isValid = true;
+   		} 
+  
+  		if(isValid == true)
+  		{
+    		// check next chunk for xmidi cat after xdir
+    		const uint32 chunkSize = ReadBE32(first_chunk->size) + roundUp(first_chunk->size);
+    		sIffChunk *nextChunk = (sIffChunk *)((uintptr)first_chunk + (uintptr)chunkSize + 8);
+
+    		if(*((uint32 *)nextChunk->id) == ID_CAT)
+    		{
+      			if( (uint32)nextChunk->data != ID_CAT_XMID) isValid = false;
+    		}
+
+  		}
+  
+	} 
+	else if(iffId == ID_CAT)
+	{
+  		if((uint32)first_chunk->data == ID_CAT_XMID)
+  		{
+    		isValid = true;
+  		}
+	}
+
+ return isValid;
+}
+
+uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
 {
 	int32 chunkSize = 0;
 	const void *endData = (void *)( (uintptr)data + (uintptr)dataLength );
+	const sIffChunk *fc = (sIffChunk *)data;
+	
+	(*ppCurSequence)->pSequenceName=0;
+	(*ppCurSequence)->timeElapsedFrac=0;
+	(*ppCurSequence)->timeStep=0;
+	(*ppCurSequence)->timeDivision=0;
+	(*ppCurSequence)->ubActiveTrack=0;
+   	(*ppCurSequence)->seqType = (*ppCurSequence)->ubNumTracks>1 ? ST_MULTI_SUB : ST_SINGLE;
+ 
 	int16 err=0;
 
 	while((data != endData) && (err==0))

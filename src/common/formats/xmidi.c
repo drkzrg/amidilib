@@ -78,7 +78,8 @@ CAT <len>XMID
 
 typedef int8 IFF_ID[4];
 
-typedef struct IFFCHUNK {
+typedef struct IFFCHUNK 
+{
 	IFF_ID id;
 	int32 size; 	
 	uint8 *data; 	
@@ -88,15 +89,14 @@ sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk);
 int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence);
 int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence);
 
-void *processXmidiEvnt(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiRbrn(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
+int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
+int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
+int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
 
-static bool isXmidiEventChunk(sIffChunk * eventChunk)
+static bool isXmidiEventChunk(const uint32 id)
 {
 	bool isXmidiEvent = false;
-	const uint32 id = *((uint32 *)eventChunk->id);
-
+	
 	if( id == ID_FORM_XMID_EVNT || id == ID_FORM_XMID_RBRN || id == ID_FORM_XMID_TIMB)
 	{
 		isXmidiEvent = true;
@@ -218,7 +218,6 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
     
       			}
     		}
-	
    		}
     } 
 	else if(iffId == ID_CAT)
@@ -247,26 +246,44 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 	int16 retVal = 0;
 
 	// trackData Start should be at FORM<len>XMID chunk..
-	if( *((uint32 *)trackDataStart->id)==ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
+	if( *((uint32 *)trackDataStart->id) == ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
 	{
 	    const uint32 trackChunkSize = ReadBE32(trackDataStart->size) + roundUp(trackDataStart->size);
-		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32));
-
-		if(isXmidiEventChunk(eventChunk))
+		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32)); // skipping XMID id
+		
+		uint32 id = *((uint32 *)eventChunk->id);
+		uint32 eventChunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
+		
+		if(isXmidiEventChunk(id))
 		{
 			// process event
-			printf("processing xmidi events...");
+			amTrace("processing xmidi events...");
+
+			switch(id)
+			{
+				case ID_FORM_XMID_TIMB:
+				{
+					processXmidiTimb(eventChunk, trackNo, ppCurSequence);
+				} break;
+				case ID_FORM_XMID_RBRN:
+				{
+					processXmidiRbrn(eventChunk, trackNo, ppCurSequence);
+				} break;
+				case ID_FORM_XMID_EVNT:
+				{
+					processXmidiEvnt(eventChunk, trackNo, ppCurSequence);
+				} break;
+			};
+
 		}
-		else
-		{
-			//skip to the next
-			printf("not valid xmidi event skipping...");
-		}
+
+		// go to next chunk, event address + chunk size + size of id + size of uint32
+		eventChunk = (sIffChunk *)(((uintptr)eventChunk) + eventChunkSize + 8);
 
 	}
 	else
 	{
-		printf("xmidi track data not found...");
+		amTrace("xmidi track data not found...");
 		retVal=-1;		
 	}
 
@@ -332,16 +349,16 @@ uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppC
 	return 0;
 }
 
-void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
+int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	amTrace("TIMB");
-	return dataEnd;
+	return 0;
 }
 
-void *processXmidiRbrn(void *dataStart, void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
+int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	amTrace("RBRN");
-	return dataEnd;
+	return 0;
 }
 
 /* XMIDI additional controllers */
@@ -357,8 +374,8 @@ void *processXmidiRbrn(void *dataStart, void *dataEnd, sSequence_t **ppCurSequen
 #define C_CALL_TRIGGER      0x77        /* Callback Trigger */
 #define C_SEQ_BRA_IDX       0x78        /* Sequence Branch Index */
 
-void *processXmidiEvnt(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
+int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	amTrace("EVNT");
-	return dataEnd;
+	return 0;
 }

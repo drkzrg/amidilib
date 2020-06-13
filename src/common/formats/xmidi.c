@@ -248,38 +248,44 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 	// trackData Start should be at FORM<len>XMID chunk..
 	if( *((uint32 *)trackDataStart->id) == ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
 	{
-	    const uint32 trackChunkSize = ReadBE32(trackDataStart->size) + roundUp(trackDataStart->size);
+	    uint32 trackChunkSize = ReadBE32(trackDataStart->size) + roundUp(trackDataStart->size);
 		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32)); // skipping XMID id
 		
 		uint32 id = *((uint32 *)eventChunk->id);
 		uint32 eventChunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
 		
-		if(isXmidiEventChunk(id))
+
+		while(trackChunkSize>0)
 		{
-			// process event
-			amTrace("processing xmidi events...");
-
-			switch(id)
+		
+			if(isXmidiEventChunk(id))
 			{
-				case ID_FORM_XMID_TIMB:
-				{
-					processXmidiTimb(eventChunk, trackNo, ppCurSequence);
-				} break;
-				case ID_FORM_XMID_RBRN:
-				{
-					processXmidiRbrn(eventChunk, trackNo, ppCurSequence);
-				} break;
-				case ID_FORM_XMID_EVNT:
-				{
-					processXmidiEvnt(eventChunk, trackNo, ppCurSequence);
-				} break;
-			};
+				// process event
+				amTrace("processing xmidi events...");
 
+				switch(id)
+				{
+					case ID_FORM_XMID_TIMB:
+					{
+						processXmidiTimb(eventChunk, trackNo, ppCurSequence);
+					} break;
+					case ID_FORM_XMID_RBRN:
+					{
+						processXmidiRbrn(eventChunk, trackNo, ppCurSequence);
+					} break;
+					case ID_FORM_XMID_EVNT:
+					{
+						processXmidiEvnt(eventChunk, trackNo, ppCurSequence);
+					} break;
+				};
+
+			}
+
+			const uint32 offset = eventChunkSize + 8;
+			trackChunkSize = trackChunkSize - offset;
+			// go to next chunk, event address + chunk size + size of id + size of uint32
+			eventChunk = (sIffChunk *)(((uintptr)eventChunk) + offset);
 		}
-
-		// go to next chunk, event address + chunk size + size of id + size of uint32
-		eventChunk = (sIffChunk *)(((uintptr)eventChunk) + eventChunkSize + 8);
-
 	}
 	else
 	{
@@ -349,15 +355,36 @@ uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppC
 	return 0;
 }
 
+/* [ TIMB<len> UWORD # of timbre list entries, 0-16384 
+			{ 
+				UBYTE patch number 0-127 
+				UBYTE timbre bank 0-127 
+			} 
+			... 
+] 
+*/
+
 int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
-	amTrace("TIMB");
+	const uint16 TimbreListEntriesNb = (uint16)(((uintptr)eventChunk->data>>16)&0x0000FFFF);
+	amTrace("Timbre list entries: %d [0-16384]", TimbreListEntriesNb);
+
 	return 0;
 }
 
+/* [ RBRN<len> UWORD # of branch point offsets, 0-127 
+		{ 
+			UWORD Sequence Branch Index controller value 0-127 
+			ULONG controller offset from start of EVNT chunk 
+		} 
+		... 
+	] 
+*/
+
 int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
-	amTrace("RBRN");
+	const uint16 BranchPointOffsets = (uint16)(((uintptr)eventChunk->data>>16)&0x0000FFFF);
+	amTrace("Branch point offsets: %d [0-127]");
 	return 0;
 }
 
@@ -374,8 +401,15 @@ int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 #define C_CALL_TRIGGER      0x77        /* Callback Trigger */
 #define C_SEQ_BRA_IDX       0x78        /* Sequence Branch Index */
 
+/*	EVNT<len> 
+	{ 
+		UBYTE interval count (if < 128) 
+		UBYTE <MIDI event> (if > 127)
+	} 
+*/
+
 int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
-	amTrace("EVNT");
+	amTrace("Event");
 	return 0;
 }

@@ -12,6 +12,7 @@
 
 /* XMIDI contain midi events */
 #include "midi.h"
+#include <stdio.h>
 
 /* 
 
@@ -67,13 +68,13 @@ CAT <len>XMID
 /* define XMIDI specific chunk defs */
 #define ID_FORM_XDIR_INFO 	MAKE_ID('I','N','F','O') 
 #define ID_FORM_XDIR 		MAKE_ID('X','D','I','R')
-#define ID_FORM_XMID_TIMB 	MAKE_ID('T','I','M','B') 
-#define ID_FORM_XMID_RBRN 	MAKE_ID('R','B','R','N') 
-#define ID_FORM_XMID_EVNT 	MAKE_ID('E','V','N','T')
-#define ID_CAT_XMID 		MAKE_ID('X','M','I','D') 
+#define ID_XMID 			MAKE_ID('X','M','I','D') 
 #define ID_FORM 			MAKE_ID('F','O','R','M')
 #define ID_CAT 				MAKE_ID('C','A','T',' ')
 #define ID_NULL  			MAKE_ID(' ',' ',' ',' ')
+#define ID_FORM_XMID_TIMB 	MAKE_ID('T','I','M','B') 
+#define ID_FORM_XMID_RBRN 	MAKE_ID('R','B','R','N') 
+#define ID_FORM_XMID_EVNT 	MAKE_ID('E','V','N','T')
 
 typedef int8 IFF_ID[4];
 
@@ -83,12 +84,26 @@ typedef struct IFFCHUNK {
 	uint8 *data; 	
 } sIffChunk;
 
+sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk);
 int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence);
-void *processXmidiForm(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiCat(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
-void *processXmidiRbrn(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
+int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence);
+
 void *processXmidiEvnt(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
+void *processXmidiRbrn(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
+void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError);
+
+static bool isXmidiEventChunk(sIffChunk * eventChunk)
+{
+	bool isXmidiEvent = false;
+	const uint32 id = *((uint32 *)eventChunk->id);
+
+	if( id == ID_FORM_XMID_EVNT || id == ID_FORM_XMID_RBRN || id == ID_FORM_XMID_TIMB)
+	{
+		isXmidiEvent = true;
+	}
+
+	return isXmidiEvent;
+}
 
 static INLINE int32 roundUp(const int32 val)
 {
@@ -100,19 +115,19 @@ uint16 amGetNbOfXmidiTracks(void *midiData)
 {
 	uint16 nbOfXmidiForms = 0;
 
-	const sIffChunk *firstChunk = (sIffChunk *)midiData;
-	const uint32 iffId = *((uint32 *)firstChunk->id);
+	sIffChunk *chunk = (sIffChunk *)midiData;
+	const uint32 iffId = *((uint32 *)chunk->id);
 
 	if ( iffId == ID_FORM)  
 	{
-  		if( (uint32)firstChunk->data == ID_FORM_XDIR)
+  		if( (uint32)chunk->data == ID_FORM_XDIR)
   		{
 			// get nb of XMID FORMS
-			const sIffChunk *infoChunk = (sIffChunk *)(((uintptr)&firstChunk->data) + sizeof(uint32));
+			const sIffChunk *infoChunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
 
-  			if(*((uint32 *)infoChunk->id) == ID_FORM_XDIR_INFO)
+  			if(*((uint32 *)chunk->id) == ID_FORM_XDIR_INFO)
   			{
-  				uint16 nbOfXmidiFiles = (uint16)(((uintptr)infoChunk->data>>16)&0x0000FFFF);
+  				uint16 nbOfXmidiFiles = (uint16)(((uintptr)chunk->data>>16)&0x0000FFFF);
   				nbOfXmidiForms = ReadLE16(nbOfXmidiFiles);
   			}
   			else
@@ -124,35 +139,83 @@ uint16 amGetNbOfXmidiTracks(void *midiData)
     } 
 	else if(iffId == ID_CAT)
 	{
-  		if((uint32)firstChunk->data == ID_CAT_XMID)
+  		if((uint32)chunk->data == ID_XMID)
   		{
-    		nbOfXmidiForms = 1;
+  			// check if we have FORM<len>XMID 
+  			chunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+    				
+    		if( (uint32)chunk->data == ID_FORM) 
+    		{
+  				chunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+
+  				if( (uint32)chunk->data == ID_FORM) 
+    			{
+    				chunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+	
+    				if( (uint32)chunk->data == ID_XMID) 
+    				{
+   						nbOfXmidiForms = 1;
+   					}
+				}
+ 
+    		}
   		}
 	}
+
 	return nbOfXmidiForms;
  }
 
+sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk)
+{
+	sIffChunk *trackStart = 0;
+
+	// TODO: iterate through FORM<len>XMID chunks and set start to trackNo, 
+    // for now we handle only one sequence, first one we can find
+  	chunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+    				
+    if( (uint32)chunk->data == ID_FORM) 
+    {
+    	chunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+
+    	if((uint32)chunk->data == ID_XMID)
+    	{
+    		// FORM<len>XMID chunk found!
+    		trackStart = chunk;
+    	}
+      	
+	}
+
+	return trackStart;
+}
 
 int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence)
 {
 	const uint32 iffId = *((uint32 *)firstChunk->id);
-	int16 retVal=0;
+	int16 retVal = 0;
 
 	if ( iffId == ID_FORM)  
 	{
   		if( (uint32)firstChunk->data == ID_FORM_XDIR)
   		{
 			// skip info chunk, check next chunk for xmidi cat after xdir
-    		const uint32 chunkSize = ReadBE32(firstChunk->size) + roundUp(firstChunk->size);
+    		uint32 chunkSize = ReadBE32(firstChunk->size) + roundUp(firstChunk->size);
     		sIffChunk *chunk = (sIffChunk *)((uintptr)firstChunk + (uintptr)chunkSize + 8);
 
     		if(*((uint32 *)chunk->id) == ID_CAT)
     		{
-    			// todo iterate through FORM<len>XMID chunks
-      			if( (uint32)chunk->data != ID_CAT_XMID) 
+      			if( (uint32)chunk->data != ID_XMID) 
       			{
-      				// FORM<len>XMID start found, get first event chunk, for now we handle only one sequence
-      				sIffChunk *trackChunk = (sIffChunk *)(((uintptr)&chunk->data) + sizeof(uint32));
+      				chunk = getXmidiTrackStart(trackNo,(sIffChunk *)&chunk->data);
+
+      				if(chunk)
+      				{
+      					retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
+     				}
+      				else
+      				{
+      					retVal=-1;
+      				}
+    
       			}
     		}
 	
@@ -160,16 +223,56 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
     } 
 	else if(iffId == ID_CAT)
 	{
-  		if((uint32)firstChunk->data == ID_CAT_XMID)
-  		{
-    		// todo iterate through FORM<len>XMID chunks, for now we handle only one sequence
-    		sIffChunk *trackChunk = (sIffChunk *)(((uintptr)&firstChunk->data) + sizeof(uint32));
+  		if( (uint32)firstChunk->data != ID_XMID) 
+      	{
+     		sIffChunk *chunk = getXmidiTrackStart(trackNo,(sIffChunk *)&firstChunk->data);
 
-  		}
+     		if(chunk) 
+     		{
+     			retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
+     		}
+      		else
+      		{
+      			retVal=-1;
+      		}
+      	}
 	}
 
 	return retVal;
 }
+
+// 
+int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence)
+{
+	int16 retVal = 0;
+
+	// trackData Start should be at FORM<len>XMID chunk..
+	if( *((uint32 *)trackDataStart->id)==ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
+	{
+	    const uint32 trackChunkSize = ReadBE32(trackDataStart->size) + roundUp(trackDataStart->size);
+		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32));
+
+		if(isXmidiEventChunk(eventChunk))
+		{
+			// process event
+			printf("processing xmidi events...");
+		}
+		else
+		{
+			//skip to the next
+			printf("not valid xmidi event skipping...");
+		}
+
+	}
+	else
+	{
+		printf("xmidi track data not found...");
+		retVal=-1;		
+	}
+
+    return retVal;
+}
+
 
 bool amIsValidXmidiData(void *midiData)
 {
@@ -188,7 +291,7 @@ bool amIsValidXmidiData(void *midiData)
 
     		if(*((uint32 *)chunk->id) == ID_CAT)
     		{
-      			if( (uint32)chunk->data != ID_CAT_XMID) 
+      			if( (uint32)chunk->data != ID_XMID) 
       				isValid = false;
     		}
 
@@ -198,7 +301,7 @@ bool amIsValidXmidiData(void *midiData)
 	} 
 	else if(iffId == ID_CAT)
 	{
-  		if((uint32)firstChunk->data == ID_CAT_XMID)
+  		if((uint32)firstChunk->data == ID_XMID)
   		{
     		isValid = true;
   		}
@@ -227,18 +330,6 @@ uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppC
 	}
 
 	return 0;
-}
-
-void *processXmidiForm(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
-{
-	amTrace("FORM"); //XDIR or XMID
-	return dataEnd;
-}
-
-void *processXmidiCat(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
-{
-	amTrace("CAT"); //XMID
-	return dataEnd;
 }
 
 void *processXmidiTimb(void *dataStart,void *dataEnd, sSequence_t **ppCurSequence, int16 *iError)
@@ -271,6 +362,3 @@ void *processXmidiEvnt(void *dataStart,void *dataEnd, sSequence_t **ppCurSequenc
 	amTrace("EVNT");
 	return dataEnd;
 }
-
-
-

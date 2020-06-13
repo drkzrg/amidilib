@@ -11,8 +11,25 @@
 #include "c_vars.h"
 #include "amidiseq.h"
 
+
+/**
+ * Checks if xmidi file is valid 
+ *
+ * @param xmidiData	- pointer to xmidi data
+ * @return returns true if data are correct.
+ **/
+
 bool amIsValidXmidiData(void *xmidiData);
+
+/**
+ * Gets number of sequences/tracks stored in xmidi data 
+ *
+ * @param xmidiData	- pointer to xmidi data
+ * @return returns number of tracks
+ **/
+
 uint16 amGetNbOfXmidiTracks(void *midiData);
+
 uint16 amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

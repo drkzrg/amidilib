@@ -201,18 +201,14 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
     		uint32 chunkSize = ReadBE32(firstChunk->size) + roundUp(firstChunk->size);
     		sIffChunk *chunk = (sIffChunk *)((uintptr)firstChunk + (uintptr)chunkSize + 8);
 
-    		if(*((uint32 *)chunk->id) == ID_CAT)
+    		if((*((uint32 *)chunk->id) == ID_CAT) && ((uint32)chunk->data == ID_XMID))
     		{
-      			if( (uint32)chunk->data != ID_XMID) 
-      			{
-      				chunk = getXmidiTrackStart(trackNo,(sIffChunk *)&chunk->data);
+   				chunk = getXmidiTrackStart(trackNo,(sIffChunk *)&chunk->data);
 
-      				if(chunk)
-      				{
-      					retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
-     				}
-
-      			}
+   				if(chunk)
+   				{
+   					retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
+   				}
     		}
    		}
     } 

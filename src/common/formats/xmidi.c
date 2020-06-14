@@ -191,7 +191,7 @@ sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk)
 int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence)
 {
 	const uint32 iffId = *((uint32 *)firstChunk->id);
-	int16 retVal = 0;
+	int16 retVal = -1;
 
 	if ( iffId == ID_FORM)  
 	{
@@ -211,11 +211,7 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
       				{
       					retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
      				}
-      				else
-      				{
-      					retVal = -1;
-      				}
-    
+
       			}
     		}
    		}
@@ -230,10 +226,6 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
      		{
      			retVal = processXmidiTrackEvents(trackNo, chunk, ppCurSequence);
      		}
-      		else
-      		{
-      			retVal=-1;
-      		}
       	}
 	}
 
@@ -243,7 +235,7 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
 // 
 int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence)
 {
-	int16 retVal = 0;
+	int16 retVal = -1;
 
 	// trackData Start should be at FORM<len>XMID chunk..
 	if( *((uint32 *)trackDataStart->id) == ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
@@ -257,28 +249,25 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 		// process event
 		amTrace("processing xmidi events...");
 
-		while(trackChunkSize>0)
+		while(trackChunkSize>0 && retVal!=0)
 		{
-		
 			if(isXmidiEventChunk(id))
 			{
-				
 				switch(id)
 				{
 					case ID_FORM_XMID_TIMB:
 					{
-						processXmidiTimb(eventChunk, trackNo, ppCurSequence);
+						retVal = processXmidiTimb(eventChunk, trackNo, ppCurSequence);
 					} break;
 					case ID_FORM_XMID_RBRN:
 					{
-						processXmidiRbrn(eventChunk, trackNo, ppCurSequence);
+						retVal = processXmidiRbrn(eventChunk, trackNo, ppCurSequence);
 					} break;
 					case ID_FORM_XMID_EVNT:
 					{
-						processXmidiEvnt(eventChunk, trackNo, ppCurSequence);
+						retVal = processXmidiEvnt(eventChunk, trackNo, ppCurSequence);
 					} break;
 				};
-
 			}
 
 			const uint32 offset = eventChunkSize + 8;
@@ -292,7 +281,6 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 	else
 	{
 		amTrace("xmidi track data not found...");
-		retVal=-1;		
 	}
 
     return retVal;
@@ -335,9 +323,11 @@ bool amIsValidXmidiData(void *midiData)
  return isValid;
 }
 
-uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
+int16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
 {
 	int32 chunkSize = 0;
+	int16 ret=0;
+	
 	const void *endData = (void *)( (uintptr)data + (uintptr)dataLength );
 	sIffChunk *fc = (sIffChunk *)data;
 	const uint16 nbOfTracks=(*ppCurSequence)->ubNumTracks;
@@ -349,12 +339,12 @@ uint16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppC
 	(*ppCurSequence)->ubActiveTrack=0;
    	(*ppCurSequence)->seqType = nbOfTracks>1 ? ST_MULTI_SUB : ST_SINGLE;
  
-	int16 ret=0;
-	for(uint16 i=0;i<nbOfTracks;++i){
-		ret = processXmidiTrackData(i,fc,ppCurSequence );
+	for(uint16 i=0;i < nbOfTracks; ++i){
+		ret = processXmidiTrackData(i,fc,ppCurSequence);
+		if(ret<0) break;
 	}
 
-	return 0;
+	return ret;
 }
 
 /* [ TIMB<len> UWORD # of timbre list entries, 0-16384 

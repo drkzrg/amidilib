@@ -56,7 +56,7 @@ const sAMIDI_version *amGetVersionInfo(void){
   return (const sAMIDI_version *)(&version); 
 }
 
-eMidiFileType amGetHeaderInfo(void * const pMidiPtr)
+eMidiFileType amGetMidiDataType(void * const pMidiPtr)
 {
   sMThd *pMidiInfo=0;
   amTrace((const uint8 *)"Checking header info... ");
@@ -108,7 +108,6 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
 
 int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
 {
-    int16 iError=0;
     (*ppSequence) = (sSequence_t *) amMallocEx( sizeof(sSequence_t), PREFER_TT);
  
     sSequence_t *sequence = *ppSequence;
@@ -133,7 +132,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
    }
 #endif
 
-   const eMidiFileType midiType = amGetHeaderInfo(midiData);
+   const eMidiFileType midiType = amGetMidiDataType(midiData);
     
    if(midiType == T_INVALID)
    {
@@ -150,6 +149,8 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
     return -1; 
    }
 
+   int16 iRetVal = 0;
+
    switch(midiType)
    {
         case T_MIDI0:
@@ -159,7 +160,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             
           if(pMidiInfo->nTracks != 1)
           {
-            return(-1); /* invalid number of tracks, there can be only one! */
+            iRetVal=-1; /* invalid number of tracks, there can be only one! */
           } 
           else
           {
@@ -182,11 +183,9 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
              amMemSet(sequence->arTracks[0], 0, sizeof(sTrack_t));
              sequence->arTracks[0]->pTrkEventList = 0;
 
-             midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iError);
-               
-             if(iError<0) return iError;
+             midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iRetVal);
           }
-          return 0;
+
         } break;
 
         case T_MIDI1:
@@ -210,13 +209,11 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
           }
 	  
-          while (midiData!=0)
+          while ( midiData!=0 && iRetVal>0)
           {
-            midiData = processMidiTracks(midiData, T_MIDI1, ppSequence, &iError);
-            if(iError<0) return iError;
+            midiData = processMidiTracks(midiData, T_MIDI1, ppSequence, &iRetVal);
           }
 
-          return 0;
         } break;
 
         case T_MIDI2:
@@ -244,12 +241,11 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
              sequence->arTracks[i]->pTrkEventList=0;
           }
            
-          while (midiData!=0)
+          while ( midiData!=0 && iRetVal>0)
           {
-            midiData = processMidiTracks(midiData, T_MIDI2, ppSequence, &iError);
-            if(iError<0) return iError;
+            midiData = processMidiTracks(midiData, T_MIDI2, ppSequence, &iRetVal);
           } 
-          return 0;
+
         } break;
 	
         case T_XMIDI:
@@ -261,23 +257,26 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           if(iNumTracks == 0) 
           {
             printf("Error: Invalid number of tracks!\n");
-            return(-1);
+            iRetVal = -1;
           }
-
-          printf("XMIDI tracks to process: %d\n",iNumTracks);
-
-          for(uint16 i=0;i<iNumTracks;++i)
+          else
           {
-            sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
-            amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
-            /* init event list */
-            sequence->arTracks[i]->pTrkEventList=0;
+            printf("XMIDI tracks to process: %d\n",iNumTracks);
+
+            for(uint16 i=0;i<iNumTracks;++i)
+            {
+              sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+              amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
+
+              /* init event list */
+              sequence->arTracks[i]->pTrkEventList=0;
+            }
+
+            iRetVal = amProcessXmidiData(midiData, dataSize, ppSequence);
+
           }
 
-          iError = amProcessXmidiData(midiData, dataSize, ppSequence);
-
-          return iError; 
         } break;
 
 	      case T_RMID:
@@ -285,14 +284,14 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 	      case T_XMF:
 	      case T_SNG:
         {
-          return(-1);
+          iRetVal = -1;
         } break;
   
         case T_NKT:
         {
           const sNktSeq * const nktSeq = (sNktSeq *)midiData;
           const uint16 iNumTracks = nktSeq->nbOfTracks;       //todo handle/setup replay
-          return(-1);
+          iRetVal = -1;
         } break;
 
 	    case T_MUS:
@@ -326,7 +325,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           {
             /* invalid number of tracks, there can be only one! */
             amTrace("Invalid number of tracks\n");
-            return(-1);
+            iRetVal = -1;
           }
           else
           {
@@ -347,28 +346,16 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 
             /* init event list */
             sequence->arTracks[trackIdx]->pTrkEventList=0;
-            midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iError);
-
-            if(iError<0) return iError;
+            midiData = processMidiTracks(midiData, T_MIDI0, ppSequence, &iRetVal);
           }
 
-    // free up working buffer
-    amFree(pOut);
-
-	  return 0;
+      // free up working buffer
+      amFree(pOut);
 	  } break;
-	
-	  default:
-    {
-	   /* unknown error, do nothing */
-	   amTrace((const uint8*)"Unknown error.\n");
-	   printf( "Unknown error ...\n");
-     return(-1);
-	  }
-	  /* unsupported file type */
+	  
  }; //switch
 
- return(-1);
+ return iRetVal;
 }
 
 #ifndef IKBD_MIDI_SEND_DIRECT

@@ -31,38 +31,34 @@ uint16 amGetTimeDivision(const void *pMidiPtr);
 extern uint32 amReadVarLen(void);
 
 /**
- * Gets MIDI file info type(0,1,2), number of tracks, track lenghts..
+ * Returns MIDI file type of stored Midi data
  *
- * @param pMidiPtr	gets info about the midi header
- * @return (0)- MIDI file type 0,
- * (1) - MIDI file type 1,
- * (2) - MIDI file type 2,
- * (3) - Miles Sound system XMIDI
- * (-1) - unknown MIDI file,
+ * @param pMidiPtr	address wheere midi file data is stored
+ * @return (0)- MIDI file type, see eMidiFileType enum for possible values
  */
 
-eMidiFileType amGetHeaderInfo( void *const pMidiPtr);
+eMidiFileType amGetMidiDataType( void *const pMidiPtr);
 
 /** processes the MIDI 0,1,2 track data
 *	@param trackStartPtr pointer to the start of Track MIDI chunk
 *	@param fileTypeFlag kind of file to preprocess
 *	@param ppCurSequence pointer a pointer to AMIDI sequence structure
-*   @param iError pointer to error code, returned after events processing
+*   @param iRetVal pointer to an integer, which holds operation status after events processing (>0 on error)
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
-void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iError);
+void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iRetVal);
 
 /** processes the MIDI 0,1,2 track events
 *	@param pSeq pointer to AMIDI sequence structure
 *	@param startPtr pointer to an address containing start of Track MIDI chunk
 *	@param endAddr address, where track data ends
 *	@param trackNb track number to process (from 0 to 15)
-*	@param iError pointer to error code, returned after events processing
+*	@param iRetVal pointer to an integer, which holds operation status after events processing (>0 on error)
 *	@return pointer to the next chunk or NULL if EOT occured.
     TODO: inline it ?
 */
 
-void *processMidiTrackEvents(sSequence_t *pSeq, void** startPtr, const void *endAddr, const uint8 trackNb, int16 *iError);
+void *processMidiTrackEvents(sSequence_t *pSeq, void** startPtr, const void *endAddr, const uint8 trackNb, int16 *iRetVal);
 
 /** read/decode note off message
 *	@param pSeq pointer to AMIDI sequence structure

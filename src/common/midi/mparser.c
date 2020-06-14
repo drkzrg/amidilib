@@ -31,7 +31,7 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
 because we have to know if we have to dump event data to one eventlist or several ones */
 /* all the events found in the track will be dumped to the sSequenceState_t structure  */
 
-void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iError )
+void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iRetVal )
 {
 
 sChunkHeader *pHeader = (sChunkHeader *)trackStartPtr;
@@ -75,9 +75,9 @@ switch(fileTypeFlag)
       pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
       pTempTrack->currentState.currentBPM = DEFAULT_BPM;
 
-      trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
+      trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
 
-      if(*iError<0) {
+      if(*iRetVal<0) {
         return NULL;
       }
 
@@ -97,9 +97,9 @@ switch(fileTypeFlag)
         pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
         pTempTrack->currentState.currentBPM = DEFAULT_BPM;
 
-        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
 
-        if(*iError<0) {
+        if(*iRetVal<0) {
           return NULL;
         }
 
@@ -141,9 +141,9 @@ switch(fileTypeFlag)
         pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
         pTempTrack->currentState.currentBPM = DEFAULT_BPM;
     
-        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iError );
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
 
-        if(*iError<0) {
+        if(*iRetVal<0) {
           return NULL;
         }
 
@@ -174,16 +174,17 @@ switch(fileTypeFlag)
  return 0;
 }
 
-uint8 amIsMidiChannelEvent(const uint8 byteEvent){
-
+uint8 amIsMidiChannelEvent(const uint8 byteEvent)
+{
     if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
     {return 1;}
     else return 0;
 }
 
-uint8 amIsMidiRTorSysex(const uint8 byteEvent){
-
-    if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) ){
+uint8 amIsMidiRTorSysex(const uint8 byteEvent)
+{
+    if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) )
+    {
       /* it is! */
         return (1);
     }
@@ -192,7 +193,8 @@ uint8 amIsMidiRTorSysex(const uint8 byteEvent){
 }
 
 /* combine bytes function for pitch bend */
-uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond){
+uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond)
+{
     uint16 val;
     val = (uint16)bSecond;
     val<<=7;
@@ -201,7 +203,8 @@ uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond){
 }
 
 /* handles the events in tracks and returns pointer to the next midi track */
-void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, int16 *iError ){
+void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, int16 *iRetVal )
+{
 uint8 usSwitch=0;
 uint16 recallStatus=0;
 
@@ -213,7 +216,8 @@ bool bEOF=FALSE;
     uint8 *pCmd=((uint8 *)(*startPtr));
     uint8 ubSize=0;
 
-    while ( ((pCmd!=endAddr)&&(bEOF!=TRUE)&&(*iError>=0)) ){
+    while ( ((pCmd!=endAddr)&&(bEOF!=TRUE)&&(*iRetVal>=0)) )
+    {
 	  uint32 delta=0L;
       /*read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
@@ -241,34 +245,35 @@ bool bEOF=FALSE;
    }
 
     /* decode event and write it to our custom structure */
-    switch(usSwitch){
+    switch(usSwitch)
+    {
       case EV_NOTE_OFF:
-        *iError=amNoteOff(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amNoteOff(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_NOTE_ON:
-        *iError=amNoteOn(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amNoteOn(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_NOTE_AFTERTOUCH:
-        *iError=amNoteAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amNoteAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_CONTROLLER:
-        *iError=amController(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amController(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_PROGRAM_CHANGE:
-        *iError=amProgramChange(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amProgramChange(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_CHANNEL_AFTERTOUCH:
-        *iError=amChannelAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amChannelAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_PITCH_BEND:
-        *iError=amPitchBend(pSeq,&pCmd,&recallStatus, delta, trackNb );
+        *iRetVal=amPitchBend(pSeq,&pCmd,&recallStatus, delta, trackNb );
       break;
       case EV_META:
-        *iError=amMetaEvent(pSeq,&pCmd, delta, trackNb,&bEOF);
+        *iRetVal=amMetaEvent(pSeq,&pCmd, delta, trackNb,&bEOF);
       break;
       case EV_SOX:                          	/* SySEX midi exclusive */
         recallStatus=0; 	                /* cancel out midi running status */
-        *iError=(int16)amSysexMsg(pSeq,&pCmd,delta, trackNb);
+        *iRetVal=(int16)amSysexMsg(pSeq,&pCmd,delta, trackNb);
       break;
       case SC_MTCQF:
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */

@@ -214,7 +214,7 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
     } 
 	else if(iffId == ID_CAT)
 	{
-  		if( (uint32)firstChunk->data != ID_XMID) 
+  		if( (uint32)firstChunk->data == ID_XMID) 
       	{
      		sIffChunk *chunk = getXmidiTrackStart(trackNo,(sIffChunk *)&firstChunk->data);
 

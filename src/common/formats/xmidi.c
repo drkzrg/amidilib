@@ -375,7 +375,7 @@ int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 	
 	amTrace("Timbre list entries size:[%d]: %u [0-16384]\n", chunkSize, TimbreListEntriesNb);
 
-	uint16 *timbreData = (uint16 *)((uintptr)eventChunk->data + sizeof(uint32));
+	uint16 *timbreData = (uint16 *)((uintptr)&eventChunk->data + sizeof(uint32));
 
 	for(uint16 idx=0; idx<TimbreListEntriesNb; ++idx)
 	{
@@ -434,7 +434,8 @@ int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 	amTrace("Events block size:[%d]:\n", chunkSize);
 
 	//todo: make it mc68000 friendly
-	uint8 *eventData = (uint8 *)((uintptr)eventChunk->data);
+	uint8 *eventData = (uint8 *)((uintptr)&eventChunk->data);
+	uint32 offset=0;
 
 	for(uint32 eventId=0; eventId < chunkSize; ++eventId)
 	{
@@ -442,13 +443,15 @@ int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 		
 		if(val<128)
 		{
-			amTrace("[EVNT] int count: [%u]\n", val);
+			amTrace("[EVNT] offset: [%u], int count: [%u]\n", offset, val);
 		}
 		else
 		{
-			amTrace("[EVNT] midi event: [%u]\n", val);
+			amTrace("[EVNT] offset: [%u], midi event: [%u]\n", offset, val);
 		}
 
+		offset+=1;
+		
 		++eventData;
 	}
 

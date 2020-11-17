@@ -1,97 +1,100 @@
 
-#include <limits.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "containers/stack.h"
 #include "memory/memory.h"
 
-// if initialMaxSize==0, then maximal initial size is set to DEFAULT_MAXSTACK
-int32 initStack(tStack *pPtr, MemSize initialMaxSize, uint32 elementSize){
-  pPtr->top=0;  
-  pPtr->stack=0;
-  pPtr->elementSize=elementSize;
-  
-  if(initialMaxSize==0) {
-    pPtr->size = DEFAULT_MAXSTACK;
-  }else{
-    pPtr->size = initialMaxSize;
-  }
-  
-  //allocate memory
-  void *pNewStack=0;
-  
-  pNewStack=(void *)amMallocEx(elementSize*pPtr->size,PREFER_TT);
+static const uint32 DEFAULT_MAXSTACK = 20;
 
-  if(pNewStack==0) return 1;
-    amMemSet(pNewStack,0,elementSize*pPtr->size);
-    pPtr->stack=pNewStack;
+int32 initStack(sStack *stackState, const uint32 elementSize, const uint32 initialStackSize)
+{
+  // allocate memory
+  const MemSize memAllocSize = elementSize * initialStackSize;
+  void *pNewStack = (void *)amMallocEx(memAllocSize, PREFER_TT);
+
+  if(pNewStack == 0L)
+  {
+    return 1;
+  } 
   
+  amMemSet(pNewStack,0,memAllocSize);
+  
+  stackState->top = 0UL;  
+  stackState->stack = pNewStack;
+  stackState->elementSize = elementSize;
+  stackState->size = initialStackSize;
+
   return 0;  
 }
 
+// void element has to be of the constant size
+void pushStack(sStack *stackState, void *newElement)
+{
 
-//void element has to be of the constant size
-void pushStack(tStack *pPtr, void *newElement){
-  if(pPtr->top == pPtr->size){
+  if(stackState->top == stackState->size)
+  {
       //stack underflow
-      pPtr->size=pPtr->size + DEFAULT_MAXSTACK;
+      stackState->size = stackState->size + DEFAULT_MAXSTACK;
       
-      if(amRealloc(pPtr->stack,pPtr->size*pPtr->elementSize)==NULL){
-        //Houston we have a problem. nothing can be done...
+      if(amRealloc(stackState->stack,stackState->size * stackState->elementSize)==NULL)
+      {
+        // Houston we have a problem. nothing can be done...
         puts("Warning: Stack overflow!\r\t");
       }
     return;
-  }else{
-    uint32 dst=((uint32)pPtr->stack)+((++pPtr->top)*(pPtr->elementSize));
-    amMemCpy((void *)dst,newElement,pPtr->elementSize);
+  }
+  else
+  {
+    const uintptr dst=((uintptr)stackState->stack)+((++stackState->top)*(stackState->elementSize));
+    amMemCpy((void *)dst,newElement,stackState->elementSize);
     return;
   }
 }
 
-void *getTopStackElement(tStack *pPtr){
-  
+void *getTopStackElement(sStack *stackState)
+{
   //we assume stack is not empty
-    uint32 adr=((uint32)pPtr->stack)+(pPtr->top*pPtr->elementSize);
+    uintptr adr = ((uintptr)stackState->stack) + (stackState->top * stackState->elementSize);
 
    //return removed element 
     return (void *)adr;
 }
 
-void popStack(tStack *pPtr){
+void popStack(sStack *stackState)
+{
 
-  if(pPtr->top==0){ 
-    //stack underflow
+  if(stackState->top==0)
+  { 
+    // stack underflow
     puts("Warning: Stack underflow!\r\t");
-    
-  }else {
-    --pPtr->top;
+  }
+  else 
+  {
+    --stackState->top;
   }
 }
 
-const bool isStackFull(const tStack *pPtr){
-  if(pPtr->top==(pPtr->size-1)) 
-    return TRUE;
-  else 
-    return FALSE;
+bool isStackFull(const sStack *stackState)
+{
+  if(stackState->top == (stackState->size-1)) 
+  {
+    return true;
+  }
+
+  return false;
 }
 
-const bool isStackEmpty(const tStack *pPtr){
+bool isStackEmpty(const sStack *stackState)
+{
 
-  if(pPtr->top==0) 
-    return TRUE;
-  else 
-    return FALSE;
+  if(stackState->top == 0) 
+  {
+    return true;
+  }
   
+  return false;
 }
 
-void deinitStack(tStack *pPtr){
-  
+void deinitStack(sStack *pPtr)
+{
   amFree(pPtr->stack);
-  
-  pPtr->top=0;  
-  pPtr->elementSize=0;
-  pPtr->size = 0;
 }
 

@@ -1,32 +1,29 @@
-#ifndef __STACK_H__
-#define __STACK_H__
+#ifndef _STACK_H_
+#define _STACK_H_
 
-// (c)Pawel Goralski 12'2011
+/**  Copyright 2007-2020 Pawel Goralski
+    
+    This file is part of AMIDILIB.
+    See license.txt for licensing information.
+*/
 
 #include "c_vars.h"
 
-//stack for storing game states
-#define DEFAULT_MAXSTACK 20
-
-typedef struct {
-  MemSize top;            //top of stack
-  MemSize size;           //current max size of a stack, if we try to go past this threshold, then
-                           //it's size will be increased by DEFAULT_MAXSTACK elements
+typedef struct SSTACK 
+{
+  MemSize top;          // top of stack
+  MemSize size;         // current max size of a stack, if we try to go past this threshold, then
+						// it's size will be reallocated and increased by DEFAULT_MAXSTACK elements
   uint32 elementSize;
   void *stack;
-} tStack;
+} sStack;
 
-//if initialMaxSize==0, then maximal initial size is set to DEFAULT_MAXSTACK
-int32 initStack(tStack *pPtr, const MemSize initialMaxSize, const uint32 elementSize);
-
-//void element has to be of the constant size
-void pushStack(tStack *pPtr, void *newElement);
-void popStack(tStack *pPtr);
-void *getTopStackElement(tStack *pPtr);
-const bool isStackFull(const tStack *pPtr);
-const bool isStackEmpty(const tStack *pPtr);
-void deinitStack(tStack *pPtr);
-
-
+int32 initStack(sStack *stackState,  const uint32 elementSize, const uint32 initialMaxSize);
+void pushStack(sStack *stackState, void *newElement); // void element has to be of the constant size
+void popStack(sStack *stackState);
+void* getTopStackElement(sStack *stackState);
+bool isStackFull(const sStack *stackState);
+bool isStackEmpty(const sStack *stackState);
+void deinitStack(sStack *stackState);
 
 #endif

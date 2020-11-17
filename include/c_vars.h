@@ -13,16 +13,21 @@
 #ifndef NDEBUG
 #include <stdlib.h>
 
+#if __STDC_VERSION__ >= 199901L
+#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
+#else
+#define STATIC_ASSERT(cond, msg) ;
+#endif
+
 #define ASSERT(expr)                                                         \
   ((void)((expr) ||                                                          \
           (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
                    #expr, __FILE__, __LINE__),                               \
            ((int (*)(void))abort)())))
 
-#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
-
 #else
-#define assert(cond) 
+
+#define assert(cond) (void)
 #define STATIC_ASSERT(cond, msg) 
 #define ASSERT(expr) (void)
 

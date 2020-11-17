@@ -136,6 +136,7 @@ LDFLAGS=''
 VASM_FLAGS=''
 CPPFLAGS=''
 CXXFLAGS=''
+CODEGEN = '-std=c99'
 
 LIB_TARGET='not_set'
 
@@ -157,19 +158,19 @@ if(TOOLSET=='GCC434'):
     fpu_flags = ''
 
     if(targetPlatform == 'ST'):
-        CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+        CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/'
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
-        CFLAGS += '-m68020-40 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+        CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
-        CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+        CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68060/'
@@ -185,7 +186,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
         LDFLAGS += '-flto '
 
     if(targetPlatform == 'ST'):
-        CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+        CFLAGS += '-m68000 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/' 
@@ -195,7 +196,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
         # floating point support
         env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68000','/usr/' + GCC_PREFIX + '/lib/m68000']
     elif(targetPlatform == 'F030'):
-        CFLAGS += '-m68020-40 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+        CFLAGS += '-m68020-40 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
@@ -211,7 +212,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
             env['LIBPATH']=env['LIBPATH'] + ['/lib/gcc/' + GCC_PREFIX + '/' + GCC_VERSION_STRING + '/m68020/softfp', '/usr/' + GCC_PREFIX + '/lib/m68020/softfp']
 
     elif(targetPlatform == 'CT60'):
-        CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+        CFLAGS += '-m68060 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
         CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68060/'

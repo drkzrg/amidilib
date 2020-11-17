@@ -8,9 +8,41 @@
 #ifndef C_VARS_H_
 #define C_VARS_H_
 
-#include <stdint.h>
+#include <assert.h>
+
+#ifndef NDEBUG
+#include <stdlib.h>
+
+#define ASSERT(expr)                                                         \
+  ((void)((expr) ||                                                          \
+          (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
+                   #expr, __FILE__, __LINE__),                               \
+           ((int (*)(void))abort)())))
+
+#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
+
+#else
+#define assert(cond) 
+#define STATIC_ASSERT(cond, msg) 
+#define ASSERT(expr) (void)
+
+#endif
+
+#if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
-#include <stddef.h>
+#include <inttypes.h>
+
+#ifndef TRUE
+#define TRUE true
+#endif
+
+#ifndef FALSE
+#define FALSE false
+#endif
+
+#else
+STATIC_ASSERT(0,"C99 standard or better is unsupported or not set in c compiler!");
+#endif 
 
 typedef uint8_t     uint8;
 typedef int8_t      int8;
@@ -29,14 +61,6 @@ typedef size_t MemSize;
 typedef void (*funcPtrVoidVoid)();
 typedef void (*funcPtrVoidConstUint)(const uint32);
 
-#ifndef TRUE
-#define TRUE true
-#endif
-
-#ifndef FALSE
-#define FALSE false
-#endif
-
 // TODO: make it more cross-compiler friendly
 // atm it's gcc specific
 #define PACK_ATTR __attribute__((packed))
@@ -47,24 +71,6 @@ typedef void (*funcPtrVoidConstUint)(const uint32);
   #define INLINE inline        /* use standard inline */
 #else
   #define INLINE              /* no inline */
-#endif
-
-#ifndef NDEBUG
-#include <assert.h>
-#include <stdlib.h>
-
-#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
-
-#define ASSERT(expr)                                                         \
-  ((void)((expr) ||                                                          \
-          (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
-                   #expr, __FILE__, __LINE__),                               \
-           ((int (*)(void))abort)())))
-#else
-#define assert(cond) 
-#define STATIC_ASSERT(cond, msg) 
-#define ASSERT(expr) (void)
-
 #endif
 
 // checks compiler builtin variable sizes 

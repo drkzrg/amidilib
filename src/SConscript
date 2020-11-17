@@ -96,8 +96,8 @@ elif(TOOLSET=='GCCBROWNELF'):
     print projdir + '/../deps/startup/include'
 
 # Linux/Cygwin cross compiler
-    PREFIX = '/home/saulot/opt/'
-    GCC_VERSION_STRING = '7.3.0'
+    PREFIX = '/opt/cross-mint'
+    GCC_VERSION_STRING = '10.0.2'
     GCC_PREFIX = 'm68k-ataribrown-elf'
 
     if(use_libc!='yes'):
@@ -373,7 +373,7 @@ else:
 
     if(TOOLSET == 'GCCBROWNELF'):
         ADDLIBS = ['c']
-        startup_obj = [PREFIX + GCC_PREFIX + '/lib/crt0.o']
+        startup_obj = [PREFIX + '/' + GCC_PREFIX + '/lib/crt0.o']
 
     env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])

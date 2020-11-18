@@ -360,7 +360,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                          amTrace("Update step for 200hz: %ld\n",precalc[i]);
                     } break;
                     default:{
-                        ASSERT(0);
+                        Assert(0);
                         amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };

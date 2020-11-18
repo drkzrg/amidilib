@@ -67,7 +67,7 @@ typedef struct Sequence_t {
    eSequenceType seqType;                      // sequence: single, multitrack, separate
 
 #ifdef EVENT_LINEAR_BUFFER
-   tLinearBuffer eventBuffer;               // contigous, linear buffer for midi events
+   LinearBufferAllocator eventBuffer;               // contigous, linear buffer for midi events
 #endif
 
 } sSequence_t;

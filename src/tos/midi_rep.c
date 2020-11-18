@@ -72,7 +72,7 @@ if(seq!=0){
     }else{
          amTrace("initSeq(): Houston, we have a problem!\n");
         // Houston, we have a problem!
-        assert(0);
+        Assert(0);
     }
 
   } //endif

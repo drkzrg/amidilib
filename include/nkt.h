@@ -66,8 +66,8 @@ typedef struct NktTrack{
     uint8 *eventBlocksPtr;        // pointer to start of events block
     uint8 *eventDataPtr;          // pointer to start of event's data block
 
-    tLinearBuffer lbDataBuffer;  // linear buffer for event data info
-    tLinearBuffer lbEventsBuffer; // linear buffer for events block info
+    LinearBufferAllocator lbDataBuffer;  // linear buffer for event data info
+    LinearBufferAllocator lbEventsBuffer; // linear buffer for events block info
 }sNktTrack;
 
 

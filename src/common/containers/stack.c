@@ -34,7 +34,7 @@ void pushStack(sStack *stackState, void *newElement)
       //stack underflow
       stackState->size = stackState->size + DEFAULT_MAXSTACK;
       
-      if(amRealloc(stackState->stack,stackState->size * stackState->elementSize)==NULL)
+      if(amRealloc(stackState->stack,stackState->size * stackState->elementSize) == NULL)
       {
         // Houston we have a problem. nothing can be done...
         puts("Warning: Stack overflow!\r\t");

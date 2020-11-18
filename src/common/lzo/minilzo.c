@@ -381,13 +381,13 @@
 #  define LZO_OS_QNX            1
 #  define LZO_INFO_OS           "qnx"
 #elif defined(__BORLANDC__) && defined(__DPMI32__) && (__BORLANDC__ >= 0x0460)
-#  define LZO_OS_DOint32          1
+#  define LZO_OS_DOS32          1
 #  define LZO_INFO_OS           "dos32"
 #elif defined(__BORLANDC__) && defined(__DPMI16__)
-#  define LZO_OS_DOint16          1
+#  define LZO_OS_DOS16          1
 #  define LZO_INFO_OS           "dos16"
 #elif defined(__ZTC__) && defined(DOS386)
-#  define LZO_OS_DOint32          1
+#  define LZO_OS_DOS32          1
 #  define LZO_INFO_OS           "dos32"
 #elif defined(__OS2__) || defined(__OS2V2__)
 #  if (UINT_MAX == LZO_0xffffL)
@@ -420,17 +420,17 @@
 #  endif
 #elif defined(__DOS__) || defined(__MSDOS__) || defined(_MSDOS) || defined(MSDOS) || (defined(__PACIFIC__) && defined(DOS))
 #  if (UINT_MAX == LZO_0xffffL)
-#    define LZO_OS_DOint16        1
+#    define LZO_OS_DOS16        1
 #    define LZO_INFO_OS         "dos16"
 #  elif (UINT_MAX == LZO_0xffffffffL)
-#    define LZO_OS_DOint32        1
+#    define LZO_OS_DOS32        1
 #    define LZO_INFO_OS         "dos32"
 #  else
 #    error "check your limits.h header"
 #  endif
 #elif defined(__WATCOMC__)
 #  if defined(__NT__) && (UINT_MAX == LZO_0xffffL)
-#    define LZO_OS_DOint16        1
+#    define LZO_OS_DOS16        1
 #    define LZO_INFO_OS         "dos16"
 #  elif defined(__NT__) && (__WATCOMC__ < 1100)
 #    define LZO_OS_WIN32        1
@@ -530,7 +530,7 @@
 #  endif
 #endif
 #endif
-#if (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#if (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #  if (UINT_MAX != LZO_0xffffL)
 #    error "unexpected configuration - check your compiler defines"
 #  endif
@@ -538,7 +538,7 @@
 #    error "unexpected configuration - check your compiler defines"
 #  endif
 #endif
-#if (LZO_OS_DOint32 || LZO_OS_OS2 || LZO_OS_WIN32 || LZO_OS_WIN64)
+#if (LZO_OS_DOS32 || LZO_OS_OS2 || LZO_OS_WIN32 || LZO_OS_WIN64)
 #  if (UINT_MAX != LZO_0xffffffffL)
 #    error "unexpected configuration - check your compiler defines"
 #  endif
@@ -832,7 +832,7 @@
 #if !defined(__LZO_ARCH_OVERRIDE)
 #if (LZO_ARCH_GENERIC)
 #  define LZO_INFO_ARCH             "generic"
-#elif (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#elif (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #  define LZO_ARCH_I086             1
 #  define LZO_INFO_ARCH             "i086"
 #elif defined(__aarch64__) || defined(_M_ARM64)
@@ -885,7 +885,7 @@
 #  define LZO_ARCH_I386             1
 #  define LZO_ARCH_IA32             1
 #  define LZO_INFO_ARCH             "i386"
-#elif (LZO_OS_DOint32 && LZO_CC_HIGHC) && defined(_I386)
+#elif (LZO_OS_DOS32 && LZO_CC_HIGHC) && defined(_I386)
 #  define LZO_ARCH_I386             1
 #  define LZO_ARCH_IA32             1
 #  define LZO_INFO_ARCH             "i386"
@@ -985,7 +985,7 @@
 #  undef  LZO_INFO_ARCH
 #  define LZO_INFO_ARCH             "arm_thumb2"
 #endif
-#if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_DOint32 || LZO_OS_OS2)
+#if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_DOS32 || LZO_OS_OS2)
 #  error "FIXME - missing define for CPU architecture"
 #endif
 #if 1 && (LZO_ARCH_UNKNOWN) && (LZO_OS_WIN32)
@@ -996,11 +996,11 @@
 #endif
 #if (LZO_OS_OS216 || LZO_OS_WIN16)
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOint16 && defined(BLX286))
+#elif 1 && (LZO_OS_DOS16 && defined(BLX286))
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOint16 && defined(DOSX286))
+#elif 1 && (LZO_OS_DOS16 && defined(DOSX286))
 #  define LZO_ARCH_I086PM           1
-#elif 1 && (LZO_OS_DOint16 && LZO_CC_BORLANDC && defined(__DPMI16__))
+#elif 1 && (LZO_OS_DOS16 && LZO_CC_BORLANDC && defined(__DPMI16__))
 #  define LZO_ARCH_I086PM           1
 #endif
 #if (LZO_ARCH_AMD64 && !LZO_ARCH_X64)
@@ -1161,7 +1161,7 @@
 #else
 #  error "unknown LZO_ARCH_I086 memory model"
 #endif
-#if (LZO_OS_DOint16 || LZO_OS_OS216 || LZO_OS_WIN16)
+#if (LZO_OS_DOS16 || LZO_OS_OS216 || LZO_OS_WIN16)
 #define LZO_HAVE_MM_HUGE_PTR        1
 #define LZO_HAVE_MM_HUGE_ARRAY      1
 #if (LZO_MM_TINY)
@@ -1181,7 +1181,7 @@
 #  undef LZO_HAVE_MM_HUGE_ARRAY
 #endif
 #if (LZO_ARCH_I086PM) && !(LZO_HAVE_MM_HUGE_PTR)
-#  if (LZO_OS_DOint16)
+#  if (LZO_OS_DOS16)
 #    error "unexpected configuration - check your compiler defines"
 #  elif (LZO_CC_ZORTECHC)
 #  else
@@ -1203,7 +1203,7 @@ extern "C" {
 #elif (LZO_CC_TURBOC && (__TURBOC__ >= 0x0295))
    extern void __near __cdecl _AHSHIFT(void);
 #  define LZO_MM_AHSHIFT      ((unsigned) _AHSHIFT)
-#elif ((LZO_CC_AZTECC || LZO_CC_PACIFICC || LZO_CC_TURBOC) && LZO_OS_DOint16)
+#elif ((LZO_CC_AZTECC || LZO_CC_PACIFICC || LZO_CC_TURBOC) && LZO_OS_DOS16)
 #  define LZO_MM_AHSHIFT      12
 #elif (LZO_CC_WATCOMC)
    extern unsigned char _HShift;
@@ -2033,7 +2033,7 @@ extern "C" { LZO_COMPILE_TIME_ASSERT_HEADER(2 == 2) }
 #endif
 LZO_COMPILE_TIME_ASSERT_HEADER(3 == 3)
 #endif
-#if (LZO_ARCH_I086 || LZO_ARCH_I386) && (LZO_OS_DOint16 || LZO_OS_DOint32 || LZO_OS_OS2 || LZO_OS_OS216 || LZO_OS_WIN16 || LZO_OS_WIN32 || LZO_OS_WIN64)
+#if (LZO_ARCH_I086 || LZO_ARCH_I386) && (LZO_OS_DOS16 || LZO_OS_DOS32 || LZO_OS_OS2 || LZO_OS_OS216 || LZO_OS_WIN16 || LZO_OS_WIN32 || LZO_OS_WIN64)
 #  if (LZO_CC_GNUC || LZO_CC_HIGHC || LZO_CC_NDPC || LZO_CC_PACIFICC)
 #  elif (LZO_CC_DMC || LZO_CC_SYMANTECC || LZO_CC_ZORTECHC)
 #    define __lzo_cdecl                 __cdecl
@@ -2580,7 +2580,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #  define LZO_INFO_LIBC         "default"
 #endif
 #endif
-#if (LZO_ARCH_I386 && (LZO_OS_DOint32 || LZO_OS_WIN32) && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
+#if (LZO_ARCH_I386 && (LZO_OS_DOS32 || LZO_OS_WIN32) && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
 #  define LZO_ASM_SYNTAX_MSC 1
 #elif (LZO_OS_WIN64 && (LZO_CC_DMC || LZO_CC_INTELC || LZO_CC_MSC || LZO_CC_PELLESC))
 #elif (LZO_ARCH_I386 && LZO_CC_GNUC && (LZO_CC_GNUC == 0x011f00ul))
@@ -2899,41 +2899,41 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #endif
 #if (LZO_SIZEOF_LONG == 4) && !(LZO_CFG_PREFER_TYPEOF_ACC_INT32E_T == LZO_TYPEOF_INT)
 #  define lzo_int32e_t              long int
-#  define lzo_uint32_te_t             unsigned long int
+#  define lzo_uint32e_t             unsigned long int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_LONG
 #elif (LZO_SIZEOF_INT == 4)
 #  define lzo_int32e_t              int
-#  define lzo_uint32_te_t             unsigned int
+#  define lzo_uint32e_t             unsigned int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_INT
 #elif (LZO_SIZEOF_SHORT == 4)
 #  define lzo_int32e_t              short int
-#  define lzo_uint32_te_t             unsigned short int
+#  define lzo_uint32e_t             unsigned short int
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_SHORT
 #elif (LZO_SIZEOF_LONG_LONG == 4)
 #  define lzo_int32e_t              lzo_llong_t
-#  define lzo_uint32_te_t             lzo_ullong_t
+#  define lzo_uint32e_t             lzo_ullong_t
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF_LONG_LONG
 #elif 1 && !(LZO_CFG_TYPE_NO_MODE_SI) && (LZO_CC_CLANG || (LZO_CC_GNUC >= 0x025f00ul) || LZO_CC_LLVM) && (__INT_MAX__+0 > 2147483647L)
 #  if !(LZO_LANG_ASSEMBLER)
    typedef int lzo_int32e_si_t__ __attribute__((__mode__(__SI__)));
-   typedef unsigned int lzo_uint32_te_si_t__ __attribute__((__mode__(__SI__)));
+   typedef unsigned int lzo_uint32e_si_t__ __attribute__((__mode__(__SI__)));
 #  endif
 #  define lzo_int32e_t              lzo_int32e_si_t__
-#  define lzo_uint32_te_t             lzo_uint32_te_si_t__
+#  define lzo_uint32e_t             lzo_uint32e_si_t__
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___MODE_SI
 #elif 1 && !(LZO_CFG_TYPE_NO_MODE_SI) && (LZO_CC_GNUC >= 0x025f00ul) && defined(__AVR__) && (__LONG_MAX__+0 == 32767L)
 #  if !(LZO_LANG_ASSEMBLER)
    typedef int lzo_int32e_si_t__ __attribute__((__mode__(__SI__)));
-   typedef unsigned int lzo_uint32_te_si_t__ __attribute__((__mode__(__SI__)));
+   typedef unsigned int lzo_uint32e_si_t__ __attribute__((__mode__(__SI__)));
 #  endif
 #  define lzo_int32e_t              lzo_int32e_si_t__
-#  define lzo_uint32_te_t             lzo_uint32_te_si_t__
+#  define lzo_uint32e_t             lzo_uint32e_si_t__
 #  define LZO_INT32_C(c)            (c##LL)
-#  define LZO_uint32_t_C(c)           (c##ULL)
+#  define LZO_UINT32_C(c)           (c##ULL)
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___MODE_SI
 #elif (LZO_SIZEOF___INT32 == 4)
 #  define lzo_int32e_t              __int32
-#  define lzo_uint32_te_t             unsigned __int32
+#  define lzo_uint32e_t             unsigned __int32
 #  define LZO_TYPEOF_LZO_INT32E_T   LZO_TYPEOF___INT32
 #else
 #endif
@@ -2999,17 +2999,17 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #if !defined(lzo_int32l_t)
 #if defined(lzo_int32e_t)
 #  define lzo_int32l_t              lzo_int32e_t
-#  define lzo_uint32_tl_t             lzo_uint32_te_t
+#  define lzo_uint32l_t             lzo_uint32e_t
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_LZO_INT32E_T
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_TYPEOF_LZO_INT32E_T
 #elif (LZO_SIZEOF_INT >= 4) && (LZO_SIZEOF_INT < LZO_SIZEOF_LONG)
 #  define lzo_int32l_t              int
-#  define lzo_uint32_tl_t             unsigned int
+#  define lzo_uint32l_t             unsigned int
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_INT
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_SIZEOF_INT
 #elif (LZO_SIZEOF_LONG >= 4)
 #  define lzo_int32l_t              long int
-#  define lzo_uint32_tl_t             unsigned long int
+#  define lzo_uint32l_t             unsigned long int
 #  define LZO_SIZEOF_LZO_INT32L_T   LZO_SIZEOF_LONG
 #  define LZO_TYPEOF_LZO_INT32L_T   LZO_SIZEOF_LONG
 #else
@@ -3036,12 +3036,12 @@ LZO_COMPILE_TIME_ASSERT_HEADER(LZO_SIZEOF_PTRDIFF_T == sizeof(ptrdiff_t))
 #if !defined(lzo_int32f_t)
 #if (LZO_SIZEOF_SIZE_T >= 8)
 #  define lzo_int32f_t              lzo_int64l_t
-#  define lzo_uint32_tf_t             lzo_uint64l_t
+#  define lzo_uint32f_t             lzo_uint64l_t
 #  define LZO_SIZEOF_LZO_INT32F_T   LZO_SIZEOF_LZO_INT64L_T
 #  define LZO_TYPEOF_LZO_INT32F_T   LZO_TYPEOF_LZO_INT64L_T
 #else
 #  define lzo_int32f_t              lzo_int32l_t
-#  define lzo_uint32_tf_t             lzo_uint32_tl_t
+#  define lzo_uint32f_t             lzo_uint32l_t
 #  define LZO_SIZEOF_LZO_INT32F_T   LZO_SIZEOF_LZO_INT32L_T
 #  define LZO_TYPEOF_LZO_INT32F_T   LZO_TYPEOF_LZO_INT32L_T
 #endif
@@ -3181,11 +3181,11 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int16_t) == sizeof(lzo_uint16_t))
 #endif
 #if defined(lzo_int32e_t)
 #define lzo_int32_t                 lzo_int32e_t
-#define lzo_uint32_t_t                lzo_uint32_te_t
+#define lzo_uint32_t                lzo_uint32e_t
 #define LZO_SIZEOF_LZO_INT32_T      LZO_SIZEOF_LZO_INT32E_T
 #define LZO_TYPEOF_LZO_INT32_T      LZO_TYPEOF_LZO_INT32E_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == 4)
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == sizeof(lzo_uint32_t_t))
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t) == sizeof(lzo_uint32_t))
 #endif
 #if defined(lzo_int64e_t)
 #define lzo_int64_t                 lzo_int64e_t
@@ -3197,7 +3197,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int64_t) == sizeof(lzo_uint64_t))
 #endif
 #if 1
 #define lzo_int_least32_t           lzo_int32l_t
-#define lzo_uint_least32_t          lzo_uint32_tl_t
+#define lzo_uint_least32_t          lzo_uint32l_t
 #define LZO_SIZEOF_LZO_INT_LEAST32_T LZO_SIZEOF_LZO_INT32L_T
 #define LZO_TYPEOF_LZO_INT_LEAST32_T LZO_TYPEOF_LZO_INT32L_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_least32_t) >= 4)
@@ -3213,7 +3213,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_least64_t) == sizeof(lzo_uint_leas
 #endif
 #if 1
 #define lzo_int_fast32_t           lzo_int32f_t
-#define lzo_uint_fast32_t          lzo_uint32_tf_t
+#define lzo_uint_fast32_t          lzo_uint32f_t
 #define LZO_SIZEOF_LZO_INT_FAST32_T LZO_SIZEOF_LZO_INT32F_T
 #define LZO_TYPEOF_LZO_INT_FAST32_T LZO_TYPEOF_LZO_INT32F_T
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_fast32_t) >= 4)
@@ -3247,19 +3247,19 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int_fast64_t) == sizeof(lzo_uint_fast6
 #if !defined(LZO_INT32_C)
 #  if (LZO_BROKEN_INTEGRAL_CONSTANTS) && (LZO_SIZEOF_INT >= 4)
 #    define LZO_INT32_C(c)          ((c) + 0)
-#    define LZO_uint32_t_C(c)         ((c) + 0U)
+#    define LZO_UINT32_C(c)         ((c) + 0U)
 #  elif (LZO_BROKEN_INTEGRAL_CONSTANTS) && (LZO_SIZEOF_LONG >= 4)
 #    define LZO_INT32_C(c)          ((c) + 0L)
-#    define LZO_uint32_t_C(c)         ((c) + 0UL)
+#    define LZO_UINT32_C(c)         ((c) + 0UL)
 #  elif (LZO_SIZEOF_INT >= 4)
 #    define LZO_INT32_C(c)          (c)
-#    define LZO_uint32_t_C(c)         (c##U)
+#    define LZO_UINT32_C(c)         (c##U)
 #  elif (LZO_SIZEOF_LONG >= 4)
 #    define LZO_INT32_C(c)          (c##L)
-#    define LZO_uint32_t_C(c)         (c##UL)
+#    define LZO_UINT32_C(c)         (c##UL)
 #  elif (LZO_SIZEOF_LONG_LONG >= 4)
 #    define LZO_INT32_C(c)          (c##LL)
-#    define LZO_uint32_t_C(c)         (c##ULL)
+#    define LZO_UINT32_C(c)         (c##ULL)
 #  else
 #    error "LZO_INT32_C"
 #  endif
@@ -3423,9 +3423,9 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint8_t) == 1)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int16_t)  == 2)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint16_t) == 2)
 #endif
-#if 1 || defined(lzo_int32_t) || defined(lzo_uint32_t_t)
+#if 1 || defined(lzo_int32_t) || defined(lzo_uint32_t)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int32_t)  == 4)
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint32_t_t) == 4)
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint32_t) == 4)
 #endif
 #if defined(lzo_int64_t) || defined(lzo_uint64_t)
 LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_int64_t)  == 8)
@@ -3535,7 +3535,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint64_t) == 8)
 #if !defined(DMUL)
 #if 0
 
-#  define DMUL(a,b) ((lzo_xint) ((lzo_uint32_t_t)(a) * (lzo_uint32_t_t)(b)))
+#  define DMUL(a,b) ((lzo_xint) ((lzo_uint32_t)(a) * (lzo_uint32_t)(b)))
 #else
 #  define DMUL(a,b) ((lzo_xint) ((a) * (b)))
 #endif
@@ -3565,13 +3565,13 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint64_t) == 8)
 #endif
 #endif
 
-__lzo_static_forceinline unsigned lzo_bitops_ctlz32_func(lzo_uint32_t_t v)
+__lzo_static_forceinline unsigned lzo_bitops_ctlz32_func(lzo_uint32_t v)
 {
 #if (LZO_BITOPS_USE_MSC_BITSCAN) && (LZO_ARCH_AMD64 || LZO_ARCH_I386)
     unsigned long r; (void) _BitScanReverse(&r, v); return (unsigned) r ^ 31;
 #define lzo_bitops_ctlz32(v)    lzo_bitops_ctlz32_func(v)
 #elif (LZO_BITOPS_USE_ASM_BITSCAN) && (LZO_ARCH_AMD64 || LZO_ARCH_I386) && (LZO_ASM_SYNTAX_GNUC)
-    lzo_uint32_t_t r;
+    lzo_uint32_t r;
     __asm__("bsr %1,%0" : "=r" (r) : "rm" (v) __LZO_ASM_CLOBBER_LIST_CC);
     return (unsigned) r ^ 31;
 #define lzo_bitops_ctlz32(v)    lzo_bitops_ctlz32_func(v)
@@ -3609,13 +3609,13 @@ __lzo_static_forceinline unsigned lzo_bitops_ctlz64_func(lzo_uint64_t v)
 }
 #endif
 
-__lzo_static_forceinline unsigned lzo_bitops_cttz32_func(lzo_uint32_t_t v)
+__lzo_static_forceinline unsigned lzo_bitops_cttz32_func(lzo_uint32_t v)
 {
 #if (LZO_BITOPS_USE_MSC_BITSCAN) && (LZO_ARCH_AMD64 || LZO_ARCH_I386)
     unsigned long r; (void) _BitScanForward(&r, v); return (unsigned) r;
 #define lzo_bitops_cttz32(v)    lzo_bitops_cttz32_func(v)
 #elif (LZO_BITOPS_USE_ASM_BITSCAN) && (LZO_ARCH_AMD64 || LZO_ARCH_I386) && (LZO_ASM_SYNTAX_GNUC)
-    lzo_uint32_t_t r;
+    lzo_uint32_t r;
     __asm__("bsf %1,%0" : "=r" (r) : "rm" (v) __LZO_ASM_CLOBBER_LIST_CC);
     return (unsigned) r;
 #define lzo_bitops_cttz32(v)    lzo_bitops_cttz32_func(v)
@@ -3689,7 +3689,7 @@ typedef struct lzo_memops_TU2_struct lzo_memops_TU2;
 #endif
 #ifndef lzo_memops_TU4p
 #if (LZO_OPT_UNALIGNED32)
-typedef lzo_uint32_t_t __lzo_may_alias lzo_memops_TU4;
+typedef lzo_uint32_t __lzo_may_alias lzo_memops_TU4;
 #define lzo_memops_TU4p volatile lzo_memops_TU4 __LZO_MMODEL *
 #elif defined(__lzo_byte_struct)
 __lzo_byte_struct(lzo_memops_TU4_struct,4)
@@ -3702,19 +3702,19 @@ typedef struct lzo_memops_TU4_struct lzo_memops_TU4;
 #define lzo_memops_TU4p lzo_memops_TU4 __LZO_MMODEL *
 #endif
 #endif
-#ifndef lzo_memops_Tuint8p
+#ifndef lzo_memops_TU8p
 #if (LZO_OPT_UNALIGNED64)
-typedef lzo_uint64_t __lzo_may_alias lzo_memops_Tuint8;
-#define lzo_memops_Tuint8p volatile lzo_memops_Tuint8 __LZO_MMODEL *
+typedef lzo_uint64_t __lzo_may_alias lzo_memops_TU8;
+#define lzo_memops_TU8p volatile lzo_memops_TU8 __LZO_MMODEL *
 #elif defined(__lzo_byte_struct)
-__lzo_byte_struct(lzo_memops_Tuint8_struct,8)
-typedef struct lzo_memops_Tuint8_struct lzo_memops_Tuint8;
+__lzo_byte_struct(lzo_memops_TU8_struct,8)
+typedef struct lzo_memops_TU8_struct lzo_memops_TU8;
 #else
-struct lzo_memops_Tuint8_struct { unsigned char a[8]; } __lzo_may_alias;
-typedef struct lzo_memops_Tuint8_struct lzo_memops_Tuint8;
+struct lzo_memops_TU8_struct { unsigned char a[8]; } __lzo_may_alias;
+typedef struct lzo_memops_TU8_struct lzo_memops_TU8;
 #endif
-#ifndef lzo_memops_Tuint8p
-#define lzo_memops_Tuint8p lzo_memops_Tuint8 __LZO_MMODEL *
+#ifndef lzo_memops_TU8p
+#define lzo_memops_TU8p lzo_memops_TU8 __LZO_MMODEL *
 #endif
 #endif
 #ifndef lzo_memops_set_TU1p
@@ -3805,16 +3805,16 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_TU4p)0)==4)
     LZO_BLOCK_BEGIN LZO_MEMOPS_COPY4(dd,ss); LZO_MEMOPS_COPY4((lzo_memops_TU1p)(lzo_memops_TU0p)(dd)+4,(const lzo_memops_TU1p)(const lzo_memops_TU0p)(ss)+4); LZO_BLOCK_END
 #else
 #if (LZO_OPT_UNALIGNED64)
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_Tuint8p)0)==8)
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_TU8p)0)==8)
 #define LZO_MEMOPS_COPY8(dd,ss) \
-    * (lzo_memops_Tuint8p) (lzo_memops_TU0p) (dd) = * (const lzo_memops_Tuint8p) (const lzo_memops_TU0p) (ss)
+    * (lzo_memops_TU8p) (lzo_memops_TU0p) (dd) = * (const lzo_memops_TU8p) (const lzo_memops_TU0p) (ss)
 #elif (LZO_OPT_UNALIGNED32)
 #define LZO_MEMOPS_COPY8(dd,ss) \
     LZO_BLOCK_BEGIN LZO_MEMOPS_COPY4(dd,ss); LZO_MEMOPS_COPY4((lzo_memops_TU1p)(lzo_memops_TU0p)(dd)+4,(const lzo_memops_TU1p)(const lzo_memops_TU0p)(ss)+4); LZO_BLOCK_END
 #elif defined(lzo_memops_tcheck__)
 #define LZO_MEMOPS_COPY8(dd,ss) \
-    LZO_BLOCK_BEGIN if (lzo_memops_tcheck__(lzo_memops_Tuint8,8,1)) { \
-        * (lzo_memops_Tuint8p) (lzo_memops_TU0p) (dd) = * (const lzo_memops_Tuint8p) (const lzo_memops_TU0p) (ss); \
+    LZO_BLOCK_BEGIN if (lzo_memops_tcheck__(lzo_memops_TU8,8,1)) { \
+        * (lzo_memops_TU8p) (lzo_memops_TU0p) (dd) = * (const lzo_memops_TU8p) (const lzo_memops_TU0p) (ss); \
     } else { LZO_MEMOPS_MOVE8(dd,ss); } LZO_BLOCK_END
 #else
 #define LZO_MEMOPS_COPY8(dd,ss) LZO_MEMOPS_MOVE8(dd,ss)
@@ -3852,19 +3852,19 @@ __lzo_static_forceinline lzo_uint16_t lzo_memops_get_le16(const lzo_voidp ss)
 #define LZO_MEMOPS_GET_LE16(ss)    lzo_memops_get_le16(ss)
 #endif
 
-__lzo_static_forceinline lzo_uint32_t_t lzo_memops_get_le32(const lzo_voidp ss)
+__lzo_static_forceinline lzo_uint32_t lzo_memops_get_le32(const lzo_voidp ss)
 {
-    lzo_uint32_t_t v;
+    lzo_uint32_t v;
 #if (LZO_ABI_LITTLE_ENDIAN)
     LZO_MEMOPS_COPY4(&v, ss);
 #elif (LZO_OPT_UNALIGNED32 && LZO_ARCH_POWERPC && LZO_ABI_BIG_ENDIAN) && (LZO_ASM_SYNTAX_GNUC)
     const lzo_memops_TU4p s = (const lzo_memops_TU4p) ss;
     unsigned long vv;
     __asm__("lwbrx %0,0,%1" : "=r" (vv) : "r" (s), "m" (*s));
-    v = (lzo_uint32_t_t) vv;
+    v = (lzo_uint32_t) vv;
 #else
     const lzo_memops_TU1p s = (const lzo_memops_TU1p) ss;
-    v = (lzo_uint32_t_t) (((lzo_uint32_t_t)s[0]) | ((lzo_uint32_t_t)s[1] << 8) | ((lzo_uint32_t_t)s[2] << 16) | ((lzo_uint32_t_t)s[3] << 24));
+    v = (lzo_uint32_t) (((lzo_uint32_t)s[0]) | ((lzo_uint32_t)s[1] << 8) | ((lzo_uint32_t)s[2] << 16) | ((lzo_uint32_t)s[3] << 24));
 #endif
     return v;
 }
@@ -3875,7 +3875,7 @@ __lzo_static_forceinline lzo_uint32_t_t lzo_memops_get_le32(const lzo_voidp ss)
 #endif
 
 #if (LZO_OPT_UNALIGNED64) && (LZO_ABI_LITTLE_ENDIAN)
-#define LZO_MEMOPS_GET_LE64(ss)    (* (const lzo_memops_Tuint8p) (const lzo_memops_TU0p) (ss))
+#define LZO_MEMOPS_GET_LE64(ss)    (* (const lzo_memops_TU8p) (const lzo_memops_TU0p) (ss))
 #endif
 
 __lzo_static_forceinline lzo_uint16_t lzo_memops_get_ne16(const lzo_voidp ss)
@@ -3891,9 +3891,9 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_TU2p)0)==2)
 #define LZO_MEMOPS_GET_NE16(ss)    lzo_memops_get_ne16(ss)
 #endif
 
-__lzo_static_forceinline lzo_uint32_t_t lzo_memops_get_ne32(const lzo_voidp ss)
+__lzo_static_forceinline lzo_uint32_t lzo_memops_get_ne32(const lzo_voidp ss)
 {
-    lzo_uint32_t_t v;
+    lzo_uint32_t v;
     LZO_MEMOPS_COPY4(&v, ss);
     return v;
 }
@@ -3905,8 +3905,8 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_TU4p)0)==4)
 #endif
 
 #if (LZO_OPT_UNALIGNED64)
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_Tuint8p)0)==8)
-#define LZO_MEMOPS_GET_NE64(ss)    (* (const lzo_memops_Tuint8p) (const lzo_memops_TU0p) (ss))
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(*(lzo_memops_TU8p)0)==8)
+#define LZO_MEMOPS_GET_NE64(ss)    (* (const lzo_memops_TU8p) (const lzo_memops_TU0p) (ss))
 #endif
 
 __lzo_static_forceinline void lzo_memops_put_le16(lzo_voidp dd, lzo_uint16_t vv)
@@ -3929,7 +3929,7 @@ __lzo_static_forceinline void lzo_memops_put_le16(lzo_voidp dd, lzo_uint16_t vv)
 #define LZO_MEMOPS_PUT_LE16(dd,vv) lzo_memops_put_le16(dd,vv)
 #endif
 
-__lzo_static_forceinline void lzo_memops_put_le32(lzo_voidp dd, lzo_uint32_t_t vv)
+__lzo_static_forceinline void lzo_memops_put_le32(lzo_voidp dd, lzo_uint32_t vv)
 {
 #if (LZO_ABI_LITTLE_ENDIAN)
     LZO_MEMOPS_COPY4(dd, &vv);
@@ -3961,7 +3961,7 @@ __lzo_static_forceinline void lzo_memops_put_ne16(lzo_voidp dd, lzo_uint16_t vv)
 #define LZO_MEMOPS_PUT_NE16(dd,vv) lzo_memops_put_ne16(dd,vv)
 #endif
 
-__lzo_static_forceinline void lzo_memops_put_ne32(lzo_voidp dd, lzo_uint32_t_t vv)
+__lzo_static_forceinline void lzo_memops_put_ne32(lzo_voidp dd, lzo_uint32_t vv)
 {
     LZO_MEMOPS_COPY4(dd, &vv);
 }
@@ -4124,7 +4124,7 @@ typedef union
     lzo_int16_t     a_lzo_int16_t;
     lzo_uint16_t    a_lzo_uint16_t;
     lzo_int32_t     a_lzo_int32_t;
-    lzo_uint32_t_t    a_lzo_uint32_t_t;
+    lzo_uint32_t    a_lzo_uint32_t;
 #if defined(lzo_uint64_t)
     lzo_int64_t     a_lzo_int64_t;
     lzo_uint64_t    a_lzo_uint64_t;
@@ -4276,11 +4276,11 @@ _lzo_version_date(void)
 #define LZO_DO8(buf,i)  LZO_DO4(buf,i); LZO_DO4(buf,i+4)
 #define LZO_DO16(buf,i) LZO_DO8(buf,i); LZO_DO8(buf,i+8)
 
-LZO_PUBLIC(lzo_uint32_t_t)
-lzo_adler32(lzo_uint32_t_t adler, const lzo_bytep buf, lzo_uint len)
+LZO_PUBLIC(lzo_uint32_t)
+lzo_adler32(lzo_uint32_t adler, const lzo_bytep buf, lzo_uint len)
 {
-    lzo_uint32_t_t s1 = adler & 0xffff;
-    lzo_uint32_t_t s2 = (adler >> 16) & 0xffff;
+    lzo_uint32_t s1 = adler & 0xffff;
+    lzo_uint32_t s2 = (adler >> 16) & 0xffff;
     unsigned k;
 
     if (buf == NULL)
@@ -4414,7 +4414,7 @@ LZOLIB_PUBLIC(lzo_hvoid_p, lzo_hmemset) (lzo_hvoid_p s, int cc, lzo_hsize_t len)
 #define LZO_WANT_ACC_CHK_CH 1
 #undef LZOCHK_ASSERT
 
-    LZOCHK_ASSERT((LZO_uint32_t_C(1) << (int)(8*sizeof(LZO_uint32_t_C(1))-1)) > 0)
+    LZOCHK_ASSERT((LZO_UINT32_C(1) << (int)(8*sizeof(LZO_UINT32_C(1))-1)) > 0)
     LZOCHK_ASSERT_IS_SIGNED_T(lzo_int)
     LZOCHK_ASSERT_IS_UNSIGNED_T(lzo_uint)
 #if !(__LZO_UINTPTR_T_IS_POINTER)
@@ -4492,12 +4492,12 @@ _lzo_config_check(void)
     u.b[1] = 128;
     r &= UA_GET_LE32(p) == 128;
     u.b[2] = 129; u.b[3] = 130; u.b[4] = 131;
-    r &= UA_GET_LE32(p) == LZO_uint32_t_C(0x83828180);
+    r &= UA_GET_LE32(p) == LZO_UINT32_C(0x83828180);
 #if (LZO_ABI_BIG_ENDIAN)
-    r &= UA_GET_NE32(p) == LZO_uint32_t_C(0x80818283);
+    r &= UA_GET_NE32(p) == LZO_UINT32_C(0x80818283);
 #endif
 #if (LZO_ABI_LITTLE_ENDIAN)
-    r &= UA_GET_NE32(p) == LZO_uint32_t_C(0x83828180);
+    r &= UA_GET_NE32(p) == LZO_UINT32_C(0x83828180);
 #endif
 #if defined(UA_GET_NE64)
     u.c[0] = u.c[1] = 0;
@@ -4512,7 +4512,7 @@ _lzo_config_check(void)
 #endif
 #endif
 #if defined(lzo_bitops_ctlz32)
-    { unsigned i = 0; lzo_uint32_t_t v;
+    { unsigned i = 0; lzo_uint32_t v;
     for (v = 1; v != 0 && r == 1; v <<= 1, i++) {
         r &= lzo_bitops_ctlz32(v) == 31 - i;
         r &= lzo_bitops_ctlz32_func(v) == 31 - i;
@@ -4526,7 +4526,7 @@ _lzo_config_check(void)
     }}
 #endif
 #if defined(lzo_bitops_cttz32)
-    { unsigned i = 0; lzo_uint32_t_t v;
+    { unsigned i = 0; lzo_uint32_t v;
     for (v = 1; v != 0 && r == 1; v <<= 1, i++) {
         r &= lzo_bitops_cttz32(v) == i;
         r &= lzo_bitops_cttz32_func(v) == i;
@@ -4566,7 +4566,7 @@ __lzo_init_v2(unsigned v, int s1, int s2, int s3, int s4, int s5,
     r = (s1 == -1 || s1 == (int) sizeof(short)) &&
         (s2 == -1 || s2 == (int) sizeof(int)) &&
         (s3 == -1 || s3 == (int) sizeof(long)) &&
-        (s4 == -1 || s4 == (int) sizeof(lzo_uint32_t_t)) &&
+        (s4 == -1 || s4 == (int) sizeof(lzo_uint32_t)) &&
         (s5 == -1 || s5 == (int) sizeof(lzo_uint)) &&
         (s6 == -1 || s6 == (int) lzo_sizeof_dict_t) &&
         (s7 == -1 || s7 == (int) sizeof(char *)) &&
@@ -4587,7 +4587,7 @@ __lzo_init_v2(unsigned v, int s1, int s2, int s3, int s4, int s5,
 #if (LZO_OS_WIN16 && LZO_CC_WATCOMC) && defined(__SW_BD)
 
 #if 0
-bool FAR PASCAL LibMain ( HANDLE hInstance, WORD wDataSegment,
+BOOL FAR PASCAL LibMain ( HANDLE hInstance, WORD wDataSegment,
                           WORD wHeapSize, LPSTR lpszCmdLine )
 #else
 int __far __pascal LibMain ( int a, short b, short c, long d )
@@ -4981,7 +4981,7 @@ literal:
         lzo_uint m_off;
         lzo_uint m_len;
         {
-        lzo_uint32_t_t dv;
+        lzo_uint32_t dv;
         lzo_uint dindex;
 literal:
         ip += 1 + ((ip - ii) >> 5);
@@ -5082,7 +5082,7 @@ next:
         } while (ip[m_len] == m_pos[m_len]);
 #endif
 #elif (LZO_OPT_UNALIGNED32)
-        lzo_uint32_t_t v;
+        lzo_uint32_t v;
         v = UA_GET_NE32(ip + m_len) ^ UA_GET_NE32(m_pos + m_len);
         if __lzo_unlikely(v == 0) {
             do {

@@ -31,7 +31,6 @@ typedef enum EMEMORYFLAG
 } eMemoryFlag;
 
 #if defined (EXTERN_MEM_FUNCTIONS)
-#warning "Extern user memory functions enabled"
 
 extern void  amUserFree (void* ptr, void *param);
 extern void* amUserMalloc (unsigned int size, void *param);

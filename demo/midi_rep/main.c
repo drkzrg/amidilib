@@ -180,7 +180,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
             sNktSeq *pNktSeq=0;
 
             //set midi output name
-             strncpy(tempName,pFileName,strlen(pFileName));
+             strncpy(tempName,pFileName,128);
              pTempPtr=strrchr(tempName,'.');
              memcpy(pTempPtr+1,"NKT",4);
 

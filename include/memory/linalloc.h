@@ -14,7 +14,7 @@
 // event linear buffer
 typedef struct LINEARBUFFERALLOCATOR
 {
-  void *bufferStart;    	// linear memory buffer start
+  void* bufferStart;    	// linear memory buffer start
   MemSize size;        		// total memory size in bytes
   uint32 offset;
   eMemoryFlag memType;  	// memory type

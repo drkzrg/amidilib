@@ -30,7 +30,6 @@ typedef enum EMEMORYFLAG {
   PREFER_TT = MX_PREFTTRAM,
   PREFER_DSP = PREFER_TT + 1,         // f030 only, not used atm
   PREFER_SUPERVIDEL = PREFER_TT + 2,  // f030 + CT60 only, not used atm
-  PREFER_RADEON = PREFER_TT + 3       // f030 + CT60 only, not used atm
 } eMemoryFlag;
 
 #if defined (EXTERN_MEM_FUNCTIONS)

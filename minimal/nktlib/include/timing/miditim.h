@@ -1,8 +1,7 @@
-#ifndef __MIDITIM_H__
-#define __MIDITIM_H__
+#ifndef _MIDITIM_H_
+#define _MIDITIM_H_
 
 #include "c_vars.h"
-#include "amlog.h"
 
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)

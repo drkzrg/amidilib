@@ -1,119 +1,131 @@
 
-#include <mintbind.h>
-
-#include "memory/linalloc.h"
 #include "memory.h"
+#include "memory/linalloc.h"
 #include "amlog.h"
 
-#define DEBUGFILL 0x000000FF
+static const uint32 DEBUGFILL = 0x000000FFUL;
 
-void linearBufferPrintInfo(const tLinearBuffer *buf){
-  if(buf==NULL) return;
-  amTrace("LB memPtr: %p, size: %d, type: %d, offset: %d\n",buf->pMemPtr, buf->totalSize,buf->memType,buf->offset);
+void linearBufferPrintInfo(const LinearBufferAllocator *allocatorState)
+{
+  AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+  amTrace("LinearBuffer buffer start: %p, size: %ld, current offset: %ld\n",allocatorState->bufferStart, allocatorState->size, allocatorState->offset);
 }
 
-int32 createLinearBuffer(tLinearBuffer *buf, const uint32 bufferSize,const eMemoryFlag memType){
+int32 createLinearBuffer(LinearBufferAllocator *allocatorState, const MemSize bufferSize, const eMemoryFlag memType)
+{
+
+  AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+  AssertMsg(bufferSize > 0UL, "Linear buffer size must be grater than 0!");
   
-  buf->pMemPtr = (uint8 *)amMallocEx(bufferSize,memType);
+  allocatorState->bufferStart = amMallocEx(bufferSize, memType);
   
-  if(buf->pMemPtr!=0&&bufferSize>0){
-    buf->memType=memType;
-    buf->totalSize=bufferSize;
-    buf->offset=0L;
-    
+  if(allocatorState->bufferStart != 0 )
+  {
+
     #ifdef DEBUG_MEM
-      amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
-    #else
-      amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
+      amMemSet(allocatorState->bufferStart, DEBUGFILL, bufferSize);
     #endif      
+
+    allocatorState->memType = memType;
+    allocatorState->size = bufferSize;
+    allocatorState->offset = 0L;
     
-  return 0L;
+    return 0L;
  } 
- 
-  buf->pMemPtr=0;
-  buf->totalSize=0L;	
-  buf->offset=0L;
  
  return -1L;
 }
 
-void destroyLinearBuffer(tLinearBuffer *buf){
-  
-  switch(buf->memType){
+void destroyLinearBuffer(LinearBufferAllocator *allocatorState)
+{
+  AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+  AssertMsg(allocatorState->bufferStart != 0, "bufferStart is 0!");
+
+  switch(allocatorState->memType)
+  {
     //release memory block depending on type
     case ST_RAM:
     case TT_RAM:
     case PREFER_ST:
-    case PREFER_TT:{
+    case PREFER_TT:
+    {
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
-#else
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
+      amMemSet(allocatorState->bufferStart, DEBUGFILL, allocatorState->size);
 #endif 
-      if(buf->pMemPtr!=0) amFree(buf->pMemPtr);
-    }break;
-    case PREFER_DSP:
+      amFree(allocatorState->bufferStart);
+    } break;
     case PREFER_SUPERVIDEL:
-    case PREFER_RADEON:
-    default:{;}break;
-  }
+    default:
+    {
+      AssertMsg(false,"Invalid / unsupported memory type passed!");
+    } break;
+  };
   
-  buf->pMemPtr=0;
-  buf->totalSize=0L;	
-  buf->offset=0L;
+  allocatorState->bufferStart = 0UL;
+  allocatorState->size = 0UL;	
+  allocatorState->offset = 0UL;
 }
 
-// non aligned allocation from linear buffer
-void *linearBufferAlloc(tLinearBuffer *buf, const uint32 size){
+// non aligned allocation from linear allocatorStatefer
+void *linearBufferAlloc(LinearBufferAllocator *allocatorState, const MemSize size)
+{
+  AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+  AssertMsg(size > 0UL, "Allocation size cannot be 0!");
+  
+  uint32 newOffset = allocatorState->offset + size;
+  void* addr = NULL;
 
-  if(!buf||!size) return NULL;
-  
-  uint32 newOffset=buf->offset+size;
-  
-  if(newOffset<=buf->totalSize){
-      void *ptr=buf->pMemPtr+buf->offset;
-      buf->offset=newOffset;
-      return ptr;
+  if(newOffset <= allocatorState->size)
+  {
+      addr = (void *)(((uintptr)allocatorState->bufferStart) + allocatorState->offset);
+      allocatorState->offset = newOffset;
   }
   
-  return NULL; //out of memory
+  return addr; 
 }
 
 // non aligned allocation from linear buffer (TODO)
-void *linearBufferAllocAlign(tLinearBuffer *buf, const uint32 size,const uint32 alignFlag){
-  if(!buf||!size) return NULL;
-  
-  uint32 newOffset=buf->offset+size;
-  
-  if(newOffset<=buf->totalSize){
-      void *ptr=buf->pMemPtr+buf->offset;
-      buf->offset=newOffset;
-      return ptr;
+void *linearBufferAllocAlign(LinearBufferAllocator *allocatorState, const MemSize size, const uint32 alignFlag)
+{
+  AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+  AssertMsg(size > 0UL, "Allocation size cannot be 0!");
+
+  const uint32 newOffset = allocatorState->offset + size;
+  void* addr = NULL;
+
+  if(newOffset <= allocatorState->size)
+  {
+    addr = (void*)(((uintptr)allocatorState->bufferStart) + allocatorState->offset);
+    allocatorState->offset = newOffset;
   }
   
-  return NULL; //out of memory
+  return addr; 
 }
 
-void linearBufferFree(tLinearBuffer *buf){
-   
-   switch(buf->memType){
+void linearBufferFree(LinearBufferAllocator *allocatorState)
+{
+   AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
+   AssertMsg(allocatorState->bufferStart != 0, "bufferStart is 0!");
+
+   switch(allocatorState->memType)
+   {
     //clean memory for whole block
     case ST_RAM:
     case TT_RAM:
     case PREFER_ST:
-    case PREFER_TT:{
+    case PREFER_TT:
+    {
 #ifdef DEBUG_MEM
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,DEBUGFILL,(MemSize)buf->totalSize);
-#else
-      if(buf->pMemPtr!=0) amMemSet(buf->pMemPtr,0L,(MemSize)buf->totalSize);
+        amMemSet(allocatorState->bufferStart,DEBUGFILL,(MemSize)allocatorState->size);
 #endif      
-    }break;
-    case PREFER_DSP:
+    } break;
     case PREFER_SUPERVIDEL:
-    case PREFER_RADEON:
-    default:{;}break;
+    default:
+    {
+        AssertMsg(false,"Invalid / unsupported memory type passed!");
+    }break;
   }
   
-  buf->offset=0L;
+  allocatorState->offset = 0UL;
 }
 

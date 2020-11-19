@@ -8,9 +8,56 @@
 #ifndef C_VARS_H_
 #define C_VARS_H_
 
-#include <stdint.h>
+#if (defined(DEBUG) || defined(_DEBUG))
+
+#include <assert.h>
+#include <stdio.h>
+
+#if __STDC_VERSION__ >= 199901L
+#define StaticAssert _StaticAssert
+#else
+#define StaticAssert 
+#endif
+
+#   define AssertMsg(condition, message) \
+    do { \
+        if (! (condition)) { \
+            printf("Assertion %s failed in %s at %d line. Message: %s\n", \
+			#condition, __FILE__, __LINE__, message);\
+        } \
+    } while (false)
+
+#   define Assert(condition) \
+    do { \
+        if (! (condition)) { \
+            printf("Assertion %s failed in %s at %d line. \n", \
+			#condition, __FILE__, __LINE__);\
+        } \
+    } while (false)
+
+#else
+
+#define StaticAssert
+#   define AssertMsg(condition, message) do { } while (false)
+#   define Assert(condition) do { } while (false)
+#endif
+
+#if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stddef.h>
+
+#ifndef TRUE
+#define TRUE true
+#endif
+
+#ifndef FALSE
+#define FALSE false
+#endif
+
+#else
+StaticAssert(0,"C99 standard or better is unsupported or not set in c compiler!");
+#endif 
 
 typedef uint8_t     uint8;
 typedef int8_t      int8;
@@ -22,20 +69,18 @@ typedef float 		fp32;
 typedef double 		fp64;
 typedef int64_t     int64; 			//non-standard!
 typedef unsigned long long 	uint64; //non-standard!
-
+typedef uintptr_t uintptr;
 typedef size_t MemSize;
 
 // function pointers
 typedef void (*funcPtrVoidVoid)();
 typedef void (*funcPtrVoidConstUint)(const uint32);
 
-#ifndef TRUE
-#define TRUE true
-#endif
-
-#ifndef FALSE
-#define FALSE false
-#endif
+typedef enum ERETVAL
+{
+	E_OK = 0L,
+	E_ERR = 1L
+} eRetVal;
 
 // TODO: make it more cross-compiler friendly
 // atm it's gcc specific
@@ -49,31 +94,16 @@ typedef void (*funcPtrVoidConstUint)(const uint32);
   #define INLINE              /* no inline */
 #endif
 
-#ifndef NDEBUG
-#include <assert.h>
-#include <stdlib.h>
-
-#define STATIC_ASSERT(cond, msg) _Static_assert(cond, msg);
-
-#define ASSERT(expr)                                                         \
-  ((void)((expr) ||                                                          \
-          (fprintf(stderr, "\r\nAssertion failed: %s, file %s, line %d\r\n", \
-                   #expr, __FILE__, __LINE__),                               \
-           ((int (*)(void))abort)())))
-#else
-#define assert(cond) 
-#define STATIC_ASSERT(cond, msg) 
-#define ASSERT(expr) (void)
-
-#endif
+#define STRINGISE_IMPL(x) #x
+#define STRINGISE(x) STRINGISE_IMPL(x)
 
 // checks compiler builtin variable sizes 
 void compilerSanityCheck(void);
 
 // check processor endianess ( processor sanity check ;) )
 // returns:
-// TRUE - for little endian, x86, PS2
-// FALSE / for big endian - // Big Endian - GameCube, Atari
+// true - for little endian, x86, PS2
+// false / for big endian - // Big Endian - GameCube, Atari
 const bool checkEndianess();
 
 #endif

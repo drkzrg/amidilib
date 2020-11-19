@@ -360,7 +360,7 @@ metaLenght=readVLQ((*pMidiData),&size);
                          amTrace("Update step for 200hz: %ld\n",precalc[i]);
                     } break;
                     default:{
-                        ASSERT(0);
+                        Assert(0);
                         amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
                     } break;
                 };
@@ -706,7 +706,6 @@ for(uint16 i=0;i<nbOfTracks;++i){
     amTrace("[Midi track #%d]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",i,arMidiInfo[i].nbOfBlocks,arMidiInfo[i].eventsBlockSize,arMidiInfo[i].dataBlockSize);
 
 }
-
 
 // now MidiInfo holds information about number of event blocks
 // and amount of bytes wee need to store midi data

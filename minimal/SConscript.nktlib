@@ -74,10 +74,10 @@ if(TOOLSET=='GCC434'):
 elif(TOOLSET=='GCCBROWNELF'):
 # Linux/Cygwin cross compiler
 # Cygwin path
-    PREFIX = '/home/saulot/opt/'
+    PREFIX = '/opt/cross-mint'
 #Linux
 #  PREFIX = '/usr'
-    GCC_VERSION_DIR='7.3.0'
+    GCC_VERSION_DIR='10.0.2'
     compilerName = 'm68k-ataribrown-elf-'
     env['CPPPATH'] = [PREFIX + '/m68k-ataribrown-elf/include']
     env['LIBPATH'] = [PREFIX + '/m68k-ataribrown-elf/lib']

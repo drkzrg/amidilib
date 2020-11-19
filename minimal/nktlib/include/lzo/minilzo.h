@@ -73,7 +73,7 @@ extern "C" {
  */
 
 #define LZO1X_MEM_COMPRESS      LZO1X_1_MEM_COMPRESS
-#define LZO1X_1_MEM_COMPRESS    ((lzo_uint32_t_t) (16384L * lzo_sizeof_dict_t))
+#define LZO1X_1_MEM_COMPRESS    ((lzo_uint32_t) (16384L * lzo_sizeof_dict_t))
 #define LZO1X_MEM_DECOMPRESS    (0)
 
 

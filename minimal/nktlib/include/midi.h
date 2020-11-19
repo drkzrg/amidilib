@@ -18,8 +18,6 @@
 
 #define MIDI_MAXCHANNELS	16
 
-
-
 /**
  * Time Division
 */
@@ -34,13 +32,13 @@ typedef enum{
 * these structures need to be packed 
 */
 
-typedef struct __attribute__((packed)) ChunkHeader{
+typedef struct __attribute__((packed)) ChunkHeader {
   uint32 id;
   uint32 headLenght;
 } sChunkHeader,*pChunkHeader;
 
 
-typedef struct __attribute__((packed)) MThd{
+typedef struct __attribute__((packed)) MThd {
 	uint32 id;
 	uint32 headLenght;
 	uint16 format;

@@ -14,19 +14,19 @@
 // event linear buffer
 typedef struct LINEARBUFFERALLOCATOR
 {
-  uint8 *pMemPtr;           // linear memory pointer start
-  uint32 totalSize;         // total linear memory size in bytes
+  void *bufferStart;    	// linear memory buffer start
+  MemSize size;        		// total memory size in bytes
   uint32 offset;
   eMemoryFlag memType;  	// memory type
 } LinearBufferAllocator;
 
-int32 createLinearBuffer(LinearBufferAllocator *buf, const uint32 bufferSize, const eMemoryFlag memType);
-void destroyLinearBuffer (LinearBufferAllocator *buf);
+int32 createLinearBuffer(LinearBufferAllocator *allocatorState, const MemSize bufferSize, const eMemoryFlag memType);
+void destroyLinearBuffer (LinearBufferAllocator *allocatorState);
 
 // non aligned allocation from linear buffer
-void *linearBufferAlloc(LinearBufferAllocator *buf, const uint32 size);
-void linearBufferFree(LinearBufferAllocator *buf); 			
-void *linearBufferAllocAlign(LinearBufferAllocator *buf, const uint32 size, const uint32 alignFlag);
-void linearBufferPrintInfo(const LinearBufferAllocator *buf);
+void *linearBufferAlloc(LinearBufferAllocator *allocatorState, const MemSize size);
+void linearBufferFree(LinearBufferAllocator *allocatorState);
+void *linearBufferAllocAlign(LinearBufferAllocator *allocatorState, const MemSize allocSize, const uint32 alignFlag);
+void linearBufferPrintInfo(const LinearBufferAllocator *allocatorState);
 
 #endif

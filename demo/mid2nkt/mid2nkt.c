@@ -71,9 +71,7 @@ uint8 *filePath=0;
            // set midi output name
            uint8 *pTempPtr=0;
            int32 fpLen = strlen(filePath);
-
-           fpLen = ((fpLen>=MAX_GEMDOS_FILEPATH)?(MAX_GEMDOS_FILEPATH-1):fpLen);
-           strncpy(tempName,filePath,fpLen);
+           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH);
 
            pTempPtr = strrchr(tempName,'.');
 

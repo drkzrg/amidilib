@@ -10,17 +10,16 @@ int32 initStack(sStack *stackState, const uint32 elementSize, const uint32 initi
   const MemSize memAllocSize = elementSize * initialStackSize;
   void *pNewStack = (void *)amMallocEx(memAllocSize, PREFER_TT);
 
-  if(pNewStack == 0L)
+  if(pNewStack)
   {
+    amMemSet(pNewStack,0,memAllocSize);
+  
+    stackState->top = 0UL;  
+    stackState->stack = pNewStack;
+    stackState->elementSize = elementSize;
+    stackState->size = initialStackSize;
     return 1;
   } 
-  
-  amMemSet(pNewStack,0,memAllocSize);
-  
-  stackState->top = 0UL;  
-  stackState->stack = pNewStack;
-  stackState->elementSize = elementSize;
-  stackState->size = initialStackSize;
 
   return 0;  
 }
@@ -28,7 +27,6 @@ int32 initStack(sStack *stackState, const uint32 elementSize, const uint32 initi
 // void element has to be of the constant size
 void pushStack(sStack *stackState, void *newElement)
 {
-
   if(stackState->top == stackState->size)
   {
       //stack underflow
@@ -36,40 +34,31 @@ void pushStack(sStack *stackState, void *newElement)
       
       if(amRealloc(stackState->stack,stackState->size * stackState->elementSize) == NULL)
       {
-        // Houston we have a problem. nothing can be done...
-        puts("Warning: Stack overflow!\r\t");
+        AssertMsg(0,"Out of memory. Couldn't reallocate stack...\r\t");
       }
-    return;
   }
   else
   {
     const uintptr dst=((uintptr)stackState->stack)+((++stackState->top)*(stackState->elementSize));
     amMemCpy((void *)dst,newElement,stackState->elementSize);
-    return;
   }
 }
 
 void *getTopStackElement(sStack *stackState)
 {
-  //we assume stack is not empty
-    uintptr adr = ((uintptr)stackState->stack) + (stackState->top * stackState->elementSize);
+  // we assume stack is not empty
+  AssertMsg(stackState->top != 0,"Stack is empty!");
 
-   //return removed element 
-    return (void *)adr;
+  uintptr adr = ((uintptr)stackState->stack) + (stackState->top * stackState->elementSize);
+
+  // return removed element 
+  return (void *)adr;
 }
 
 void popStack(sStack *stackState)
 {
-
-  if(stackState->top==0)
-  { 
-    // stack underflow
-    puts("Warning: Stack underflow!\r\t");
-  }
-  else 
-  {
-    --stackState->top;
-  }
+  AssertMsg(stackState->top!=0,"Warning: Stack underflow!\r\t");
+  --stackState->top;
 }
 
 bool isStackFull(const sStack *stackState)
@@ -84,7 +73,6 @@ bool isStackFull(const sStack *stackState)
 
 bool isStackEmpty(const sStack *stackState)
 {
-
   if(stackState->top == 0) 
   {
     return true;
@@ -95,6 +83,6 @@ bool isStackEmpty(const sStack *stackState)
 
 void deinitStack(sStack *pPtr)
 {
+  AssertMsg(pPtr!=NULL,"Invalid stack!\r\t");
   amFree(pPtr->stack);
 }
-

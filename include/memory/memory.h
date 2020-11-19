@@ -8,22 +8,20 @@
 #ifndef __AMEMORY_TOS_H__
 #define __AMEMORY_TOS_H__
 
-#if !defined(FORCE_MALLOC)
+#include "c_vars.h"
+#include "amlog.h"
 
+#if !defined(FORCE_MALLOC)
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
-
 #endif
-
-#include "amlog.h"
-#include "c_vars.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 /* memory allocation preference */
-
-typedef enum EMEMORYFLAG {
+typedef enum EMEMORYFLAG 
+{
   ST_RAM = MX_STRAM,
   TT_RAM = MX_TTRAM,
   PREFER_ST = MX_PREFSTRAM,
@@ -35,34 +33,34 @@ typedef enum EMEMORYFLAG {
 #if defined (EXTERN_MEM_FUNCTIONS)
 #warning "Extern user memory functions enabled"
 
-extern void  amUserFree (void* ptr);
-extern void* amUserMalloc (int size, void *ptr);
-extern void* amUserMallocEx (int size, int ramflag, void *ptr);
+extern void  amUserFree (void* ptr, void *param);
+extern void* amUserMalloc (unsigned int size, void *param);
+extern void* amUserMallocEx (unsigned int size, short int ramflag, void *param);
 
-#define amMallocEx(amount, flag) amUserMallocEx(amount, flag, NULL);
-#define amMalloc(amount) amUserMalloc(amount, NULL);
-#define amFree(memPtr) if( (memPtr) != NULL ) amUserFree(memPtr); (memPtr) = NULL;
+#define amMallocEx(amount, flag) amUserMallocEx((uint32)amount, (uint16)flag, NULL);
+#define amMalloc(amount) amUserMalloc((uint32)amount, NULL);
+#define amFree(memPtr) AssertMsg(memPtr!=NULL,"amUserFree() called on NULL address!"); amUserFree(memPtr,NULL); memPtr = NULL;
 
 #else
 
 #if defined (FORCE_MALLOC)
 
-#define amMallocEx(amount, flag) malloc((amount));
-#define amMalloc(amount) malloc((amount));
-#define amFree(memPtr) if( (memPtr) != NULL ) free (memPtr); (memPtr) = NULL;
+#define amMallocEx(amount, flag) malloc((uint32)amount);
+#define amMalloc(amount) malloc((uint32)amount);
+#define amFree(memPtr) AssertMsg(memPtr!=NULL,"free() called on NULL address!"); free(memPtr); memPtr = NULL;
 
 #else
 
 #if defined(TARGET_ST)
-#define amMallocEx(amount, flag) Malloc((amount));
-#define amMalloc(amount) Malloc((amount));
+#define amMallocEx(amount, flag) (void *)Malloc((uint32)amount);
+#define amMalloc(amount) (void *)Malloc((uint32)amount);
 #else
-#define amMallocEx(amount, flag) Mxalloc((amount),(flag));
-#define amMalloc(amount) Malloc((amount));
+#define amMallocEx(amount, flag) (void *)Mxalloc((uint32)amount,(int16)flag);
+#define amMalloc(amount) (void *)Malloc((uint32)amount);
 
 #endif
 
-#define amFree(memPtr) if( (memPtr) != NULL ) Mfree(memPtr); (memPtr) = NULL;
+#define amFree(memPtr) AssertMsg(memPtr!=NULL,"MFree() called on NULL address!"); Mfree(memPtr); memPtr = NULL;
 
 #endif // not extern mem functions
 

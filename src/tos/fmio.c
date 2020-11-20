@@ -246,7 +246,7 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag,  uint32 *file
     *fileLenght=pDTA->dta_size;
 
     /* allocate buffer */
-     pData=(void *)amMallocEx((MemSize)(*fileLenght)+1,memFlag);
+     pData = amMallocEx((MemSize)(*fileLenght)+1,memFlag);
      
      if(pData!=NULL){
       int32 lRet=0L;

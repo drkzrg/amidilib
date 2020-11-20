@@ -8,7 +8,7 @@ int32 initStack(sStack *stackState, const uint32 elementSize, const uint32 initi
 {
   // allocate memory
   const MemSize memAllocSize = elementSize * initialStackSize;
-  void *pNewStack = (void *)amMallocEx(memAllocSize, PREFER_TT);
+  void *pNewStack = amMallocEx(memAllocSize, PREFER_TT);
 
   if(pNewStack)
   {

@@ -37,11 +37,6 @@ static const uint8 outputFilename[] = "amidi.log";
 //default configuration filename
 static const uint8 configFilename[] = "amidi.cfg";
 
-// memory callbacks
-
-
-//
-
 unsigned long begin;
 unsigned long end;
 long usp;
@@ -113,7 +108,7 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
 
 int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
 {
-    (*ppSequence) = (sSequence_t *) amMallocEx( sizeof(sSequence_t), PREFER_TT);
+    (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), PREFER_TT,0);
  
     sSequence_t *sequence = *ppSequence;
     
@@ -130,9 +125,10 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
    const MemSize memSize = getGlobalConfig()->eventPoolSize * getGlobalConfig()->eventDataAllocatorSize;
    amTrace((const uint8 *)"amProcessMidiFileData() trying to allocate %d Kb\n",memSize/1024);
 
-   if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0){
+   if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0)
+   {
        printf( "Error: Cannot allocate memory for sequence internal event buffer...\n");
-       amFree(sequence);
+       gUserMemFree(sequence,0);
        return -1;
    }
 #endif
@@ -184,7 +180,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
              midiData = (void *)((uint32)midiData + sizeof(sMThd));
 
              /* create one track list only */
-             sequence->arTracks[0] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+             sequence->arTracks[0] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
              amMemSet(sequence->arTracks[0], 0, sizeof(sTrack_t));
              sequence->arTracks[0]->pTrkEventList = 0;
 
@@ -210,7 +206,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 	  
           for(uint16 i=0;i<pMidiInfo->nTracks;++i)
           {
-            sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+            sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
           }
 	  
@@ -239,7 +235,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 	  
            for(uint16 i=0;i<pMidiInfo->nTracks;++i)
            {
-             sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+             sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
              amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
              /* init event list */
@@ -271,7 +267,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 
             for(uint16 i=0;i<iNumTracks;++i)
             {
-              sequence->arTracks[i] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+              sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
               amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
               /* init event list */
@@ -305,7 +301,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           uint8 *pOut = 0;
 
           // allocate 64kb working buffer for midi output
-          pOut = (uint8 *)amMallocEx(64 * 1024,PREFER_TT);
+          pOut = (uint8 *)gUserMemAlloc(64 * 1024,PREFER_TT,0);
           
           if(pOut)
           {
@@ -319,7 +315,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
               int16 len = strlen(filename);
               strncpy(tempName, filename, 128);
               pTempPtr = strrchr(filename,'.');
-              memcpy(pTempPtr+1,"mid",4);
+              amMemCpy(pTempPtr+1,"mid",4);
             }
 
             Mus2Midi(midiData,(unsigned char *)pOut,tempName,&len);
@@ -349,7 +345,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
               const uint16 trackIdx = sequence->ubNumTracks-1;
               
               /* create one track list only */
-              sequence->arTracks[trackIdx] = (sTrack_t *)amMallocEx(sizeof(sTrack_t),PREFER_TT);
+              sequence->arTracks[trackIdx] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
               amMemSet(sequence->arTracks[trackIdx], 0, sizeof(sTrack_t));
 
               /* init event list */
@@ -358,7 +354,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             }
 
           // free up working buffer
-          amFree(pOut);
+          gUserMemFree(pOut,0);
 
           }
           else
@@ -386,7 +382,10 @@ extern FILE *ofp;
 
 int16 amInit(void)
 {
-    
+  
+  // setup standard memory callbacks
+  amSetDefaultUserMemoryCallbacks();
+
 #ifdef DEBUG_BUILD
  // init logger
  initDebug(outputFilename);
@@ -436,7 +435,8 @@ int16 amInit(void)
  return 1;
 }
 
-void amDeinit(void){
+void amDeinit(void)
+{
 
 #ifdef IKBD_MIDI_SEND_DIRECT
     // send content of midi buffer to device
@@ -508,30 +508,35 @@ void amGetDeviceInfoResponse(const uint8 channel)
 
 //}
 
- if(bTimeout==TRUE) amTrace((const uint8*)"Timeout on ch: %d\t",channel);
+  if(bTimeout==TRUE) 
+  {
+    amTrace((const uint8*)"Timeout on ch: %d\t",channel);
+  }
 
 }
 /* gets info about connected devices via MIDI interface */
-const int8 *amGetConnectedDeviceInfo(void){
-  uint8 channel;
-  
+const int8 *amGetConnectedDeviceInfo(void)
+{
   /*  request on all channels */
   amTrace((const uint8*)"Quering connected MIDI device...\n");
   
-  for(channel=0;channel<0x7f;channel++){
+  for(uint8 channel=0;channel<0x7f;++channel)
+  {
     amGetDeviceInfoResponse(channel);
-   }
+  }
 
  return NULL;
 }
 
-const uint8 *amGetMidiDeviceTypeName(const eMidiDeviceType device){
+const uint8 *amGetMidiDeviceTypeName(const eMidiDeviceType device)
+{
  return g_arMidiDeviceTypeName[device];
 }
 
 #ifdef DEBUG_BUILD
 /* variable quantity reading test */
-void VLQtest(void){
+void VLQtest(void)
+{
 /* VLQ test */
     uint32 val[]={0x00, 0x7F,0x8100,0xC000,0xFF7F,0x818000, 0xFFFF7F,0x81808000,0xC0808000,0xFFFFFF7F };
     uint32 iCounter;

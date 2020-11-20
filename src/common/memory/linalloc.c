@@ -16,7 +16,7 @@ int32 createLinearBuffer(LinearBufferAllocator *allocatorState, const MemSize bu
   AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
   AssertMsg(bufferSize > 0UL, "Linear buffer size must be grater than 0!");
   
-  allocatorState->bufferStart = amMallocEx(bufferSize, memType);
+  allocatorState->bufferStart = gUserMemAlloc(bufferSize, memType, 0);
   
   if(allocatorState->bufferStart != 0 )
   {
@@ -51,7 +51,7 @@ void destroyLinearBuffer(LinearBufferAllocator *allocatorState)
 #ifdef DEBUG_MEM
       amMemSet(allocatorState->bufferStart, DEBUGFILL, allocatorState->size);
 #endif 
-      amFree(allocatorState->bufferStart);
+      gUserMemFree(allocatorState->bufferStart,0);
     } break;
     case PREFER_SUPERVIDEL:
     default:

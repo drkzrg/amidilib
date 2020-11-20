@@ -18,6 +18,8 @@ int main(int argc, char *argv[]){
 bool bEnableCompression=FALSE;
 uint8 *filePath=0;
 
+  amSetDefaultUserMemoryCallbacks();
+
   initDebug("MID2NKT.LOG");
 
   printInfoScreen();
@@ -66,7 +68,7 @@ uint8 *filePath=0;
            amMemSet(tempName,0,sizeof(uint8)*MAX_GEMDOS_FILEPATH);
 
            // allocate working buffer for midi output
-           pOut = (uint8 *)amMallocEx(MIDI_OUT_TEMP, PREFER_TT);
+           pOut = (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
 
            // set midi output name
            uint8 *pTempPtr=0;
@@ -86,12 +88,12 @@ uint8 *filePath=0;
                printf("[Error] Filename update failed.\n");
 
                /* free up buffer and quit */
-               amFree(pMidi);
+               amFree(pMidi,0);
                return 0;
            }
 
            /* free up buffer with loaded MUS file, we don't need it anymore */
-           amFree(pMidi);
+           amFree(pMidi,0);
            pMidi=(void *)pOut;
        }
 
@@ -129,7 +131,7 @@ uint8 *filePath=0;
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */
-       amFree(pMidi);
+       amFree(pMidi,0);
 
     }
 

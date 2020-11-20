@@ -111,7 +111,7 @@ uint32 cfgLen=0;
       printf("Configuration loaded.\n");
     }
     
-    amFree(cfgData);
+    gUserMemFree(cfgData,0);
     return 0L;
   }
   else{ 
@@ -125,7 +125,8 @@ void setConnectedDeviceType(const eMidiDeviceType type){
   configuration.connectedDeviceType=type;
 }
 
-void setDefaultConfig(void){
+void setDefaultConfig(void)
+{
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType = DEFAULT_CONNECTED_DEVICE_TYPE; 	//default is CM32L output device with extra patches	
@@ -146,7 +147,8 @@ void setDefaultConfig(void){
 }
 
 //copies config
-void setGlobalConfig(tAmidiConfig *newConfig){
+void setGlobalConfig(tAmidiConfig *newConfig)
+{
   configuration.version=CONFIG_VERSION;		
   configuration.configSize=sizeof(tAmidiConfig);	
   configuration.connectedDeviceType=newConfig->connectedDeviceType;	
@@ -167,7 +169,8 @@ void setGlobalConfig(tAmidiConfig *newConfig){
 
 }
 
-const tAmidiConfig *getGlobalConfig(void){
+const tAmidiConfig *getGlobalConfig(void)
+{
   return &configuration;
 }
 

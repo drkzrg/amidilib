@@ -155,7 +155,8 @@ if(pSeq!=0){
 
 
 
-    for(int i=0;i<pSeq->nbOfTracks;++i){
+    for(uint16 i=0;i<pSeq->nbOfTracks;++i)
+    {
         pSeq->pTracks[i].timeElapsedInt=0UL;
         pSeq->pTracks[i].timeElapsedFrac=0UL;
         pSeq->pTracks[i].currentBlockId=0UL;
@@ -693,9 +694,10 @@ void updateStepNktMt(void){
 
 sNktSeq *loadSequence(const uint8 *pFilePath){
     // create header
-    sNktSeq *pNewSeq=(sNktSeq *)amMallocEx(sizeof(sNktSeq),PREFER_TT);
+    sNktSeq *pNewSeq=(sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
 
-    if(pNewSeq==0){
+    if(pNewSeq==0)
+    {
       amTrace("Error: Couldn't allocate memory for sequence header.\n");
 
 #ifndef SUPRESS_CON_OUTPUT
@@ -747,7 +749,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
             #endif
 
             amTrace("Error: Couldn't open : %s. File doesn't exists.\n",pFilePath);
-            amFree(pNewSeq);
+            gUserMemFree(pNewSeq,0);
             return NULL;
          }
       }else{
@@ -757,7 +759,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
         #endif
 
         amTrace("Error: empty file path. Exiting...\n");
-        amFree(pNewSeq);
+        gUserMemFree(pNewSeq,0);
         return NULL;
       }
 
@@ -802,13 +804,13 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
             fclose(fp); fp=0;
         #endif
 
-     amFree(pNewSeq);
+     gUserMemFree(pNewSeq,0);
      return NULL;
    }
 
    //read track data
    sNktTrackInfo *trackData=0;
-   trackData=(sNktTrackInfo *)amMallocEx(tempHd.nbOfTracks * sizeof(sNktTrack), PREFER_TT);
+   trackData=(sNktTrackInfo *)gUserMemAlloc(tempHd.nbOfTracks * sizeof(sNktTrack), PREFER_TT,0);
 
    if(trackData==NULL){
       amTrace("Error: Couldn't allocate memory for track info\n.");
@@ -839,7 +841,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
 
    if(tempHd.version!=NKT_VERSION){
      amTrace("Error: Wrong version of NKT file. Cannot load file.\n");
-     amFree(trackData);
+     gUserMemFree(trackData,0);
      return NULL;
    }
 
@@ -874,22 +876,25 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
         fclose(fp); fp=0;
     #endif
 
-    amFree(trackData);
-    amFree(pNewSeq);
+    gUserMemFree(trackData,0);
+    gUserMemFree(pNewSeq,0);
     return NULL;
 
-   }else{
+   }
+   else
+   {
         // update info from header and track info data
         pNewSeq->timeDivision = tempHd.division;
         pNewSeq->version = tempHd.version;
         pNewSeq->nbOfTracks = tempHd.nbOfTracks;
 
-        pNewSeq->pTracks=(sNktTrack *)amMallocEx(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT);
+        pNewSeq->pTracks=(sNktTrack *)gUserMemAlloc(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT,0);
 
-        if(pNewSeq->pTracks==0){
+        if(pNewSeq->pTracks==0)
+        {
             amTrace("Error: Couldn't allocate memory for track info.\n");
 
-            amFree(pNewSeq);
+            gUserMemFree(pNewSeq,0);
             return NULL;
         }
 
@@ -930,8 +935,8 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                 amTrace("[LZO] Allocating temp events buffer\n");
                 uint32 amount = pTrk->eventsBlockBufferSize*3;
 
-                pPackedEvents=(lzo_voidp) amMallocEx(amount, PREFER_TT);
-                pPackedDataSource=(lzo_voidp) amMallocEx(pTrk->eventsBlockBufferSize,PREFER_TT);
+                pPackedEvents=(lzo_voidp) gUserMemAlloc(amount, PREFER_TT,0);
+                pPackedDataSource=(lzo_voidp) gUserMemAlloc(pTrk->eventsBlockBufferSize,PREFER_TT,0);
 
                 if(pPackedEvents!=NULL&&pPackedDataSource!=NULL){
 
@@ -962,15 +967,15 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                     }
 
                     //release
-                    amFree(pPackedDataSource);
+                    gUserMemFree(pPackedDataSource,0);
                 }
 
                 amTrace("[LZO] Allocating temp data buffer\n");
                 amount = pTrk->dataBufferSize*3;
 
-                pPackedData=(lzo_voidp)amMallocEx(amount,PREFER_TT);
+                pPackedData=(lzo_voidp)gUserMemAlloc(amount,PREFER_TT,0);
 
-                pPackedDataSource=(lzo_voidp)amMallocEx(pTrk->dataBufferSize,PREFER_TT);
+                pPackedDataSource=(lzo_voidp)gUserMemAlloc(pTrk->dataBufferSize,PREFER_TT,0);
 
 
                 if(pPackedData!=NULL && pPackedDataSource!=NULL){
@@ -994,7 +999,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                     }
 
                     //release
-                    amFree(pPackedDataSource);
+                    gUserMemFree(pPackedDataSource,0);
                 }
 
         }
@@ -1023,7 +1028,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                 fclose(fp); fp=0;
             #endif
 
-            amFree(pNewSeq);
+            gUserMemFree(pNewSeq,0);
             return NULL;
          }
 
@@ -1054,7 +1059,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                 fclose(fp); fp=0;
             #endif
 
-             amFree(pNewSeq);
+             gUserMemFree(pNewSeq,0);
              return NULL;
          }
 
@@ -1083,7 +1088,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
 
              // destroy block buffer
              destroyLinearBuffer(&(pTrk->lbEventsBuffer));
-             amFree(pNewSeq);
+             gUserMemFree(pNewSeq,0);
 
              return NULL;
          }
@@ -1121,7 +1126,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
             fclose(fp); fp=0;
            #endif
 
-           amFree(pNewSeq);
+           gUserMemFree(pNewSeq,0);
            return NULL;
        }
 
@@ -1132,8 +1137,8 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
             amMemCpy(pTrk->eventDataPtr, pPackedData, pTrk->dataBufferSize);
 
             // free temp buffers with packed data
-            amFree(pPackedEvents);
-            amFree(pPackedData);
+            gUserMemFree(pPackedEvents,0);
+            gUserMemFree(pPackedData,0);
        }
 
        // read raw data if file isn't packed
@@ -1254,12 +1259,12 @@ void destroySequence(sNktSeq *pSeq){
         }
    };
 
-   amFree(pSeq->pTracks);
+   gUserMemFree(pSeq->pTracks,0);
    pSeq->pTracks=0;
  }
 
  amMemSet(pSeq,0,sizeof(sNktSeq));
- amFree(pSeq);
+ gUserMemFree(pSeq,0);
  return;
 }
 
@@ -1378,8 +1383,11 @@ void switchReplayMode(void){
 
 extern void installMidiResetHandler(void);
 
-void NktInit(const eMidiDeviceType devType, const uint8 channel){
+void NktInit(const eMidiDeviceType devType, const uint8 channel)
+{
 
+    amSetDefaultUserMemoryCallbacks();
+    
     initDebug("NKTLOG.LOG");
 
     Supexec(installMidiResetHandler);
@@ -1519,7 +1527,7 @@ if(pSeq->nbOfTracks==0){
     return 0;
 }
 
-pTrackInfo=(sNktTrackInfo *)amMallocEx( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), PREFER_TT);
+pTrackInfo=(sNktTrackInfo *)gUserMemAlloc( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), PREFER_TT, 0);
 
 if(pTrackInfo==0) {
     amTrace("[MID2NKT] Fatal error, no memory for track info!\n");
@@ -1562,7 +1570,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
           amTrace("[LZO] Allocating work buffer: %ld bytes\n",workMemSize);
 
-          lzo_voidp workMem=(lzo_voidp)amMallocEx(workMemSize,PREFER_TT); // lzo work buffer
+          lzo_voidp workMem=(lzo_voidp)gUserMemAlloc(workMemSize,PREFER_TT,0); // lzo work buffer
 
           if(workMem!=0){
 
@@ -1570,13 +1578,13 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
               amTrace("[LZO] Compressing events block.\n");
               MemSize tempBufSize=(pSeq->pTracks[0].eventsBlockBufferSize+pSeq->pTracks[0].eventsBlockBufferSize/16+64+3);
-              lzo_bytep tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
+              lzo_bytep tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,PREFER_TT,0);
 
               if(tempBuffer==NULL){
                   amTrace("[LZO] Error, no memory for events block output buffer.\n");
 
                   // free work mem
-                  amFree(workMem);
+                  gUserMemFree(workMem,0);
                   return -1;
               }else{
                   amMemSet(tempBuffer,0,tempBufSize);
@@ -1602,17 +1610,17 @@ setNktTrackInfo(pTrackInfo,pSeq);
                  amTrace("[LZO] Internal error: Compression failed.\n");
               }
 
-              amFree(tempBuffer);
+              gUserMemFree(tempBuffer,0);
 
               amTrace("[LZO] Compressing data block.\n");
               tempBufSize=pSeq->pTracks[0].dataBufferSize+pSeq->pTracks[0].dataBufferSize/16+64+3;
-              tempBuffer=(lzo_bytep)amMallocEx(tempBufSize,PREFER_TT);
+              tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,PREFER_TT,0);
 
               if(tempBuffer==NULL){
                   amTrace("[LZO] Error, no memory for data block output buffer.\n");
 
                   // free work mem
-                  amFree(workMem);
+                  gUserMemFree(workMem,0);
                   return -1;
               }else{
                   amMemSet(tempBuffer,0,tempBufSize);
@@ -1642,10 +1650,10 @@ setNktTrackInfo(pTrackInfo,pSeq);
               }
 
               //copy output buffer with packed data to
-              amFree(tempBuffer);
+              gUserMemFree(tempBuffer,0);
 
               // free work mem
-              amFree(workMem);
+              gUserMemFree(workMem,0);
 
           }else{
               amTrace("[LZO] Error couldn't allocate compression work memory.\n");

@@ -82,14 +82,17 @@ typedef enum ERETVAL
 	E_ERR = 1L
 } eRetVal;
 
-// TODO: make it more cross-compiler friendly
-// atm it's gcc specific
 #define PACK_ATTR __attribute__((packed))
 #define FORCE_INLINE inline __attribute__((always_inline))
 #define FAST_CALL __attribute__((fastcall))
 
 #ifdef USE_INLINE
+
+#if (__STDC_VERSION__ >= 199901L) 
   #define INLINE inline        /* use standard inline */
+#else
+  #define INLINE              /* no inline */
+#endif
 #else
   #define INLINE              /* no inline */
 #endif

@@ -8,7 +8,7 @@ int32 initStack(sStack *stackState, const uint32 elementSize, const uint32 initi
 {
   // allocate memory
   const MemSize memAllocSize = elementSize * initialStackSize;
-  void *pNewStack = amMallocEx(memAllocSize, PREFER_TT);
+  void *pNewStack = gUserMemAlloc(memAllocSize, PREFER_TT,0);
 
   if(pNewStack)
   {
@@ -32,7 +32,7 @@ void pushStack(sStack *stackState, void *newElement)
       //stack underflow
       stackState->size = stackState->size + DEFAULT_MAXSTACK;
       
-      if(amRealloc(stackState->stack,stackState->size * stackState->elementSize) == NULL)
+      if(gUserMemRealloc(stackState->stack,stackState->size * stackState->elementSize,0) == NULL)
       {
         AssertMsg(0,"Out of memory. Couldn't reallocate stack...\r\t");
       }
@@ -84,5 +84,5 @@ bool isStackEmpty(const sStack *stackState)
 void deinitStack(sStack *pPtr)
 {
   AssertMsg(pPtr!=NULL,"Invalid stack!\r\t");
-  amFree(pPtr->stack);
+  gUserMemFree(pPtr->stack,0);
 }

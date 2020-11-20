@@ -632,13 +632,13 @@ void amDestroySequence (sSequence_t **pPtr){
 
   //go to the end of sequence
   if((*pPtr)->pSequenceName!=0){
-      amFree(((*pPtr)->pSequenceName));
+      gUserMemFree(((*pPtr)->pSequenceName),0);
   }
 
   //destroy all tracks
    for (uint16 i=0;i<AMIDI_MAX_TRACKS;++i){
      if((*pPtr)->arTracks[i]!=0){
-     if((*pPtr)->arTracks[i]->pTrackName!=0) amFree(((*pPtr)->arTracks[i]->pTrackName));
+     if((*pPtr)->arTracks[i]->pTrackName!=0) gUserMemFree(((*pPtr)->arTracks[i]->pTrackName),0);
 
 #ifdef EVENT_LINEAR_BUFFER
       destroyList((*pPtr),&((*pPtr)->arTracks[i]->pTrkEventList));
@@ -646,12 +646,13 @@ void amDestroySequence (sSequence_t **pPtr){
       destroyList(&((*pPtr)->arTracks[i]->pTrkEventList));
 #endif
 
-      amFree(((*pPtr)->arTracks[i]));
+      gUserMemFree(((*pPtr)->arTracks[i]),0);
      }
    }
 
   //destroy sequence and nullify it
-  amFree(*pPtr);
+  gUserMemFree(*pPtr,0);
+  
   #ifdef DEBUG_BUILD
     amTrace((const uint8 *)"amDestroySequence() done. \n");
   #endif

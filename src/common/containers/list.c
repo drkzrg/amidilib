@@ -79,7 +79,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 #ifdef EVENT_LINEAR_BUFFER
     (*dest)=linearBufferAlloc(&(pSequence->eventBuffer), sizeof(sEventList));
 #else
-    (*dest)=(sEventList *)amMallocEx(sizeof(sEventList),PREFER_TT);
+    (*dest)=(sEventList *)gUserMemAllocCb(sizeof(sEventList),PREFER_TT,0);
 #endif
     
     if((*dest)==NULL){
@@ -107,13 +107,13 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 #ifdef EVENT_LINEAR_BUFFER
         (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->copyEventCb.size * sizeof(uint8)));
 #else
-        (*dest)->eventBlock.dataPtr = amMallocEx((src->copyEventCb.size * sizeof(uint8)),PREFER_TT);
+        (*dest)->eventBlock.dataPtr = gUserMemAllocCb((src->copyEventCb.size * sizeof(uint8)),PREFER_TT,0);
 #endif
 #else
 #ifdef EVENT_LINEAR_BUFFER
         (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->sendEventCb.size * sizeof(uint8)));
 #else
-        (*dest)->eventBlock.dataPtr = amMallocEx((src->sendEventCb.size * sizeof(uint8)),PREFER_TT);
+        (*dest)->eventBlock.dataPtr = gUserMemAllocCb((src->sendEventCb.size * sizeof(uint8)),PREFER_TT,0);
 #endif
 
 #endif
@@ -172,33 +172,36 @@ amTrace((const uint8 *)"destroyList()\n");
 	  if(((pCurrentPtr->eventBlock.dataPtr)>(void *)(0L))){
 	    
 	    //free up additionally memory for specific blocks
-	    switch(pCurrentPtr->eventBlock.type){
-
-	      case T_META_MARKER:{
-		sMarker_EventBlock_t *pTemp=(sMarker_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-        amFree(pTemp->pMarkerName);
+	    switch(pCurrentPtr->eventBlock.type)
+      {
+	      case T_META_MARKER:
+        {
+		      sMarker_EventBlock_t *pTemp=(sMarker_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+          gUserMemFree(pTemp->pMarkerName,0);
 	      }break;
 	      
-	      case T_META_CUEPOINT:{
-		sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-        amFree(pTemp->pCuePointName);
+	      case T_META_CUEPOINT:
+        {
+		      sCuePoint_EventBlock_t *pTemp=(sCuePoint_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+          gUserMemFree(pTemp->pCuePointName,0);
 	      }break;
 
-	      case T_SYSEX:{
-		sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
-        amFree(pTemp->pBuffer);
+	      case T_SYSEX:
+        {
+		      sSysEX_EventBlock_t *pTemp=(sSysEX_EventBlock_t *)pCurrentPtr->eventBlock.dataPtr;
+          gUserMemFree(pTemp->pBuffer,0);
 	      }break;
 	    };
 	    //release event block itself
-        amFree(pCurrentPtr->eventBlock.dataPtr);
+        gUserMemFree(pCurrentPtr->eventBlock.dataPtr,0);
 	  }
 
-      amFree(pCurrentPtr->pNext);
+      gUserMemFreeCb(pCurrentPtr->pNext,0);
 	  pCurrentPtr=pCurrentPtr->pPrev;
 	}
 	/* we are at first element */
 	/* remove it */
-    amFree(*listPtr);
+    gUserMemFree(*listPtr,0);
 	
     #endif
   }

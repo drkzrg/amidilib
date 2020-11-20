@@ -23,8 +23,7 @@ where name of 'TARGET_MACHINE' can be: \n \
  'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
  'ENABLE_LTO' - eneable link time optimisation. Only valid on gcc 7.xx brownerelf.\n \
  'ENABLE_LZO' - enable lzo support (packed data).\n \
- 'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2),\n \
- 'USE_CUSTOM_ALLOC' - use memory allocation functions provided by user \n")
+ 'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2)\n")
 
 Import('TARGET_MACHINE',\
                 'BUILD_MODE',\
@@ -34,7 +33,6 @@ Import('TARGET_MACHINE',\
                 'CONOUT_ENABLE',\
                 'GEMDOS_IO_ENABLE',\
                 'USE_LIBC',
-                'USE_CUSTOM_ALLOC',\
                 'ENABLE_LTO',\
                 'ENABLE_LZO',\
                 'USE_CROSSCOMPILER',\
@@ -53,7 +51,6 @@ debug_level = DEBUG_LEVEL
 enable_lto = ENABLE_LTO
 use_fpu = USE_FPU
 enable_lzo = ENABLE_LZO
-use_custom_alloc = USE_CUSTOM_ALLOC
 
 compilerName=''
 LIBRARYNAME = 'nkt'
@@ -221,9 +218,6 @@ if (conout_enable == "no"):
 if (gemdos_io_enable == "yes"):
     print "Use GEMDOS for file I/O not libc functions."
     CFLAGS += '-DENABLE_GEMDOS_IO '
-
-if(use_custom_alloc=='yes'):
-    CFLAGS += '-DEXTERN_MEM_FUNCTIONS '
 
 if(enable_lto == 'yes'):
     CFLAGS += '-flto '

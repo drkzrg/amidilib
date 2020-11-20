@@ -246,7 +246,7 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag,  uint32 *file
     *fileLenght=pDTA->dta_size;
 
     /* allocate buffer */
-     pData = amMallocEx((MemSize)(*fileLenght)+1,memFlag);
+     pData = gUserMemAlloc((MemSize)(*fileLenght)+1,memFlag,0);
      
      if(pData!=NULL){
       int32 lRet=0L;
@@ -264,7 +264,7 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag,  uint32 *file
             amTrace("[GEMDOS] Read error. Unexpected EOF.\n");
 
             /* so we have error, free up memory */
-            amFree(pData);
+            gUserMemFree(pData,0);
           }
 
       }

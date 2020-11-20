@@ -674,9 +674,10 @@ sNktSeq *pNewSeq=0;
 bool bEOT=FALSE;
 uint16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
 
-sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)amMallocEx(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT);
+sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)gUserMemAlloc(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT,0);
 
-if(arMidiInfo==0){
+if(arMidiInfo==0)
+{
     amTrace("[MIDI2NKT] No memory for track info. Exiting...\n");
     printf("[MIDI2NKT] No memory for track info. Exiting \n");
     return 0;
@@ -686,7 +687,8 @@ amMemSet(&BufferInfo, 0L, sizeof(sBufferInfo_t));
 amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 
 //collect track info from each track
-for(uint16 i=0;i<nbOfTracks;++i){
+for(uint16 i=0;i<nbOfTracks;++i)
+{
 
     if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT)!=0){
         amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting...\n",i);
@@ -711,11 +713,12 @@ for(uint16 i=0;i<nbOfTracks;++i){
 // and amount of bytes wee need to store midi data
 
 // reserve memory for sequence header
-pNewSeq = (sNktSeq *)amMallocEx(sizeof(sNktSeq),PREFER_TT);
+pNewSeq = (sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
 
-if(pNewSeq==0) {
+if(pNewSeq==0) 
+{
     amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header.\n");
-    amFree(arMidiInfo);
+    gUserMemFree(arMidiInfo,0);
     return 0;
 }
 
@@ -731,16 +734,17 @@ pNewSeq->timeDivision=DEFAULT_PPQN;
 pNewSeq->version=NKT_VERSION;
 
 pNewSeq->nbOfTracks=nbOfTracks;  // save nb of tracks
-pNewSeq->pTracks=(sNktTrack *) amMallocEx(nbOfTracks*sizeof(sNktTrack), PREFER_TT);
+pNewSeq->pTracks=(sNktTrack *) gUserMemAlloc(nbOfTracks*sizeof(sNktTrack), PREFER_TT,0);
 
 if(pNewSeq->pTracks==NULL){
-     amFree(pNewSeq);
+     gUserMemFree(pNewSeq,0);
      amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for track data.\n");
      return 0;
 }
 
 // reserve memory for all tracks
-for(int i=0;i<nbOfTracks;++i){
+for(uint16 i=0;i<nbOfTracks;++i)
+{
     sNktTrack *pTrk=&pNewSeq->pTracks[i];
 
     pTrk->nbOfBlocks = arMidiInfo[i].nbOfBlocks;
@@ -749,19 +753,20 @@ for(int i=0;i<nbOfTracks;++i){
 
     // reserve and initialise linear memory buffers
     // for event blocks and data
-    if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255, PREFER_TT)<0){
+    if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255, PREFER_TT)<0)
+    {
         amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for events block buffer.\n");
-        amFree(arMidiInfo);
-        amFree(pNewSeq);
+        gUserMemFree(arMidiInfo,0);
+        gUserMemFree(pNewSeq,0);
         return 0;
     }
 
-    if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255, PREFER_TT)<0){
+    if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255, PREFER_TT)<0)
+    {
       amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for data buffer block.\n");
       destroyLinearBuffer(&(pNewSeq->pTracks[i].lbEventsBuffer));
-      amFree(arMidiInfo);
-      amFree(pNewSeq);
-
+      gUserMemFree(arMidiInfo,0);
+      gUserMemFree(pNewSeq,0);
       return 0;
     }
 
@@ -781,21 +786,22 @@ for(int i=0;i<nbOfTracks;++i){
     lbAllocAdr&=0xfffffff0;
     pTrk->eventDataPtr = (uint8*)lbAllocAdr;
 
-    if(pTrk->eventBlocksPtr==0||pTrk->eventDataPtr==0){
+    if(pTrk->eventBlocksPtr==0||pTrk->eventDataPtr==0)
+    {
         amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for events block / events data.\n");
 
         destroyLinearBuffer(&(pTrk->lbDataBuffer));
         destroyLinearBuffer(&(pTrk->lbEventsBuffer));
 
-        amFree(arMidiInfo);
-        amFree(pNewSeq);
+        gUserMemFree(arMidiInfo,0);
+        gUserMemFree(pNewSeq,0);
 
         return 0;
     }
 
     // clear memory
-        amMemSet((void *)pTrk->eventBlocksPtr,0, pTrk->eventsBlockBufferSize);
-        amMemSet((void *)pTrk->eventDataPtr,0, pTrk->dataBufferSize);
+    amMemSet((void *)pTrk->eventBlocksPtr,0, pTrk->eventsBlockBufferSize);
+    amMemSet((void *)pTrk->eventDataPtr,0, pTrk->dataBufferSize);
 
 } //end reserve memory
 
@@ -806,17 +812,20 @@ for(int i=0;i<nbOfTracks;++i){
    // reserve memory for all tracks
    uint32 error = 0;
 
-   for(int i=0;i<nbOfTracks;++i){
+   for(uint16 i=0;i<nbOfTracks;++i)
+   {
         error = midiTrackDataToNkt(pMidiData, pNewSeq, i);
    }
 
 //save
- if(saveSequence(pNewSeq,pOutFileName,bCompress)<0){
-   amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n", pOutFileName);
- }else{
-   amTrace("[MIDI2NKT] Saved %s .\n", pOutFileName);
- }
-
+   if(saveSequence(pNewSeq,pOutFileName,bCompress)<0)
+   {
+        amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n", pOutFileName);
+   } 
+   else
+   {
+        amTrace("[MIDI2NKT] Saved %s .\n", pOutFileName);
+   }
 
  return pNewSeq;
 }

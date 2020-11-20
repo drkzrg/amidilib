@@ -998,7 +998,7 @@ int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint
       ulCount++;
     }
     pEvntBlock->bufferSize=ulCount; //size of data
-    pEvntBlock->pBuffer = (uint8 *)amMallocEx(ulCount*sizeof(uint8),PREFER_TT);
+    pEvntBlock->pBuffer = (uint8 *)gUserMemAlloc(ulCount*sizeof(uint8),PREFER_TT,0);
 
     //copy ulCount of data
     amMemCpy(pEvntBlock->pBuffer,pTmpPtr,ulCount*sizeof(uint8));
@@ -1091,7 +1091,7 @@ sEventBlock_t tempEvent;
 
         sTrack_t *pTrack = pSeq->arTracks[trackNb];
 
-        pTrack->pTrackName = (uint8 *)amMallocEx(128*sizeof(uint8),PREFER_TT);
+        pTrack->pTrackName = (uint8 *)gUserMemAlloc(128*sizeof(uint8),PREFER_TT,0);
 
     if(pTrack->pTrackName!=NULL){
       amMemSet(pTrack->pTrackName, 0, 128);
@@ -1170,7 +1170,7 @@ sEventBlock_t tempEvent;
     tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->pMarkerName = (uint8 *)amMallocEx(ubLenght+1,PREFER_TT);
+    pEvntBlock->pMarkerName = (uint8 *)gUserMemAlloc(ubLenght+1,PREFER_TT,0);
     amMemSet(pEvntBlock->pMarkerName,0,((ubLenght+1)*sizeof(uint8)));
     amMemCpy(pEvntBlock->pMarkerName,(*pPtr),ubLenght*sizeof(uint8));
     pEvntBlock->pMarkerName[ubLenght]='\0';
@@ -1217,7 +1217,7 @@ sEventBlock_t tempEvent;
     pEvntBlock=(sCuePoint_EventBlock_t *)tempEvent.dataPtr;
     pEvntBlock->pCuePointName=0;
 
-    pEvntBlock->pCuePointName = (uint8 *)amMallocEx(ubLenght+1,PREFER_TT);
+    pEvntBlock->pCuePointName = (uint8 *)gUserMemAlloc(ubLenght+1,PREFER_TT,0);
     amMemSet(pEvntBlock->pCuePointName,0,((ubLenght+1)*sizeof(uint8)));
     amMemCpy(pEvntBlock->pCuePointName,(*pPtr),ubLenght*sizeof(uint8));
     pEvntBlock->pCuePointName[ubLenght]='\0';

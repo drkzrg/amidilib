@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
       iError = amProcessMidiFileData(argv[1], pMidiData, ulFileLenght, &pMusicSeq);
 
       /* free up buffer with loaded midi file, we don't need it anymore */
-      amFree(pMidiData);
+      amFree(pMidiData,0);
 
       if(iError==0)
       {

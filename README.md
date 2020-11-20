@@ -15,8 +15,7 @@ AMIDILIB is a C language library which allows really easy replay of MIDI files i
 It supports General Midi instruments (GM1 / GM2) and Roland MT-32 family of synths. Main motivation behind this library was providing midi music replay in games, game ports or other applications.
  
 Library can also preprocess various midi data and export them to custom binary format (nkt), which is more suitable for use in programs and games - 
-data doesn't have to be preprocessed which decreases significantly loading times, it's smaller and it's easier to integrate with existing projects. 
-
+data doesn't have to be preprocessed which decreases significantly loading times, it's smaller and it's easier to integrate with existing projects.
 
 Compilation from sources
 ------------------------
@@ -24,7 +23,7 @@ Compilation from sources
 To compile library from sources following tools are needed:
 
 * [SCons build tool](http://scons.org/)
-* GCC cross compiler - [gcc 4.3.4](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) or [gcc 7.x / 8.x (brownelf)](http://d-bug.mooo.com/beyondbrown/post/gcc7/)
+* GCC C cross compiler supporting c99 - [gcc 4.3.4](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) / https://tho-otto.de/crossmint.php or [gcc(brownelf)](https://bitbucket.org/ggnkua/bigbrownbuild-git/src/master)  
 * [VASM m68k cross compiler](http://sun.hasenbraten.de/vasm/)
 * Environment like [Cygwin](https://www.cygwin.com/) under Windows or Linux.
 

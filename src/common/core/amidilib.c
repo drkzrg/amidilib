@@ -37,6 +37,11 @@ static const uint8 outputFilename[] = "amidi.log";
 //default configuration filename
 static const uint8 configFilename[] = "amidi.cfg";
 
+// memory callbacks
+
+
+//
+
 unsigned long begin;
 unsigned long end;
 long usp;
@@ -311,8 +316,8 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             if(filename)
             {
               char *pTempPtr = 0;
-              int16 len=strlen(filename);
-              strncpy(tempName,filename,(len>128)?(128-1):len);
+              int16 len = strlen(filename);
+              strncpy(tempName, filename, 128);
               pTempPtr = strrchr(filename,'.');
               memcpy(pTempPtr+1,"mid",4);
             }

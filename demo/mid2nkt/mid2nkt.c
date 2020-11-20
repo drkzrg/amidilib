@@ -106,8 +106,8 @@ uint8 *filePath=0;
            int32 filePathLength = strlen(filePath);
            filePathLength = ((filePathLength>=MAX_GEMDOS_FILEPATH)?(MAX_GEMDOS_FILEPATH-1):filePathLength);
 
-           amMemSet(tempName,0,sizeof(uint8)*128);
-           strncpy(tempName,filePath,filePathLength);
+           amMemSet(tempName,0,128);
+           strncpy(tempName,filePath,128);
 
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);

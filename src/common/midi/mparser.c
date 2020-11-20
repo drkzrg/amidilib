@@ -1094,8 +1094,8 @@ sEventBlock_t tempEvent;
         pTrack->pTrackName = (uint8 *)amMallocEx(128*sizeof(uint8),PREFER_TT);
 
     if(pTrack->pTrackName!=NULL){
-      amMemSet(pTrack->pTrackName,0,128*sizeof(uint8));
-      strncpy((char *)pTrack->pTrackName,(char *)(*pPtr),ubLenght);
+      amMemSet(pTrack->pTrackName, 0, 128);
+      strncpy((char *)pTrack->pTrackName,(char *)(*pPtr), 128);
       pTrack->pTrackName[ubLenght]='\0';
       //amMemCpy(pTrack->pTrackName, (*pPtr),ubLenght*sizeof(uint8));
     }

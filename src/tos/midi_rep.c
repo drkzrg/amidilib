@@ -25,7 +25,8 @@ void getCurrentSeq(sSequence_t **pSeq){
 void initSeq(sSequence_t *seq, const eTimerType timerType){
  g_CurrentSequence=0;
 
-if(seq!=0){
+if(seq!=0)
+{
     uint8 mode=0,data=0;
     sTrack_t *pTrack=0;
     sTrackState_t *pTrackState=0;
@@ -35,7 +36,8 @@ if(seq!=0){
 
     Supexec(clearMidiOutputBuffer);
 
-    for(int i=0;i<seq->ubNumTracks;++i){
+    for(uint16 i=0;i<seq->ubNumTracks;++i)
+    {
         pTrack=seq->arTracks[i];
 
         if(pTrack){
@@ -69,10 +71,10 @@ if(seq!=0){
         installReplayRout(mode, data, FALSE, timerType);
     }else if(seq->seqType==ST_MULTI){
         installReplayRout(mode, data, TRUE, timerType);
-    }else{
-         amTrace("initSeq(): Houston, we have a problem!\n");
-        // Houston, we have a problem!
-        Assert(0);
+    }
+    else
+    {
+      AssertMsg(0,"initSeq(): Unsupported sequence type.");
     }
 
   } //endif

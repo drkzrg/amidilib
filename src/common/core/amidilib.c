@@ -150,7 +150,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
     return -1; 
    }
 
-   int16 iRetVal = 0;
+   retVal iRetVal = AM_OK;
 
    switch(midiType)
    {
@@ -161,7 +161,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             
           if(pMidiInfo->nTracks != 1)
           {
-            iRetVal=-1; /* invalid number of tracks, there can be only one! */
+            iRetVal = AM_ERR; /* invalid number of tracks, there can be only one! */
           } 
           else
           {
@@ -210,7 +210,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
           }
 	  
-          while ( midiData!=0 && iRetVal==0)
+          while ( midiData!=0 && iRetVal == AM_OK)
           {
             midiData = processMidiTracks(midiData, midiType, ppSequence, &iRetVal);
           }
@@ -242,7 +242,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
              sequence->arTracks[i]->pTrkEventList=0;
           }
            
-          while ( midiData!=0 && iRetVal == 0)
+          while ( midiData!=0 && iRetVal == AM_OK)
           {
             midiData = processMidiTracks(midiData, midiType, ppSequence, &iRetVal);
           } 
@@ -285,14 +285,14 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 	      case T_XMF:
 	      case T_SNG:
         {
-          iRetVal = -1;
+          iRetVal = AM_ERR;
         } break;
   
         case T_NKT:
         {
           const sNktSeq * const nktSeq = (sNktSeq *)midiData;
           const uint16 iNumTracks = nktSeq->nbOfTracks;       //todo handle/setup replay
-          iRetVal = -1;
+          iRetVal = AM_ERR;
         } break;
 
 	    case T_MUS:
@@ -329,7 +329,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             {
               /* invalid number of tracks, there can be only one! */
               amTrace("Invalid number of tracks\n");
-              iRetVal = -1;
+              iRetVal = AM_ERR;
             }
             else
             {
@@ -359,7 +359,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           }
           else
           {
-              iRetVal=-1;
+              iRetVal=AM_ERR;
           }
 
 	  } break;

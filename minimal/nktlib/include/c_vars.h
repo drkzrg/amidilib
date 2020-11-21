@@ -71,16 +71,16 @@ typedef int64_t     int64; 			//non-standard!
 typedef unsigned long long 	uint64; //non-standard!
 typedef uintptr_t uintptr;
 typedef size_t MemSize;
+typedef bool Bool;
 
 // function pointers
 typedef void (*funcPtrVoidVoid)();
 typedef void (*funcPtrVoidConstUint)(const uint32);
 
-typedef enum ERETVAL
-{
-	E_OK = 0L,
-	E_ERR = 1L
-} eRetVal;
+typedef int16 retVal;
+
+#define AM_OK 0
+#define AM_ERR -1
 
 #define PACK_ATTR __attribute__((packed))
 #define FORCE_INLINE inline __attribute__((always_inline))

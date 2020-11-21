@@ -254,8 +254,8 @@ volatile uint8 requestedMasterVolume;
 volatile uint8 requestedMasterBalance;
 volatile static uint16 sequenceState;
 
-volatile sMidiModuleSettings _moduleSettings;
-uint8 _mt32TextMsg[20];
+volatile sMidiModuleSettings gModuleSettings;
+uint8 gMt32TextMsg[20];
 
 enum{
   IDX_VENDOR=1,
@@ -277,16 +277,16 @@ static sSysEX_t arSetTextMT32         =  {30,(uint8 []){0xf0,0x41,0x10,0x16,0x12
 __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
     // handle volume/balance/reverb change
-   if(_moduleSettings.masterVolume!=requestedMasterVolume){
+   if(gModuleSettings.masterVolume!=requestedMasterVolume){
 
-       if(MT32_MODEL_ID==_moduleSettings.modelID){
+       if(MT32_MODEL_ID==gModuleSettings.modelID){
 
             //handle mt32 volume
             if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
 
-                arSetMasterVolumeMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
-                arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-                arSetMasterVolumeMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+                arSetMasterVolumeMT32.data[IDX_VENDOR]=gModuleSettings.vendorID;
+                arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
+                arSetMasterVolumeMT32.data[IDX_MODEL_ID]=gModuleSettings.modelID;
 
                 arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
                 arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
@@ -298,19 +298,19 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
                     Supexec(flushMidiSendBuffer);
                 #endif
 
-                _moduleSettings.masterVolume=requestedMasterVolume;
+                gModuleSettings.masterVolume=requestedMasterVolume;
             }
 
-            if(_mt32TextMsg[0]!=0){
+            if(gMt32TextMsg[0]!=0){
 
                 amMemSet((void *)&(arSetTextMT32.data[8]),0,sizeof(uint8)*20);
 
-                arSetTextMT32.data[IDX_VENDOR]=_moduleSettings.vendorID;
-                arSetTextMT32.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-                arSetTextMT32.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+                arSetTextMT32.data[IDX_VENDOR]=gModuleSettings.vendorID;
+                arSetTextMT32.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
+                arSetTextMT32.data[IDX_MODEL_ID]=gModuleSettings.modelID;
                 arSetTextMT32.data[IDX_CMD_ID]=0x12;
 
-                amMemCpy(&arSetTextMT32.data[8],&_mt32TextMsg[0],sizeof(uint8)*20);
+                amMemCpy(&arSetTextMT32.data[8],&gMt32TextMsg[0],sizeof(uint8)*20);
                 arSetTextMT32.data[28]=amCalcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
 
                 // update text
@@ -321,7 +321,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
                 #endif
 
                 // reset text
-                amMemSet(&_mt32TextMsg[0],0,sizeof(uint8)*20);
+                amMemSet(&gMt32TextMsg[0],0,sizeof(uint8)*20);
             }
 
 
@@ -334,9 +334,9 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
             // send new master vol
             if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_GM){
 
-                arSetMasterVolumeGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-                arSetMasterVolumeGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-                arSetMasterVolumeGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+                arSetMasterVolumeGM.data[IDX_VENDOR]=gModuleSettings.vendorID;
+                arSetMasterVolumeGM.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
+                arSetMasterVolumeGM.data[IDX_MODEL_ID]=gModuleSettings.modelID;
 
                 arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
                 arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
@@ -348,17 +348,17 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
                     Supexec(flushMidiSendBuffer);
                 #endif
 
-                _moduleSettings.masterVolume=requestedMasterVolume;
+                gModuleSettings.masterVolume=requestedMasterVolume;
 
             }
          }
 
-         if(_moduleSettings.masterBalance!=requestedMasterBalance){
+         if(gModuleSettings.masterBalance!=requestedMasterBalance){
 
              // send new balance
-            arSetMasterBalanceGM.data[IDX_VENDOR]=_moduleSettings.vendorID;
-            arSetMasterBalanceGM.data[IDX_DEVICE_ID]=_moduleSettings.deviceID;
-            arSetMasterBalanceGM.data[IDX_MODEL_ID]=_moduleSettings.modelID;
+            arSetMasterBalanceGM.data[IDX_VENDOR]=gModuleSettings.vendorID;
+            arSetMasterBalanceGM.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
+            arSetMasterBalanceGM.data[IDX_MODEL_ID]=gModuleSettings.modelID;
             arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
             arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
             arSetMasterBalanceGM.data[9]=amCalcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
@@ -369,7 +369,7 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
              Supexec(flushMidiSendBuffer);
             #endif
 
-            _moduleSettings.masterBalance=requestedMasterBalance;
+            gModuleSettings.masterBalance=requestedMasterBalance;
          }
     }
 

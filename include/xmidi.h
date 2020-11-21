@@ -34,9 +34,9 @@ uint16 amGetNbOfXmidiTracks(void *midiData);
  * Transforms XMidi data to Amidilib sequence 
  *
  * @param xmidiData	- pointer to xmidi data
- * @return returns value < 0 on error
+ * @return returns value AM_OK on success, AM_ERR on error
  **/
 
-int16 amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
+retVal amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

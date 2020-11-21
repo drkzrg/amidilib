@@ -15,63 +15,67 @@
 // event list, temp event
 
 #ifdef EVENT_LINEAR_BUFFER
-int16 addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
+retVal addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #else
-int16 addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
+retVal addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #endif
 {
  sEventList *pTempPtr = NULL;
  sEventList *pNewItem = NULL;
 
-if(*listPtr!=NULL){
+if(*listPtr!=NULL)
+{
   /* list not empty, start at very first element */
   /* and iterate till the end */
   
   pTempPtr=*listPtr;
 			
-  while((pTempPtr->pNext != NULL)){
+  while((pTempPtr->pNext != NULL))
+  {
     pTempPtr=pTempPtr->pNext;
   }
     
   /* insert at the end of list */
 #ifdef EVENT_LINEAR_BUFFER
-  if(copyEvent(pSequence, eventBlockPtr, &pNewItem)>=0){
+  if(copyEvent(pSequence, eventBlockPtr, &pNewItem) == AM_OK)
 #else
-  if(copyEvent(eventBlockPtr, &pNewItem)>=0){
+  if(copyEvent(eventBlockPtr, &pNewItem) == AM_OK)
 #endif
-
+  {
       pNewItem->pNext=NULL;		/* next node is NULL for new node */
       pNewItem->pPrev=pTempPtr;	/* prev node is current element node */
 
       /* add newly created list node to our list */
       pTempPtr->pNext=pNewItem;
-      return 1;  
+      return AM_OK;  
   }	
   
-}else{
+}
+else
+{
   
 #ifdef EVENT_LINEAR_BUFFER
-  if(copyEvent(pSequence, eventBlockPtr, listPtr)>=0){
+  if(copyEvent(pSequence, eventBlockPtr, listPtr) == AM_OK)
 #else
-  if(copyEvent(eventBlockPtr, listPtr)>=0){
+  if(copyEvent(eventBlockPtr, listPtr) == AM_OK)
 #endif
-
+  {
       (*listPtr)->pPrev=NULL;		/* first element in the list, no previous item */
       (*listPtr)->pNext=NULL;
-      return 1;
+      return AM_OK;
   }
   
  }
  
- return -1;
+ return AM_ERR;
 }
 
 #ifdef EVENT_LINEAR_BUFFER
-int16 copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest){
+retVal copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest)
 #else
-int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
+retVal copyEvent(const sEventBlock_t *src, sEventList **dest)
 #endif
-
+{
   #ifdef DEBUG_MEM
     amTrace((const uint8 *)"copyEvent() src: %p dst: %p\n",src,dest);
   #endif
@@ -82,18 +86,21 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
     (*dest)=(sEventList *)gUserMemAllocCb(sizeof(sEventList),PREFER_TT,0);
 #endif
     
-    if((*dest)==NULL){
-		amTrace((const uint8 *)"copyEvent() out of memory [event block]\n");
+    if((*dest)==NULL)
+    {
+		  amTrace((const uint8 *)"copyEvent() out of memory [event block]\n");
 		#ifdef EVENT_LINEAR_BUFFER
-            linearBufferPrintInfo(&(pSequence->eventBuffer));
+      linearBufferPrintInfo(&(pSequence->eventBuffer));
 		#endif
-	return -1;
-    }else{
+	   return AM_ERR;
+    }
+    else
+    {
 		(*dest)->eventBlock.uiDeltaTime=src->uiDeltaTime;
 		(*dest)->eventBlock.type = src->type;
 
 #ifdef IKBD_MIDI_SEND_DIRECT
-        (*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
+    (*dest)->eventBlock.copyEventCb.size = src->copyEventCb.size;
 		(*dest)->eventBlock.copyEventCb.func=src->copyEventCb.func;
 #else
         (*dest)->eventBlock.sendEventCb.size = src->sendEventCb.size;
@@ -102,7 +109,6 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
         (*dest)->eventBlock.dataPtr=NULL;
 		
 		/* allocate memory for event data and copy them to the new destination */
-
 #ifdef IKBD_MIDI_SEND_DIRECT
 #ifdef EVENT_LINEAR_BUFFER
         (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->copyEventCb.size * sizeof(uint8)));
@@ -117,26 +123,28 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest){
 #endif
 
 #endif
-
     
-	if((*dest)->eventBlock.dataPtr==NULL){
+	if((*dest)->eventBlock.dataPtr==NULL)
+  {
 	    amTrace((const uint8 *)"copyEvent() out of memory [callback block]\n");
 	    
 		#ifdef EVENT_LINEAR_BUFFER
-            linearBufferPrintInfo(&(pSequence->eventBuffer));
+      linearBufferPrintInfo(&(pSequence->eventBuffer));
 		#endif
 
-		return -1;
-	}else{
+		return AM_ERR;
+	}
+  else
+  {
 #ifdef IKBD_MIDI_SEND_DIRECT
         amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->copyEventCb.size * sizeof(uint8)));
 #else
         amMemCpy((*dest)->eventBlock.dataPtr,src->dataPtr,(src->sendEventCb.size * sizeof(uint8)));
 #endif
-	    return 1;
+	    return AM_OK;
 	}
    }
-   return -1;
+   return AM_ERR;
 }
 #ifdef EVENT_LINEAR_BUFFER
 uint32 destroyList(sSequence_t *pSequence,sEventList **listPtr){

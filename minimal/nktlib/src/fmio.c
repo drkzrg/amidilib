@@ -320,7 +320,7 @@ int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBl
      iRet=Fwrite(fileHandle,memBlockSize,memBlock);
        
      if(iRet==memBlockSize){
-        printf("\n%s saved [%ld bytes written].\n",szFileName,iRet);
+        printf("\n%s saved [%d bytes written].\n",szFileName,iRet);
       }else{
         /* print GEMDOS error code */
         printf("[GEMDOS] Error: %s\n", getGemdosError(fileHandle));

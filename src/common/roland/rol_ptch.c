@@ -743,7 +743,7 @@ void enableGS(void){
 
 
 // Official Roland patch, sets MT32 timbres to be GM compatible
-void patchMT32toGM(const bool bStandardGMDrumset){
+void patchMT32toGM(const Bool bStandardGMDrumset){
 
     for (uint16 i=0;i<MAX_MT32_PATCH;++i){
         sendSysEX(&mt32_gm[i]);

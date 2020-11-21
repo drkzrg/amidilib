@@ -119,13 +119,15 @@ void initSeqManual(sSequence_t *seq){
  return;
 }
 
-bool isEOT(volatile const sEventList *pPtr){
+Bool isEOT(volatile const sEventList *pPtr)
+{
   if(pPtr->eventBlock.type==T_META_EOT) return TRUE;
 
   return FALSE;
 }
 
-void onEndSequence(void){
+void onEndSequence(void)
+{
 
 sTrackState_t *pTrackState=0;
 sTrack_t *pTrack=0;
@@ -170,11 +172,11 @@ if(g_CurrentSequence){
 
 }
 
-volatile static bool bEventSent=FALSE;
-volatile static bool bSend=FALSE;
-volatile static bool bEOTflag=FALSE;
-volatile static bool bStopped=FALSE;
-volatile static bool endOfSequence=FALSE;
+volatile static Bool bEventSent=FALSE;
+volatile static Bool bSend=FALSE;
+volatile static Bool bEOTflag=FALSE;
+volatile static Bool bStopped=FALSE;
+volatile static Bool endOfSequence=FALSE;
 volatile static uint32 TimeAdd=0;
 volatile static evntFuncPtr myFunc=NULL;
 volatile static uint32 currentDelta=0;
@@ -496,7 +498,7 @@ void updateStepMulti(void){
 }
 
 //replay control
-bool isSeqPlaying(void){
+Bool isSeqPlaying(void){
   if(g_CurrentSequence!=0){
 	sTrack_t *pTrack=0;
     uint8 activeTrack=g_CurrentSequence->ubActiveTrack;
@@ -595,7 +597,7 @@ void playSeq(void){
   }
 }
 
-void muteTrack(const uint16 trackNb, const bool bMute){
+void muteTrack(const uint16 trackNb, const Bool bMute){
   if(((g_CurrentSequence!=0)&&(trackNb<AMIDI_MAX_TRACKS))){
     if(bMute!=FALSE){
         g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;

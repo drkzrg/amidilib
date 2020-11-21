@@ -646,7 +646,7 @@ static int32 handleMultiTrack(const sSequence_t *pSeq, const Bool bCompress, FIL
 int32 Seq2NktFile(const sSequence_t *pSeq, const uint8 *pOutFileName, const Bool bCompress){
 uint32 bytes_written = 0;
 uint32 blocks_written = 0;
-bool error=FALSE;
+Bool error=FALSE;
 sNktHd nktHead;
 /*
 #ifdef ENABLE_GEMDOS_IO

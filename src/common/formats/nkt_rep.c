@@ -94,7 +94,7 @@ if(g_CurrentNktSequence){
 }
 
 // init sequence
-void initSequence(sNktSeq *pSeq, uint16 initialState, bool bInstallUpdate){
+void initSequence(sNktSeq *pSeq, uint16 initialState, Bool bInstallUpdate){
  g_CurrentNktSequence=0;
 
 if(pSeq!=0){
@@ -1271,10 +1271,11 @@ void destroySequence(sNktSeq *pSeq){
 
 ////////////////////////////////////////////////// replay control
 
-bool isSequencePlaying(void){
+Bool isSequencePlaying(void)
+{
 
  if(g_CurrentNktSequence!=0){
-     uint16 state=g_CurrentNktSequence->sequenceState;
+     const uint16 state = g_CurrentNktSequence->sequenceState;
      if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED)))
         return TRUE;
        else
@@ -1285,9 +1286,11 @@ bool isSequencePlaying(void){
 }
 
 
-void stopSequence(void){
- if(g_CurrentNktSequence!=0){
-  uint16 state=g_CurrentNktSequence->sequenceState;
+void stopSequence(void)
+{
+ if(g_CurrentNktSequence!=0)
+ {
+  const uint16 state=g_CurrentNktSequence->sequenceState;
 
   if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED)){
        g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));

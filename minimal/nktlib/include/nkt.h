@@ -133,7 +133,7 @@ extern void NktInstallReplayRoutNoTimers(void);
 extern void NktDeinstallReplayRout(void);
 
 void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq, uint16 initialState, bool bInstallUpdate);
+void initSequence(sNktSeq *seq, uint16 initialState, Bool bInstallUpdate);
 
 sNktSeq *loadSequence(const uint8 *filepath);
 

@@ -563,7 +563,7 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
 
  // process track events
  uint32 delta=0L;
- bool bEOT=FALSE;
+ Bool bEOT=FALSE;
  uint8 *pCmd=(uint8 *)startTrkPtr;
  uint8 ubSize=0;
  sNktBlock_t stBlock;
@@ -671,7 +671,7 @@ sNktSeq *Midi2Nkt(void *pMidiData, const uint8 *pOutFileName, const Bool bCompre
 
 sBufferInfo_t BufferInfo;
 sNktSeq *pNewSeq=0;
-bool bEOT=FALSE;
+Bool bEOT=FALSE;
 uint16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
 
 sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)gUserMemAlloc(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT,0);

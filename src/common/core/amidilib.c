@@ -377,7 +377,7 @@ static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
 #endif
 
-extern bool CON_LOG;
+extern Bool CON_LOG;
 extern FILE *ofp;
 
 int16 amInit(void)

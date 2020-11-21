@@ -95,7 +95,7 @@ int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 
 static Bool isXmidiEventChunk(const uint32 id)
 {
-	bool isXmidiEvent = false;
+	Bool isXmidiEvent = false;
 	
 	if( id == ID_FORM_XMID_EVNT || id == ID_FORM_XMID_RBRN || id == ID_FORM_XMID_TIMB)
 	{
@@ -299,9 +299,9 @@ retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, 
 }
 
 
-bool amIsValidXmidiData(void *midiData)
+Bool amIsValidXmidiData(void *midiData)
 {
-    bool isValid = false;
+    Bool isValid = FALSE;
 
   	const sIffChunk *firstChunk = (sIffChunk *)midiData;
   	const uint32 iffId = *((uint32 *)firstChunk->id);
@@ -317,10 +317,10 @@ bool amIsValidXmidiData(void *midiData)
     		if(*((uint32 *)chunk->id) == ID_CAT)
     		{
       			if( (uint32)chunk->data != ID_XMID) 
-      				isValid = false;
+      				isValid = FALSE;
     		}
 
- 			isValid = true;
+ 			isValid = TRUE;
    		} 
   
 	} 
@@ -328,7 +328,7 @@ bool amIsValidXmidiData(void *midiData)
 	{
   		if((uint32)firstChunk->data == ID_XMID)
   		{
-    		isValid = true;
+    		isValid = TRUE;
   		}
 	}
 

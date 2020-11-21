@@ -61,24 +61,24 @@ void popStack(sStack *stackState)
   --stackState->top;
 }
 
-bool isStackFull(const sStack *stackState)
+Bool isStackFull(const sStack *stackState)
 {
   if(stackState->top == (stackState->size-1)) 
   {
-    return true;
+    return TRUE;
   }
 
-  return false;
+  return FALSE;
 }
 
-bool isStackEmpty(const sStack *stackState)
+Bool isStackEmpty(const sStack *stackState)
 {
   if(stackState->top == 0) 
   {
-    return true;
+    return TRUE;
   }
   
-  return false;
+  return FALSE;
 }
 
 void deinitStack(sStack *pPtr)

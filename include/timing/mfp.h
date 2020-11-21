@@ -35,7 +35,7 @@ typedef enum{
 } eTimerType;
 
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
-extern void installReplayRout(const uint8 mode, const uint8 data, const bool isMultitrack, const eTimerType updateHandlerType);
+extern void installReplayRout(const uint8 mode, const uint8 data, const Bool isMultitrack, const eTimerType updateHandlerType);
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void deinstallReplayRout(void);

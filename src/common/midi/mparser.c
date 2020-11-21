@@ -437,7 +437,7 @@ if((*recallRS)==0){
 }
 
 //
-int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
+retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
  sEventBlock_t tempEvent;
 
  uint8 channel=0;
@@ -538,7 +538,7 @@ int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 d
  return retCode;
 }
 
-int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+retVal amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
@@ -624,7 +624,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
+retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
     sEventBlock_t tempEvent;
     retVal retCode = AM_OK;
     uint8 channelNb=0;
@@ -712,7 +712,7 @@ int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint3
    return retCode;
 }
 
-int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
+retVal amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 

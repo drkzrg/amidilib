@@ -105,7 +105,7 @@ void displayTuneInfo(void){
 
   if(pPtr){
     printf("PPQN: %u\t",pPtr->timeDivision);
-    printf("Tempo default: %lu [ms] last: %lu [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
+    printf("Tempo default: %u [ms] last: %u [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
   }
 
 }

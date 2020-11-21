@@ -678,9 +678,9 @@ if(g_CurrentSequence){
          printf("Track state:\n");
 		 
          pTrackState=&(pTrack->currentState);
-         printf("\tTime elapsed: %lu\n",pTrackState->timeElapsedInt);
-         printf("\tCur BPM: %lu\n",pTrackState->currentBPM);
-         printf("\tCur Tempo: %lu\n",pTrackState->currentTempo);
+         printf("\tTime elapsed: %u\n",pTrackState->timeElapsedInt);
+         printf("\tCur BPM: %u\n",pTrackState->currentBPM);
+         printf("\tCur Tempo: %u\n",pTrackState->currentTempo);
          printf("\tCur Play state: %s\n",getPlayStateStr(pTrackState->playState));
          printf("\tMute: %s\n",(pTrackState->playState & TM_MUTE)?"TRUE":"FALSE");
       }
@@ -693,8 +693,8 @@ if(g_CurrentSequence){
         printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
         printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
         printf("Cur Play state: %s\n",getPlayStateStr(pTrackState->playState));
-        printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
-        printf("Cur BPM: %lu\n",pTrackState->currentBPM);
+        printf("Cur Tempo: %u\n",pTrackState->currentTempo);
+        printf("Cur BPM: %u\n",pTrackState->currentBPM);
 
         for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i){
             pTrack=g_CurrentSequence->arTracks[i];
@@ -718,9 +718,9 @@ if(g_CurrentSequence){
 				sTrackState_t *pTrackState=0;
                 printf("Track[%d]\n",i);
                 pTrackState=&(pTrack->currentState);
-                printf("Time elapsed: %lu\n",pTrackState->timeElapsedInt);
-                printf("Cur BPM: %lu\n",pTrackState->currentBPM);
-                printf("Cur Tempo: %lu\n",pTrackState->currentTempo);
+                printf("Time elapsed: %u\n",pTrackState->timeElapsedInt);
+                printf("Cur BPM: %u\n",pTrackState->currentBPM);
+                printf("Cur Tempo: %u\n",pTrackState->currentTempo);
                 printf("Cur play state: %s\n",getPlayStateStr(pTrackState->playState));
                 printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
             }

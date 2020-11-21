@@ -13,7 +13,8 @@ static const uint32 MAX_GEMDOS_FILEPATH = 128;
 
 void printInfoScreen(void);
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
 
 bool bEnableCompression=FALSE;
 uint8 *filePath=0;
@@ -53,8 +54,8 @@ uint8 *filePath=0;
 
   pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
 
-   if(pMidi!=NULL){
-
+   if(pMidi!=NULL)
+   {
        // check MUS file
        MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
 
@@ -65,15 +66,13 @@ uint8 *filePath=0;
            uint8 *pOut=0;
            uint32 len=0;
 
-           amMemSet(tempName,0,sizeof(uint8)*MAX_GEMDOS_FILEPATH);
-
            // allocate working buffer for midi output
            pOut = (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
+           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
 
            // set midi output name
            uint8 *pTempPtr=0;
-           int32 fpLen = strlen(filePath);
-           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH);
+           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
            pTempPtr = strrchr(tempName,'.');
 
@@ -102,14 +101,12 @@ uint8 *filePath=0;
        // check mid 0,1 no quit
        if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
 
-           printf("Midi file loaded, size: %lu bytes.\n", ulFileLenght);
+           printf("Midi file loaded, size: %u bytes.\n", ulFileLenght);
 
            uint8 *pTempPtr=0;
-           int32 filePathLength = strlen(filePath);
-           filePathLength = ((filePathLength>=MAX_GEMDOS_FILEPATH)?(MAX_GEMDOS_FILEPATH-1):filePathLength);
 
-           amMemSet(tempName,0,128);
-           strncpy(tempName,filePath,128);
+           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
+           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);

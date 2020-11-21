@@ -210,7 +210,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
           }
 	  
-          while ( midiData!=0 && iRetVal>0)
+          while ( midiData!=0 && iRetVal==0)
           {
             midiData = processMidiTracks(midiData, midiType, ppSequence, &iRetVal);
           }
@@ -242,7 +242,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
              sequence->arTracks[i]->pTrkEventList=0;
           }
            
-          while ( midiData!=0 && iRetVal>0)
+          while ( midiData!=0 && iRetVal == 0)
           {
             midiData = processMidiTracks(midiData, midiType, ppSequence, &iRetVal);
           } 
@@ -313,7 +313,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
             {
               char *pTempPtr = 0;
               int16 len = strlen(filename);
-              strncpy(tempName, filename, 128);
+              strncpy(tempName, filename, 127);
               pTempPtr = strrchr(filename,'.');
               amMemCpy(pTempPtr+1,"mid",4);
             }

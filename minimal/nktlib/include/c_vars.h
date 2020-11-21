@@ -107,6 +107,6 @@ void compilerSanityCheck(void);
 // returns:
 // true - for little endian, x86, PS2
 // false / for big endian - // Big Endian - GameCube, Atari
-const bool checkEndianess();
+const Bool checkEndianess();
 
 #endif

@@ -22,8 +22,8 @@ int32 initStack(sStack *stackState,  const uint32 elementSize, const uint32 init
 void pushStack(sStack *stackState, void *newElement); // void element has to be of the constant size
 void popStack(sStack *stackState);
 void* getTopStackElement(sStack *stackState);
-bool isStackFull(const sStack *stackState);
-bool isStackEmpty(const sStack *stackState);
+Bool isStackFull(const sStack *stackState);
+Bool isStackEmpty(const sStack *stackState);
 void deinitStack(sStack *stackState);
 
 #endif

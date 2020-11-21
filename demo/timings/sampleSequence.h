@@ -17,7 +17,7 @@ typedef struct{
 } sEvent; 
 
 typedef struct{
-  bool bIsActive;
+  Bool bIsActive;
   uint8 volume;
   uint8 dummy;
 }sTrackState; 

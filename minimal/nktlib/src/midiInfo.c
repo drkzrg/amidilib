@@ -138,7 +138,7 @@ void collectPitchBendInfo(uint8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo
 }
 
 
-void collectMetaEventInfo( uint32 delta, uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, bool *bEOT){
+void collectMetaEventInfo( uint32 delta, uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, Bool *bEOT){
 
 uint8 size=0;
 uint32 metaLenght=0;
@@ -248,7 +248,7 @@ uint32 ulCount=0;
 
 
 /////////////////////////////////////////   collect midi info
-void collectMidiEventInfo(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo , bool *bEOF){
+void collectMidiEventInfo(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo , Bool *bEOF){
     uint8 usSwitch=0;
     uint8 ubSize=0;
 
@@ -350,7 +350,7 @@ void collectMidiEventInfo(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs
 }
 
 //
-uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT){
+uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT){
 
     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
     sChunkHeader *pTrackHd=0;

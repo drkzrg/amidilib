@@ -140,7 +140,7 @@ sNktSeq *loadSequence(const uint8 *filepath);
 void destroySequence(sNktSeq *pSeq);
 
 // replay control
-bool isSequencePlaying(void);
+Bool isSequencePlaying(void);
 void stopSequence(void);
 void pauseSequence(void);
 void playSequence(void);

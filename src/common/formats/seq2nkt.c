@@ -174,9 +174,9 @@ uint8 seq2nktMap[]={
 
 
 #ifdef ENABLE_GEMDOS_IO
-static int32 handleSingleTrack(const sSequence_t *pSeq, const bool bCompress, int16 *fh,uint32 *blocksWritten, uint32 *bytesWritten)
+static int32 handleSingleTrack(const sSequence_t *pSeq, const Bool bCompress, int16 *fh,uint32 *blocksWritten, uint32 *bytesWritten)
 #else
-static int32 handleSingleTrack(const sSequence_t *pSeq, const bool bCompress, FILE **file,uint32 *blocksWritten, uint32 *bytesWritten)
+static int32 handleSingleTrack(const sSequence_t *pSeq, const Bool bCompress, FILE **file,uint32 *blocksWritten, uint32 *bytesWritten)
 #endif
 {
 //TODO
@@ -432,9 +432,9 @@ static int32 handleSingleTrack(const sSequence_t *pSeq, const bool bCompress, FI
 }
 
 #ifdef ENABLE_GEMDOS_IO
-static int32 handleMultiTrack(const sSequence_t *pSeq, const bool bCompress, int16 *fh, uint32 *bytesWritten, uint32 *blocksWritten){
+static int32 handleMultiTrack(const sSequence_t *pSeq, const Bool bCompress, int16 *fh, uint32 *bytesWritten, uint32 *blocksWritten){
 #else
-static int32 handleMultiTrack(const sSequence_t *pSeq, const bool bCompress, FILE **file, uint32 *bytesWritten, uint32 *blocksWritten){
+static int32 handleMultiTrack(const sSequence_t *pSeq, const Bool bCompress, FILE **file, uint32 *bytesWritten, uint32 *blocksWritten){
 #endif
 /*
 //TODO
@@ -643,7 +643,7 @@ static int32 handleMultiTrack(const sSequence_t *pSeq, const bool bCompress, FIL
 
 
 //converts sequence to nkt file, optionally writes file named out
-int32 Seq2NktFile(const sSequence_t *pSeq, const uint8 *pOutFileName, const bool bCompress){
+int32 Seq2NktFile(const sSequence_t *pSeq, const uint8 *pOutFileName, const Bool bCompress){
 uint32 bytes_written = 0;
 uint32 blocks_written = 0;
 bool error=FALSE;

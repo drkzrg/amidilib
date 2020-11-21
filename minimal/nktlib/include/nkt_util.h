@@ -35,6 +35,6 @@ typedef struct sRunningStatus{
 } sRunningStatus_t;
 
 
-int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath,bool bCompressed);
+int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompressed);
 
 #endif

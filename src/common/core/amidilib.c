@@ -470,7 +470,7 @@ void amGetDeviceInfoResponse(const uint8 channel)
   static uint8 getInfoSysEx[]={0xF0,ID_ROLAND,GS_DEVICE_ID,GS_MODEL_ID,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   //uint8 getInfoSysEx[]={0xF0,0x41,0x10,0x42,0x7E,0x7F,0x06,0x01,0x00,0xF7};
   
-  bool bTimeout=FALSE;
+  Bool bTimeout=FALSE;
 
   /* calculate checksum */
   getInfoSysEx[5]=amCalcRolandChecksum(&getInfoSysEx[2],&getInfoSysEx[4]);
@@ -486,7 +486,7 @@ void amGetDeviceInfoResponse(const uint8 channel)
   /* request data */
     MIDI_SEND_DATA(10,(void *)getInfoSysEx); 
 #endif    
-//   bool bFlag=FALSE;
+//   Bool bFlag=FALSE;
 //   uint32 data=0;
   
 //amGetTimeStamp(); // get current timestamp

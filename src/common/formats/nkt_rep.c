@@ -30,7 +30,7 @@
 #endif
 
 // helper function for determining amount of memory we need for data / events buffers
-extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT);
+extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 extern uint16 isMultitrackReplay;
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq);
@@ -243,8 +243,8 @@ void initSequenceManual(sNktSeq *pSeq, const uint16 state){
 }
 #endif
 
-volatile static bool bStopped=FALSE;
-volatile static bool bPaused=FALSE;
+volatile static Bool bStopped=FALSE;
+volatile static Bool bPaused=FALSE;
 volatile static uint32 TimeAdd=0;
 volatile static uint32 addr;
 volatile static sNktBlock_t *nktBlk=0;
@@ -1511,7 +1511,7 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq){
 
 
 
-int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath,bool bCompress){
+int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress){
 
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");

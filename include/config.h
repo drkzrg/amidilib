@@ -28,8 +28,8 @@ typedef struct _amidiConfig{
 
   int32 midiBufferSize;           //sets internal midi buffer to larger one than the system one
   int32 midiConnectionTimeOut;    //sets timeout in seconds for handshake connection 
-  bool handshakeModeEnabled; 	//set to true if your module is connected to computers midi in [not yet implemented]
-  bool streamed;                //stream everything from raw, not preprocessed files or preload everything to memory? [not yet implemented]
+  Bool handshakeModeEnabled; 	//set to true if your module is connected to computers midi in [not yet implemented]
+  Bool streamed;                //stream everything from raw, not preprocessed files or preload everything to memory? [not yet implemented]
 } tAmidiConfig;
 
 int32 saveConfig(const uint8 *config);

@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, bool *bEOT);
+extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 
 // from mparser.c
 uint8  isMidiChannelEvent(const uint8 byteEvent){
@@ -239,7 +239,7 @@ void processPitchBend(uint8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* buf
     (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 }
 
-void processMetaEvent( uint32 delta, uint8 **pMidiData, sNktSeq *pSeq, uint16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, bool *bEOT){
+void processMetaEvent( uint32 delta, uint8 **pMidiData, sNktSeq *pSeq, uint16 trackIdx, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo, Bool *bEOT){
 
 uint8 size=0;
 uint32 metaLenght=0;
@@ -416,7 +416,7 @@ while( (*(*pMidiData))!=EV_EOX){
 }
 
 
-void processMidiEvent(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, uint16 trackNbToProcess, bool *bEOT){
+void processMidiEvent(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sBufferInfo_t* bufferInfo ,sNktSeq *pSeq, uint16 trackNbToProcess, Bool *bEOT){
  uint8 usSwitch=0;
  uint8 ubSize=0;
  uint32 iError=0;
@@ -667,7 +667,7 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
  return 0;
 }
 
-sNktSeq *Midi2Nkt(void *pMidiData, const uint8 *pOutFileName, const bool bCompress){
+sNktSeq *Midi2Nkt(void *pMidiData, const uint8 *pOutFileName, const Bool bCompress){
 
 sBufferInfo_t BufferInfo;
 sNktSeq *pNewSeq=0;

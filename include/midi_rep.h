@@ -14,7 +14,7 @@
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
 */
-bool isSeqPlaying(void);
+Bool isSeqPlaying(void);
 
 /** stops sequence replay */
 void stopSeq(void);

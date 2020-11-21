@@ -93,7 +93,7 @@ int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t 
 int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
 int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
 
-static bool isXmidiEventChunk(const uint32 id)
+static Bool isXmidiEventChunk(const uint32 id)
 {
 	bool isXmidiEvent = false;
 	
@@ -260,7 +260,7 @@ retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, 
 		while(trackChunkSize>0 && (ret == AM_OK))
 		{
 	
-			const bool isXmidiEvent = isXmidiEventChunk(id);
+			const Bool isXmidiEvent = isXmidiEventChunk(id);
 			
 			if(isXmidiEvent)
 			{

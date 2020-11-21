@@ -137,7 +137,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 	   
 	  /* Install our asm ikbd handler */
 	  Supexec(IkbdInstall);
-	  bool bQuit=FALSE;
+	  Bool bQuit=FALSE;
 	  
 	  //####
       while(bQuit==FALSE){

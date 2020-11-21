@@ -18,7 +18,7 @@
  * @return returns true if data are correct. 
  **/
 
-bool amIsValidXmidiData(void *xmidiData);
+Bool amIsValidXmidiData(void *xmidiData);
 
 /**
  * Gets number of sequences/tracks stored in xmidi data 

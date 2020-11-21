@@ -16,7 +16,7 @@ void printInfoScreen(void);
 int main(int argc, char *argv[])
 {
 
-bool bEnableCompression=FALSE;
+Bool bEnableCompression=FALSE;
 uint8 *filePath=0;
 
   amSetDefaultUserMemoryCallbacks();

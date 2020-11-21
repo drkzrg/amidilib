@@ -729,7 +729,7 @@ void  allPartsOffCm500(void){
   sendSysEX(&arCM500AllPartsOff);
 }
 
-void enableGM(const bool bEnable){
+void enableGM(const Bool bEnable){
     if(bEnable!=FALSE){
         sendSysEX(&arEnableGM);
     }else{

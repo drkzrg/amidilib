@@ -31,7 +31,7 @@ void compilerSanityCheck(void)
 // TRUE - for little endian, x86, PS2
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 
-const bool checkEndianess(void)
+const Bool checkEndianess(void)
 {
   uint16 word16=1;
 

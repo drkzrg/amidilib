@@ -667,8 +667,8 @@ void printSequenceState(void){
 if(g_CurrentSequence){
 
     printf("Td/PPQN: %u\n",g_CurrentSequence->timeDivision);
-    printf("Time step: %lu\n",g_CurrentSequence->timeStep);
-    printf("Time elapsedFrac: %lu\n",g_CurrentSequence->timeElapsedFrac);
+    printf("Time step: %u\n",g_CurrentSequence->timeStep);
+    printf("Time elapsedFrac: %u\n",g_CurrentSequence->timeElapsedFrac);
 
     sTrack_t *pTrack=0;
 
@@ -707,7 +707,7 @@ if(g_CurrentSequence){
             if(pTrack){
                 printf("Track[%d]\t",i);
                 pTrackState=&(pTrack->currentState);
-                printf("\tTime elapsed: %lu\t",pTrackState->timeElapsedInt);
+                printf("\tTime elapsed: %u\t",pTrackState->timeElapsedInt);
                 printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
             }
         }

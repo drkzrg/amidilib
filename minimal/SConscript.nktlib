@@ -107,6 +107,7 @@ LDFLAGS=''
 VASM_FLAGS=''
 CPPFLAGS=''
 CXXFLAGS=''
+CODEGEN = '-std=c99'
 
 LIB_POSTFIX='not_set'
 LIB_TARGET='not_set'
@@ -126,21 +127,21 @@ if(TOOLSET=='GCC434'):
             fpu_flags='-msoft-float '
 
         if(targetPlatform == 'ST'):
-                CFLAGS += '-m68000 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+                CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68000 -Wl,--traditional-format '
                 VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68000/'
 
                 LIB_TARGET = '000'
         elif(targetPlatform == 'F030'):
-                CFLAGS += '-m68030 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+                CFLAGS += '-m68030 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--traditional-format '
                 VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68030/'
 
                 LIB_TARGET = '030'
         elif(targetPlatform == 'CT60'):
-                CFLAGS += '-m68060 -std=c99 -ffast-math -fomit-frame-pointer ' + fpu_flags
+                CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
                 LDFLAGS += '-m68060 -Wl,--traditional-format '
                 VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/aout/m68060/'
@@ -158,7 +159,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
             fpu_flags='-msoft-float '
 
         if(targetPlatform == 'ST'):
-                CFLAGS += '-m68000 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+                CFLAGS += '-m68000 ' + CODEGEN + ' -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
                 VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68000/'
@@ -166,7 +167,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
                 # floating point support
                 env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68000','/usr/m68k-ataribrown-elf/lib/m68000']
         elif(targetPlatform == 'F030'):
-                CFLAGS += '-m68030 -std=c99 -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+                CFLAGS += '-m68030 ' + CODEGEN + ' -fomit-frame-pointer -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68030 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
                 VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68030/'
@@ -181,7 +182,7 @@ elif(TOOLSET == 'GCCBROWNELF'):
                         env['LIBPATH'] = env['LIBPATH'] + ['/lib/gcc/m68k-ataribrown-elf/'+ GCC_VERSION_DIR + '/m68020/softfp', '/usr/m68k-ataribrown-elf/lib/m68020/softfp']
 
         elif(targetPlatform == 'CT60'):
-                CFLAGS += '-m68060 -std=c99 -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
+                CFLAGS += '-m68060 ' + CODEGEN + ' -fomit-frame-pointer  -fstrict-aliasing -fcaller-saves -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
                 LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
                 VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I./nktlib/include '
                 CSTARTUP_FOLDER='../deps/startup/brownerelf/m68060/'

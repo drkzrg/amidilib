@@ -1,4 +1,4 @@
-# gcc 7.x.x brownelf debug
+# gcc brownelf debug
 
 SConscript('SConscript',\
 variant_dir='../build/brownelf/debug', duplicate=0,\

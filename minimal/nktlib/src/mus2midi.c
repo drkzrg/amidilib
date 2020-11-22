@@ -311,10 +311,10 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("bytes written %lu\n",(uint32)(*len));
+       printf("bytes written %u\n",(uint32)(*len));
 #endif
 
-    amTrace("bytes written %lu\n",(uint32)(*len));
+    amTrace("bytes written %u\n",(uint32)(*len));
 
      if(pOutMidName){
 

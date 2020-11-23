@@ -91,7 +91,7 @@ fi
 }
 
 # delete binaries if they exist
-echo "############################# Cleaning build .. "
+echo "############################# Removing binaries .. "
 delete_if_exists $MIDIREP_BIN
 delete_if_exists $YM2149_TEST_BIN
 delete_if_exists $MIDIOUT_BIN
@@ -101,6 +101,7 @@ delete_if_exists $MID2NKT_BIN
 
 # clean all stuff
 if [ $cleanall -eq 1 ]; then
+  echo "############################# Cleaning build .. "
   scons --sconstruct=SConstruct_brownelf_$BUILD_CONFIG -c
 fi
 

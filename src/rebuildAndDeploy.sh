@@ -6,6 +6,16 @@
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
+args=("$@") 
+ARGS=${#args[@]} 
+cleanall=0 
+
+for (( i=0;i<$ARGS;++i)); do 
+if [ ${args[${i}]} = "--clean" ]; then
+  cleanall=1
+fi
+done
+
 copy_to_shared_dir=0
 shared_dir='/home/saulot/Pulpit/shared/amidilib'
 
@@ -42,7 +52,7 @@ REMOTE_PATH='/e/adebug/'
 tools_prefix='/opt/cross-mint/bin/'
 cross_prefix='m68k-ataribrown-elf-'
 debug_level=1
-BUILD_CONFIG='release'
+BUILD_CONFIG='debug'
 BUILD_DIR='../build/brownelf/'$BUILD_CONFIG'/'
 
 function process()
@@ -70,7 +80,6 @@ then
         cp -v $BUILD_DIR$1 $install_dir
    fi
 fi
-
 }
 
 function delete_if_exists()
@@ -90,8 +99,10 @@ delete_if_exists $MIDISEQ_BIN
 delete_if_exists $NKTREP_BIN
 delete_if_exists $MID2NKT_BIN
 
-#clean all stuff
-scons --sconstruct=SConstruct_brownelf_$BUILD_CONFIG -c
+# clean all stuff
+if [ $cleanall -eq 1 ]; then
+  scons --sconstruct=SConstruct_brownelf_$BUILD_CONFIG -c
+fi
 
 #launch build
 echo "############################# Starting build ... "   

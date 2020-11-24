@@ -14,7 +14,7 @@ stripsymbols=0
 for (( i=0;i<$ARGS;++i)); do 
 if [ ${args[${i}]} = "--clean" ]; then
   cleanall=1
-
+fi  
 if [ ${args[${i}]} = "--strip" ]; then
   stripsymbols=1
 fi

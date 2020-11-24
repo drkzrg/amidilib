@@ -138,7 +138,7 @@ void mainLoop(sNktSeq *pSequence)
         case SC_ESC:{
           bQuit=TRUE;
           //stop sequence
-          stopSequence();
+          stopNktSequence();
         }break;
         case SC_P:{
           //starts playing sequence if is stopped
@@ -223,7 +223,7 @@ void mainLoop(sNktSeq *pSequence)
           }break;
 #endif
          case SC_SPACEBAR:{
-            stopSequence();
+            stopNktSequence();
          }break;
 
           };

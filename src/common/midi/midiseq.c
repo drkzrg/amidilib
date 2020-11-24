@@ -35,22 +35,20 @@ const uint8 *arEventNames[T_EVT_COUNT]={
 
 
 //common
-static void fSetTempo(const void *pEvent){
+static void fSetTempo(const void *pEvent)
+{
  sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
- sSequence_t *seq=0;
- getCurrentSeq(&seq);
+ sSequence_t *seq = getActiveSequence();
 
- if(seq!=0){
-   // set new tempo value and indicate that tempo has changed
-   // it will be handled in interrupt routine
-   uint8 activeTrack=seq->ubActiveTrack;
-   sTrackState_t *pCurTrackState=&(seq->arTracks[activeTrack]->currentState);
+ // set new tempo value and indicate that tempo has changed
+ // it will be handled in interrupt routine
+ uint8 activeTrack = seq->ubActiveTrack;
+ sTrackState_t *pCurTrackState = &(seq->arTracks[activeTrack]->currentState);
 
-   pCurTrackState->currentTempo=pPtr->eventData.tempoVal;
-   amTrace("fSetTempo %lu\n",pCurTrackState->currentTempo);
-   pCurTrackState->currentBPM=60000000/pCurTrackState->currentTempo;
-   seq->timeStep=amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
- }
+ pCurTrackState->currentTempo = pPtr->eventData.tempoVal;
+ amTrace("fSetTempo %u\n",pCurTrackState->currentTempo);
+ pCurTrackState->currentBPM = 60000000/pCurTrackState->currentTempo;
+ seq->timeStep = amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 }
 
 static void fHandleEOT(const void *pEvent){

@@ -118,7 +118,7 @@ uint8 *filePath=0;
 
            if(pSeq){
                 // release sequence
-                destroySequence(pSeq);
+                destroyNktSequence(pSeq);
            }else{
                printf("[MID->NKT] conversion error. Exiting.\n");
            }

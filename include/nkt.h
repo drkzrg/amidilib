@@ -132,19 +132,21 @@ extern void NktInstallReplayRoutNoTimers(void);
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void NktDeinstallReplayRout(void);
 
-void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq, uint16 initialState, Bool bInstallUpdate);
+/** returns currently loaded/active nkt sequence pointer */
+sNktSeq * const getActiveNktSequence();
 
-sNktSeq *loadSequence(const uint8 *filepath);
+void initNktSequence(sNktSeq *seq, uint16 initialState, Bool bInstallUpdate);
 
-void destroySequence(sNktSeq *pSeq);
+sNktSeq *loadNktSequence(const uint8 *filepath);
+
+void destroyNktSequence(sNktSeq *pSeq);
 
 // replay control
-Bool isSequencePlaying(void);
-void stopSequence(void);
-void pauseSequence(void);
-void playSequence(void);
-void switchReplayMode(void);
+Bool isNktSequencePlaying(void);
+void stopNktSequence(void);
+void pauseNktSequence(void);
+void playNktSequence(void);
+void switchNktReplayMode(void);
 
 void setMidiMasterVolume(const uint8 vol);
 void setMidiMasterBalance(const uint8 bal);
@@ -155,7 +157,7 @@ uint8 getMidiMasterBalance(void);
 #ifdef DEBUG_BUILD
 //debug helpers
 #ifdef MANUAL_STEP
-void initSequenceManual(sNktSeq *pSeq, uint16 initialState);
+void initNktSequenceManual(sNktSeq *pSeq, uint16 initialState);
 #endif
 void printNktSequenceState(void);
 const uint8 *getEventTypeName(const uint16 type);

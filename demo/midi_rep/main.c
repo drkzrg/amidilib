@@ -262,23 +262,23 @@ void printInfoScreen(void){
   printf("Ready...\n");
 } 
 
-void displayTuneInfo(void){
-
-  sSequence_t *pPtr;
-  getCurrentSeq(&pPtr);
+void displayTuneInfo(void)
+{
+  const sSequence_t *pPtr = getActiveSequence();
   
-  uint32 tempo=pPtr->arTracks[0]->currentState.currentTempo;
-  uint16 td=pPtr->timeDivision;
-  uint16 numTrk=pPtr->ubNumTracks;
+  const uint32 tempo = pPtr->arTracks[0]->currentState.currentTempo;
+  const uint16 td = pPtr->timeDivision;
+  const uint16 numTrk = pPtr->ubNumTracks;
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN: %u\t",td);
+  printf("PPQN/TD: %u\t",td);
   printf("Tempo: %lu [ms]\n",tempo);
   
   printf("Number of tracks: %d\n",numTrk);
-  uint8 *pTrkName=0;
-  for(int i=0;i<numTrk;i++){
-    pTrkName=pPtr->arTracks[i]->pTrackName;
+  
+  for(uint16 i=0;i<numTrk;++i)
+  {
+    uint8 *pTrkName = pPtr->arTracks[i]->pTrackName;
     printf("[Track no. %d] %s\n",(i+1),pTrkName);
   }
   

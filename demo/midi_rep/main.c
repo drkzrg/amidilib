@@ -97,14 +97,14 @@ int main(int argc, char *argv[])
        mainLoop(pMusicSeq,argv[1]);
 	  
 	     //unload sequence
-	     amDestroySequence(&pMusicSeq);
+	     destroyAmSequence(&pMusicSeq);
 	  
       } else {
 
         amTrace((const uint8*)"Error while parsing. Exiting... \n");
     
         //unload sequence
-        amDestroySequence(&pMusicSeq);
+        destroyAmSequence(&pMusicSeq);
         amDeinit(); //deinit our stuff
         return(-1);
 
@@ -127,9 +127,9 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 {
       //install replay rout
 #ifdef MANUAL_STEP
-    initSeqManual(pSequence);
+    initAmSequenceManual(pSequence);
 #else
-    initSeq(pSequence,MFP_TiC);
+    initAmSequence(pSequence,MFP_TiC);
 #endif
 
 	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
@@ -140,7 +140,8 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 	  Bool bQuit=FALSE;
 	  
 	  //####
-      while(bQuit==FALSE){
+      while(bQuit!=TRUE)
+      {
 
 	    //check keyboard input  
 	    for (uint16 i=0; i<128; ++i) {
@@ -152,19 +153,19 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 		case SC_ESC:{
 		  bQuit=TRUE;
 		  //stop sequence
-		  stopSeq();
+		  stopAmSequence();
 		}break;
 		case SC_P:{
 		  //starts playing sequence if is stopped
-		  playSeq();
+		  playAmSequence();
 		 }break;
 		case SC_R:{
 		  //pauses sequence when is playing
-		   pauseSeq();
+		   pauseAmSequence();
 		 }break;
 		 case SC_M:{
 		   //toggles between play once and play in loop
-		  toggleReplayMode();
+		  toggleAmReplayMode();
 		 }break;
 		case SC_I:{
 		   //displays current track info
@@ -198,7 +199,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 		 }break;
 
 		 case SC_SPACEBAR:{
-		  stopSeq();
+		  stopAmSequence();
 		 }break;
 #ifdef MANUAL_STEP
           case SC_ENTER:{
@@ -210,12 +211,13 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
                 }
                 else if(pSequence->seqType==ST_MULTI){
                     updateStepMulti();
-                }else if(pSequence->seqType==ST_MULTI_SUB){
-                    printf("!!! ST_MULTI_SUB update TODO...\n");
+                }else if(pSequence->seqType==ST_MULTI_SUB)
+                {
+                   AssertMsg(0,!!! ST_MULTI_SUB update TODO...\n);
                 }
             }
 
-            printSequenceState();
+            printAmSequenceState();
 
             // clear buffer after each update step
             MIDIbytesToSend=0;
@@ -264,7 +266,7 @@ void printInfoScreen(void){
 
 void displayTuneInfo(void)
 {
-  const sSequence_t *pPtr = getActiveSequence();
+  const sSequence_t *pPtr = getActiveAmSequence();
   
   const uint32 tempo = pPtr->arTracks[0]->currentState.currentTempo;
   const uint16 td = pPtr->timeDivision;

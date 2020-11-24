@@ -729,11 +729,15 @@ void  allPartsOffCm500(void){
   sendSysEX(&arCM500AllPartsOff);
 }
 
-void enableGM(const Bool bEnable){
-    if(bEnable!=FALSE){
-        sendSysEX(&arEnableGM);
-    }else{
-        sendSysEX(&arDisableGM);
+void enableGM(const Bool bEnable)
+{
+    if(bEnable==TRUE)
+    {
+    	sendSysEX(&arEnableGM);
+    }
+    else
+    {
+    	sendSysEX(&arDisableGM);
     }
 }
 
@@ -749,7 +753,8 @@ void patchMT32toGM(const Bool bStandardGMDrumset){
         sendSysEX(&mt32_gm[i]);
     }
 
-    if(bStandardGMDrumset!=FALSE){
+    if(bStandardGMDrumset==TRUE)
+    {
         // standard drumset
         sendSysEX(&mt32_stnd[0]);
         sendSysEX(&mt32_stnd[1]);

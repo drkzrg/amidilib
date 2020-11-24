@@ -173,8 +173,8 @@ if(pSeq!=0){
 #endif
 
     // install our interrupt handler
-    if(bInstallUpdate!=FALSE){
-
+    if(bInstallUpdate==TRUE)
+    {
         if(pSeq->nbOfTracks==1){
              amTrace((const uint8*)"Setting single track replay\n");
             isMultitrackReplay=0;
@@ -377,8 +377,8 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
 //update step for single track replay
 
-void updateStepNkt(void){
-
+void updateStepNkt(void)
+{
  // handle master volume, balance, reverb, mt32 text
  handleMasterSettings();
 
@@ -387,9 +387,11 @@ void updateStepNkt(void){
  sequenceState=g_CurrentNktSequence->sequenceState;
 
  //check sequence state if paused do nothing
- if((sequenceState&NKT_PS_PAUSED)){
+ if((sequenceState&NKT_PS_PAUSED))
+ {
 
-     if(bPaused==FALSE){
+     if(bPaused!=TRUE)
+     {
         bPaused=TRUE;
         bStopped=FALSE;
 
@@ -492,7 +494,8 @@ void updateStepNkt(void){
     // check sequence state if stopped reset position
     // and tempo to default, but only once
 
-   if(bStopped==FALSE){
+   if(bStopped!=TRUE)
+   {
       bStopped=TRUE;
 
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
@@ -509,7 +512,8 @@ void updateStepNkt(void){
       g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
       //rewind all tracks to the first event
-      for(int i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+      for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i)
+      {
           g_CurrentNktSequence->pTracks[i].timeElapsedInt=0UL;
           g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0UL;
           g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0UL;
@@ -540,7 +544,8 @@ void updateStepNktMt(void){
  //check sequence state if paused do nothing
  if((sequenceState&NKT_PS_PAUSED)){
 
-     if(bPaused==FALSE){
+     if(bPaused!=TRUE)
+     {
         bPaused=TRUE;
         bStopped=FALSE;
 
@@ -655,7 +660,8 @@ void updateStepNktMt(void){
     // check sequence state if stopped reset position
     // and tempo to default, but only once
 
-   if(bStopped==FALSE){
+   if(bStopped!=TRUE)
+   {
       bStopped=TRUE;
 
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
@@ -1554,8 +1560,8 @@ setNktTrackInfo(pTrackInfo,pSeq);
      return -1;
  }
 
-     if(bCompress!=FALSE){
-
+     if(bCompress==TRUE)
+     {
           amTrace("[MID2NKT] LZO compression ...\n");
 
          if(lzo_init()!=LZO_E_OK){

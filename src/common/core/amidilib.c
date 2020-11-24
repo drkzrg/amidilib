@@ -498,7 +498,7 @@ void amGetDeviceInfoResponse(const uint8 channel)
       
 //	 if(data!=0){
 	  
-//	  if(bFlag==FALSE){
+//	  if(bFlag!=TRUE){
 //		amTrace((const uint8*)"Received device info on ch: %d\t",channel);
 // 	    bFlag=TRUE;
 //	}

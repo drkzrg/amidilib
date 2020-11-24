@@ -38,11 +38,11 @@ const uint8 *arEventNames[T_EVT_COUNT]={
 static void fSetTempo(const void *pEvent)
 {
  sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
- sSequence_t *seq = getActiveSequence();
+ sSequence_t *seq = getActiveAmSequence();
 
  // set new tempo value and indicate that tempo has changed
  // it will be handled in interrupt routine
- uint8 activeTrack = seq->ubActiveTrack;
+ const uint8 activeTrack = seq->ubActiveTrack;
  sTrackState_t *pCurTrackState = &(seq->arTracks[activeTrack]->currentState);
 
  pCurTrackState->currentTempo = pPtr->eventData.tempoVal;

@@ -644,23 +644,24 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
 
  } /*end of decode events loop */
 
- if(bEOT==FALSE){
-        amTrace("EOT meta event not found, appending NKT_END event!\n");
-        amTrace("delta: %lu Meta End of Track\n", 0);
+ if(bEOT!=TRUE)
+ {
+    amTrace("EOT meta event not found, appending NKT_END event!\n");
+    amTrace("delta: %lu Meta End of Track\n", 0);
 
-        stBlock.msgType=NKT_END;
-        stBlock.blockSize=0;
-        stBlock.bufferOffset=0; //we don't mind
+    stBlock.msgType=NKT_END;
+    stBlock.blockSize=0;
+    stBlock.bufferOffset=0; //we don't mind
 
-        // write VLQ
-        uint32 eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-        int32 count=WriteVarLen((int32)0,(uint8 *)pSeq->pTracks[trackNbToProcess].eventBlocksPtr);
-        tempBufInfo.eventsBlockOffset+=count;
+    // write VLQ
+    uint32 eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+    int32 count=WriteVarLen((int32)0,(uint8 *)pSeq->pTracks[trackNbToProcess].eventBlocksPtr);
+    tempBufInfo.eventsBlockOffset+=count;
 
-        // write event info block
-        eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-        amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
-        tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
+    // write event info block
+    eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
+    amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
+    tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
  }
 
     // OK
@@ -699,7 +700,8 @@ for(uint16 i=0;i<nbOfTracks;++i)
     // special case if midi track data isn't properly terminated with EOT meta event
     // like mus files or some mid files
 
-    if(bEOT==FALSE){
+    if(bEOT!=TRUE)
+    {
         amTrace("No EOT in midi data found, adding EOT meta event...\n");
         arMidiInfo[i].eventsBlockSize += 1;
         arMidiInfo[i].eventsBlockSize+=sizeof(sNktBlock_t);

@@ -101,7 +101,8 @@ int main(void){
   Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
   
   //enter main loop
-  while(bQuit==FALSE){
+  while(bQuit!=TRUE)
+  {
     
   for (uint16 i=0; i<128; ++i) {
      
@@ -191,7 +192,7 @@ void onTempoUp(sCurrentSequenceState *pSeqPtr){
 uint32 iCurrentStep=0L;
 uint32 iCurrentTempo=0L;
 
-  if(handleTempoChange!=FALSE) return;
+  if(handleTempoChange==TRUE) return;
 
   iCurrentTempo=pSeqPtr->currentTempo;
 
@@ -223,7 +224,7 @@ void onTempoDown(sCurrentSequenceState *pSeqPtr){
 uint32 iCurrentStep=0L;
 uint32 iCurrentTempo=0L;
 
-if(handleTempoChange!=FALSE) return;
+if(handleTempoChange==TRUE) return;
 
 if(g_CurrentState.state==PS_STOPPED) return;
 
@@ -352,7 +353,8 @@ int initSampleSequence(sEvent *ch1,sEvent *ch2,sEvent *ch3, sCurrentSequenceStat
   pSeqPtr->timeElapsedFrac=0;
   pSeqPtr->timeStep=amCalculateTimeStep((uint16)DEFAULT_BPM, (uint16)DEFAULT_PPQN, (uint16)SEQUENCER_UPDATE_HZ);
   
-   if(bPlayModeInit==FALSE){
+   if(bPlayModeInit!=TRUE)
+   {
      //init but only once, user can switch this option during runtime
       bPlayModeInit=TRUE;
       g_CurrentState.playMode=S_PLAY_LOOP; 
@@ -383,7 +385,8 @@ static bool bStopped=FALSE;
   //check sequence state if stopped reset position on all tracks
   //and reset tempo to default, but only once
   
-  if((g_CurrentState.state==PS_STOPPED&&bStopped==FALSE)){
+  if((g_CurrentState.state==PS_STOPPED&&bStopped!=TRUE))
+  {
     bStopped=TRUE;
     //repeat for each track
     for (uint16 i=0;i<3;++i){
@@ -427,7 +430,7 @@ static bool bStopped=FALSE;
       
       g_CurrentState.tracks[i].timeElapsedInt+=TimeAdd;
       
-      while( ((isEndSeq(pEvent)==FALSE)&&pEvent->delta<=g_CurrentState.tracks[i].timeElapsedInt))
+      while( ((isEndSeq(pEvent)!=TRUE)&&pEvent->delta<=g_CurrentState.tracks[i].timeElapsedInt))
       {
         endOfSequence=FALSE;
         g_CurrentState.tracks[i].timeElapsedInt -= pEvent->delta;

@@ -9,10 +9,14 @@
 args=("$@") 
 ARGS=${#args[@]} 
 cleanall=0 
+stripsymbols=0
 
 for (( i=0;i<$ARGS;++i)); do 
 if [ ${args[${i}]} = "--clean" ]; then
   cleanall=1
+
+if [ ${args[${i}]} = "--strip" ]; then
+  stripsymbols=1
 fi
 done
 
@@ -51,7 +55,6 @@ REMOTE_PATH='/e/adebug/'
 
 tools_prefix='/opt/cross-mint/bin/'
 cross_prefix='m68k-ataribrown-elf-'
-debug_level=1
 BUILD_CONFIG='debug'
 BUILD_DIR='../build/brownelf/'$BUILD_CONFIG'/'
 
@@ -63,7 +66,7 @@ then
 #   $tools_prefix$cross_prefix"stack" $BUILD_DIR$1 --size=$stack_size
 #   $tools_prefix$cross_prefix"flags" -S $BUILD_DIR$1
 
-   if [ $debug_level -eq 0 ]
+   if [ $stripsymbols -eq 1 ]
    then
         echo Stripping symbols from $1
         $tools_prefix$cross_prefix"strip" -s $BUILD_DIR$1

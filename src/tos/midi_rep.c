@@ -64,7 +64,7 @@ void initAmSequence(sSequence_t *seq, const eTimerType timerType)
   Supexec(flushMidiSendBuffer);
 #endif
 
-  uint8 mode,data;
+  uint8 mode=0,data=0;
   
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 

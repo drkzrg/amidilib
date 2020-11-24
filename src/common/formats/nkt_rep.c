@@ -111,49 +111,34 @@ if(pSeq!=0){
 
     // precalc tempo table
     amTrace("Precalculating update step for Td: %d, Bpm: %d\n",td,bpm);
-     // precalculate values for different update steps
+    
+    // precalculate values for different update steps
+    if(tempPPU<65536)
+    {
+      const uint32 div = (tempPPU*65536)/60;
+      pSeq->defaultTempo.tuTable[NKT_U25HZ] = pSeq->currentTempo.tuTable[NKT_U25HZ] = div/25;
+      pSeq->defaultTempo.tuTable[NKT_U50HZ] = pSeq->currentTempo.tuTable[NKT_U50HZ] = div/50;
+      pSeq->defaultTempo.tuTable[NKT_U100HZ] = pSeq->currentTempo.tuTable[NKT_U100HZ] = div/100;
+      pSeq->defaultTempo.tuTable[NKT_U200HZ] = pSeq->currentTempo.tuTable[NKT_U200HZ] = div/200;
+    }
+    else
+    {
+      const uint32 div = ((tempPPU/60)*65536);
+      pSeq->defaultTempo.tuTable[NKT_U25HZ] = pSeq->currentTempo.tuTable[NKT_U25HZ] = div/25;
+      pSeq->defaultTempo.tuTable[NKT_U50HZ] = pSeq->currentTempo.tuTable[NKT_U50HZ] = div/50;
+      pSeq->defaultTempo.tuTable[NKT_U100HZ] = pSeq->currentTempo.tuTable[NKT_U100HZ] = div/100;
+      pSeq->defaultTempo.tuTable[NKT_U200HZ] = pSeq->currentTempo.tuTable[NKT_U200HZ] = div/200;
+    }
 
-     for(int i=0;i<NKT_UMAX;++i){
+    const uint32 up25Hz = pSeq->currentTempo.tuTable[NKT_U25HZ];
+    const uint32 up50Hz = pSeq->currentTempo.tuTable[NKT_U25HZ];
+    const uint32 up100Hz = pSeq->currentTempo.tuTable[NKT_U100HZ];
+    const uint32 up200Hz = pSeq->currentTempo.tuTable[NKT_U200HZ];
 
-          switch(i){
-              case NKT_U25HZ:{
-                  if(tempPPU<65536){
-                      pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/25;
-                  }else{
-                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/25;
-                  }
-                  amTrace("Update 25hz: %ld  [0x%x]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
-              } break;
-              case NKT_U50HZ:{
-                  if(tempPPU<65536){
-                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/50;
-                  }else{
-                        pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/50;
-                  }
-                   amTrace("Update 50hz: %ld [0x%x]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
-              } break;
-              case NKT_U100HZ:{
-                  if(tempPPU<65536){
-                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/100;
-                  }else{
-                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/100;
-                  }
-                   amTrace("Update 100hz: %ld [0x%x]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
-              } break;
-              case NKT_U200HZ:{
-                  if(tempPPU<65536){
-                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU*65536)/60)/200;
-                  }else{
-                       pSeq->defaultTempo.tuTable[i]=pSeq->currentTempo.tuTable[i]=((tempPPU/60)*65536)/200;
-                  }
-                   amTrace("Update 200hz: %ld [0x%x]\n",pSeq->currentTempo.tuTable[i],pSeq->currentTempo.tuTable[i]);
-              } break;
-              default:{
-                  amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
-              } break;
-          };
-
-     } //end for
+    amTrace("Update 25hz: %d  [0x%x]\n",up25Hz,up25Hz);
+    amTrace("Update 50hz: %d [0x%x]\n",up50Hz,up50Hz);
+    amTrace("Update 100hz: %d [0x%x]\n",up100Hz,up100Hz);
+    amTrace("Update 200hz: %d [0x%x]\n",up200Hz,up200Hz);
 
     for(uint16 i=0;i<pSeq->nbOfTracks;++i)
     {
@@ -187,7 +172,7 @@ if(pSeq!=0){
 
     }else{
             if(pSeq->nbOfTracks==1){
-                 amTrace((const uint8*)"Setting single track replay\n");
+                amTrace((const uint8*)"Setting single track replay\n");
                 isMultitrackReplay=0;
                 Supexec(NktInstallReplayRoutNoTimers);
             }else{
@@ -208,10 +193,11 @@ if(pSeq!=0){
 }
 
 #ifdef DEBUG_BUILD
-void initNktSequenceManual(sNktSeq *pSeq, const uint16 state){
+void initNktSequenceManual(sNktSeq *pSeq, const uint16 state)
+{
  g_CurrentNktSequence=0;
-
- if(pSeq!=0){
+ AssertMsg(pSeq!=0,"Sequence is NULL");
+ 
   uint8 mode=0,data=0;
   g_CurrentNktSequence=pSeq;
 
@@ -238,7 +224,6 @@ void initNktSequenceManual(sNktSeq *pSeq, const uint16 state){
 
   //printNktSequenceState();
 
- } //endif
  return;
 }
 #endif
@@ -501,7 +486,7 @@ void updateStepNkt(void)
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (int i=0;i<NKT_UMAX;++i){
+      for (uint8 i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -667,7 +652,7 @@ void updateStepNktMt(void){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (int i=0;i<NKT_UMAX;++i){
+      for (uint8 i=0;i<NKT_UMAX;++i){
           g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
       }
 
@@ -1247,17 +1232,18 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
  return pNewSeq;
 }
 
-void destroyNktSequence(sNktSeq *pSeq){
+void destroyNktSequence(sNktSeq *pSeq)
+{
+  AssertMsg(pSeq!=0,"Destroy sequence called on NULL sequence.");
 
-  if(pSeq==0) return;
+  if(pSeq->pTracks)
+  {
 
-  if(pSeq->pTracks){
-
-   for(int i=0; i<pSeq->nbOfTracks; ++i){
-
-        if(pSeq->pTracks[i].nbOfBlocks!=0){
-
-            // release linear buffer
+   for(uint16 i=0; i<pSeq->nbOfTracks; ++i)
+   {
+        if(pSeq->pTracks[i].nbOfBlocks!=0)
+        {
+           // release linear buffer
             linearBufferFree(&(pSeq->pTracks[i].lbEventsBuffer));
             linearBufferFree(&(pSeq->pTracks[i].lbDataBuffer));
         }
@@ -1277,114 +1263,107 @@ void destroyNktSequence(sNktSeq *pSeq){
 
 Bool isNktSequencePlaying(void)
 {
+  AssertMsg(g_CurrentNktSequence!=0,"Destroy sequence called on NULL sequence.");
 
- if(g_CurrentNktSequence!=0){
-     const uint16 state = g_CurrentNktSequence->sequenceState;
-     if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED)))
-        return TRUE;
-       else
-        return FALSE;
- }
-
+  const uint16 state = g_CurrentNktSequence->sequenceState;
+ 
+  if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED))) 
+    return TRUE;
+ 
  return FALSE;
 }
 
 
 void stopNktSequence(void)
 {
- if(g_CurrentNktSequence!=0)
- {
+  AssertMsg(g_CurrentNktSequence!=0,"stop sequence called on NULL sequence.");
+
   const uint16 state=g_CurrentNktSequence->sequenceState;
 
-  if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED)){
-       g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
+  if((state&NKT_PS_PLAYING)||(state&NKT_PS_PAUSED))
+  {
+    g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("Stop sequence\n");
+    printf("Stop sequence\n");
 #endif
 
     setMT32Message("Stopped...");
 
   }
 
-    resetMidiDevice();
-
-  }
+  resetMidiDevice();
 }
 
-void pauseNktSequence(){
+void pauseNktSequence()
+{
+  AssertMsg(g_CurrentNktSequence!=0,"Pause sequence called on NULL sequence.");
 
-     if(g_CurrentNktSequence!=0){
-        uint16 state=g_CurrentNktSequence->sequenceState;
+  const uint16 state = g_CurrentNktSequence->sequenceState;
 
-          if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED))){
-           g_CurrentNktSequence->sequenceState&=(~NKT_PS_PLAYING);
-           g_CurrentNktSequence->sequenceState|=NKT_PS_PAUSED;
+  if((state&NKT_PS_PLAYING)&&(!(state&NKT_PS_PAUSED)))
+  {
+    g_CurrentNktSequence->sequenceState&=(~NKT_PS_PLAYING);
+    g_CurrentNktSequence->sequenceState|=NKT_PS_PAUSED;
 
 #ifndef SUPRESS_CON_OUTPUT
-           printf("Pause sequence\n");
+    printf("Pause sequence\n");
 #endif
-           setMT32Message("Paused...");
+    setMT32Message("Paused...");
+  } 
+  else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) )
+  {
+    g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
+    g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;  //set playing state
 
-           return;
-          }else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) ){
-            g_CurrentNktSequence->sequenceState&=(~NKT_PS_PAUSED); //unpause
-            g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;  //set playing state
-
-            setMT32Message("Playing...");
-
-          }
-      }
+    setMT32Message("Playing...");
+  }
  } //pauseSequence
 
 // play sequence
-void playNktSequence(void){
+void playNktSequence(void)
+{
+  AssertMsg(g_CurrentNktSequence!=0,"Play sequence called on NULL sequence.");
 
-if(g_CurrentNktSequence!=0){
-  uint16 state=g_CurrentNktSequence->sequenceState;
+  const uint16 state=g_CurrentNktSequence->sequenceState;
 
-    if(!(state&NKT_PS_PLAYING)){
-
-         g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
-         g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
+    if(!(state&NKT_PS_PLAYING))
+    {
+      g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
+      g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
 
 #ifndef SUPRESS_CON_OUTPUT
-         printf("Play sequence\t");
+      printf("Play sequence\t");
 
-
-         if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
-
-           printf("[ ONCE ]\n");
-
-         }else{
-
-           printf("[ LOOP ]\n");
-
-         }
-#endif
-
+      if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE)
+      {
+        printf("[ ONCE ]\n");
       }
- }
+      else
+      {
+        printf("[ LOOP ]\n");
+      }
+#endif
+      }
 }
 
-void switchNktReplayMode(void){
+void switchNktReplayMode(void)
+{
+  AssertMsg(g_CurrentNktSequence!=0,"Switvh replay modecalled on NULL sequence.");
 
- if(g_CurrentNktSequence!=0){
-     if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
-        g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
-
+  if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE)
+  {
+    g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
 #ifndef SUPRESS_CON_OUTPUT
-        printf("Set replay mode: [ LOOP ]\n");
+    printf("Set replay mode: [ LOOP ]\n");
 #endif
-
-     }else{
-        g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
-
+  }
+  else
+  {
+    g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
 #ifndef SUPRESS_CON_OUTPUT
-        printf("Set replay mode: [ ONCE ]\n");
+    printf("Set replay mode: [ ONCE ]\n");
 #endif
-
-     }
   }
 }
 
@@ -1408,7 +1387,8 @@ void NktInit(const eMidiDeviceType devType, const uint8 channel)
 }
 
 
-void NktDeinit(){
+void NktDeinit()
+{
   setMT32Message("Bye ! ;-)");
   deinitDebug();
 }
@@ -1416,7 +1396,8 @@ void NktDeinit(){
 #ifdef DEBUG_BUILD
 
 // debug stuff
-static const uint8 *getSequenceStateStr(const uint16 state){
+static const uint8 *getSequenceStateStr(const uint16 state)
+{
 
  if( !(state&NKT_PS_PLAYING) && (state&NKT_PS_PAUSED) ){
     return "Paused";
@@ -1428,7 +1409,8 @@ static const uint8 *getSequenceStateStr(const uint16 state){
 }
 
 
-void printNktSequenceState(void){
+void printNktSequenceState(void)
+{
 
 #ifndef SUPRESS_CON_OUTPUT
 
@@ -1461,24 +1443,25 @@ static const uint8* _arNktEventName[NKT_MAX_EVENT]={
     "NKT_END"
 };
 
-const uint8 *getEventTypeName(uint16 type){
-    switch(type){
+const uint8 *getEventTypeName(uint16 type)
+{
+    switch(type)
+    {
         case NKT_MIDIDATA: return _arNktEventName[0]; break;
         case NKT_TEMPO_CHANGE: return _arNktEventName[1]; break;
         case NKT_JUMP: return _arNktEventName[2]; break;
         case NKT_TRIGGER: return _arNktEventName[3]; break;
         case NKT_END: return _arNktEventName[4]; break;
         default: return 0;
-
     }
 }
 #endif
 
 
-int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq){
-
+int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
+{
         // save data blocks
-        for(int i=0;i<pSeq->nbOfTracks;++i){
+        for(uint16 i=0;i<pSeq->nbOfTracks;++i){
             int32 written=0;
 
             // save event block
@@ -1518,7 +1501,8 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq){
 
 
 
-int32 saveNktSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress){
+int32 saveNktSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress)
+{
 
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");
@@ -1780,8 +1764,8 @@ void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq)
   header->version = NKT_VERSION;
 }
 
-void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
-
+void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq)
+{
     AssertMsg(trackInfo!=0,"TrackInfo is NULL");
 
     for(uint16 i=0;i<pNktSeq->nbOfTracks;++i)

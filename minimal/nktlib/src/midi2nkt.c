@@ -281,99 +281,83 @@ metaLenght=readVLQ((*pMidiData),&size);
         *bEOT=TRUE;
     } break;
 
-    case MT_SET_TEMPO:{
-            amTrace("\nWrite event block:\t");
-            amTrace("Meta Set Tempo\n");
+    case MT_SET_TEMPO:
+    {
+        amTrace("\nWrite event block:\t");
+        amTrace("Meta Set Tempo\n");
 
-            stBlock.msgType = NKT_TEMPO_CHANGE;
-            stBlock.blockSize = 5 * sizeof(uint32);   //uint32 tempo value + 4*uint32 values (25,50,100,200hz timesteps)
-            stBlock.bufferOffset=bufferInfo->dataBlockOffset;
+        stBlock.msgType = NKT_TEMPO_CHANGE;
+        stBlock.blockSize = 5 * sizeof(uint32);   //uint32 tempo value + 4*uint32 values (25,50,100,200hz timesteps)
+        stBlock.bufferOffset=bufferInfo->dataBlockOffset;
 
-            uint8 ulVal[3] = {0};   /* for retrieving set tempo info */
-            uint32 val1=0, val2=0, val3=0;
-            amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(uint8) );
+        uint8 ulVal[3] = {0};   /* for retrieving set tempo info */
+        uint32 val1=0, val2=0, val3=0;
+        amMemCpy(ulVal, (*pMidiData),metaLenght*sizeof(uint8) );
 
-            val1 = ulVal[0], val2 = ulVal[1],val3 = ulVal[2];
-            val1=(val1<<16)&0x00FF0000L;
-            val2=(val2<<8)&0x0000FF00L;
-            val3=(val3)&0x000000FFL;
+        val1 = ulVal[0], val2 = ulVal[1],val3 = ulVal[2];
+        val1=(val1<<16)&0x00FF0000L;
+        val2=(val2<<8)&0x0000FF00L;
+        val3=(val3)&0x000000FFL;
 
-            // range: 0-8355711 ms, 24 bit value
-            val1=val1|val2|val3;
-            amTrace("%lu ms per quarter-note\n", val1);
+        // range: 0-8355711 ms, 24 bit value
+        val1 = val1|val2|val3;
+        amTrace("%u ms per quarter-note\n", val1);
 
             // write VLQ delta
-            uint32 eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-            int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
-            bufferInfo->eventsBlockOffset+=count;
+        uint32 eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+        const int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
+        bufferInfo->eventsBlockOffset+=count;
 
-            // write event info block
-            eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-            amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
-            bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
+        // write event info block
+        eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
+        amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
+        bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
 
-            // write tempo value to data buffer
-            eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
-            amMemCpy((void *)eventsBufPos,&val1,sizeof(uint32));
-            bufferInfo->dataBlockOffset+=sizeof(uint32);
+        // write tempo value to data buffer
+        eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
+        amMemCpy((void *)eventsBufPos,&val1,sizeof(uint32));
+        bufferInfo->dataBlockOffset+=sizeof(uint32);
 
-            uint32 precalc[NKT_UMAX]={0L};
-            uint32 td = pSeq->timeDivision;
-            uint32 bpm = 60000000UL / val1;
-            uint32 tempPPU = bpm * td;
+        uint32 precalc[NKT_UMAX] = {0};
+        const uint32 td = pSeq->timeDivision;
+        const uint32 bpm = 60000000UL / val1;
+        const uint32 tempPPU = bpm * td;
 
-            amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
-           // precalculate valuies for different update steps
+        amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
 
-            for(int i=0;i<NKT_UMAX;++i){
-                switch(i){
-                    case NKT_U25HZ:{
-                        if(tempPPU<0x10000){
-                            precalc[i]=((tempPPU*0x10000)/60)/25;
-                        }else{
-                            precalc[i]=((tempPPU/60)*0x10000)/25;
-                        }
-                        amTrace("Update step for 25hz: %ld\n",precalc[i]);
-                    } break;
-                    case NKT_U50HZ:{
-                        if(tempPPU<0x10000){
-                            precalc[i]=((tempPPU*0x10000)/60)/50;
-                        }else{
-                            precalc[i]=((tempPPU/60)*0x10000)/50;
-                        }
-                         amTrace("Update step for 50hz: %ld\n",precalc[i]);
-                    } break;
-                    case NKT_U100HZ:{
-                        if(tempPPU<0x10000){
-                            precalc[i]=((tempPPU*0x10000)/60)/100;
-                        }else{
-                            precalc[i]=((tempPPU/60)*0x10000)/100;
-                        }
-                         amTrace("Update step for 100hz: %ld\n",precalc[i]);
-                    } break;
-                    case NKT_U200HZ:{
-                        if(tempPPU<0x10000){
-                            precalc[i]=((tempPPU*0x10000)/60)/200;
-                        }else{
-                            precalc[i]=((tempPPU/60)*0x10000)/200;
-                        }
-                         amTrace("Update step for 200hz: %ld\n",precalc[i]);
-                    } break;
-                    default:{
-                        Assert(0);
-                        amTrace((const uint8*)"[Error] Invalid timer update value %d\n", i);
-                    } break;
-                };
+        // precalculate values for different update steps
+        if(tempPPU<65536)
+        {
+            const uint32 div = (tempPPU*65536)/60;
+            precalc[NKT_U25HZ] = div/25;
+            precalc[NKT_U50HZ] = div/50;
+            precalc[NKT_U100HZ] = div/100;
+            precalc[NKT_U200HZ] = div/200;
+        }
+        else
+        {
+           const uint32 div = ((tempPPU/60)*65536);
+           precalc[NKT_U25HZ] = div/25;
+           precalc[NKT_U50HZ] = div/50;
+           precalc[NKT_U100HZ] = div/100;
+           precalc[NKT_U200HZ] = div/200;
+        }
 
-           } //end for
+        const uint32 up25Hz = precalc[NKT_U25HZ];
+        const uint32 up50Hz = precalc[NKT_U50HZ];
+        const uint32 up100Hz = precalc[NKT_U100HZ];
+        const uint32 up200Hz = precalc[NKT_U200HZ];
 
-           // write precalculated values to data buffer
+        amTrace("Update step for 25hz: %d  [0x%x]\n",up25Hz,up25Hz);
+        amTrace("Update step for 50hz: %d [0x%x]\n",up50Hz,up50Hz);
+        amTrace("Update step for 100hz: %d [0x%x]\n",up100Hz,up100Hz);
+        amTrace("Update step for 200hz: %d [0x%x]\n",up200Hz,up200Hz);
 
-           eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
-           amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(uint32));
-           bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(uint32);
-
-    }break;
+       // write precalculated values to data buffer
+       eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
+       amMemCpy((void *)eventsBufPos,(void *)precalc,NKT_UMAX*sizeof(uint32));
+       bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(uint32);
+    } break;
 
     case MT_SEQ_NB:{amTrace("META: MT_SEQ_NB\n");} break;
     case MT_TEXT:{amTrace("META: MT_TEXT \n");} break;

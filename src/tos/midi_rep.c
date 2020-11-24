@@ -101,7 +101,7 @@ void initAmSequenceManual(sSequence_t *seq)
 
   for(uint16 i=0;i<seq->ubNumTracks;++i)
   {
-    sTrack_t *pTrack = pTrack=seq->arTracks[i];
+    sTrack_t *pTrack = seq->arTracks[i];
 
     if(pTrack)
     {

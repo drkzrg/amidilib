@@ -38,8 +38,10 @@ void setNktTrackInfo(sNktTrackInfo* header, const sNktSeq *pNktSeq);
 
 static sNktSeq *g_CurrentNktSequence=0;
 
-void getCurrentSequence(sNktSeq **pSeq){
-  *pSeq=g_CurrentNktSequence;
+sNktSeq* const getActiveNktSequence()
+{
+  AssertMsg(g_CurrentNktSequence!=0,"Fatal error: Current nkt sequence is NULL.");
+  return g_CurrentNktSequence;
 }
 
 static void resetMidiDevice(void){
@@ -62,14 +64,16 @@ static void resetMidiDevice(void){
 // this is called when sequence ends
 static void onEndSequence(void){
 
-if(g_CurrentNktSequence){
-
-  if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
+  AssertMsg(g_CurrentNktSequence!=0,"Fatal error: Current nkt sequence is NULL.");
+  
+  if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE)
+  {
     // set state to stopped
     // reset song position on all tracks
     g_CurrentNktSequence->sequenceState&=(uint16)(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
-
-  }else{
+  }
+  else
+  {
     // loop
     g_CurrentNktSequence->sequenceState&=(uint16)(~NKT_PS_PAUSED);
     g_CurrentNktSequence->sequenceState|=(uint16)NKT_PS_PLAYING;
@@ -89,12 +93,10 @@ if(g_CurrentNktSequence){
 
   resetMidiDevice();
 
- }
-
 }
 
 // init sequence
-void initSequence(sNktSeq *pSeq, uint16 initialState, Bool bInstallUpdate){
+void initNktSequence(sNktSeq *pSeq, uint16 initialState, Bool bInstallUpdate){
  g_CurrentNktSequence=0;
 
 if(pSeq!=0){
@@ -153,8 +155,6 @@ if(pSeq!=0){
 
      } //end for
 
-
-
     for(uint16 i=0;i<pSeq->nbOfTracks;++i)
     {
         pSeq->pTracks[i].timeElapsedInt=0UL;
@@ -208,7 +208,7 @@ if(pSeq!=0){
 }
 
 #ifdef DEBUG_BUILD
-void initSequenceManual(sNktSeq *pSeq, const uint16 state){
+void initNktSequenceManual(sNktSeq *pSeq, const uint16 state){
  g_CurrentNktSequence=0;
 
  if(pSeq!=0){
@@ -692,7 +692,7 @@ void updateStepNktMt(void){
 
 
 
-sNktSeq *loadSequence(const uint8 *pFilePath){
+sNktSeq *loadNktSequence(const uint8 *pFilePath){
     // create header
     sNktSeq *pNewSeq=(sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
 
@@ -952,9 +952,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                     }else
                         amTrace("[GEMDOS] Read events buffer data %lu \n",read);
 #else
-
-#error TODO
-
+                        StaticAssert(0,"Not implemented!");
 #endif
                     amTrace("[LZO] Decompressing events block...\n");
                     int decResult=lzo1x_decompress(pPackedDataSource,pTrk->eventsBlockBufferSize,pPackedEvents,&newEventSize,LZO1X_MEM_DECOMPRESS);
@@ -986,7 +984,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
                     amTrace("[GEMDOS] Read events data buffer\n");
                     int32 read=Fread(fh, pTrk->dataBufferSize, pPackedDataSource);
 #else
-#error TODO
+                        StaticAssert(0,"Not implemented!");
 #endif
                     amTrace("[LZO] Decompressing data block...\n");
                     int decResult = lzo1x_decompress(pPackedDataSource,pTrk->dataBufferSize,pPackedData,&newDataSize,LZO1X_MEM_DECOMPRESS);
@@ -1243,7 +1241,7 @@ sNktSeq *loadSequence(const uint8 *pFilePath){
  return pNewSeq;
 }
 
-void destroySequence(sNktSeq *pSeq){
+void destroyNktSequence(sNktSeq *pSeq){
 
   if(pSeq==0) return;
 
@@ -1271,7 +1269,7 @@ void destroySequence(sNktSeq *pSeq){
 
 ////////////////////////////////////////////////// replay control
 
-Bool isSequencePlaying(void)
+Bool isNktSequencePlaying(void)
 {
 
  if(g_CurrentNktSequence!=0){
@@ -1286,7 +1284,7 @@ Bool isSequencePlaying(void)
 }
 
 
-void stopSequence(void)
+void stopNktSequence(void)
 {
  if(g_CurrentNktSequence!=0)
  {
@@ -1308,7 +1306,7 @@ void stopSequence(void)
   }
 }
 
-void pauseSequence(){
+void pauseNktSequence(){
 
      if(g_CurrentNktSequence!=0){
         uint16 state=g_CurrentNktSequence->sequenceState;
@@ -1334,7 +1332,7 @@ void pauseSequence(){
  } //pauseSequence
 
 // play sequence
-void playSequence(void){
+void playNktSequence(void){
 
 if(g_CurrentNktSequence!=0){
   uint16 state=g_CurrentNktSequence->sequenceState;
@@ -1363,7 +1361,7 @@ if(g_CurrentNktSequence!=0){
  }
 }
 
-void switchReplayMode(void){
+void switchNktReplayMode(void){
 
  if(g_CurrentNktSequence!=0){
      if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE){
@@ -1514,7 +1512,7 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq){
 
 
 
-int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress){
+int32 saveNktSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress){
 
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");
@@ -1743,8 +1741,10 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
 
 #else
+
 FILE *file;
- amTrace("Save sequence to %s, compress: %d\n",filepath,bCompress);
+amTrace("Save sequence to %s, compress: %d\n",filepath,bCompress);
+StaticAssert(0,"Not implemented!");
 
  // file create
  // save header
@@ -1762,31 +1762,31 @@ FILE *file;
 }
 
 
-void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq){
+void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq)
+{
+  AssertMsg(header!=0,"Header is NULL!");
 
-    if(header){
-        // clear header
-        amMemSet(header, 0L, sizeof(sNktHd));
-        header->id=ID_NKT;
-        header->nbOfTracks=pNktSeq->nbOfTracks;
-        header->division = pNktSeq->timeDivision;
-        header->version = NKT_VERSION;
-    }
+  // clear header
+  amMemSet(header, 0L, sizeof(sNktHd));
+  header->id=ID_NKT;
+  header->nbOfTracks=pNktSeq->nbOfTracks;
+  header->division = pNktSeq->timeDivision;
+  header->version = NKT_VERSION;
 }
 
 void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq){
 
-    if(trackInfo){
+    AssertMsg(trackInfo!=0,"TrackInfo is NULL");
 
-        for(uint16 i=0;i<pNktSeq->nbOfTracks;++i){
-            trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
-            trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
-            trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
-            trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
+    for(uint16 i=0;i<pNktSeq->nbOfTracks;++i)
+    {
+      trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
+      trackInfo[i].eventDataBlockPackedSize = trackInfo[i].eventDataBufSize = pNktSeq->pTracks[i].dataBufferSize;
+      trackInfo[i].eventsBlockPackedSize = trackInfo[i].eventsBlockBufSize = pNktSeq->pTracks[i].eventsBlockBufferSize;
+      trackInfo[i].nbOfBlocks = pNktSeq->pTracks[i].nbOfBlocks;
 
-            amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
-        }
-
+      amTrace("Set track [%d]: event data buffer: %ld events block buffer: %ld\n", i, trackInfo[i].eventDataBufSize,trackInfo[i].eventsBlockBufSize);
     }
+
 }
 

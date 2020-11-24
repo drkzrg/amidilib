@@ -18,27 +18,32 @@
 
 static sSequence_t *g_CurrentSequence=0;
 
-void getCurrentSeq(sSequence_t **pSeq){
-  *pSeq=g_CurrentSequence;
+sSequence_t* const getActiveSequence()
+{
+  AssertMsg(g_CurrentSequence=!0,"Fatal error: current sequence is NULL");
+  return g_CurrentSequence;
 }
 
-void initSeq(sSequence_t *seq, const eTimerType timerType){
- g_CurrentSequence=0;
+
+void initSeq(sSequence_t *seq, const eTimerType timerType)
+{
+ 
+g_CurrentSequence=0;
 
 if(seq!=0)
 {
     uint8 mode=0,data=0;
-    sTrack_t *pTrack=0;
-    sTrackState_t *pTrackState=0;
+    sTrack_t *pTrack;
+    sTrackState_t *pTrackState;
     uint8 activeTrack=seq->ubActiveTrack;
 
-    g_CurrentSequence=seq;
+    g_CurrentSequence = seq;
 
     Supexec(clearMidiOutputBuffer);
 
     for(uint16 i=0;i<seq->ubNumTracks;++i)
     {
-        pTrack=seq->arTracks[i];
+        pTrack = seq->arTracks[i];
 
         if(pTrack){
             pTrackState=&(pTrack->currentState);
@@ -47,7 +52,6 @@ if(seq!=0)
             pTrackState->timeElapsedInt=0L;
             pTrackState->currEventPtr=pTrack->pTrkEventList; //set begining of event list
             pTrackState->playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-
         }
     } 
   
@@ -74,7 +78,7 @@ if(seq!=0)
     }
     else
     {
-      AssertMsg(0,"initSeq(): Unsupported sequence type.");
+      AssertMsg(0,"initSeq(): Unsupported sequence type. Couldn't install replay routine.");
     }
 
   } //endif

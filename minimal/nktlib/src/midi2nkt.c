@@ -818,7 +818,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
    }
 
 //save
-   if(saveSequence(pNewSeq,pOutFileName,bCompress)<0)
+   if(saveNktSequence(pNewSeq,pOutFileName,bCompress)<0)
    {
         amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n", pOutFileName);
    } 

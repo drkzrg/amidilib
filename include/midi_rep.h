@@ -40,11 +40,10 @@ void muteTrack(const uint16 trackNb,const Bool bMute);
  * (replay restarts from beginning) */
 void toggleReplayMode(void);
 
-/** Returns currently active sequence.
- * @return pointer to currently active sequence
+/** Returns currently active sequence (R / W).
+ * @returns pointer to currently active sequence
  */
-
-void getCurrentSeq(sSequence_t **);
+sSequence_t * const getActiveSequence();
 
 /** destroys loaded Sequence.
 *   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null

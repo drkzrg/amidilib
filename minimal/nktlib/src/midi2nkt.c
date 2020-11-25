@@ -243,7 +243,7 @@ void processMetaEvent( uint32 delta, uint8 **pMidiData, sNktSeq *pSeq, uint16 tr
 
 uint8 size=0;
 uint32 metaLenght=0;
-sNktBlock_t stBlock;
+sNktBlock stBlock;
 
 sNktTrack *pTrk=&pSeq->pTracks[trackIdx];
 
@@ -274,8 +274,8 @@ metaLenght=readVLQ((*pMidiData),&size);
 
          // write event info block
          eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-         amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
-         bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
+         amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock));
+         bufferInfo->eventsBlockOffset+=sizeof(sNktBlock);
 
          //no data to write
         *bEOT=TRUE;
@@ -310,8 +310,8 @@ metaLenght=readVLQ((*pMidiData),&size);
 
         // write event info block
         eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
-        amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
-        bufferInfo->eventsBlockOffset+=sizeof(sNktBlock_t);
+        amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock));
+        bufferInfo->eventsBlockOffset+=sizeof(sNktBlock);
 
         // write tempo value to data buffer
         eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
@@ -550,7 +550,7 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
  Bool bEOT=FALSE;
  uint8 *pCmd=(uint8 *)startTrkPtr;
  uint8 ubSize=0;
- sNktBlock_t stBlock;
+ sNktBlock stBlock;
  sRunningStatus_t rs;
  sBufferInfo_t tempBufInfo;
 
@@ -606,9 +606,9 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
 
       // write event info block
       eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-      amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
+      amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock));
       amTrace("[E] event info at [%lu]\n",tempBufInfo.eventsBlockOffset);
-      tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
+      tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock);
 
       // write to data buffer
 
@@ -644,8 +644,8 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
 
     // write event info block
     eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
-    amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock_t));
-    tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock_t);
+    amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock));
+    tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock);
  }
 
     // OK
@@ -688,7 +688,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
     {
         amTrace("No EOT in midi data found, adding EOT meta event...\n");
         arMidiInfo[i].eventsBlockSize += 1;
-        arMidiInfo[i].eventsBlockSize+=sizeof(sNktBlock_t);
+        arMidiInfo[i].eventsBlockSize+=sizeof(sNktBlock);
         ++arMidiInfo[i].nbOfBlocks;
     }
     amTrace("[Midi track #%d]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",i,arMidiInfo[i].nbOfBlocks,arMidiInfo[i].eventsBlockSize,arMidiInfo[i].dataBlockSize);

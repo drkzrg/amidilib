@@ -31,7 +31,6 @@
 static uint8 g_midi_cmd_buffer[4];
 #endif
 
-
 typedef struct SysEX_t{
    uint16 size;
    uint8 *data;
@@ -45,7 +44,7 @@ extern volatile uint16 MIDIbytesToSend;
 // sends SysEX message without recalculating the checksum
 static INLINE void sendSysEX(const sSysEX_t *pMsg){
 
-amTrace("Send SysEx size: %lu \n",pMsg->size);
+amTrace("Send SysEx size: %u \n",pMsg->size);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
  amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);

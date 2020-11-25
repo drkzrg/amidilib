@@ -14,9 +14,8 @@
 #include "midi_rep.h"
 #include "timing/miditim.h"
 
-/****************** event function prototypes */
-/* string table with all event names */
 
+/* string table with all event names */
 const uint8 *arEventNames[T_EVT_COUNT]={
     "Note On",
     "Note Off",
@@ -33,7 +32,16 @@ const uint8 *arEventNames[T_EVT_COUNT]={
     "SysEX Msg"
 };
 
+/*returns pointer to NULL terminated string with event name */
+/* id is enumerated value from eEventType */
+const uint8 *getEventName(const uint32 id)
+{
+  if(id<T_EVT_COUNT)
+    return ((const uint8 *)arEventNames[id]);
+  else return NULL;
+}
 
+/****************** event function prototypes */
 //common
 static void fSetTempo(const void *pEvent)
 {
@@ -82,58 +90,47 @@ static void fHandleSignatureChange(const void *pEvent){
 
 }
 
-/*returns pointer to NULL terminated string with event name */
-/* id is enumerated value from eEventType */
-const uint8 *getEventName(const uint32 id){
-  if(id<T_EVT_COUNT)
-    return ((const uint8 *)arEventNames[id]);
-  else return 0;
-}
-
-
-uint8 getChannelNbFromEventBlock(const sEventBlock_t *pBlock){
-   
-  switch(pBlock->type){
-    
-  case T_NOTEON:
-    return ((sNoteOn_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_NOTEOFF:
-    return ((sNoteOff_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_NOTEAFT:
-    return ((sNoteAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_CONTROL:
-    return ((sController_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_PRG_CH:
-    return ((sPrgChng_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_CHAN_AFT:
-    return ((sChannelAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_PITCH_BEND:
-    return ((sPitchBend_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-//these events doesn't contain any delta information
-//so we are returning channel out of range	     
-  case T_META_SET_TEMPO:
-  case T_META_EOT:
-  case T_META_CUEPOINT:
-  case T_META_MARKER:
-  case T_META_SET_SIGNATURE:
-  case T_SYSEX:
-    return 127;
-   break;
-  default:
-    return 127;
+uint8 getChannelNbFromEventBlock(const sEventBlock_t *pBlock)
+{
+  switch(pBlock->type)
+  {
+    case T_NOTEON:
+      return ((sNoteOn_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_NOTEOFF:
+      return ((sNoteOff_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_NOTEAFT:
+      return ((sNoteAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_CONTROL:
+      return ((sController_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_PRG_CH:
+      return ((sPrgChng_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_CHAN_AFT:
+      return ((sChannelAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_PITCH_BEND:
+      return ((sPitchBend_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    //these events doesn't contain any delta information
+    //so we are returning channel out of range	     
+    case T_META_SET_TEMPO:
+    case T_META_EOT:
+    case T_META_CUEPOINT:
+    case T_META_MARKER:
+    case T_META_SET_SIGNATURE:
+    case T_SYSEX:
+      return 127;
+    break;
   };
+ return 127;
 }
 
 
 /* event id is mapped to the position in the array, functionPtr, parameters struct */
-
 #ifdef IKBD_MIDI_SEND_DIRECT
 //event handlers which copy event data to output buffer
 static void  fNoteOnCopyData(const void *pEvent){
@@ -226,9 +223,9 @@ static const sEventInfoBlock_t g_arSeqCmdCopyDataTable[T_EVT_COUNT] = {
    {sizeof(sSysEX_EventBlock_t),fHandleSysEXCopyData}
 };
 
-void getEventFuncCopyInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk){
-    infoBlk->size=g_arSeqCmdCopyDataTable[eventType].size;
-    infoBlk->func=g_arSeqCmdCopyDataTable[eventType].func;
+void getEventCallbackHandler(const uint8 eventType, sEventInfoBlock_t *infoBlk){
+    infoBlk->size = g_arSeqCmdCopyDataTable[eventType].size;
+    infoBlk->func = g_arSeqCmdCopyDataTable[eventType].func;
 }
 
 #else
@@ -297,7 +294,6 @@ static void fHandleSysEX(const void *pEvent){
 
 }
 
-
 /** !ORDER IS IMPORTANT! and has to be the same as in enums with T_EVT_COUNT. Additionally
 the ordering of members should be the same as described in type sEventList. */
 
@@ -318,12 +314,9 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sSysEX_EventBlock_t),fHandleSysEX}
 };
 
-void getEventFuncInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk){
+void getEventCallbackHandler(const uint8 eventType, sEventInfoBlock_t *infoBlk){
     infoBlk->size=g_arSeqCmdTable[eventType].size;
     infoBlk->func=g_arSeqCmdTable[eventType].func;
 }
 
 #endif
-
-
-

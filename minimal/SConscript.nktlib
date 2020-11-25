@@ -241,7 +241,7 @@ if ( build_mode == 'debug'):
   LIB_POSTFIX = LIB_TARGET+'d'
 else:
         print "Release build... Code optimisation is turned on."
-        CFLAGS += '-DEVENT_LINEAR_BUFFER ' +'-O2 ' + '-DUSE_INLINE '
+        CFLAGS += '-DEVENT_LINEAR_BUFFER ' +'-O3 ' + '-DUSE_INLINE '
         LIB_POSTFIX = LIB_TARGET
 
 if(ikbd_direct_write == "yes"):

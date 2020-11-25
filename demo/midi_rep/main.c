@@ -274,7 +274,7 @@ void displayTuneInfo(void)
   
   printf("Sequence name %s\n",pPtr->pSequenceName);
   printf("PPQN/TD: %u\t",td);
-  printf("Tempo: %lu [ms]\n",tempo);
+  printf("Tempo: %u [ms]\n",tempo);
   
   printf("Number of tracks: %d\n",numTrk);
   

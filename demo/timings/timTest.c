@@ -216,7 +216,7 @@ uint32 iCurrentTempo=0L;
       pSeqPtr->currentTempo=iCurrentTempo;
   }
 
-  printf("qn duration: %lu [ms]\n",iCurrentTempo);
+  printf("qn duration: %u [ms]\n",iCurrentTempo);
   handleTempoChange=TRUE;    
 }
 
@@ -239,7 +239,7 @@ iCurrentTempo=pSeqPtr->currentTempo;
   iCurrentTempo=iCurrentTempo+iCurrentStep;
   pSeqPtr->currentTempo=iCurrentTempo;
   
-  printf("qn duration: %lu [ms]\n",iCurrentTempo);
+  printf("qn duration: %u [ms]\n",iCurrentTempo);
 
   handleTempoChange=TRUE;
 }

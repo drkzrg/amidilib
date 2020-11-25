@@ -16,7 +16,8 @@
 static uint8 g_runningStatus=0;
 
 //////////////////////////////////////////////////////
-uint16 amGetTimeDivision (const void *pMidiPtr){
+uint16 amGetTimeDivision (const void *pMidiPtr)
+{
 sMThd *pMidiInfo=(sMThd *)pMidiPtr;
 
 /* check midi header */
@@ -354,13 +355,8 @@ if((*recallRS)==0){
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
-  uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+  getEventCallbackHandler(T_NOTEOFF,&tempEvent.eventCb);
+  uint8 tempBuf[tempEvent.eventCb.size];
 
   tempEvent.dataPtr=(void *)tempBuf;
 
@@ -393,13 +389,8 @@ if((*recallRS)==0){
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEOFF;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  getEventFuncCopyInfo(T_NOTEOFF,&tempEvent.copyEventCb);
-  uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-  getEventFuncInfo(T_NOTEOFF,&tempEvent.sendEventCb);
-  uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+  getEventCallbackHandler(T_NOTEOFF,&tempEvent.eventCb);
+  uint8 tempBuf[tempEvent.eventCb.size];
 
   tempEvent.dataPtr=(void *)tempBuf;
 
@@ -455,13 +446,8 @@ retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_NOTEON;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
-  uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-  getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
-  uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+  getEventCallbackHandler(T_NOTEON,&tempEvent.eventCb);
+  uint8 tempBuf[tempEvent.eventCb.size];
 
   tempEvent.dataPtr=(void *) tempBuf;
 
@@ -497,13 +483,10 @@ retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEON;
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_NOTEON,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_NOTEON,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+    
+    getEventCallbackHandler(T_NOTEON,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
+
     tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sNoteOn_EventBlock_t *)tempEvent.dataPtr;
@@ -547,21 +530,16 @@ retVal retCode = AM_OK;
 
 sNoteAft_EventBlock_t *pEvntBlock=NULL;
 
- if((*recallRS)==0){
+ if((*recallRS)==0)
+ {
     /* save last running status */
     g_runningStatus=*(*pPtr);
 
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEAFT;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
-
+    getEventCallbackHandler(T_NOTEAFT,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
     tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
@@ -590,13 +568,9 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
         /* get parameters */
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_NOTEAFT;
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_NOTEAFT,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_NOTEAFT,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+
+    getEventCallbackHandler(T_NOTEAFT,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
     tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sNoteAft_EventBlock_t *)tempEvent.dataPtr;
@@ -624,7 +598,8 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
+retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
     sEventBlock_t tempEvent;
     retVal retCode = AM_OK;
     uint8 channelNb=0;
@@ -633,78 +608,70 @@ retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint
     sController_EventBlock_t *pEvntBlock=NULL;
     tempEvent.dataPtr=0;
 
-    if((*recallRS)==0){
-        /* save last running status */
-        g_runningStatus=*(*pPtr);
-        /* now we can recall former running status next time */
-        (*recallRS)=1;
+    if((*recallRS)==0)
+    {
+      /* save last running status */
+      g_runningStatus=*(*pPtr);
+      /* now we can recall former running status next time */
+      (*recallRS)=1;
 
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_CONTROL;
+      tempEvent.uiDeltaTime=delta;
+      tempEvent.type=T_CONTROL;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+      getEventCallbackHandler(T_CONTROL,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
+      tempEvent.dataPtr=(void *) tempBuf;
 
-    tempEvent.dataPtr=(void *) tempBuf;
+      pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
 
-    pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
-
-    channelNb=g_runningStatus&0x0F;
-    pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
-    ++(*pPtr);
-    /* get controller nb */
-    controllerNb=(*(*pPtr));
-    pEvntBlock->eventData.controllerNb=(*(*pPtr));
-    ++(*pPtr);
-    value=*((*pPtr));
-    pEvntBlock->eventData.value=*((*pPtr));
-    ++(*pPtr);
+      channelNb=g_runningStatus&0x0F;
+      pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+      ++(*pPtr);
+      /* get controller nb */
+      controllerNb=(*(*pPtr));
+      pEvntBlock->eventData.controllerNb=(*(*pPtr));
+      ++(*pPtr);
+      value=*((*pPtr));
+      pEvntBlock->eventData.value=*((*pPtr));
+      ++(*pPtr);
 
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
+      retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
 
-    } else {
-        channelNb=g_runningStatus&0x0F;
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_CONTROL;
+    } 
+    else 
+    {
+      channelNb=g_runningStatus&0x0F;
+      tempEvent.uiDeltaTime=delta;
+      tempEvent.type=T_CONTROL;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_CONTROL,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_CONTROL,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
-    tempEvent.dataPtr=(void *) tempBuf;
+      getEventCallbackHandler(T_CONTROL,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
 
-    /*assert(tempEvent.dataPtr>0);*/
-    pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+      tempEvent.dataPtr=(void *) tempBuf;
 
-    /* get program controller nb */
-    controllerNb=(*(*pPtr));
-    pEvntBlock->eventData.controllerNb=(*(*pPtr));
-    ++(*pPtr);
-    value=*((*pPtr));
-    pEvntBlock->eventData.value=*((*pPtr));
-    ++(*pPtr);
-    /* add event to list */
+      /*assert(tempEvent.dataPtr>0);*/
+      pEvntBlock=(sController_EventBlock_t *)tempEvent.dataPtr;
+      pEvntBlock->ubChannelNb=g_runningStatus&0x0F;
+
+      /* get program controller nb */
+      controllerNb=(*(*pPtr));
+      pEvntBlock->eventData.controllerNb=(*(*pPtr));
+      ++(*pPtr);
+      value=*((*pPtr));
+      pEvntBlock->eventData.value=*((*pPtr));
+      ++(*pPtr);
+      /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
-  retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-   retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
+      retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #endif
-
-    }
+  }
 #ifdef MIDI_PARSER_DEBUG
     amTrace((const uint8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d\n",delta, channelNb+1, controllerNb,getMidiControllerName(controllerNb), value);
 #endif
@@ -736,13 +703,9 @@ sEventBlock_t tempEvent;
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_PRG_CH;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+    getEventCallbackHandler(T_PRG_CH,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
+
     tempEvent.dataPtr=(void *) tempBuf;
 
     pEvntBlock=(sPrgChng_EventBlock_t *)tempEvent.dataPtr;
@@ -766,13 +729,8 @@ sEventBlock_t tempEvent;
       tempEvent.uiDeltaTime=delta;
       tempEvent.type=T_PRG_CH;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-      getEventFuncCopyInfo(T_PRG_CH,&tempEvent.copyEventCb);
-      uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-      getEventFuncInfo(T_PRG_CH,&tempEvent.sendEventCb);
-      uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+      getEventCallbackHandler(T_PRG_CH,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
 
       tempEvent.dataPtr=(void *) tempBuf;
 
@@ -822,13 +780,8 @@ retVal retCode = AM_OK;
         tempEvent.uiDeltaTime=delta;
         tempEvent.type=T_CHAN_AFT;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-        getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-        uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-        getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-        uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+        getEventCallbackHandler(T_CHAN_AFT,&tempEvent.eventCb);
+        uint8 tempBuf[tempEvent.eventCb.size];
 
         tempEvent.dataPtr=(void *)tempBuf;
 
@@ -852,13 +805,8 @@ retVal retCode = AM_OK;
         tempEvent.uiDeltaTime=delta;
         tempEvent.type=T_CHAN_AFT;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-        getEventFuncCopyInfo(T_CHAN_AFT,&tempEvent.copyEventCb);
-        uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-        getEventFuncInfo(T_CHAN_AFT,&tempEvent.sendEventCb);
-        uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+        getEventCallbackHandler(T_CHAN_AFT,&tempEvent.eventCb);
+        uint8 tempBuf[tempEvent.eventCb.size];
 
         tempEvent.dataPtr=(void *)tempBuf;
 
@@ -894,81 +842,74 @@ sPitchBend_t *pPitchBend=0;
 retVal retCode = AM_OK;
 
 #ifdef MIDI_PARSER_DEBUG
-  assert(sizeof(sPitchBend_t)==2);
+  AssertMsg(sizeof(sPitchBend_t)==2,"Invalid PitchBend size.");
 #endif
 
 tempEvent.dataPtr=0;
 
-    if((*recallRS)==0){
-        /* save last running status */
-        g_runningStatus=*(*pPtr);
+    if((*recallRS)==0)
+    {
+      /* save last running status */
+      g_runningStatus=*(*pPtr);
 
-        /* now we can recall former running status next time */
-        (*recallRS)=1;
+      /* now we can recall former running status next time */
+      (*recallRS)=1;
 
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_PITCH_BEND;
+      tempEvent.uiDeltaTime=delta;
+      tempEvent.type=T_PITCH_BEND;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
+      getEventCallbackHandler(T_PITCH_BEND,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
+
+      tempEvent.dataPtr=(void *) tempBuf;
+
+      pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
+      pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+
+      ++(*pPtr);
+      pPitchBend=(sPitchBend_t *)(*pPtr);
+
+      /* get parameters */
+      pEvntBlock->eventData.LSB=pPitchBend->LSB;
+      pEvntBlock->eventData.MSB=pPitchBend->MSB;
+      (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
+
+      /* add event to list */
+#ifdef EVENT_LINEAR_BUFFER
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
 #else
-    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
-    tempEvent.dataPtr=(void *) tempBuf;
-
-    pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
-
-    ++(*pPtr);
-    pPitchBend=(sPitchBend_t *)(*pPtr);
-
-    /* get parameters */
-    pEvntBlock->eventData.LSB=pPitchBend->LSB;
-    pEvntBlock->eventData.MSB=pPitchBend->MSB;
-    (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
-
-    /* add event to list */
-   #ifdef EVENT_LINEAR_BUFFER
-     retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
-   #else
       retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
-   #endif
-
-    } else {
-    tempEvent.uiDeltaTime=delta;
-    tempEvent.type=T_PITCH_BEND;
-
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_PITCH_BEND,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_PITCH_BEND,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
 #endif
 
-    tempEvent.dataPtr = (void *)tempBuf;
+    } 
+    else
+    {
+      tempEvent.uiDeltaTime=delta;
+      tempEvent.type=T_PITCH_BEND;
 
-    pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+      getEventCallbackHandler(T_PITCH_BEND,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
 
-    /* get parameters */
-    pPitchBend=(sPitchBend_t *)(*pPtr);
+      tempEvent.dataPtr = (void *)tempBuf;
 
-    /* get parameters */
-    pEvntBlock->eventData.LSB=pPitchBend->LSB;
-    pEvntBlock->eventData.MSB=pPitchBend->MSB;
-    (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
+      pEvntBlock=(sPitchBend_EventBlock_t *)tempEvent.dataPtr;
+      pEvntBlock->ubChannelNb=(g_runningStatus&0x0F);
+
+      /* get parameters */
+      pPitchBend=(sPitchBend_t *)(*pPtr);
+
+      /* get parameters */
+      pEvntBlock->eventData.LSB=pPitchBend->LSB;
+      pEvntBlock->eventData.MSB=pPitchBend->MSB;
+      (*pPtr)=(*pPtr)+sizeof(sPitchBend_t);
 
     /* add event to list */
-   #ifdef EVENT_LINEAR_BUFFER
-     retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
-   #else
+#ifdef EVENT_LINEAR_BUFFER
+      retCode = addEvent(pSeq, &pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
+#else
       retCode = addEvent(&pSeq->arTracks[trackNb]->pTrkEventList, &tempEvent );
-   #endif
-
- }
+#endif
+  }
 
  #ifdef MIDI_PARSER_DEBUG
  amTrace((const uint8*)"delta: %u\tevent: Pitch bend LSB: %d, MSB:%d\n",(unsigned long)delta,pPitchBend->LSB,pPitchBend->MSB);
@@ -989,13 +930,8 @@ retVal amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uin
   tempEvent.uiDeltaTime=delta;
   tempEvent.type=T_SYSEX;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-  getEventFuncCopyInfo(T_SYSEX,&tempEvent.copyEventCb);
-  uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-  getEventFuncInfo(T_SYSEX,&tempEvent.sendEventCb);
-  uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+  getEventCallbackHandler(T_SYSEX,&tempEvent.eventCb);
+  uint8 tempBuf[tempEvent.eventCb.size];
 
   tempEvent.dataPtr=(void *) tempBuf;
 
@@ -1186,13 +1122,9 @@ sEventBlock_t tempEvent;
       tempEvent.uiDeltaTime=delta;
       tempEvent.type=T_META_MARKER;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-      getEventFuncCopyInfo(T_META_MARKER,&tempEvent.copyEventCb);
-      uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-      getEventFuncInfo(T_META_MARKER,&tempEvent.sendEventCb);
-      uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+      getEventCallbackHandler(T_META_MARKER,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
+
       tempEvent.dataPtr=(void *)tempBuf;
 
       pEvntBlock=(sMarker_EventBlock_t *)tempEvent.dataPtr;
@@ -1231,13 +1163,8 @@ sEventBlock_t tempEvent;
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_CUEPOINT;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_META_CUEPOINT,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_META_CUEPOINT,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+    getEventCallbackHandler(T_META_CUEPOINT,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
 
     tempEvent.dataPtr=(void *)tempBuf;
 
@@ -1356,13 +1283,8 @@ sEventBlock_t tempEvent;
     tempEvent.uiDeltaTime=delta;
     tempEvent.type=T_META_EOT;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-    getEventFuncCopyInfo(T_META_EOT,&tempEvent.copyEventCb);
-    uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-    getEventFuncInfo(T_META_EOT,&tempEvent.sendEventCb);
-    uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+    getEventCallbackHandler(T_META_EOT,&tempEvent.eventCb);
+    uint8 tempBuf[tempEvent.eventCb.size];
 
     tempEvent.dataPtr=(void *)tempBuf;
 
@@ -1406,13 +1328,8 @@ sEventBlock_t tempEvent;
       tempEvent.uiDeltaTime=delta;
       tempEvent.type=T_META_SET_TEMPO;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-      getEventFuncCopyInfo(T_META_SET_TEMPO,&tempEvent.copyEventCb);
-      uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-      getEventFuncInfo(T_META_SET_TEMPO,&tempEvent.sendEventCb);
-      uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+      getEventCallbackHandler(T_META_SET_TEMPO,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
 
       tempEvent.dataPtr=(void *)tempBuf;
 
@@ -1471,13 +1388,8 @@ sEventBlock_t tempEvent;
       tempEvent.uiDeltaTime=delta;
       tempEvent.type = T_META_SET_SIGNATURE;
 
-#ifdef IKBD_MIDI_SEND_DIRECT
-      getEventFuncCopyInfo(T_META_SET_SIGNATURE,&tempEvent.copyEventCb);
-      uint8 tempBuf[tempEvent.copyEventCb.size];
-#else
-      getEventFuncInfo(T_META_SET_SIGNATURE,&tempEvent.sendEventCb);
-      uint8 tempBuf[tempEvent.sendEventCb.size];
-#endif
+      getEventCallbackHandler(T_META_SET_SIGNATURE,&tempEvent.eventCb);
+      uint8 tempBuf[tempEvent.eventCb.size];
 
       tempEvent.dataPtr=(void *)tempBuf;
 
@@ -1562,4 +1474,3 @@ sEventBlock_t tempEvent;
 
   return ret;
 }
-

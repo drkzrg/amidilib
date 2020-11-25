@@ -200,7 +200,7 @@ metaLenght=readVLQ((*pMidiData),&size);
      bufferInfo->eventsBlockSize += WriteVarLen(delta, (uint8 *)&deltaVLQ);;
 
      // event block
-     bufferInfo->eventsBlockSize+=sizeof(sNktBlock_t);
+     bufferInfo->eventsBlockSize+=sizeof(sNktBlock);
 
      // no data to write, just count as event block
      ++(bufferInfo->nbOfBlocks);
@@ -215,7 +215,7 @@ metaLenght=readVLQ((*pMidiData),&size);
      bufferInfo->eventsBlockSize += WriteVarLen(delta, (uint8 *)&deltaVLQ);;
 
      // event block
-     bufferInfo->eventsBlockSize+=sizeof(sNktBlock_t);
+     bufferInfo->eventsBlockSize+=sizeof(sNktBlock);
 
      bufferInfo->bufPos+=(NKT_UMAX*sizeof(uint32))+1; //4 * uint32 + 1*uint32 value
       ++(bufferInfo->nbOfBlocks);
@@ -426,7 +426,7 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
           pBufInfo->eventsBlockSize += WriteVarLen(delta, (uint8 *)&deltaVLQ);
 
           // event block
-          pBufInfo->eventsBlockSize+=sizeof(sNktBlock_t);
+          pBufInfo->eventsBlockSize+=sizeof(sNktBlock);
           pBufInfo->dataBlockSize+=pBufInfo->bufPos;
 
           pBufInfo->bufPos=0;

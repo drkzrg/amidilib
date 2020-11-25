@@ -232,7 +232,7 @@ volatile static Bool bStopped=FALSE;
 volatile static Bool bPaused=FALSE;
 volatile static uint32 TimeAdd=0;
 volatile static uint32 addr;
-volatile static sNktBlock_t *nktBlk=0;
+volatile static sNktBlock *nktBlk=0;
 volatile static uint16 TrackEndCount=0;
 
 volatile uint8 requestedMasterVolume;
@@ -415,7 +415,7 @@ void updateStepNkt(void)
       pEventPtr+=count;
 
       // get event block
-      nktBlk=(sNktBlock_t *)(pEventPtr);
+      nktBlk=(sNktBlock *)(pEventPtr);
 
       // track end?
 
@@ -441,7 +441,7 @@ void updateStepNkt(void)
 
                  //next event
                  pCurTrack->eventsBlockOffset+=count;
-                 pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+                 pCurTrack->eventsBlockOffset+=sizeof(sNktBlock);
                  ++(pCurTrack->currentBlockId);
 
                  // get next event block
@@ -454,7 +454,7 @@ void updateStepNkt(void)
                  pEventPtr+=count;
 
                  // get event block
-                 nktBlk=(sNktBlock_t *)(pEventPtr);
+                 nktBlk=(sNktBlock *)(pEventPtr);
              }
 
               uint32 *pMidiDataStartAdr=(uint32 *)(((uint32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
@@ -469,7 +469,7 @@ void updateStepNkt(void)
 
                //go to next event
                pCurTrack->eventsBlockOffset+=count;
-               pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+               pCurTrack->eventsBlockOffset+=sizeof(sNktBlock);
 
                ++(pCurTrack->currentBlockId);
 
@@ -573,7 +573,7 @@ void updateStepNktMt(void){
       pEventPtr+=count;
 
       // get event block
-      nktBlk=(sNktBlock_t *)(pEventPtr);
+      nktBlk=(sNktBlock *)(pEventPtr);
 
       // track end?
       if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks){
@@ -600,7 +600,7 @@ void updateStepNktMt(void){
 
               //next event
               pCurTrack->eventsBlockOffset+=count;
-              pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+              pCurTrack->eventsBlockOffset+=sizeof(sNktBlock);
               ++(pCurTrack->currentBlockId);
 
               // get next event block
@@ -613,7 +613,7 @@ void updateStepNktMt(void){
               pEventPtr+=count;
 
               // get event block
-              nktBlk=(sNktBlock_t *)(pEventPtr);
+              nktBlk=(sNktBlock *)(pEventPtr);
           }
 
           uint32 *pMidiDataStartAdr=(uint32 *)(((uint32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset);
@@ -628,7 +628,7 @@ void updateStepNktMt(void){
 
           //go to next event
           pCurTrack->eventsBlockOffset+=count;
-          pCurTrack->eventsBlockOffset+=sizeof(sNktBlock_t);
+          pCurTrack->eventsBlockOffset+=sizeof(sNktBlock);
 
           ++(pCurTrack->currentBlockId);
 
@@ -1189,7 +1189,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
       pEventPtr+=count;
 
-      sNktBlock_t *eBlk=(sNktBlock_t *)(pEventPtr);
+      sNktBlock *eBlk=(sNktBlock *)(pEventPtr);
 
       amTrace("delta [%lu] type:[%hu] size:[%hu] bytes offset: [%lu] \n",d, eBlk->msgType, eBlk->blockSize,eBlk->bufferOffset);
 
@@ -1206,7 +1206,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
       }
 
       pNewSeq->pTracks[i].eventsBlockOffset+=count;
-      pNewSeq->pTracks[i].eventsBlockOffset+=sizeof(sNktBlock_t);
+      pNewSeq->pTracks[i].eventsBlockOffset+=sizeof(sNktBlock);
 
       ++blockNb;
     }

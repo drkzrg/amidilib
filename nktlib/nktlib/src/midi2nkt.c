@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-extern uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
+extern retVal collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 
 // from mparser.c
 uint8  isMidiChannelEvent(const uint8 byteEvent){
@@ -675,7 +675,7 @@ amMemSet(arMidiInfo, 0L, sizeof(sMidiTrackInfo_t)*nbOfTracks);
 for(uint16 i=0;i<nbOfTracks;++i)
 {
 
-    if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT)!=0){
+    if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT) != AM_OK){
         amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting...\n",i);
         printf("[MIDI2NKT]  MIDI track [%d] parse error. Exiting \n",i);
         return 0;

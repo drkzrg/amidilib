@@ -350,8 +350,8 @@ void collectMidiEventInfo(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs
 }
 
 //
-uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT){
-
+retVal collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT)
+{
     /* process track data, offset the start pointer a little to get directly to track data and decode MIDI events */
     sChunkHeader *pTrackHd=0;
     uint32 trackChunkSize=0;
@@ -364,7 +364,7 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
 
     if(pTrackHd->id!=ID_MTRK){
      amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. \n");
-     return 1;
+     return AM_ERR;
     };
 
     trackChunkSize=pTrackHd->headLenght;
@@ -374,11 +374,12 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
     endTrkPtr=(void *)((uint8*)startTrkPtr + trackChunkSize);
     pTrackHd=endTrkPtr;
 
-    for(int i=0;i<trackNb;++i){
-
-        if(pTrackHd->id!=ID_MTRK){
+    for(uint16 i=0;i<trackNb;++i)
+    {
+        if(pTrackHd->id!=ID_MTRK)
+        {
          amTrace("Error: Cannot find MIDI track [%d] chunk. Exiting. \n", i+1);
-         return 1;
+         return AM_ERR;
         };
 
         trackChunkSize=pTrackHd->headLenght;
@@ -388,7 +389,6 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
         endTrkPtr=(void *)((uint8*)startTrkPtr + trackChunkSize);
         pTrackHd=(sChunkHeader *)endTrkPtr; //next
     }
-
 
      // process track events
      uint32 delta=0L;
@@ -406,7 +406,8 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
      pBufInfo->dataBlockSize=0;
      pBufInfo->eventsBlockSize=0;
 
-     while ( ((pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)) ){
+     while ( ((pCmd!=endTrkPtr)&&((*bEOT)!=TRUE)) )
+     {
       /* read delta time, pCmd should point to the command data */
       delta=readVLQ(pCmd,&ubSize);
       pCmd+=ubSize;
@@ -421,7 +422,8 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
         currentDelta = readVLQ(pCmd,&ubSize);
       }
 
-      if(pBufInfo->bufPos>0){
+      if(pBufInfo->bufPos>0)
+      {
           uint32 deltaVLQ=0;
           pBufInfo->eventsBlockSize += WriteVarLen(delta, (uint8 *)&deltaVLQ);
 
@@ -433,11 +435,10 @@ uint32 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *p
           ++(pBufInfo->nbOfBlocks);
       }
 
-
      } /*end of decode events loop */
 
      // OK
-     return 0;
+     return AM_OK;
  }
 
 

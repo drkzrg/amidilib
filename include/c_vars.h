@@ -8,22 +8,31 @@
 #ifndef C_VARS_H_
 #define C_VARS_H_
 
-#if (defined(DEBUG) || defined(_DEBUG))
+#if defined(FINAL)
 
-#include <assert.h>
-#include <stdio.h>
+// disable all asserts in final build
+#define StaticAssert(condition, message)
+#define AssertMsg(condition, message) 
+#define Assert(condition) 
+
+#else
 
 #if __STDC_VERSION__ >= 199901L
-#define StaticAssert _StaticAssert
+#define StaticAssert(condition, message) _Static_assert(condition, message)
 #else
-#define StaticAssert 
+// no static asserts in versions below c99
+#define StaticAssert(condition, message) 
 #endif
+
+#if (defined(DEBUG) || defined(_DEBUG))
+#include <assert.h>
+#include <stdio.h>
 
 #   define AssertMsg(condition, message) \
     do { \
         if (! (condition)) { \
             printf("Assertion %s failed in %s at %d line. Message: %s\n", \
-			#condition, __FILE__, __LINE__, message);\
+            #condition, __FILE__, __LINE__, message);\
         } \
     } while (false)
 
@@ -31,16 +40,17 @@
     do { \
         if (! (condition)) { \
             printf("Assertion %s failed in %s at %d line. \n", \
-			#condition, __FILE__, __LINE__);\
+            #condition, __FILE__, __LINE__);\
         } \
     } while (false)
 
 #else
 
-#define StaticAssert
-#   define AssertMsg(condition, message) do { } while (false)
-#   define Assert(condition) do { } while (false)
+#define AssertMsg(condition, message) do { } while (false)
+#define Assert(condition) do { } while (false)
 #endif
+
+#endif //FINAL
 
 #if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>

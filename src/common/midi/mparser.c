@@ -1330,8 +1330,7 @@ static INLINE void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, co
       }
       else
       {
-        usSwitch=ubSize;
-        usSwitch=(usSwitch&0xF0);
+        usSwitch= ubSize & 0xF0;
       }
     }
 

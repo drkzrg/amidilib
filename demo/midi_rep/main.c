@@ -49,21 +49,22 @@ void midiParserTest(sSequence_t *pSequence);
 
 int main(int argc, char *argv[])
 {
-  
+
+    if( ((argc>=1) && strlen(argv[1])!=0)){
+      printf("Trying to load %s\n",argv[1]);
+    }else{
+      printf("No specified midi filename! exiting.\n");
+      return 0;
+    }
+
     uint16 iRet = 0;
-    int16 iError = 0;
+    retVal iError = AM_OK;
     
     /* init library */
     iError = amInit();
     
-    if( ((argc>=1) && strlen(argv[1])!=0)){
-      printf("Trying to load %s\n",argv[1]);
-    }else{
-      printf("No specified midi filename! exiting\n");
-      amDeinit();
-      return 0;
-    }
-    
+    if(iError != AM_OK) return -1;
+
     // load midi file into memory 
     uint32 ulFileLenght = 0L;
     void *pMidiData = loadFile((uint8 *)argv[1], PREFER_TT, &ulFileLenght);
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
       /* free up buffer with loaded midi file, we don't need it anymore */
       amFree(pMidiData,0);
 
-      if(iError==0)
+      if(iError == AM_OK)
       {
 
 	     printf("Sequence name: %s\n",pMusicSeq->pSequenceName);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
         //unload sequence
         destroyAmSequence(&pMusicSeq);
         amDeinit(); //deinit our stuff
-        return(-1);
+        return -1;
 
       }
      
@@ -114,12 +115,12 @@ int main(int argc, char *argv[])
       amTrace((const uint8*)"Error: Couldn't read %s file...\n",argv[1]);
       printf( "Error: Couldn't read %s file...\n",argv[1]);
       amDeinit();	//deinit our stuff
-      return(-1);
+      return -1;
     }
 
  deinstallReplayRout();   
  amDeinit();
- return (0);
+ return 0;
 }
 
 

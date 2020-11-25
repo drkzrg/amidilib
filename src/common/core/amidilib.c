@@ -106,7 +106,7 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
  return T_UNSUPPORTED;
 }
 
-int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
+retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
 {
     (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), PREFER_TT,0);
  
@@ -116,7 +116,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
     {
       amTrace((const uint8*)"Error: Cannot allocate memory for sequence.\n");
       printf( "Error: Cannot allocate memory for sequence.\n");
-      return -1;
+      return AM_ERR;
     }
    
    amMemSet(sequence, 0, sizeof(sSequence_t));
@@ -129,7 +129,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
    {
        printf( "Error: Cannot allocate memory for sequence internal event buffer...\n");
        gUserMemFree(sequence,0);
-       return -1;
+       return AM_ERR;
    }
 #endif
 
@@ -140,14 +140,14 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
     /* not MIDI file, do nothing */
     amTrace((const uint8*)"It's not valid (X)MIDI file...\n");
     printf( "It's not valid MIDI file...\n");
-    return -1;
+    return AM_ERR;
    } 
    else if(midiType == T_UNSUPPORTED)
    {
     /* unsupported MIDI type format, do nothing*/
     amTrace((const uint8*)"Unsupported (X)MIDI file format...\n");
     printf( "Unsupported MIDI file format...\n");
-    return -1; 
+    return AM_ERR; 
    }
 
    retVal iRetVal = AM_OK;
@@ -258,7 +258,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
           if(iNumTracks == 0) 
           {
             printf("Error: Invalid number of tracks!\n");
-            iRetVal = -1;
+            iRetVal = AM_ERR;
           }
           else
           {
@@ -380,7 +380,7 @@ static _IOREC *g_psMidiBufferInfo;
 extern Bool CON_LOG;
 extern FILE *ofp;
 
-int16 amInit(void)
+retVal amInit(void)
 {
   
   // setup standard memory callbacks
@@ -398,7 +398,7 @@ int16 amInit(void)
     printf("Configuration saved sucessfully.\n");
   }else{
     printf("Error: Cannot save global configuration.\n");
-    return -1;
+    return AM_ERR;
   }
   
 #ifndef IKBD_MIDI_SEND_DIRECT
@@ -432,7 +432,7 @@ int16 amInit(void)
    // prepare device for receiving messages
    setupMidiDevice(getGlobalConfig()->connectedDeviceType,getGlobalConfig()->midiChannel);
    
- return 1;
+ return AM_OK;
 }
 
 void amDeinit(void)

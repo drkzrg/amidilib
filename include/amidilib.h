@@ -60,13 +60,13 @@ const sAMIDI_version *amGetVersionInfo(void);
  * @param midiData - pointer to loaded midi file data
  * @param midiDataSize - length of midi data in bytes
  * @param ppSequence - pointer to a an adress containing AMIDI sequence to populate
- * @return returns 0 if everything is OK, -1 if error occured
+ * @return returns AM_OK if everything is OK, AM_ERR if error occured
  **/
-int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
+retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
-int16 amInit(void);
+retVal amInit(void);
 
 /** Deinits system, restores standard MIDI buffer */
 void amDeinit(void);

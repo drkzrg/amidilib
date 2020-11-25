@@ -113,9 +113,9 @@ int main(void) {
   turnOffKeyclick();
 
   /* init library */
-  uint32 iError=amInit();
+  retVal iError=amInit();
  
-  if(iError!=1) return -1;
+  if(iError!=AM_OK) return -1;
   
 #ifdef IKBD_MIDI_SEND_DIRECT
     Supexec(flushMidiSendBuffer);

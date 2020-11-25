@@ -24,163 +24,15 @@ sMThd *pMidiInfo=(sMThd *)pMidiPtr;
 if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
   return (pMidiInfo->division);
 }
-    /* (X)Midi has timing data inside midi eventlist */
  return (0);
 }
 
-/* at this point pCurSequence should have the info about the type of file that resides in memory,
-because we have to know if we have to dump event data to one eventlist or several ones */
-/* all the events found in the track will be dumped to the sSequenceState_t structure  */
+/** checks if byte is midi channel
+* @param byteEvent command byte
+* @return 1 if true, 0 otherwise
+*/
 
-void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, retVal *iRetVal )
-{
-
-sChunkHeader *pHeader = (sChunkHeader *)trackStartPtr;
-
-if(pHeader->id != ID_MTRK) 
-{
-  amTrace((const uint8*)"Fatal error: Wrong midi track id\n");
-  return NULL;
-}
-
-uint32 ulChunkSize = pHeader->headLenght;
-
-trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader)); // get events start
-void *endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
-
-sSequence_t * const sequence = *ppCurSequence;
-
-if(sequence==0) 
-{
-  amTrace((const uint8*)"Fatal error: Sequence pointer is null!\n");
-  return NULL;
-}
-
-const uint8 numTracks = sequence->ubNumTracks;
-
-amTrace((const uint8*)"Number of tracks to process: %d\n\n", numTracks);
-
-uint8 currentTrackNb = 0;
-
-switch(fileTypeFlag)
-{
-    case T_MIDI0:
-    {
-      /* we have only one track data to process */
-      /* add all of them to given track */
-
-      sequence->seqType = ST_SINGLE;
-
-      sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
-      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-      pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
-      pTempTrack->currentState.currentBPM = DEFAULT_BPM;
-
-      trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
-
-      if((*iRetVal) == AM_ERR) 
-      {
-        return NULL;
-      }
-
-    } break;
-
-    case T_MIDI1:
-    {
-      sequence->seqType = ST_MULTI;
-
-      while(((pHeader!=0) && (pHeader->id==ID_MTRK) && (currentTrackNb<numTracks)))
-      {
-        /* we have got track data :)) */
-        /* add all of them to given track */
-        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
-        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
-        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
-
-        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
-
-        if((*iRetVal) == AM_ERR) 
-        {
-          return NULL;
-        }
-
-        /* increase current track counter */
-        ++currentTrackNb;
-
-        //prevent reading chunk after processing the last track
-        if(currentTrackNb < numTracks)
-        {
-          /* get next data chunk info */
-          pHeader=(sChunkHeader *)trackStartPtr;
-          ulChunkSize=pHeader->headLenght;
-
-          /* omit Track header */
-          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
-          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
-        } 
-        else
-        {
-            pHeader=0;
-        }
-     
-      }
-
-     } break;
-    
-    case T_MIDI2:
-    {
-      /* handle MIDI 2, multitrack type */
-      /* create several track lists according to numTracks */
-      sequence->seqType = ST_MULTI_SUB;
-
-      /* tracks inited, now insert track data */
-      while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(currentTrackNb<numTracks)))
-      {
-        /* we have got track data :)), add all of them to given track */
-        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
-        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
-        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
-        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
-    
-        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
-
-        if((*iRetVal) == AM_ERR) 
-        {
-          return NULL;
-        }
-
-        /* increase track counter */
-        ++currentTrackNb;
-
-        if(currentTrackNb < numTracks)
-        {
-          /* get next data chunk info */
-          pHeader = (sChunkHeader *)trackStartPtr;
-          ulChunkSize = pHeader->headLenght;
-
-          /* omit Track header */
-          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
-          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
-        }
-        else
-        {
-            pHeader=0;
-        }
-
-      }
-    } break;
-    default:
-    {
-      AssertMsg(0,"Fatal: Unhandled midi file type.");
-    } break;
- };
- 
- amTrace((const uint8*)"Finished processing...\n");
- return NULL;
-}
-
-Bool amIsMidiChannelEvent(const uint8 byteEvent)
+static INLINE Bool amIsMidiChannelEvent(const uint8 byteEvent)
 {
   if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
   {
@@ -190,7 +42,13 @@ Bool amIsMidiChannelEvent(const uint8 byteEvent)
   return FALSE;
 }
 
-Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
+
+/** checks if byte is Sysex or System realtime command byte
+* @param byteEvent pointer to VLQ data
+* @return 1 if true, 0 otherwise
+*/
+
+static INLINE Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
 {
   if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) )
   {
@@ -202,151 +60,24 @@ Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
   return FALSE;
 }
 
-/* combine bytes function for pitch bend */
-uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond)
-{
-    uint16 val;
-    val = (uint16)bSecond;
-    val<<=7;
-    val|=(uint16)bFirst;
- return(val);
-}
+/************************************************ midi event processing functions */
 
-/* handles the events in tracks and returns pointer to the next midi track */
-void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, retVal *iRetVal )
-{
-  uint8 usSwitch=0;
-  uint16 recallStatus=0;
+/** read/decode note off message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
 
-  Bool bEOF=FALSE;
-
-  /* execute as long we are on the end of file or EOT meta occured,
-    50% midi track headers is broken, so the web says ;)) */
-
-  uint8 *pCmd=((uint8 *)(*startPtr));
-  uint8 ubSize=0;
-
-  while ( ((pCmd!=endAddr) && (bEOF!=TRUE) && ((*iRetVal) == AM_OK)) )
-  {
-    uint32 delta=0L;
-    
-    /* read delta time, pCmd should point to the command data */
-    delta=readVLQ(pCmd,&ubSize);
-
-    pCmd=(uint8 *)((uint32)pCmd+ubSize*sizeof(uint8));
-
-    /* handling of running status */
-    /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
-    /* else set recallStatus = 0 and do nothing special */
-    ubSize=(*pCmd);
-
-    if( (!(amIsMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(amIsMidiRtCmdOrSysex(ubSize)))))
-    {
-      /*recall last cmd byte */
-      usSwitch=g_runningStatus;
-      usSwitch=(usSwitch&0xF0);
-    }
-    else
-    {
-      /* check if the new cmd is the system one*/
-      recallStatus=0;
-
-      if(amIsMidiRtCmdOrSysex(ubSize))
-      {
-        usSwitch=ubSize;
-      }
-      else
-      {
-        usSwitch=ubSize;
-        usSwitch=(usSwitch&0xF0);
-      }
-    }
-
-    /* decode event and write it to our custom structure */
-    switch(usSwitch)
-    {
-      case EV_NOTE_OFF:
-        *iRetVal=amNoteOff(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_NOTE_ON:
-        *iRetVal=amNoteOn(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_NOTE_AFTERTOUCH:
-        *iRetVal=amNoteAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_CONTROLLER:
-        *iRetVal=amController(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_PROGRAM_CHANGE:
-        *iRetVal=amProgramChange(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_CHANNEL_AFTERTOUCH:
-        *iRetVal=amChannelAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_PITCH_BEND:
-        *iRetVal=amPitchBend(pSeq,&pCmd,&recallStatus, delta, trackNb );
-      break;
-      case EV_META:
-        *iRetVal=amMetaEvent(pSeq,&pCmd, delta, trackNb,&bEOF);
-      break;
-      case EV_SOX:                          	/* SySEX midi exclusive */
-        recallStatus=0; 	                /* cancel out midi running status */
-        *iRetVal=amSysexMsg(pSeq,&pCmd,delta, trackNb);
-      break;
-      case SC_MTCQF:
-        recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
-        amTrace((const uint8*)"Event: System common MIDI time code qt frame\n");
-        ++pCmd;
-        ++pCmd;
-      break;
-      case SC_SONG_POS_PTR:
-        amTrace((const uint8*)"Event: System common Song position pointer\n");
-        recallStatus=0;                      /* Song position pointer, 2 data bytes */
-        ++pCmd;
-        ++pCmd;
-        ++pCmd;
-      break;
-      case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-        amTrace((const uint8*)"Event: System common Song select\n");
-        recallStatus=0;
-        ++pCmd;
-        ++pCmd;
-      break;
-      case SC_UNDEF1:                   /* undefined */
-      case SC_UNDEF2:                  /* undefined */
-    amTrace((const uint8*)"Event: System common not defined.\n");
-        recallStatus=0;
-        ++pCmd;
-      break;
-      case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-    amTrace((const uint8*)"Event: System tune request.\n");
-        recallStatus=0;
-        ++pCmd;
-      break;
-      default:
-      {
-        amTrace((const uint8*)"Event: Unknown type: %d\n",(*pCmd));
-        /* unknown event, do nothing or maybe throw error? */
-      } break;
-    }
-} /*end of decode events loop */
-
-  /* return the next track data */
-  return(pCmd);
-}
-
-
-retVal amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static INLINE retVal amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
 sNoteOff_t *pNoteOff=0;
 tempEvent.dataPtr=0;
 retVal retCode = AM_OK;
-
-#ifdef MIDI_PARSER_DEBUG
-assert(sizeof(sNoteOff_t)==2);
-#endif
 
 if((*recallRS)==0){
   /* save last running status */
@@ -427,8 +158,17 @@ if((*recallRS)==0){
    return retCode;
 }
 
-//
-retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb){
+/** read/decode note on message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+{
  sEventBlock_t tempEvent;
 
  uint8 channel=0;
@@ -521,7 +261,16 @@ retVal amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 
  return retCode;
 }
 
-retVal amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+/** read/decode note aftertouch/pressure message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
@@ -598,7 +347,16 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
    return retCode;
 }
 
-retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+/** read/decode control change message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
     sEventBlock_t tempEvent;
     retVal retCode = AM_OK;
@@ -679,7 +437,16 @@ retVal amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint
    return retCode;
 }
 
-retVal amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
+/** read/decode program change message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 
@@ -762,7 +529,17 @@ sEventBlock_t tempEvent;
     return retCode;
  }
 
-retVal amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+
+/** read/decode channel aftertouch/pressure message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 retVal retCode = AM_OK;
@@ -833,17 +610,22 @@ retVal retCode = AM_OK;
  return retCode;
 }
 
-retVal amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+/** read/decode pitch bend message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 
 sPitchBend_EventBlock_t *pEvntBlock=NULL;
 sPitchBend_t *pPitchBend=0;
 retVal retCode = AM_OK;
-
-#ifdef MIDI_PARSER_DEBUG
-  AssertMsg(sizeof(sPitchBend_t)==2,"Invalid PitchBend size.");
-#endif
 
 tempEvent.dataPtr=0;
 
@@ -918,7 +700,16 @@ tempEvent.dataPtr=0;
   return retCode;
 }
 
-retVal amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb)
+/** read/decode sysex message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+* @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb)
 {
   sEventBlock_t tempEvent;
   sSysEX_EventBlock_t *pEvntBlock=0;
@@ -968,7 +759,17 @@ retVal amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uin
 #endif
 }
 
-retVal amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb, Bool *bEOT)
+/** read/decode meta event message
+* @param pSeq pointer to AMIDI sequence structure
+*   @param pPtr pointer to an address pointing to start of midi data to read
+*   @param recallRS current recall running status
+*   @param delta current event delta
+*   @param trackNb index of track structure, where event will be stored
+*   @return Bool flag TRUE if end of track (EOT) occured, FALSE otherwise. iRetVal pointer to an integer, 
+*           which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+*/
+
+static INLINE retVal amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb, Bool *bEOT)
 {
 sEventBlock_t tempEvent;
 
@@ -1289,7 +1090,7 @@ sEventBlock_t tempEvent;
     tempEvent.dataPtr=(void *)tempBuf;
 
     pEvntBlock=(sEot_EventBlock_t *)tempEvent.dataPtr;
-    pEvntBlock->dummy=0L;		//dummy value
+    pEvntBlock->dummy=0L;   //dummy value
 
     *bEOT=TRUE;
     /* add event to list */
@@ -1334,7 +1135,7 @@ sEventBlock_t tempEvent;
       tempEvent.dataPtr=(void *)tempBuf;
 
       pEvntBlock=(sTempo_EventBlock_t *)tempEvent.dataPtr;
-      pEvntBlock->eventData.tempoVal=	val1;
+      pEvntBlock->eventData.tempoVal= val1;
 
 #ifdef MIDI_PARSER_DEBUG
       amTrace((const uint8*)"%lu ms per quarter-note\n", val1);
@@ -1473,4 +1274,299 @@ sEventBlock_t tempEvent;
  };
 
   return ret;
+}
+
+/** processes the MIDI 0,1,2 track events
+* @param pSeq pointer to AMIDI sequence structure
+* @param startPtr pointer to an address containing start of Track MIDI chunk
+* @param endAddr address, where track data ends
+* @param trackNb track number to process (from 0 to 15)
+* @param iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
+* @return pointer to the next track or NULL if EOT occured.
+*/
+
+/* handles the events in tracks and returns pointer to the next midi track */
+static INLINE void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, retVal *iRetVal )
+{
+  uint8 usSwitch=0;
+  uint16 recallStatus=0;
+
+  Bool bEOF=FALSE;
+
+  /* execute as long we are on the end of file or EOT meta occured,
+    50% midi track headers is broken, so the web says ;)) */
+
+  uint8 *pCmd=((uint8 *)(*startPtr));
+  uint8 ubSize=0;
+
+  while ( ((pCmd!=endAddr) && (bEOF!=TRUE) && ((*iRetVal) == AM_OK)) )
+  {
+    uint32 delta=0L;
+    
+    /* read delta time, pCmd should point to the command data */
+    delta=readVLQ(pCmd,&ubSize);
+
+    pCmd=(uint8 *)((uint32)pCmd+ubSize*sizeof(uint8));
+
+    /* handling of running status */
+    /* if byte is not from 0x08-0x0E range then recall last running status AND set recallStatus = 1 */
+    /* else set recallStatus = 0 and do nothing special */
+    ubSize=(*pCmd);
+
+    if( (!(amIsMidiChannelEvent(ubSize))&&(recallStatus==1)&&(!(amIsMidiRtCmdOrSysex(ubSize)))))
+    {
+      /*recall last cmd byte */
+      usSwitch=g_runningStatus;
+      usSwitch=(usSwitch&0xF0);
+    }
+    else
+    {
+      /* check if the new cmd is the system one*/
+      recallStatus=0;
+
+      if(amIsMidiRtCmdOrSysex(ubSize))
+      {
+        usSwitch=ubSize;
+      }
+      else
+      {
+        usSwitch=ubSize;
+        usSwitch=(usSwitch&0xF0);
+      }
+    }
+
+    /* decode event and write it to our custom structure */
+    switch(usSwitch)
+    {
+      case EV_NOTE_OFF:
+        *iRetVal=amNoteOff(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_NOTE_ON:
+        *iRetVal=amNoteOn(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_NOTE_AFTERTOUCH:
+        *iRetVal=amNoteAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_CONTROLLER:
+        *iRetVal=amController(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_PROGRAM_CHANGE:
+        *iRetVal=amProgramChange(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_CHANNEL_AFTERTOUCH:
+        *iRetVal=amChannelAft(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_PITCH_BEND:
+        *iRetVal=amPitchBend(pSeq,&pCmd,&recallStatus, delta, trackNb );
+      break;
+      case EV_META:
+        *iRetVal=amMetaEvent(pSeq,&pCmd, delta, trackNb,&bEOF);
+      break;
+      case EV_SOX:                          	/* SySEX midi exclusive */
+        recallStatus=0; 	                /* cancel out midi running status */
+        *iRetVal=amSysexMsg(pSeq,&pCmd,delta, trackNb);
+      break;
+      case SC_MTCQF:
+        recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
+        amTrace((const uint8*)"Event: System common MIDI time code qt frame\n");
+        ++pCmd;
+        ++pCmd;
+      break;
+      case SC_SONG_POS_PTR:
+        amTrace((const uint8*)"Event: System common Song position pointer\n");
+        recallStatus=0;                      /* Song position pointer, 2 data bytes */
+        ++pCmd;
+        ++pCmd;
+        ++pCmd;
+      break;
+      case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
+        amTrace((const uint8*)"Event: System common Song select\n");
+        recallStatus=0;
+        ++pCmd;
+        ++pCmd;
+      break;
+      case SC_UNDEF1:                   /* undefined */
+      case SC_UNDEF2:                  /* undefined */
+    amTrace((const uint8*)"Event: System common not defined.\n");
+        recallStatus=0;
+        ++pCmd;
+      break;
+      case SC_TUNE_REQUEST:             /* tune request, no data bytes */
+    amTrace((const uint8*)"Event: System tune request.\n");
+        recallStatus=0;
+        ++pCmd;
+      break;
+      default:
+      {
+        amTrace((const uint8*)"Event: Unknown type: %d\n",(*pCmd));
+        /* unknown event, do nothing or maybe throw error? */
+      } break;
+    }
+} /*end of decode events loop */
+
+  /* return the next track data */
+  return(pCmd);
+}
+
+
+/* at this point pCurSequence should have the info about the type of file that resides in memory,
+because we have to know if we have to dump event data to one eventlist or several ones */
+/* all the events found in the track will be dumped to the sSequenceState_t structure  */
+
+void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, retVal *iRetVal )
+{
+
+sChunkHeader *pHeader = (sChunkHeader *)trackStartPtr;
+
+if(pHeader->id != ID_MTRK) 
+{
+  amTrace((const uint8*)"Fatal error: Wrong midi track id\n");
+  return NULL;
+}
+
+uint32 ulChunkSize = pHeader->headLenght;
+
+trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader)); // get events start
+void *endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
+
+sSequence_t * const sequence = *ppCurSequence;
+
+if(sequence==0) 
+{
+  amTrace((const uint8*)"Fatal error: Sequence pointer is null!\n");
+  return NULL;
+}
+
+const uint8 numTracks = sequence->ubNumTracks;
+
+amTrace((const uint8*)"Number of tracks to process: %d\n\n", numTracks);
+
+uint8 currentTrackNb = 0;
+
+switch(fileTypeFlag)
+{
+    case T_MIDI0:
+    {
+      /* we have only one track data to process */
+      /* add all of them to given track */
+
+      sequence->seqType = ST_SINGLE;
+
+      sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
+      pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+      pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+      pTempTrack->currentState.currentBPM = DEFAULT_BPM;
+
+      trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
+
+      if((*iRetVal) == AM_ERR) 
+      {
+        return NULL;
+      }
+
+    } break;
+
+    case T_MIDI1:
+    {
+      sequence->seqType = ST_MULTI;
+
+      while(((pHeader!=0) && (pHeader->id==ID_MTRK) && (currentTrackNb<numTracks)))
+      {
+        /* we have got track data :)) */
+        /* add all of them to given track */
+        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
+        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
+
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
+
+        if((*iRetVal) == AM_ERR) 
+        {
+          return NULL;
+        }
+
+        /* increase current track counter */
+        ++currentTrackNb;
+
+        //prevent reading chunk after processing the last track
+        if(currentTrackNb < numTracks)
+        {
+          /* get next data chunk info */
+          pHeader=(sChunkHeader *)trackStartPtr;
+          ulChunkSize=pHeader->headLenght;
+
+          /* omit Track header */
+          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
+          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
+        } 
+        else
+        {
+            pHeader=0;
+        }
+     
+      }
+
+     } break;
+    
+    case T_MIDI2:
+    {
+      /* handle MIDI 2, multitrack type */
+      /* create several track lists according to numTracks */
+      sequence->seqType = ST_MULTI_SUB;
+
+      /* tracks inited, now insert track data */
+      while(((pHeader!=0)&&(pHeader->id==ID_MTRK)&&(currentTrackNb<numTracks)))
+      {
+        /* we have got track data :)), add all of them to given track */
+        sTrack_t *pTempTrack = sequence->arTracks[currentTrackNb];
+        pTempTrack->currentState.playState = getGlobalConfig()->initialTrackState&(~(TM_MUTE));
+        pTempTrack->currentState.currentTempo = DEFAULT_MPQN;
+        pTempTrack->currentState.currentBPM = DEFAULT_BPM;
+    
+        trackStartPtr = processMidiTrackEvents(sequence, &trackStartPtr, endPtr, currentTrackNb, iRetVal );
+
+        if((*iRetVal) == AM_ERR) 
+        {
+          return NULL;
+        }
+
+        /* increase track counter */
+        ++currentTrackNb;
+
+        if(currentTrackNb < numTracks)
+        {
+          /* get next data chunk info */
+          pHeader = (sChunkHeader *)trackStartPtr;
+          ulChunkSize = pHeader->headLenght;
+
+          /* omit Track header */
+          trackStartPtr = (void *)((uint32)trackStartPtr + sizeof(sChunkHeader));
+          endPtr = ((void *)((uint32)trackStartPtr + ulChunkSize));
+        }
+        else
+        {
+            pHeader=0;
+        }
+
+      }
+    } break;
+    default:
+    {
+      AssertMsg(0,"Fatal: Unhandled midi file type.");
+    } break;
+ };
+ 
+ amTrace((const uint8*)"Finished processing...\n");
+ return NULL;
+}
+
+/* combine bytes function for pitch bend */
+uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond)
+{
+    uint16 val;
+    val = (uint16)bSecond;
+    val<<=7;
+    val|=(uint16)bFirst;
+ return(val);
 }

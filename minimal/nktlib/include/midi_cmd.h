@@ -42,14 +42,15 @@ extern uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data 
 extern volatile uint16 MIDIbytesToSend;
 
 // sends SysEX message without recalculating the checksum
-static INLINE void sendSysEX(const sSysEX_t *pMsg)
-{
-	amTrace("Send SysEx size: %u \n",pMsg->size);
+static INLINE void sendSysEX(const sSysEX_t *pMsg){
+
+amTrace("Send SysEx size: %u \n",pMsg->size);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
- 	amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
- 	MIDIbytesToSend+=pMsg->size;
- 	Supexec(flushMidiSendBuffer);
+ amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
+ MIDIbytesToSend+=pMsg->size;
+
+ Supexec(flushMidiSendBuffer);
 #else
     MIDI_SEND_DATA(pMsg->size,pMsg->data);
 #endif

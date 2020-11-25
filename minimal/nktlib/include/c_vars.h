@@ -83,18 +83,20 @@ typedef int16 retVal;
 #define AM_ERR -1
 
 #define PACK_ATTR __attribute__((packed))
-#define FORCE_INLINE inline __attribute__((always_inline))
 #define FAST_CALL __attribute__((fastcall))
 
 #ifdef USE_INLINE
 
 #if (__STDC_VERSION__ >= 199901L) 
-  #define INLINE inline        /* use standard inline */
+#define INLINE inline        /* use standard inline */
+#define FORCE_INLINE inline __attribute__((always_inline))
 #else
-  #define INLINE              /* no inline */
+#define INLINE              /* no inline */
+#define FORCE_INLINE
 #endif
 #else
-  #define INLINE              /* no inline */
+#define INLINE              /* no inline */
+#define FORCE_INLINE
 #endif
 
 #define STRINGISE_IMPL(x) #x

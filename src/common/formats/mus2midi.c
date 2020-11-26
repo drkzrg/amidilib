@@ -46,7 +46,6 @@ Copyright (C) 2007-2020 Pawel Goralski
 #include "fmio.h"
 #endif
 
-
 #define MUSEVENT_KEYOFF	0
 #define MUSEVENT_KEYON	1
 #define MUSEVENT_PITCHWHEEL	2
@@ -101,12 +100,13 @@ static const uint8 MidiMap[] = {
     0x79,	//14	// reset all controllers
 };
 
-int32 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len){
+retVal Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len)
+{
 // mus header and instruments
 MUSheader_t header;
 
 // current position in read buffer
-unsigned char* cur = bytes,*end;
+uint8* cur = bytes,*end;
 
 // Midi header(format 0)
 sMThd midiHeader;
@@ -122,7 +122,7 @@ amMemSet(&header,0,sizeof(MUSheader_t));
 
 // Delta time for midi event
 int32 delta_time = 0;
-int32 temp=0;
+uint16 temp=0;
 int32 channel_volume[MIDI_MAXCHANNELS] = {0};
 int32 bytes_written = 0;
 int32 channelMap[MIDI_MAXCHANNELS], currentChannel = 0;
@@ -146,7 +146,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 #endif
 
     amTrace("[Error] Too many channels, only 15 is supported.\n");
-    return 0;
+    return AM_ERR;
 }
 
  amTrace("MUS info:\n");
@@ -157,7 +157,8 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
  amTrace("Nb of instruments: 0x%x\n",header.instrCnt);
 
   // Map channel 15 to 9(percussions)
-  for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) {
+  for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) 
+  {
 		channelMap[temp] = -1;
 		channel_volume[temp] = 0x40;
    }
@@ -224,10 +225,11 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 		status = channelMap[channel];
 
         // Handle events
-		switch ((event & 122) >> 4){
+		switch ((event & 122) >> 4)
+		{
 		default:
-            //assert(0);
-			break;
+            AssertMsg(0,"Unsupported event");
+		break;
 		case MUSEVENT_KEYOFF:
 			status |=  0x80;
 			bit1 = *cur++;
@@ -242,12 +244,14 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 			break;
 		case MUSEVENT_PITCHWHEEL:
 			status |= 0xE0;
+
+			// pitch wheel range should be $0-$3fff, TODO: add validation / assert
             bit1 = (*cur & 1) >> 6;
             bit2 = (*cur++ >> 1) & 127;
-			break;
+		break;
 		case MUSEVENT_CHANNELMODE:
 			status |= 0xB0;
-            //assert(*cur < sizeof(MidiMap) / sizeof(MidiMap[0]));
+            Assert(*cur < sizeof(MidiMap) / sizeof(MidiMap[0]));
 			bit1 = MidiMap[*cur++];
 			bit2 = (*cur++ == 12) ? header.channels + 1 : 0x00;
 			break;
@@ -259,22 +263,22 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 				bitc = 1;
 			} else {
 				status |= 0xB0;
-              // assert((int)(*cur < sizeof(MidiMap) / sizeof(MidiMap[0])));
+              	Assert((int32)(*cur < sizeof(MidiMap) / sizeof(MidiMap[0])));
 				bit1 = MidiMap[*cur++];
 				bit2 = *cur++;
 			}
 			break;
 		case 5:	// Unknown
-        //	assert(0);
-			break;
+            AssertMsg(0,"Unknown event");
+		break;
 		case MUSEVENT_END:	// End
 			status = 0xff;
 			bit1 = 0x2f;
 			bit2 = 0x00;
-            //assert(cur == end);
+            Assert(cur == end);
 			break;
 		case 7:	// Unknown
-            //assert(0);
+            AssertMsg(0,"Unknown event");
 			break;
 		}
 
@@ -311,7 +315,7 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("bytes written %u\n",(uint32)(*len));
+    printf("bytes written %u\n",(uint32)(*len));
 #endif
 
     amTrace("bytes written %u\n",(uint32)(*len));
@@ -373,5 +377,5 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 #endif
 
  amTrace("Done. OK\n");
- return 1;
+ return AM_OK;
 }

@@ -239,8 +239,8 @@ volatile uint8 requestedMasterVolume;
 volatile uint8 requestedMasterBalance;
 volatile static uint16 sequenceState;
 
-volatile sMidiModuleSettings gModuleSettings;
-uint8 gMt32TextMsg[20];
+volatile sMidiModuleSettings moduleSettings;
+uint8 mt32TextMsg[20];
 
 enum{
   IDX_VENDOR=1,
@@ -258,20 +258,22 @@ static sSysEX_t arSetTextMT32         =  {30,(uint8 []){0xf0,0x41,0x10,0x16,0x12
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xf7}};
 
+static inline void handleMasterSettings(void) FORCE_INLINE;
 
-__attribute__((always_inline)) static inline void handleMasterSettings(void) {
+static inline void handleMasterSettings(void) 
+{
 
     // handle volume/balance/reverb change
-   if(gModuleSettings.masterVolume!=requestedMasterVolume){
+   if(moduleSettings.masterVolume!=requestedMasterVolume){
 
-       if(MT32_MODEL_ID==gModuleSettings.modelID){
+       if(MT32_MODEL_ID==moduleSettings.modelID){
 
             //handle mt32 volume
             if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
 
-                arSetMasterVolumeMT32.data[IDX_VENDOR]=gModuleSettings.vendorID;
-                arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
-                arSetMasterVolumeMT32.data[IDX_MODEL_ID]=gModuleSettings.modelID;
+                arSetMasterVolumeMT32.data[IDX_VENDOR]=moduleSettings.vendorID;
+                arSetMasterVolumeMT32.data[IDX_DEVICE_ID]=moduleSettings.deviceID;
+                arSetMasterVolumeMT32.data[IDX_MODEL_ID]=moduleSettings.modelID;
 
                 arSetMasterVolumeMT32.data[IDX_CMD_ID]=0x12;                          // sending
                 arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
@@ -279,34 +281,34 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
                 sendSysEX(&arSetMasterVolumeMT32);
 
-                #ifdef IKBD_MIDI_SEND_DIRECT
-                    Supexec(flushMidiSendBuffer);
-                #endif
+#ifdef IKBD_MIDI_SEND_DIRECT
+                Supexec(flushMidiSendBuffer);
+#endif
 
-                gModuleSettings.masterVolume=requestedMasterVolume;
+                moduleSettings.masterVolume=requestedMasterVolume;
             }
 
-            if(gMt32TextMsg[0]!=0){
+            if(mt32TextMsg[0]!=0){
 
                 amMemSet((void *)&(arSetTextMT32.data[8]),0,sizeof(uint8)*20);
 
-                arSetTextMT32.data[IDX_VENDOR]=gModuleSettings.vendorID;
-                arSetTextMT32.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
-                arSetTextMT32.data[IDX_MODEL_ID]=gModuleSettings.modelID;
+                arSetTextMT32.data[IDX_VENDOR]=moduleSettings.vendorID;
+                arSetTextMT32.data[IDX_DEVICE_ID]=moduleSettings.deviceID;
+                arSetTextMT32.data[IDX_MODEL_ID]=moduleSettings.modelID;
                 arSetTextMT32.data[IDX_CMD_ID]=0x12;
 
-                amMemCpy(&arSetTextMT32.data[8],&gMt32TextMsg[0],sizeof(uint8)*20);
+                amMemCpy(&arSetTextMT32.data[8],&mt32TextMsg[0],sizeof(uint8)*20);
                 arSetTextMT32.data[28]=amCalcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
 
                 // update text
                 sendSysEX(&arSetTextMT32);
 
-                #ifdef IKBD_MIDI_SEND_DIRECT
-                    Supexec(flushMidiSendBuffer);
-                #endif
+#ifdef IKBD_MIDI_SEND_DIRECT
+                Supexec(flushMidiSendBuffer);
+#endif
 
                 // reset text
-                amMemSet(&gMt32TextMsg[0],0,sizeof(uint8)*20);
+                amMemSet(&mt32TextMsg[0],0,sizeof(uint8)*20);
             }
 
 
@@ -319,9 +321,9 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
             // send new master vol
             if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_GM){
 
-                arSetMasterVolumeGM.data[IDX_VENDOR]=gModuleSettings.vendorID;
-                arSetMasterVolumeGM.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
-                arSetMasterVolumeGM.data[IDX_MODEL_ID]=gModuleSettings.modelID;
+                arSetMasterVolumeGM.data[IDX_VENDOR]=moduleSettings.vendorID;
+                arSetMasterVolumeGM.data[IDX_DEVICE_ID]=moduleSettings.deviceID;
+                arSetMasterVolumeGM.data[IDX_MODEL_ID]=moduleSettings.modelID;
 
                 arSetMasterVolumeGM.data[IDX_CMD_ID]=0x12;                         // sending
                 arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
@@ -329,32 +331,32 @@ __attribute__((always_inline)) static inline void handleMasterSettings(void) {
 
                 sendSysEX(&arSetMasterVolumeGM);
 
-                #ifdef IKBD_MIDI_SEND_DIRECT
-                    Supexec(flushMidiSendBuffer);
-                #endif
+#ifdef IKBD_MIDI_SEND_DIRECT
+                Supexec(flushMidiSendBuffer);
+#endif
 
-                gModuleSettings.masterVolume=requestedMasterVolume;
+                moduleSettings.masterVolume=requestedMasterVolume;
 
             }
          }
 
-         if(gModuleSettings.masterBalance!=requestedMasterBalance){
+         if(moduleSettings.masterBalance!=requestedMasterBalance){
 
              // send new balance
-            arSetMasterBalanceGM.data[IDX_VENDOR]=gModuleSettings.vendorID;
-            arSetMasterBalanceGM.data[IDX_DEVICE_ID]=gModuleSettings.deviceID;
-            arSetMasterBalanceGM.data[IDX_MODEL_ID]=gModuleSettings.modelID;
+            arSetMasterBalanceGM.data[IDX_VENDOR]=moduleSettings.vendorID;
+            arSetMasterBalanceGM.data[IDX_DEVICE_ID]=moduleSettings.deviceID;
+            arSetMasterBalanceGM.data[IDX_MODEL_ID]=moduleSettings.modelID;
             arSetMasterBalanceGM.data[IDX_CMD_ID]=0x12;                                // sending
             arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
             arSetMasterBalanceGM.data[9]=amCalcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
 
             sendSysEX(&arSetMasterBalanceGM);
 
-            #ifdef IKBD_MIDI_SEND_DIRECT
-             Supexec(flushMidiSendBuffer);
-            #endif
+#ifdef IKBD_MIDI_SEND_DIRECT
+            Supexec(flushMidiSendBuffer);
+#endif
 
-            gModuleSettings.masterBalance=requestedMasterBalance;
+            moduleSettings.masterBalance=requestedMasterBalance;
          }
     }
 
@@ -374,7 +376,6 @@ void updateStepNkt(void)
  //check sequence state if paused do nothing
  if((sequenceState&NKT_PS_PAUSED))
  {
-
      if(bPaused!=TRUE)
      {
         bPaused=TRUE;
@@ -485,11 +486,12 @@ void updateStepNkt(void)
 
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
-      //copy/update precalculated tempo data
-      for (uint8 i=0;i<NKT_UMAX;++i){
-          g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
-      }
-
+      // copy / update precalculated tempo data
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U25HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U25HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U50HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U50HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U100HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U100HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U200HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U200HZ];
+   
       TimeAdd = 0;
 
       // reset tempo to initial valueas taken during start (get them from main sequence?)
@@ -653,9 +655,10 @@ void updateStepNktMt(void){
       g_CurrentNktSequence->currentTempo.tempo=g_CurrentNktSequence->defaultTempo.tempo;
 
       //copy/update precalculated tempo data
-      for (uint8 i=0;i<NKT_UMAX;++i){
-          g_CurrentNktSequence->currentTempo.tuTable[i]=g_CurrentNktSequence->defaultTempo.tuTable[i];
-      }
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U25HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U25HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U50HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U50HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U100HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U100HZ];
+      g_CurrentNktSequence->currentTempo.tuTable[NKT_U200HZ]=g_CurrentNktSequence->defaultTempo.tuTable[NKT_U200HZ];
 
       TimeAdd = 0;
 
@@ -680,9 +683,6 @@ void updateStepNktMt(void){
   }
 
 } //end updateStepNkt()
-
-
-
 
 sNktSeq *loadNktSequence(const uint8 *pFilePath){
     // create header
@@ -837,7 +837,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
      return NULL;
    }
 
-   for (int i=0;i<tempHd.nbOfTracks;++i){
+   for(uint16 i=0;i<tempHd.nbOfTracks;++i){
      amTrace("[NKT track #%u]\nNb of blocks: %u (%u bytes),\nEvent data buffer size: %u\n",i,trackData[i].nbOfBlocks, trackData[i].eventsBlockBufSize,trackData[i].eventDataBufSize);
    }
 
@@ -1502,28 +1502,30 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
 
 
 
-int32 saveNktSequence(sNktSeq *pSeq,const uint8 *filepath, Bool bCompress)
+retVal saveNktSequence(sNktSeq *pSeq, const uint8 *filepath, Bool bCompress)
 {
 
 if(filepath==0||strlen(filepath)==0) {
     amTrace("[MID2NKT] Fatal error, path is empty.\n");
-    return 0;
+    return AM_ERR;
 }
 
 // create header
 sNktHd nktHd;
 sNktTrackInfo *pTrackInfo=0;
 
-if(pSeq->nbOfTracks==0){
+if(pSeq->nbOfTracks==0)
+{
     amTrace("[MID2NKT] Fatal error, no tracks in sequence!\n");
-    return 0;
+    return AM_ERR;
 }
 
 pTrackInfo=(sNktTrackInfo *)gUserMemAlloc( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), PREFER_TT, 0);
 
-if(pTrackInfo==0) {
+if(pTrackInfo==0) 
+{
     amTrace("[MID2NKT] Fatal error, no memory for track info!\n");
-    return 0;
+    return AM_ERR;
 }
 
 // set header
@@ -1542,7 +1544,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
  if(fh<0){
      amTrace("[GEMDOS] Error: %s\n", getGemdosError(fh));
-     return -1;
+     return AM_ERR;
  }
 
      if(bCompress==TRUE)
@@ -1551,7 +1553,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
          if(lzo_init()!=LZO_E_OK){
            amTrace("Error: Could't initialise LZO library. \n");
-           return -1;
+           return AM_ERR;
          }
 
           amTrace("[LZO] \nLZO real-time data compression library (v%s, %s).\n",
@@ -1577,7 +1579,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
                   // free work mem
                   gUserMemFree(workMem,0);
-                  return -1;
+                  return AM_ERR;
               }else{
                   amMemSet(tempBuffer,0,tempBufSize);
               }
@@ -1588,9 +1590,10 @@ setNktTrackInfo(pTrackInfo,pSeq);
                     amTrace("[LZO] Event data compressed %u->%u bytes.\n",pSeq->pTracks[0].eventsBlockBufferSize, nbBytesPacked);
 
                     /* check for an incompressible block */
-                    if (nbBytesPacked >= pSeq->pTracks[0].eventsBlockBufferSize){
-                            amTrace("[LZO] Error: Event block contains incompressible data.\n");
-                        return -1;
+                    if (nbBytesPacked >= pSeq->pTracks[0].eventsBlockBufferSize)
+                    {
+                        amTrace("[LZO] Error: Event block contains incompressible data.\n");
+                        return AM_ERR;
                     }
 
                     // copy output buffer with packed data
@@ -1613,7 +1616,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
                   // free work mem
                   gUserMemFree(workMem,0);
-                  return -1;
+                  return AM_ERR;
               }else{
                   amMemSet(tempBuffer,0,tempBufSize);
               }
@@ -1624,9 +1627,10 @@ setNktTrackInfo(pTrackInfo,pSeq);
                     amTrace("[LZO] Data block compressed %u->%u bytes.\n",pSeq->pTracks[0].dataBufferSize, nbBytesPacked);
 
                     /* check for an incompressible block */
-                      if (nbBytesPacked >= pSeq->pTracks[0].dataBufferSize){
-                            amTrace("[LZO] Error: Data block contains incompressible data.\n");
-                        return -1;
+                      if (nbBytesPacked >= pSeq->pTracks[0].dataBufferSize)
+                      {
+                        amTrace("[LZO] Error: Data block contains incompressible data.\n");
+                        return AM_ERR;
                       }
 
                     // copy output buffer with packed data
@@ -1649,7 +1653,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
           }else{
               amTrace("[LZO] Error couldn't allocate compression work memory.\n");
-              return -1;
+              return AM_ERR;
           }
 
           // save header
@@ -1662,7 +1666,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
           if(written<sizeof(sNktHd)){
              amTrace("[GEMDOS]Fatal error: Header write error, written: %d, expected %d\n", written, sizeof(sNktHd));
              amTrace("[GEMDOS] Error: %s\n", getGemdosError((int16)written));
-             return -1;
+             return AM_ERR;
           }else{
               amTrace("[GEMDOS] written: %d bytes\n", written);
           }
@@ -1673,7 +1677,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
           if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
              amTrace("[GEMDOS]Fatal error: Track write error, written: %d, expected %d\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
              amTrace("[GEMDOS] Error: %s\n", getGemdosError((int16)written));
-             return -1;
+             return AM_ERR;
           }else{
               amTrace("[GEMDOS] written: %d bytes\n", written);
           }
@@ -1681,7 +1685,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
           // write data / event blocks
           if(saveEventDataBlocks(fh,pSeq)<0){
-              return -1;
+              return AM_ERR;
           }
 
      }else{
@@ -1697,7 +1701,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
          if(written<sizeof(sNktHd)){
             amTrace("[GEMDOS]Fatal error: Header write error, written: %d, expected %d\n", written, sizeof(sNktHd));
             amTrace("[GEMDOS] Error: %s\n", getGemdosError((int16)written));
-            return -1;
+            return AM_ERR;
          }else{
              amTrace("[GEMDOS] written: %d bytes\n", written);
          }
@@ -1708,14 +1712,14 @@ setNktTrackInfo(pTrackInfo,pSeq);
          if(written<sizeof(sizeof(sNktTrackInfo) * pSeq->nbOfTracks)){
             amTrace("[GEMDOS]Fatal error: Track write error, written: %d, expected %d\n", written, sizeof(sNktTrackInfo) * pSeq->nbOfTracks);
             amTrace("[GEMDOS] Error: %s\n", getGemdosError((int16)written));
-            return -1;
+            return AM_ERR;
          }else{
              amTrace("[GEMDOS] written: %d bytes\n", written);
          }
 
          // write data / event blocks
          if(saveEventDataBlocks(fh,pSeq)<0){
-             return -1;
+             return AM_ERR;
          }
 
      }
@@ -1725,7 +1729,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
      if(err!=GDOS_OK){
        amTrace("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
-       return -1;
+       return AM_ERR;
      }else{
          amTrace("[GEMDOS] Closed file handle : [%d] \n", fh);
      }
@@ -1749,7 +1753,7 @@ StaticAssert(0,"Not implemented!");
 
 #endif
 
- return 0;
+ return AM_OK;
 }
 
 

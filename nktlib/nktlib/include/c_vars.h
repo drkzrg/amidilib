@@ -99,7 +99,7 @@ typedef int16 retVal;
 
 #if (__STDC_VERSION__ >= 199901L) 
 #define INLINE inline        /* use standard inline */
-#define FORCE_INLINE inline __attribute__((always_inline))
+#define FORCE_INLINE __attribute__((always_inline))
 #else
 #define INLINE              /* no inline */
 #define FORCE_INLINE

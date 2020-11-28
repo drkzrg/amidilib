@@ -339,8 +339,8 @@ amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src 
 env.Library(LIBRARYNAME, amidilib_src)
 
 #################### test programs entry points
-amidi_test_src = [projdir + "/../demo/midi_rep/main.c"]
-midiOut_test_src = [projdir + "/../demo/midi_output/midiTest.c"]
+amidi_test_src = [projdir + "/../demo/midi_rep/midiplay.c"]
+midiOut_test_src = [projdir + "/../demo/midi_output/midiout.c"]
 timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
 ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
 nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]

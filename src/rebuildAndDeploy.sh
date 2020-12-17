@@ -55,7 +55,7 @@ REMOTE_PATH='/e/adebug/'
 
 tools_prefix='/opt/cross-mint/bin/'
 cross_prefix='m68k-ataribrown-elf-'
-BUILD_CONFIG='debug'
+BUILD_CONFIG='release'
 BUILD_DIR='../build/brownelf/'$BUILD_CONFIG'/'
 
 function process()

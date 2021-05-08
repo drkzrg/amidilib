@@ -6,22 +6,6 @@
 #include "amlog.h"
 
 /* function for calculating tempo */
-/* TODO: rewrite FPU version in asm in 060 and maybe 030 version */
-
-/* function for calculating tempo (float version) */
-/* called each time tempo is changed returned value is assigned to TimeStep value in sequence */
-/* BPM - beats per minute (tempo of music) */
-/* UPS - update interval (updates per second) */
-/* music resolution are in PPQ */
-
-float  amCalculateTimeStepFlt(const uint16 qpm,const uint16 ppq,const uint16 ups){
-    float ppu=0;
-    float temp=0;
-    ppu=(float)qpm*(float)ppq;
-    temp=(temp/ups)/60.0f;
-   
- return ppu;
-}
 
 /* support functions:
     BPM = 60,000,000/MicroTempo

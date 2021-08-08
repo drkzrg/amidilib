@@ -1,7 +1,7 @@
 #ifndef __DMUS_H__
 #define __DMUS_H__
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.

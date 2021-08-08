@@ -1,6 +1,6 @@
 
 #include "memory/linalloc.h"
-#include "amlog.h"
+#include "core/debug.h"
 
 static const uint32 DEBUGFILL = 0x000000FFUL;
 

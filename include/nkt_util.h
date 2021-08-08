@@ -2,7 +2,7 @@
 #ifndef _NKT_UTIL_H
 #define _NKT_UTIL_H
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.

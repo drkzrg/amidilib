@@ -1,0 +1,10 @@
+# gcc settings
+
+Import('toolchainEnv')
+
+# local compiler settings
+toolchainEnv.Append(use_crosscompiler='yes')
+toolchainEnv.Append(host='Cygwin')
+toolchainEnv.Append(toolchain='GCC')
+toolchainEnv.Append(toolchain_version='4.3.4')
+

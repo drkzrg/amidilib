@@ -1,19 +1,34 @@
-# gcc brownelf debug
+
+#    Copyright 2007-2021 Pawel Goralski
+#    This file is part of AMIDILIB.
+#    See license.txt for licensing information.
+
+# amidilib debug gcc brownelf sconscript 
+
+toolchainEnv = Environment()
+toolchainEnv.SConscript('../buildsystem/toolchain_gcc_brownelf.scons', duplicate = 0, exports=['toolchainEnv'])
+
+targetPlatform='F030'
+build_config='debug'
 
 SConscript('SConscript',\
 variant_dir='../build/brownelf/debug', duplicate=0,\
 exports={\
-'TARGET_MACHINE':'F030',\
-'BUILD_MODE':'debug',\
-'IKBD_DIRECT_WRITE':'yes',\
-'USE_FPU':'no',\
-'TX_ENABLE':'no',\
-'CONOUT_ENABLE':'yes',\
-'GEMDOS_IO_ENABLE':'yes',\
-'USE_LIBC':'yes',\
-'ENABLE_LTO':'no',\
-'USE_CROSSCOMPILER':'yes',\
-'TOOLSET':'GCCBROWNELF',\
-'DEBUG_LEVEL':'1',\
+'targetPlatform':targetPlatform,\
+'use_crosscompiler':toolchainEnv['use_crosscompiler'],\
+'toolchain':toolchainEnv['toolchain'],\
+'toolchain_version':toolchainEnv['toolchain_version'],\
+'host':toolchainEnv['host'],\
+'build_config':build_config,\
+'use_fpu':'no',\
+'enable_lto':'no',\
+'tx_enable':'no',\
+'gemdos_io_enable':'yes',\
+'ikbd_direct_write':'yes',\
+'conout_enable':'yes',\
+'use_libc':'yes',\
+'debug_level':'1'\
 })
+
+
 

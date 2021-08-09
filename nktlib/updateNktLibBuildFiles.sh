@@ -37,7 +37,7 @@ fi
 
 cp ../include/amlog.h ./nktlib/include/
 cp ../include/common_m68k.inc ./nktlib/include/
-cp ../include/c_vars.h ./nktlib/include/
+cp ../include/vartypes.h ./nktlib/include/
 cp ../include/dmus.h ./nktlib/include/
 cp ../include/events.h ./nktlib/include/
 cp ../include/fmio.h ./nktlib/include/
@@ -52,6 +52,14 @@ cp ../include/nkt_util.h ./nktlib/include/
 cp ../include/roland.h ./nktlib/include/
 cp ../include/rol_ptch.h ./nktlib/include/
 cp ../include/vendors.h ./nktlib/include/
+
+if [ ! -d "./nktlib/include/core/" ]; then
+mkdir ./nktlib/include/core/
+fi
+
+cp ../include/core/assert.h ./nktlib/include/core/
+cp ../include/core/debug.h ./nktlib/include/core/
+
 
 if [ ! -d "./nktlib/include/timing/" ]; then
 mkdir ./nktlib/include/timing/

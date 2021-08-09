@@ -58,7 +58,7 @@ PREFIX=''
 
 num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
 SetOption('num_jobs', num_cpu)
-print "running with ", GetOption('num_jobs'), "jobs." 
+print ("running with ", GetOption('num_jobs'), "jobs.") 
 
 if(TOOLSET=='GCC434'):
 # Cygwin path
@@ -213,11 +213,11 @@ else:
     VASM_FLAGS += '-DTX_ENABLE=0 '
 
 if (conout_enable == "no"):
-    print "Silent mode. Console output disabled."
+    print ("Silent mode. Console output disabled.")
     CFLAGS += '-DSUPRESS_CON_OUTPUT '
 
 if (gemdos_io_enable == "yes"):
-    print "Use GEMDOS for file I/O not libc functions."
+    print ("Use GEMDOS for file I/O not libc functions.")
     CFLAGS += '-DENABLE_GEMDOS_IO '
 
 if(enable_lto == 'yes'):
@@ -228,7 +228,7 @@ env["CPPPATH"] =env["CPPPATH"] + ["../","./include","./include/lzo"]
 env["LIBPATH"] = env["LIBPATH"] + ['../bin/']
 
 if ( build_mode == 'debug'):
-  print "Debug build..."
+  print ("Debug build...")
   if(debug_level=='1'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
@@ -240,16 +240,16 @@ if ( build_mode == 'debug'):
 
   LIB_POSTFIX = LIB_TARGET+'d'
 else:
-        print "Release build... Code optimisation is turned on."
+        print ("Release build... Code optimisation is turned on.")
         CFLAGS += '-DEVENT_LINEAR_BUFFER ' +'-O3 ' + '-DUSE_INLINE '
         LIB_POSTFIX = LIB_TARGET
 
 if(ikbd_direct_write == "yes"):
-    print "Sending data directly via IKBD ENABLED"
+    print ("Sending data directly via IKBD ENABLED")
     CFLAGS += CFLAGS +'-DIKBD_MIDI_SEND_DIRECT '
     VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=1 '
 elif(ikbd_direct_write=='no'):
-    print "Sending data directly via IKBD DISABLED"
+    print ("Sending data directly via IKBD DISABLED")
     CFLAGS += ' '
     VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=0 '
 

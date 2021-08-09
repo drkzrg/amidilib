@@ -5,7 +5,7 @@
 #define ENDIAN_H_
 
 #include <endian.h>
-#include "../c_vars.h"
+#include "vartypes.h"
 	 
 #if __BYTE_ORDER == __BIG_ENDIAN
 

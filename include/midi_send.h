@@ -1,7 +1,7 @@
 #ifndef __MIDI_SEND_H__
 #define __MIDI_SEND_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amlog.h"
 
 #include <mint/osbind.h>

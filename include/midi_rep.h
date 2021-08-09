@@ -7,7 +7,7 @@
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amidiseq.h"
 #include "timing/mfp.h"
 

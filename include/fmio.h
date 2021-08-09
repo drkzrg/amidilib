@@ -8,7 +8,7 @@
 #ifndef __FMIO_H__
 #define __FMIO_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "memory/memory.h"
 
 /*XBIOS input/output devices*/

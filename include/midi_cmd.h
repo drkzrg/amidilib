@@ -9,7 +9,7 @@
 #ifndef __MIDI_CMD_H__
 #define __MIDI_CMD_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "memory/memory.h"
 #include "midi_send.h"
 #include "events.h"

@@ -8,7 +8,7 @@
 #ifndef ROLINSTR_H
 #define ROLINSTR_H
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 /* Roland modules header */
 const uint8 *getMT32InstrName(const uint8 ubInstrNb);

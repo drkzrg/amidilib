@@ -10,7 +10,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "mdevtype.h"
 
 typedef struct _amidiConfig{

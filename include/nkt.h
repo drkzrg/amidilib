@@ -7,7 +7,7 @@
     See license.txt for licensing information.
 */
 
-#include <c_vars.h>
+#include "vartypes.h"
 
 #include "mdevtype.h"            // device types
 #include "timing/mfp.h"

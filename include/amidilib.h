@@ -7,7 +7,7 @@
 #ifndef _AMIDILIB_H_
 #define _AMIDILIB_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "midi_rep.h"
 #include "mdevtype.h"
 

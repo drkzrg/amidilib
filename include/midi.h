@@ -8,7 +8,7 @@
 #ifndef __AMIDI_H__
 #define __AMIDI_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "vendors.h"
 #include "events.h"
 
@@ -56,8 +56,8 @@ StaticAssert(sizeof(sMThd)==14,"Invalid sMThd size.");
  */
 
 typedef struct PACK_ATTR MTrk {
-  uint32 id;
-	uint32 headLenght;
+    uint32 id;
+    uint32 headLenght;
 	/* offset track event data 0x08 offset */
 } sMTrk;
 

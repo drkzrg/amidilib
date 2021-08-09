@@ -8,7 +8,7 @@
 #ifndef TIM_TEST_SAMPLE_SEQ_H_
 #define TIM_TEST_SAMPLE_SEQ_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 typedef struct{
   uint32 delta;

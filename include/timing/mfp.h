@@ -8,7 +8,7 @@
 #ifndef __MFP_H__
 #define __MFP_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 #define MFP_STOP	0b00000000  /* Timer stop */
 #define MFP_DIV4	0b00000001  /* div 4 */

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amidilib.h"
 #include "config.h"
 #include "roland.h"

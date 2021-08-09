@@ -8,7 +8,7 @@
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "midi.h"
 #include "midi_cmd.h"	/* for sending midi commands */
 

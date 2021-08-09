@@ -1,7 +1,7 @@
 #ifndef ROL_PTCH_H
 #define ROL_PTCH_H
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "mdevtype.h"
 
 #include "vendors.h"

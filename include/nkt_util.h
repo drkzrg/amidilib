@@ -9,7 +9,7 @@
 */
 
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "nkt.h"
 #include "midi.h"
 

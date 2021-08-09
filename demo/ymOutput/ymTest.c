@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "input/ikbd.h"
 #include "ym2149/ym2149.h"
 

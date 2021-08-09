@@ -8,7 +8,7 @@
 #ifndef LINALLOC_H_
 #define LINALLOC_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "memory/memory.h"
 
 // event linear buffer

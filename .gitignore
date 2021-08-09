@@ -22,3 +22,7 @@ deps/\startup/\*
 *.tgz
 
 build/
+*.dblite
+src
+lib
+include

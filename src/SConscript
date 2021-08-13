@@ -56,7 +56,9 @@ where name of 'targetPlatform' can be: \n \
  'host' - computer host name\n,\
  'build_config' - build type ('debug', 'release'),\n \
  'use_fpu' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
+ 'enable_lzo_compression' - enable/disable lzo compression support.\n \
  'enable_lto' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n \
+ 'ikbd_direct_write' - bypass O/S when writing to MIDI ports\n \
  'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
  'conout_enable' - disable / enable console output,\n \
  'gemdos_io_enable' - uses gemdos i/o instead of standard libc file i/o,\n \
@@ -72,6 +74,7 @@ Import(
         'host',\
         'build_config',\
         'use_fpu',\
+        'enable_lzo_compression',\
         'enable_lto',\
         'ikbd_direct_write',\
         'tx_enable',\

@@ -21,6 +21,7 @@ exports={\
 'host':toolchainEnv['host'],\
 'build_config':build_config,\
 'use_fpu':'no',\
+'enable_lzo_compression':'no',\
 'enable_lto':'no',\
 'tx_enable':'no',\
 'gemdos_io_enable':'yes',\

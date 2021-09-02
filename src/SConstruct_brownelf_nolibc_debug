@@ -15,9 +15,10 @@ SConscript('SConscript',\
 variant_dir='../build/brownelf/debug', duplicate=0,\
 exports={\
 'targetPlatform':targetPlatform,\
-'use_crosscompiler':toolchainEnv['use_crosscompiler'],\
 'toolchain':toolchainEnv['toolchain'],\
 'toolchain_version':toolchainEnv['toolchain_version'],\
+'toolchain_prefix':toolchainEnv['toolchain_prefix'],\
+'toolchain_use_cross':toolchainEnv['toolchain_use_cross'],\
 'host':toolchainEnv['host'],\
 'build_config':build_config,\
 'use_fpu':'no',\

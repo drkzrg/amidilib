@@ -3,8 +3,9 @@
 Import('toolchainEnv')
 
 # local compiler settings
-toolchainEnv.Append(use_crosscompiler='yes')
 toolchainEnv.Append(host='Cygwin')
 toolchainEnv.Append(toolchain='GCC')
 toolchainEnv.Append(toolchain_version='4.3.4')
+toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')
+toolchainEnv.Append(toolchain_use_cross='yes')
 

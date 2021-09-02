@@ -50,9 +50,10 @@ where name of 'targetPlatform' can be: \n \
     'F030' - for Atari Falcon030 / TT build\n \
     'ST' - for Atari ST build \n \
     'CT60' - for Atari Falcon CT60/63\n \
- 'use_crosscompiler' - use m68k cross compiler, set to 'y' by default\n \
  'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF'\n,\
  'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1')\n,\
+ 'toolchain_prefix' - toolchain prefix path (root of the toolchain folder)\n,\
+ 'toolchain_use_cross' - use cross compiler, set to 'y' by default\n \
  'host' - computer host name\n,\
  'build_config' - build type ('debug', 'release'),\n \
  'use_fpu' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
@@ -68,9 +69,10 @@ where name of 'targetPlatform' can be: \n \
 
 Import(
         'targetPlatform',\
-        'use_crosscompiler',\
         'toolchain',\
         'toolchain_version',\
+        'toolchain_prefix',\
+        'toolchain_use_cross',\
         'host',\
         'build_config',\
         'use_fpu',\
@@ -84,7 +86,6 @@ Import(
         'debug_level'
         )
 
-PREFIX = ''
 GCC_VERSION_STRING = ''
 GCC_PREFIX = ''
 
@@ -95,14 +96,10 @@ outputdir = Dir('.').abspath
 
 # environment 
 LIBRARYNAME = 'amidi'
-PREFIX=''
+PREFIX = toolchain_prefix
 GCC_VERSION_STRING = toolchain_version
 
 if(toolchain=='GCC'):
-# Cygwin path
-    PREFIX = '/opt/cross-mint'
-# Linux cross compiler
-#    PREFIX = '/usr'
     GCC_PREFIX = 'm68k-atari-mint'
 
     if(use_libc == 'yes'):
@@ -113,9 +110,6 @@ if(toolchain=='GCC'):
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
-    print (projdir + '/../deps/startup/include')
-
-# Linux/Cygwin cross compiler
     PREFIX = '/opt/cross-mint'
     GCC_PREFIX = 'm68k-ataribrown-elf'
 

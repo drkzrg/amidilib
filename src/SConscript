@@ -37,8 +37,8 @@ def convertElfToTos(env, toolchainType, buildTypeName, targetName, outputDirPath
 SConsignFile(os.path.join("../build/", '.sconsign.dblite')) 
 
 # Set number of jobs, depending on number of cores
-num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
-SetOption('num_jobs', num_cpu)
+#num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+#SetOption('num_jobs', num_cpu)
 
 print("Running with %d job(s)." % GetOption('num_jobs')) 
 
@@ -50,6 +50,7 @@ where name of 'targetPlatform' can be: \n \
     'F030' - for Atari Falcon030 / TT build\n \
     'ST' - for Atari ST build \n \
     'CT60' - for Atari Falcon CT60/63\n \
+ 'host' - 'Cygwin' or 'Linux'\n \
  'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF'\n,\
  'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1')\n,\
  'toolchain_prefix' - toolchain prefix path (root of the toolchain folder)\n,\
@@ -68,12 +69,12 @@ where name of 'targetPlatform' can be: \n \
 )
 
 Import(
-        'targetPlatform',\
+        'host',\
         'toolchain',\
         'toolchain_version',\
         'toolchain_prefix',\
         'toolchain_use_cross',\
-        'host',\
+        'targetPlatform',\
         'build_config',\
         'use_fpu',\
         'enable_lzo_compression',\

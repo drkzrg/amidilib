@@ -14,12 +14,12 @@ build_config='release'
 SConscript('SConscript',\
 variant_dir='../build/aout/release', duplicate=0,\
 exports={\
-'targetPlatform':targetPlatform,\
+'host':toolchainEnv['host'],\
 'toolchain':toolchainEnv['toolchain'],\
 'toolchain_version':toolchainEnv['toolchain_version'],\
 'toolchain_prefix':toolchainEnv['toolchain_prefix'],\
 'toolchain_use_cross':toolchainEnv['toolchain_use_cross'],\
-'host':toolchainEnv['host'],\
+'targetPlatform':targetPlatform,\
 'build_config':build_config,\
 'use_fpu':'no',\
 'enable_lzo_compression':'no',\

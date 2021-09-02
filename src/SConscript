@@ -110,7 +110,6 @@ if(toolchain=='GCC'):
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
-    PREFIX = '/opt/cross-mint'
     GCC_PREFIX = 'm68k-ataribrown-elf'
 
     if(use_libc == 'yes'):

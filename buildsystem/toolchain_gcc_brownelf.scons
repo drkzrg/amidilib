@@ -1,10 +1,17 @@
 # Brownelf gcc settings
 
+import os
+
 Import('toolchainEnv')
 
-# local compiler settings
-toolchainEnv.Append(host='Cygwin')
 toolchainEnv.Append(toolchain='GCCBROWNELF')
 toolchainEnv.Append(toolchain_version='11.2.0')
-toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')
 toolchainEnv.Append(toolchain_use_cross='yes')
+
+systemInfo = os.uname()
+toolchainEnv.Append(host = systemInfo[0])
+	
+if('CYGWIN' in systemInfo[0]):
+	toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')
+else:
+	toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')

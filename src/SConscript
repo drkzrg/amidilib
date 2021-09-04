@@ -31,7 +31,7 @@ def convertElfToTos(env, toolchainType, buildTypeName, targetName, outputDirPath
         if(buildTypeName == "debug"):
             symbolGeneration=' -x'
         
-        env.AddPostAction(targetName +'.elf', Action('brownout' ' -i $TARGET -o ' + outputPath + symbolGeneration))
+        env.AddPostAction(targetName +'.elf', Action('brown.out' ' -i $TARGET -o ' + outputPath + symbolGeneration))
 
 # move scons database to build folder
 SConsignFile(os.path.join("../build/", '.sconsign.dblite')) 
@@ -111,7 +111,7 @@ if(toolchain=='GCC'):
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
-    GCC_PREFIX = 'm68k-ataribrown-elf'
+    GCC_PREFIX = 'm68k-atarisuperbrowner-elf'
 
     if(use_libc == 'yes'):
         env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
@@ -123,13 +123,22 @@ else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
 
-env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
-env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-g++'
-env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
-env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
-env['STACK'] = PREFIX + '/bin/' + GCC_PREFIX + '-stack'
-env['AR'] = PREFIX + '/bin/' + GCC_PREFIX + '-ar'
-env['RANLIB'] = PREFIX + '/bin/' + GCC_PREFIX + '-ranlib'
+if(PREFIX):
+    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
+    env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-c++'
+    env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
+    env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
+    env['STACK'] = PREFIX + '/bin/' + GCC_PREFIX + '-stack'
+    env['AR'] = PREFIX + '/bin/' + GCC_PREFIX + '-ar'
+    env['RANLIB'] = PREFIX + '/bin/' + GCC_PREFIX + '-ranlib'
+else:   
+    env['CC'] = GCC_PREFIX + '-gcc'
+    env['CXX'] = GCC_PREFIX + '-c++'
+    env['OBJCOPY'] = GCC_PREFIX + '-objcopy'
+    env['STRIP'] = GCC_PREFIX + '-strip -s'
+    env['STACK'] = GCC_PREFIX + '-stack'
+    env['AR'] = GCC_PREFIX + '-ar'
+    env['RANLIB'] = GCC_PREFIX + '-ranlib'
 
 if(toolchain == 'GCCBROWNELF'):
     env['PROGSUFFIX'] = '.elf'

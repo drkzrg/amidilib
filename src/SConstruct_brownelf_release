@@ -16,6 +16,7 @@ variant_dir='../build/brownelf/release', duplicate=0,\
 exports={\
 'host':toolchainEnv['host'],\
 'toolchain':toolchainEnv['toolchain'],\
+'toolchain_c_prefix':toolchainEnv['toolchain_c_prefix'],\
 'toolchain_version':toolchainEnv['toolchain_version'],\
 'toolchain_prefix':toolchainEnv['toolchain_prefix'],\
 'toolchain_use_cross':toolchainEnv['toolchain_use_cross'],\

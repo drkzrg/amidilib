@@ -52,6 +52,7 @@ where name of 'targetPlatform' can be: \n \
     'CT60' - for Atari Falcon CT60/63\n \
  'host' - 'Cygwin' or 'Linux'\n \
  'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF'\n,\
+ 'toolchain_c_prefix' - toolchain compiler name prefix \n,\
  'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1')\n,\
  'toolchain_prefix' - toolchain prefix path (root of the toolchain folder)\n,\
  'toolchain_use_cross' - use cross compiler, set to 'y' by default\n \
@@ -71,6 +72,7 @@ where name of 'targetPlatform' can be: \n \
 Import(
         'host',\
         'toolchain',\
+        'toolchain_c_prefix',\
         'toolchain_version',\
         'toolchain_prefix',\
         'toolchain_use_cross',\
@@ -87,9 +89,6 @@ Import(
         'debug_level'
         )
 
-GCC_VERSION_STRING = ''
-GCC_PREFIX = ''
-
 # helper paths
 rootdir = Dir('../').abspath
 projdir = Dir('#').abspath
@@ -97,12 +96,12 @@ outputdir = Dir('.').abspath
 
 # environment 
 LIBRARYNAME = 'amidi'
+
 PREFIX = toolchain_prefix
+GCC_PREFIX = toolchain_c_prefix
 GCC_VERSION_STRING = toolchain_version
 
 if(toolchain=='GCC'):
-    GCC_PREFIX = 'm68k-atari-mint'
-
     if(use_libc == 'yes'):
         env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
         env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']       
@@ -111,8 +110,6 @@ if(toolchain=='GCC'):
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
-    GCC_PREFIX = 'm68k-atarisuperbrowner-elf'
-
     if(use_libc == 'yes'):
         env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
         env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']

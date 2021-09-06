@@ -26,3 +26,5 @@ build/
 src
 lib
 include
+libcmini
+atari-gcc-startup

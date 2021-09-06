@@ -179,19 +179,19 @@ if(toolchain=='GCC'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68000/'
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68000/'
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
         LIB_TARGET = '060'
     else:
         print('Unsupported target. Exiting...')
@@ -207,7 +207,7 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68000/' 
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68000/' 
 
         LIB_TARGET = '000'
 
@@ -217,7 +217,7 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68020-40 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
 
         LIB_TARGET = '030'
 
@@ -233,7 +233,7 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
+        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
 
         LIB_TARGET = '060'
 
@@ -254,7 +254,7 @@ TARGET = TARGET + targetPlatform
 if(use_libc == 'yes'):
     LDFLAGS+='-Wl,-e__start '
 else:
-    CFLAGS+='-I' + projdir + '/startup/include '
+    CFLAGS+='-I' + projdir + '/../deps/atari-gcc-startup/include '
     LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
 
 # skip writing directly to ikbd port completely
@@ -275,7 +275,7 @@ env["CPPPATH"] += [projdir + '/../include'] + [projdir + '/../include/lzo'] + [p
 env["LIBPATH"] += [outputdir + '/']
 
 if(use_libc!='yes'):
-    env["LIBPATH"] += [projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
+    env["LIBPATH"] += [projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
 
 #############################################################################################################################
 # additional defines  

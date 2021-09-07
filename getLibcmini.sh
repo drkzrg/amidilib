@@ -16,7 +16,11 @@ if [ -d "${BUILD_ROOT}/deps/libcmini" ]; then
 rm -rf ${BUILD_ROOT}/deps/libcmini
 fi
 
+if [ ! -f "${BUILD_ROOT}v${LIBCMINI_VER}.tar.gz" ]; then
+echo "Archive doesn't exists. Downloading ..."
+wget -q "https://github.com/freemint/libcmini/archive/refs/tags/v${LIBCMINI_VER}.tar.gz" -P ${BUILD_ROOT}
+fi
+
 mkdir ${BUILD_ROOT}/deps/libcmini
 
-wget -q "https://github.com/freemint/libcmini/archive/refs/tags/v${LIBCMINI_VER}.tar.gz" -P ${BUILD_ROOT}
 tar -zxvf ${BUILD_ROOT}v${LIBCMINI_VER}.tar.gz -C ${BUILD_ROOT}deps/libcmini --strip-components 1

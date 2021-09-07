@@ -103,16 +103,24 @@ GCC_VERSION_STRING = toolchain_version
 
 if(toolchain=='GCC'):
     if(use_libc == 'yes'):
-        env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
-        env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']       
+        if(PREFIX):
+            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include']
+            env['LIBPATH'] = [PREFIX + '/' + 'm68k-atari-mint/lib']
+        else:
+            env['CPPPATH'] = ['m68k-atari-mint/include']
+            env['LIBPATH'] = ['m68k-atari-mint/lib']
     else:
         env['CPPPATH'] = [projdir + '/../deps/startup/include']
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
     if(use_libc == 'yes'):
-        env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
-        env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
+        if(PREFIX):
+            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
+            env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
+        else:
+            env['CPPPATH'] = [GCC_PREFIX + '/include']
+            env['LIBPATH'] = [GCC_PREFIX + '/lib']
     else:
         env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/libcmini/include']
         env['LIBPATH'] = []

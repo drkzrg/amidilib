@@ -114,7 +114,7 @@ elif(toolchain=='GCCBROWNELF'):
         env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
         env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
     else:
-        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/libcmini/include']
         env['LIBPATH'] = []
 else:
     print('ERROR: Undefined target toolset. Exiting...')
@@ -161,7 +161,6 @@ LIB_TARGET='not_set'
 STACK_SIZE=0
     
 TARGET='-DTARGET_'
-CSTARTUP_FOLDER=''
 OBJ_FORMAT=''
 
 if(use_fpu == 'yes'):
@@ -179,19 +178,16 @@ if(toolchain=='GCC'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68000/'
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
         LIB_TARGET = '060'
     else:
         print('Unsupported target. Exiting...')
@@ -207,7 +203,6 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68000/' 
 
         LIB_TARGET = '000'
 
@@ -217,7 +212,6 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68020-40 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68030/'
 
         LIB_TARGET = '030'
 
@@ -233,7 +227,6 @@ elif(toolchain == 'GCCBROWNELF'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68060/'
 
         LIB_TARGET = '060'
 
@@ -276,6 +269,10 @@ env["LIBPATH"] += [outputdir + '/']
 
 if(use_libc!='yes'):
     env["LIBPATH"] += [projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
+    if(LIB_TARGET=='000'):
+        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/']
+    else:
+        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/m68020-60']
 
 #############################################################################################################################
 # additional defines  
@@ -376,50 +373,47 @@ outputdir = rootdir + '/' + build_config + '/'
 
 if(use_libc == 'yes'):
 # build test programs and link them with amidilib
-    startup_obj=[]
-
-    if(toolchain == 'GCCBROWNELF'):
-        ADDLIBS = ['c']
-        startup_obj = [PREFIX + '/' + GCC_PREFIX + '/lib/crt0.o']
-
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
+    ADDLIBS = ['c']
+    
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
 
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, MIDI_SEQ_TEST_NAME, outputdir,'tos')
     
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, YM2149_TEST_NAME, outputdir,'tos')
 
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
     
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
 
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
-    startup_obj = [CSTARTUP_FOLDER +'mStartup.o', CSTARTUP_FOLDER + 'mStartupAsmC.o' ]
-
-    ADDLIBS= ['minilibc' + LIB_TARGET]
+    ADDLIBS += ['startup' + LIB_TARGET]
+    ADDLIBS = ['cmini']
+    ADDLIBS += ['gcc']
+    
     linkedLibs = [LIBRARYNAME] + ADDLIBS
-
+    
     # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj  + env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, MIDI_SEQ_TEST_NAME, outputdir,'tos')
 
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, YM2149_TEST_NAME, outputdir,'tos')
     
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

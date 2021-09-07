@@ -7,6 +7,7 @@
 #include "amlog.h"          // logging
 #include "midi.h"           // midi
 #include "midi2nkt.h"
+#include <osbind.h>
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -42,7 +43,7 @@ uint8 *filePath=0;
   }else{
       printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
       deinitDebug();
-      int c = getchar();
+      (void)Cconin();
       return 0;
   }
 
@@ -136,7 +137,7 @@ uint8 *filePath=0;
    deinitDebug();
    printf("\nDone. Press any key... \n");
 
-   int c = getchar();
+   (void)Cconin();
 
    return 0;
 }

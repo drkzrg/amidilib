@@ -253,10 +253,10 @@ TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
 if(use_libc == 'yes'):
-    LDFLAGS+='-Wl,-e__start '
+    LDFLAGS+='-Wl,-e__main '
 else:
     CFLAGS+='-I' + projdir + '/../deps/atari-gcc-startup/include '
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_main '
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
@@ -401,7 +401,7 @@ if(use_libc == 'yes'):
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
-    ADDLIBS += ['startup' + LIB_TARGET]
+    #ADDLIBS += ['startup' + LIB_TARGET]
     ADDLIBS = ['cmini']
     ADDLIBS += ['gcc']
     
@@ -420,8 +420,8 @@ else:
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

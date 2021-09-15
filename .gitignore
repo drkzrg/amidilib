@@ -28,3 +28,4 @@ lib
 include
 libcmini
 atari-gcc-startup
+deps/brownlibcmini

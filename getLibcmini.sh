@@ -24,3 +24,9 @@ fi
 mkdir ${BUILD_ROOT}/deps/libcmini
 
 tar -zxvf ${BUILD_ROOT}v${LIBCMINI_VER}.tar.gz -C ${BUILD_ROOT}deps/libcmini --strip-components 1
+
+cd ${BUILD_ROOT}/deps/libcmini
+sed -i -e "s/BUILD_CF=Y/BUILD_CF=N/gI" Makefile 
+sed -i -e "s/p != name || *(p-1)/p != name && *(p-1)/gI" sources/opendir.c 
+make -j6
+cd ..

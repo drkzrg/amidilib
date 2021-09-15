@@ -53,6 +53,8 @@ sed -i -e "s/sp/%sp/gI" \
 -e "s/d7/%d7/gI" -i $1
 }
 sed -i -e "s/m68k-elf-/\${BROWN_GCC_PREFIX}/gI" -e "s/COMPILE_ELF=N/COMPILE_ELF=Y/gI" Makefile 
+sed -i -e "s/BUILD_CF=Y/BUILD_CF=N/gI" Makefile 
+
 fixregs sources/_infinitydf.S
 fixregs sources/_normdf.S
 fixregs sources/bcopy.S
@@ -68,3 +70,8 @@ fixregs sources/setstack.S
 # so we remove it. No idea what will happen though.
 sed -i -e 's/, "%%a6"//gI' sources/setstack.S
 sed -i -e "s/m68k-atari-mint-/\${BROWN_GCC_PREFIX}/gI" tests/acctest/Makefile 
+sed -i -e "s/p != name || *(p-1)/p != name && *(p-1)/gI" sources/opendir.c 
+
+make -j6
+
+cd ..

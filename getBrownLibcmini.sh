@@ -11,7 +11,7 @@
 
 LIBCMINI_VER=0.54
 BUILD_ROOT=./
-BROWN_GCC_PREFIX=/opt/cross-mint/bin/m68k-ataribrown-elf-
+BROWN_GCC_PREFIX=\/opt\/cross-mint\/bin\/m68k-ataribrown-elf-
 
 if [ -d "${BUILD_ROOT}/deps/brownlibcmini" ]; then
 rm -rf ${BUILD_ROOT}/deps/brownlibcmini
@@ -27,7 +27,7 @@ mkdir ${BUILD_ROOT}/deps/brownlibcmini
 tar -zxvf ${BUILD_ROOT}v${LIBCMINI_VER}.tar.gz -C ${BUILD_ROOT}deps/brownlibcmini --strip-components 1
 cd ${BUILD_ROOT}/deps/brownlibcmini
 
-echo patching
+echo patching libcmini
 
 set -e			#stop on any error encountered
 set -x         #echo all commands
@@ -52,7 +52,7 @@ sed -i -e "s/sp/%sp/gI" \
 -e "s/d6/%d6/gI" \
 -e "s/d7/%d7/gI" -i $1
 }
-
+sed -i -e "s/m68k-elf-/\${BROWN_GCC_PREFIX}/gI" -e "s/COMPILE_ELF=N/COMPILE_ELF=Y/gI" Makefile 
 fixregs sources/_infinitydf.S
 fixregs sources/_normdf.S
 fixregs sources/bcopy.S
@@ -67,4 +67,4 @@ fixregs sources/setstack.S
 # This is wrong. gcc 6.2 will crash if a6 is added to the clobber list
 # so we remove it. No idea what will happen though.
 sed -i -e 's/, "%%a6"//gI' sources/setstack.S
-sed -i -e "s/m68k-atari-mint-/${BROWN_GCC_PREFIX}/gI" tests/acctest/Makefile 
+sed -i -e "s/m68k-atari-mint-/\${BROWN_GCC_PREFIX}/gI" tests/acctest/Makefile 

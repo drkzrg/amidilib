@@ -59,8 +59,11 @@ jobs:
       - run: |
           cd ./src
           scons --sconstruct=SConstruct_release -c
+          cd ..
       - run: |
+            cd ./src
             scons --sconstruct=SConstruct_release
+            cd ..
       - run: |
             cd ..
             echo "Done"

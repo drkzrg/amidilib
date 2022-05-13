@@ -38,6 +38,7 @@ jobs:
           echo TODO build libcmini
       - run: | 
           echo Getting latest gcc minimal startup
+          sudo chmod +x ./getLatestStartup.sh
           ./getLatestStartup.sh
       - run: | 
           echo Installing gcc in /opt/cross-mint

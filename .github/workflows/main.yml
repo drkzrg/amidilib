@@ -29,7 +29,15 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y software-properties-common
           sudo apt-get install -y scons upx
-          echo TODO get/install vasm
+      - run: |
+          echo Get and install vasm
+          wget -q "https://nokturnal.pl/downloads/atari/toolchains/vasm.tar.gz"
+          tar -xvf ./vasm.tar.gz
+          cd ./vasm
+          make -j12 CPU=m68k SYNTAX=mot
+          sudo cp ./vasmm68k_mot /usr/bin/
+          sudo cp ./vobjdump /usr/bin/
+          cd ..
       - run: | 
           echo Installing libcmini ...
           mkdir ../libcmini

@@ -42,7 +42,6 @@ jobs:
           ./getLatestStartup.sh
       - run: |
           echo Installing gcc in /opt/cross-mint
-          mkdir /opt/cross-mint
           sudo mkdir /opt/cross-mint
           sudo chgrp users /opt/cross-mint
           sudo chmod 775 /opt/cross-mint

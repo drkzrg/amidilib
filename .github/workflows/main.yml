@@ -1,5 +1,5 @@
 
-name: CI
+name: amidilib-build
 
 # Controls when the workflow will run
 on:
@@ -26,18 +26,26 @@ jobs:
       
       # Runs a set of commands using the runners shell
       - name: Install build prerequisities
-        run: |
+      - run: |
           echo Update and get build prerequisities
           apt-get install -y software-properties-common
           apt-get update -qq
           apt-get install -y scons upx
+          echo TODO get/install vasm
+          
+      - name: Install/build libcmini
+      - run: | 
           echo Installing libcmini ...
           mkdir ../libcmini
           cd ../libcmini
           wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
+      - name: Get latest startup code
+      - run: | 
           echo Getting latest gcc minimal startup
           ./getLatestStartup.sh
+      - name: Download and install gcc toolchain
+      - run: | 
           echo Installing gcc in /opt/cross-mint
           mkdir /opt/cross-mint
           wget -q -O - "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"

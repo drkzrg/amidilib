@@ -6,7 +6,7 @@ Import('toolchainEnv')
 
 toolchainEnv.Append(toolchain='GCC')
 toolchainEnv.Append(toolchain_c_prefix='m68k-atari-mint')
-toolchainEnv.Append(toolchain_version='4.3.4')
+toolchainEnv.Append(toolchain_version='9.3.1')
 toolchainEnv.Append(toolchain_use_cross='yes')
 
 systemInfo = os.uname()
@@ -15,5 +15,5 @@ toolchainEnv.Append(host = systemInfo[0])
 if('CYGWIN' in systemInfo[0]):
 	toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')
 else:
-	toolchainEnv.Append(toolchain_prefix='')
+	toolchainEnv.Append(toolchain_prefix='/opt/cross-mint')
 

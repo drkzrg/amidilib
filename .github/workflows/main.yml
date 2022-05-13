@@ -32,19 +32,15 @@ jobs:
           apt-get update -qq
           apt-get install -y scons upx
           echo TODO get/install vasm
-          
-      - name: Install/build libcmini
       - run: | 
           echo Installing libcmini ...
           mkdir ../libcmini
           cd ../libcmini
           wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
-      - name: Get latest startup code
       - run: | 
           echo Getting latest gcc minimal startup
           ./getLatestStartup.sh
-      - name: Download and install gcc toolchain
       - run: | 
           echo Installing gcc in /opt/cross-mint
           mkdir /opt/cross-mint

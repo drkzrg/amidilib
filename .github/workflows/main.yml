@@ -27,7 +27,6 @@ jobs:
       - run: |
           echo Update and get build prerequisities
           apt-get install -y software-properties-common
-          apt-get update -qq
           apt-get install -y scons upx
           echo TODO get/install vasm
       - run: | 

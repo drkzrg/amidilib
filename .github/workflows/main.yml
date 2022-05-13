@@ -40,10 +40,11 @@ jobs:
           cd ..
       - run: | 
           echo Installing libcmini ...
-          mkdir ../libcmini
-          cd ../libcmini
+          mkdir ./libcmini
+          cd ./libcmini
           wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
+          cd ..
       - run: | 
           echo Getting latest gcc minimal startup
           sudo chmod +x ./getLatestStartup.sh
@@ -55,6 +56,11 @@ jobs:
           sudo chmod 775 /opt/cross-mint
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
-      - run: scons --sconstruct=SConstruct_release -c
-      - run: scons --sconstruct=SConstruct_release
-      - run: echo "Done"
+      - run: |
+          cd ./src
+          scons --sconstruct=SConstruct_release -c
+      - run: |
+            scons --sconstruct=SConstruct_release
+      - run: |
+            cd ..
+            echo "Done"

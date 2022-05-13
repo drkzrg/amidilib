@@ -34,7 +34,7 @@ jobs:
           echo Installing libcmini ...
           mkdir ../libcmini
           cd ../libcmini
-          wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.51/libcmini-0.54.tar.gz" | tar xzf -
+          wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
           echo Getting latest gcc minimal startup
           ./getLatestStartup.sh

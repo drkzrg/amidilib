@@ -66,8 +66,9 @@ jobs:
           mv ../build/aout/release/midiplay.tos ../build/aout/release/midiplay.ttp
       - name: Tar files
         run: tar -czvf amidilib.tgz --exclude=*.o --exclude=*{/common,/tos} -C ../build/aout/release/ .
+      - name: Create archive
       - uses: actions/upload-artifact@v3
         with:
           name: amidilib-build-release
           path: amidilib.tgz
-      -run: echo "Done"
+      - run: echo "Done"

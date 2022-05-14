@@ -24,11 +24,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       # Runs a set of commands using the runners shell
+      - name: Installing build prerequisities
       - run: |
           echo Update and get build prerequisities
           sudo apt-get update -qq
           sudo apt-get install -y software-properties-common
           sudo apt-get install -y scons upx
+      - name: Installing VASM
       - run: |
           echo Get and install vasm
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/vasm.tar.gz"
@@ -45,10 +47,12 @@ jobs:
           wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
           cd ..
+      - name: Installing gcc minimal startup
       - run: |
           echo Getting latest gcc minimal startup
           sudo chmod +x ./getLatestStartup.sh
           ./getLatestStartup.sh
+      - name: Installing gcc cross compiler
       - run: |
           echo Installing gcc in /opt/cross-mint
           sudo mkdir /opt/cross-mint
@@ -57,18 +61,25 @@ jobs:
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
       - run: cd ./src
+      
+      - name: Clean
       - run: scons --sconstruct=SConstruct_release -c
+      
+      - name: Build library
       - run: scons --sconstruct=SConstruct_release
+      
       - name: Update program extensions
       - run: |
           mv ../build/aout/release/mid2nkt.tos ../build/aout/release/mid2nkt.ttp 
           mv ../build/aout/release/nktrep.tos ../build/aout/release/nktrep.ttp
           mv ../build/aout/release/midiplay.tos ../build/aout/release/midiplay.ttp
-      - name: Tar files
+      
+      - name: Create distribution archive
         run: tar -czvf amidilib.tgz --exclude=*.o --exclude=*{/common,/tos} -C ../build/aout/release/ .
-      - name: Create archive
+      
+      - name: Upload archive
       - uses: actions/upload-artifact@v3
         with:
           name: amidilib-build-release
           path: amidilib.tgz
-      - run: echo "Done"
+      

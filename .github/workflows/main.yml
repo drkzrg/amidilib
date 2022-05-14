@@ -66,7 +66,7 @@ jobs:
           sudo chmod 775 /opt/cross-mint
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
-        run: cd ./src
+          cd ./src
       
       - name: Clean
         run: scons --sconstruct=SConstruct_release -c
@@ -88,4 +88,3 @@ jobs:
         with:
           name: amidilib-build-release
           path: amidilib.tgz
-      

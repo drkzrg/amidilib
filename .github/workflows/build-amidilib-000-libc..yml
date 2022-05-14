@@ -75,14 +75,14 @@ jobs:
         run: |
           cd ./nktlib
           chmod +x ./updateNktLibBuildFiles.sh
-          chmod +x ./rebuild_000_libc_release.sh
+          chmod +x ./rebuild_000_release.sh
           ./updateNktLibBuildFiles.sh
-          ./rebuild_000_libc_release.sh
+          ./rebuild_000_release.sh
 
       - name: Create binary archive
         run: |
-          tar -czvf amidilib-000-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
-          tar -czvf amidilib-000-libc-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
+          tar -czvf amidilib-000-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
+          tar -czvf amidilib-000-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
 
       - name: Upload AMIDILIB (libc) archive
         uses: actions/upload-artifact@v3

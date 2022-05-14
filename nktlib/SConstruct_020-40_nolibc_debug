@@ -1,0 +1,32 @@
+
+#    Copyright 2007-2021 Pawel Goralski
+#    This file is part of AMIDILIB.
+#    See license.txt for licensing information.
+
+# nktlib debug gcc sconscript 
+
+toolchainEnv = Environment()
+toolchainEnv.SConscript('../buildsystem/toolchain_gcc.scons', duplicate = 0, exports=['toolchainEnv'])
+
+targetPlatform='F030'
+build_config='debug'
+
+SConscript('SConscript.nktlib',\
+variant_dir='./nktlib', duplicate=0,\
+exports={\
+'targetPlatform':targetPlatform,\
+'use_crosscompiler':toolchainEnv['use_crosscompiler'],\
+'toolchain':toolchainEnv['toolchain'],\
+'toolchain_version':toolchainEnv['toolchain_version'],\
+'host':toolchainEnv['host'],\
+'build_config':build_config,\
+'use_fpu':'no',\
+'enable_lzo_compression':'no',\
+'enable_lto':'no',\
+'tx_enable':'no',\
+'gemdos_io_enable':'yes',\
+'ikbd_direct_write':'yes',\
+'conout_enable':'yes',\
+'use_libc':'no',\
+'debug_level':'1'\
+})

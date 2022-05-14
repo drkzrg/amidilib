@@ -1,5 +1,5 @@
 
-name: build-amidilib-060-libc
+name: build-amidilib-060-nolibc
 on:
   push:
     branches: [ master ]
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-amidilib-060-libc:
+  build-amidilib-060-nolibc:
     runs-on: ubuntu-latest
 
     steps:
@@ -50,48 +50,48 @@ jobs:
       - name: Clean AMIDILIB release (libc) version
         run: |
           cd ./src
-          scons --sconstruct=SConstruct_060_release -c
+          scons --sconstruct=SConstruct_060_nolibc_release -c
           cd ..
 
       - name: Build AMIDILIB release (libc) version
         run: |
           cd ./src
-          scons --sconstruct=SConstruct_060_release
+          scons --sconstruct=SConstruct_060_nolibc_release
           cd ../
       
       - name: Clean AMIDILIB debug (libc) version
         run: |
           cd ./src
-          scons --sconstruct=SConstruct_060_debug -c
+          scons --sconstruct=SConstruct_060_nolibc_debug -c
           cd ..
 
       - name: Build AMIDILIB debug (libc) version
         run: |
           cd ./src
-          scons --sconstruct=SConstruct_060_debug
+          scons --sconstruct=SConstruct_060_nolibc_debug
           cd ../
       
       - name: Build nktlib (libc) version
         run: |
           cd ./nktlib
           chmod +x ./updateNktLibBuildFiles.sh
-          chmod +x ./rebuild_060_release.sh
+          chmod +x ./rebuild_060_nolibc_release.sh
           ./updateNktLibBuildFiles.sh
-          ./rebuild_060_release.sh
+          ./rebuild_060_nolibc_release.sh
 
       - name: Create binary archive
         run: |
-          tar -czvf amidilib-060-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
-          tar -czvf amidilib-060-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
+          tar -czvf amidilib-060-nolibc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
+          tar -czvf amidilib-060-nolibc-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
 
       - name: Upload AMIDILIB (libc) archive
         uses: actions/upload-artifact@v3
         with:
-          name: amidilib-060-libc
+          name: amidilib-060-nolibc
           path: ./amidilib-*.tgz
 
       - name: Upload nktlib (libc) archive
         uses: actions/upload-artifact@v3
         with:
-          name: nktlib-060-libc
+          name: nktlib-060-nolibc
           path: ./nktlib/nktlib-*.tgz

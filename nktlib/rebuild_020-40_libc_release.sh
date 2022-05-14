@@ -9,7 +9,7 @@
 
 #clean all stuff
 echo ############ Clean All
-scons --sconstruct=SConstruct_release -c
+scons --sconstruct=SConstruct_020-40_libc_release -c
 
 #build
 echo ############ Build All

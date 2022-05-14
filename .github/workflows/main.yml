@@ -1,5 +1,5 @@
 
-name: amidilib-build
+name: amidilib-build-020-40-libc
 
 # Controls when the workflow will run
 on:
@@ -43,15 +43,6 @@ jobs:
           sudo cp ./vobjdump /usr/bin/
           cd ..
       
-      - name: Installing libcmini
-        run: |
-          echo Installing libcmini ...
-          mkdir ./libcmini
-          cd ./libcmini
-          wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
-          echo TODO build libcmini
-          cd ..
-      
       - name: Installing gcc minimal startup
         run: |
           echo Getting latest gcc minimal startup
@@ -67,23 +58,38 @@ jobs:
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
           
-      - name: Clean
+      - name: Clean AMIDILIB release (libc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_release -c
           cd ..
 
-      - name: Build library
+      - name: Build AMIDILIB release (libc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_release
           cd ../
       
+      - name: Clean AMIDILIB debug (libc) version
+        run: |
+          cd ./src
+          scons --sconstruct=SConstruct_debug -c
+          cd ..
+
+      - name: Build AMIDILIB debug (libc) version
+        run: |
+          cd ./src
+          scons --sconstruct=SConstruct_debug
+          cd ../
+
       - name: Create distribution archive
-        run: tar -czvf amidilib-030-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
-      
-      - name: Upload archive
+        run: |
+          tar -czvf amidilib-020-40-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
+          tar -czvf amidilib-020-40-libc-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
+
+      - name: Upload AMIDILIB (libc) archive
         uses: actions/upload-artifact@v3
         with:
-          name: amidilib-030-libc-release
-          path: ./amidilib-030-libc-release.tgz
+          name: amidilib-020-40-libc
+          path: ./*.tgz
+    

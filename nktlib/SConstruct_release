@@ -15,7 +15,7 @@ SConscript('SConscript.nktlib',\
 variant_dir='./nktlib', duplicate=0,\
 exports={\
 'targetPlatform':targetPlatform,\
-'use_crosscompiler':toolchainEnv['use_crosscompiler'],\
+'use_crosscompiler':toolchainEnv['toolchain_use_cross'],\
 'toolchain':toolchainEnv['toolchain'],\
 'toolchain_version':toolchainEnv['toolchain_version'],\
 'host':toolchainEnv['host'],\

@@ -80,7 +80,7 @@ jobs:
           cd ../
       
       - name: Create distribution archive
-        run: tar -czvf amidilib-030-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ../build/aout/release/ .
+        run: tar -czvf amidilib-030-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
       
       - name: Upload archive
         uses: actions/upload-artifact@v3

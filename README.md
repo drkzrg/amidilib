@@ -21,8 +21,9 @@ It supports General Midi instruments (GM1 / GM2) and Roland MT-32 family of synt
 Library can also preprocess various midi data and export them to custom binary format (nkt), which is more suitable for use in programs and games - 
 data doesn't have to be preprocessed which decreases significantly loading times, it's smaller and it's easier to integrate with existing projects.
 
-If you like this project or others feel free to donate to help cover partially my development time and expenses related to hardware. Thank you! 
-[![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)] (https://www.paypal.com/donate/?hosted_button_id=UTEF2ABTDNSMC)
+If you like this project or others feel free to donate to help cover partially my development time and expenses related to hardware. Thank you!
+ 
+<a href="https://www.paypal.com/donate/?hosted_button_id=UTEF2ABTDNSMC"><img alt="support amidilib" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif"/></a>
 
 Compilation from sources
 ------------------------

@@ -79,17 +79,11 @@ jobs:
           scons --sconstruct=SConstruct_release
           cd ../
       
-      - name: Update program extensions
-        run: |
-          mv ../build/aout/release/mid2nkt.tos ../build/aout/release/mid2nkt.ttp 
-          mv ../build/aout/release/nktrep.tos ../build/aout/release/nktrep.ttp
-          mv ../build/aout/release/midiplay.tos ../build/aout/release/midiplay.ttp
-      
       - name: Create distribution archive
-        run: tar -czvf amidilib.tgz --exclude=*.o --exclude=*{/common,/tos} -C ../build/aout/release/ .
+        run: tar -czvf amidilib-030-libc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ../build/aout/release/ .
       
       - name: Upload archive
         uses: actions/upload-artifact@v3
         with:
-          name: amidilib-build-release
-          path: amidilib.tgz
+          name: amidilib-030-libc-release
+          path: ./amidilib-030-libc-release.tgz

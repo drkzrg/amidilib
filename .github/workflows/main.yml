@@ -24,12 +24,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       # Runs a set of commands using the runners shell
+      
       - name: Installing build prerequisities
         run: |
           echo Update and get build prerequisities
           sudo apt-get update -qq
           sudo apt-get install -y software-properties-common
           sudo apt-get install -y scons upx
+      
       - name: Installing VASM
         run: |
           echo Get and install vasm
@@ -40,7 +42,8 @@ jobs:
           sudo cp ./vasmm68k_mot /usr/bin/
           sudo cp ./vobjdump /usr/bin/
           cd ..
-        - name: Installing libcmini
+      
+      - name: Installing libcmini
         run: |
           echo Installing libcmini ...
           mkdir ./libcmini
@@ -48,11 +51,13 @@ jobs:
           wget -q -O - "https://github.com/freemint/libcmini/releases/download/v0.54/libcmini-0.54.tar.gz" | tar xzf -
           echo TODO build libcmini
           cd ..
+      
       - name: Installing gcc minimal startup
         run: |
           echo Getting latest gcc minimal startup
           sudo chmod +x ./getLatestStartup.sh
           ./getLatestStartup.sh
+
       - name: Installing gcc cross compiler
         run: |
           echo Installing gcc in /opt/cross-mint

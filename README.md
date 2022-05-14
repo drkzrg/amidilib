@@ -7,11 +7,15 @@
 [![Coverity Scan](https://scan.coverity.com/projects/13521/badge.svg)](https://scan.coverity.com/projects/n0kturnal-amidilib)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
-
 Introduction
 ------------
 
-AMIDILIB is a C language library which allows really easy replay of MIDI files in various formats via external midi port found in all 16/32 bit [Atari home computers](https://en.wikipedia.org/wiki/Atari_ST). 
+<a href="images/amidilib-mt32.png">
+<img alt="AMIDILIB logo"
+src="images/amidilib-mt32.png"/>
+</a>
+
+AMIDILIB is a C language library which allows easy replay of MIDI files in various formats via external midi port found in all 16/32 bit [Atari home computers](https://en.wikipedia.org/wiki/Atari_ST). 
 It supports General Midi instruments (GM1 / GM2) and Roland MT-32 family of synths. Main motivation behind this library was providing midi music replay in games, game ports or other applications.
  
 Library can also preprocess various midi data and export them to custom binary format (nkt), which is more suitable for use in programs and games - 
@@ -23,7 +27,7 @@ Compilation from sources
 To compile library from sources following tools are needed:
 
 * [SCons build tool](http://scons.org/)
-* GCC C cross compiler supporting c99 - [gcc 4.3.4](http://vincent.riviere.free.fr/soft/m68k-atari-mint/) / [Thorsten Otto's FreeMint cross tools page](https://tho-otto.de/crossmint.php) or [gcc(brownelf)](https://bitbucket.org/ggnkua/bigbrownbuild-git/src/master)  
+* GCC C cross compiler supporting c99 - [Thorsten Otto's FreeMint cross tools page](https://tho-otto.de/crossmint.php) or [gcc(brownelf)](https://bitbucket.org/ggnkua/bigbrownbuild-git/src/master)  
 * [VASM m68k cross compiler](http://sun.hasenbraten.de/vasm/)
 * Environment like [Cygwin](https://www.cygwin.com/) under Windows or Linux.
 
@@ -35,3 +39,7 @@ Until then you can contact me: [nokturnal@nokturnal.pl](mailto:nokturnal@nokturn
 License
 -------------------------
 See [LICENSE](LICENSE.md)
+
+Projects using AMIDILIB
+-----------------------
+[BadMood](http://www.leonik.net/dml/sec_bm.py) BadMooD is an enhanced version of (Linux) Ultimate Doom for Atari Falcon030. It was written specifically for a Atari Falcon030 @ 16MHz + DSP56k @ 32MHz

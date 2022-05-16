@@ -19,8 +19,8 @@ static const sSysEX_t arCM500AllPartsOff = {8,(uint8 []){0xf0,ID_ROLAND,MT32_DEV
 static const sSysEX_t arEnableGM = {6,(uint8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
 static const sSysEX_t arDisableGM = {6,(uint8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
-volatile extern sMidiModuleSettings _moduleSettings;
-extern uint8 _mt32TextMsg[20];
+volatile extern sMidiModuleSettings moduleSettings;
+extern uint8 mt32TextMsg[20];
 
 volatile extern uint8 requestedMasterVolume;
 volatile extern uint8 requestedMasterBalance;
@@ -34,22 +34,13 @@ void setMidiMasterBalance(const uint8 bal){
 }
 
 uint8 getMidiMasterVolume(void){
-    return _moduleSettings.masterVolume;
+    return moduleSettings.masterVolume;
 }
 
 uint8 getMidiMasterBalance(void){
-    return _moduleSettings.masterBalance;
+    return moduleSettings.masterBalance;
 }
 
-// sets custom text message on mt-32 lcd screen
-void setMT32Message(const uint8 *msg){
-    uint8 len = strlen(msg);
-
-    if(len>20)len=20;
-
-    amMemSet(&_mt32TextMsg[0], 0, sizeof(uint8)*20);
-    amMemCpy(&_mt32TextMsg[0], msg, sizeof(uint8)*len);
-}
 
 // MT-32 setup data
 // based on Roland mtgm.mid Version date 12/7/1993
@@ -729,11 +720,15 @@ void  allPartsOffCm500(void){
   sendSysEX(&arCM500AllPartsOff);
 }
 
-void enableGM(const bool bEnable){
-    if(bEnable!=FALSE){
-        sendSysEX(&arEnableGM);
-    }else{
-        sendSysEX(&arDisableGM);
+void enableGM(const Bool bEnable)
+{
+    if(bEnable==TRUE)
+    {
+    	sendSysEX(&arEnableGM);
+    }
+    else
+    {
+    	sendSysEX(&arDisableGM);
     }
 }
 
@@ -743,13 +738,14 @@ void enableGS(void){
 
 
 // Official Roland patch, sets MT32 timbres to be GM compatible
-void patchMT32toGM(const bool bStandardGMDrumset){
+void patchMT32toGM(const Bool bStandardGMDrumset){
 
     for (uint16 i=0;i<MAX_MT32_PATCH;++i){
         sendSysEX(&mt32_gm[i]);
     }
 
-    if(bStandardGMDrumset!=FALSE){
+    if(bStandardGMDrumset==TRUE)
+    {
         // standard drumset
         sendSysEX(&mt32_stnd[0]);
         sendSysEX(&mt32_stnd[1]);
@@ -766,7 +762,8 @@ void patchMT32toGM(const bool bStandardGMDrumset){
 }
 
 // all
-uint8 amCalcRolandChecksum(uint8 *buf_start, uint8 *buf_end){
+uint8 amCalcRolandChecksum(uint8 *buf_start, uint8 *buf_end)
+{
 uint8 total = 0 ;
 uint8 mask  = 0x7F ;
 
@@ -777,35 +774,36 @@ while ( buf_start <= buf_end ){
  return (0x80 - (total & mask)) & mask ;
 }
 
-void MT32Reset(void){
+void MT32Reset(void)
+{
  sendSysEX(&mt32_Reset);
 }
 
-volatile extern sMidiModuleSettings _moduleSettings;
-
-void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
-
+void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
+{
     requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_GM;
     requestedMasterBalance=MIDI_MASTER_PAN_CENTER;
 
     // this will force update on first frame
-    _moduleSettings.reverbMode=0;
-    _moduleSettings.reverbLevel=0;
-    _moduleSettings.reverbTime=0;
+    moduleSettings.reverbMode=0;
+    moduleSettings.reverbLevel=0;
+    moduleSettings.reverbTime=0;
 
-    _moduleSettings.masterVolume=0;
-    _moduleSettings.masterBalance=0;
+    moduleSettings.masterVolume=0;
+    moduleSettings.masterBalance=0;
 
-    switch(device){
-     case DT_LA_SOUND_SOURCE:{
+    switch(device)
+    {
+     case DT_LA_SOUND_SOURCE:
+     {
         requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
         amTrace("\nSetting MT32 device on ch: %d\n", channel);
         MT32Reset();
 
-        _moduleSettings.vendorID=ID_ROLAND;
-        _moduleSettings.modelID=MT32_MODEL_ID;
-        _moduleSettings.deviceID=0x10;
+        moduleSettings.vendorID=ID_ROLAND;
+        moduleSettings.modelID=MT32_MODEL_ID;
+        moduleSettings.deviceID=0x10;
 
         program_change(channel, 1);
      } break;
@@ -814,9 +812,9 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
        amTrace("\nSetting MT32 ext device on ch: %d\n", channel);
        requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
-       _moduleSettings.vendorID=ID_ROLAND;
-       _moduleSettings.modelID=MT32_MODEL_ID;
-       _moduleSettings.deviceID=0x10;
+       moduleSettings.vendorID=ID_ROLAND;
+       moduleSettings.modelID=MT32_MODEL_ID;
+       moduleSettings.deviceID=0x10;
 
        MT32Reset();
 
@@ -826,9 +824,9 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
      case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
         amTrace("\nSetting GS device on ch: %d\n", channel);
 
-        _moduleSettings.vendorID=ID_ROLAND;
-        _moduleSettings.modelID=GS_MODEL_ID;
-        _moduleSettings.deviceID=0x10;
+        moduleSettings.vendorID=ID_ROLAND;
+        moduleSettings.modelID=GS_MODEL_ID;
+        moduleSettings.deviceID=0x10;
 
         enableGM(FALSE);
         enableGS();
@@ -840,9 +838,9 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
      case DT_LA_GS_MIXED:{           /* if both LA / GS sound sources are available, like in CM-500 mode A, drop it? */
         amTrace("\nSetting generic LA / GS device on ch: %d\n", channel);
 
-        _moduleSettings.vendorID=ID_ROLAND;
-        _moduleSettings.modelID=GS_MODEL_ID;
-        _moduleSettings.deviceID=0x10;
+        moduleSettings.vendorID=ID_ROLAND;
+        moduleSettings.modelID=GS_MODEL_ID;
+        moduleSettings.deviceID=0x10;
 
         enableGM(FALSE);
         enableGS();
@@ -857,9 +855,9 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
      case DT_GM_SOUND_SOURCE:{
         amTrace("\nSetting GM device on ch: %d\n", channel);
 
-        _moduleSettings.vendorID=ID_ROLAND;
-        _moduleSettings.modelID=GS_MODEL_ID;
-        _moduleSettings.deviceID=0x10;
+        moduleSettings.vendorID=ID_ROLAND;
+        moduleSettings.modelID=GS_MODEL_ID;
+        moduleSettings.deviceID=0x10;
 
         enableGM(TRUE);
 
@@ -872,9 +870,9 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
 
         requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
-        _moduleSettings.vendorID=ID_ROLAND;
-        _moduleSettings.modelID=MT32_MODEL_ID;
-        _moduleSettings.deviceID=0x10;
+        moduleSettings.vendorID=ID_ROLAND;
+        moduleSettings.modelID=MT32_MODEL_ID;
+        moduleSettings.deviceID=0x10;
 
         MT32Reset();
 
@@ -884,13 +882,13 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
        program_change(channel, 1);
 
      } break;
-     case DT_XG_GM_YAMAHA:
-        //not supported yet
-        default:{
+     case DT_XG_GM_YAMAHA:    //not supported yet
+     default:
+     {
             amTrace("\nSetting generic default on ch: %d\n",channel);
             control_change(C_BANK_SELECT, channel,0,0x00);
             program_change(channel, 1);
-        } break;
+     } break;
     };
 
     // all notes off
@@ -909,5 +907,15 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel){
  #ifdef IKBD_MIDI_SEND_DIRECT
      Supexec(flushMidiSendBuffer);
  #endif
+}
 
+// sets custom text message on mt-32 lcd screen
+void setMT32Message(const uint8 *msg)
+{
+    uint8 len = strlen(msg);
+
+    if(len>20)len=20;
+
+    amMemSet(&mt32TextMsg[0], 0, sizeof(uint8)*20);
+    amMemCpy(&mt32TextMsg[0], msg, sizeof(uint8)*len);
 }

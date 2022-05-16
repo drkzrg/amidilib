@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -257,7 +257,7 @@ void setYm2149(ymChannelData ch[3],const int noteIdx,const uint8 currentEnvelope
 }
 
 //plays given note and outputs it to midi/ym2149
-void playNote(const uint8 channel,const uint8 noteNb, const bool bMidiOutput, const bool bYmOutput){
+void playNote(const uint8 channel,const uint8 noteNb, const Bool bMidiOutput, const Bool bYmOutput){
 ymChannelData ch[3];
 
   

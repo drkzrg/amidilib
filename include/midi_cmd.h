@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -9,7 +9,7 @@
 #ifndef __MIDI_CMD_H__
 #define __MIDI_CMD_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "memory/memory.h"
 #include "midi_send.h"
 #include "events.h"
@@ -31,7 +31,6 @@
 static uint8 g_midi_cmd_buffer[4];
 #endif
 
-
 typedef struct SysEX_t{
    uint16 size;
    uint8 *data;
@@ -45,7 +44,7 @@ extern volatile uint16 MIDIbytesToSend;
 // sends SysEX message without recalculating the checksum
 static INLINE void sendSysEX(const sSysEX_t *pMsg){
 
-amTrace("Send SysEx size: %lu \n",pMsg->size);
+amTrace("Send SysEx size: %u \n",pMsg->size);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
  amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
@@ -515,7 +514,8 @@ static INLINE void copy_mono(const uint8 channel,const uint8 numberOfMono){
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly){
+static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly)
+{
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_POLY;
 	MIDIsendBuffer[MIDIbytesToSend++]=numberOfPoly;
@@ -525,13 +525,13 @@ static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly){
 *   @param numChannels - number of channel
 */
 
-static INLINE void amAllNotesOff(uint16 numChannels){
-uint16 iCounter;
-  for(iCounter=0;iCounter<numChannels;++iCounter){
+static INLINE void amAllNotesOff(const uint16 numChannels)
+{
+  for(uint16 iCounter=0;iCounter<numChannels;++iCounter)
+  {
     all_notes_off(iCounter);
   }
 }
-
 
 
 #endif

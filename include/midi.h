@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef __AMIDI_H__
 #define __AMIDI_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "vendors.h"
 #include "events.h"
 
@@ -32,13 +32,15 @@ typedef enum{
 * these structures need to be packed 
 */
 
-typedef struct __attribute__((packed)) ChunkHeader {
+typedef struct PACK_ATTR ChunkHeader {
   uint32 id;
   uint32 headLenght;
 } sChunkHeader,*pChunkHeader;
 
+StaticAssert((sizeof(sChunkHeader)==8),"Invalid sChunkHeader size.");
 
-typedef struct __attribute__((packed)) MThd {
+
+typedef struct PACK_ATTR MThd {
 	uint32 id;
 	uint32 headLenght;
 	uint16 format;
@@ -46,16 +48,20 @@ typedef struct __attribute__((packed)) MThd {
 	uint16 division;
 } sMThd;
 
+StaticAssert(sizeof(sMThd)==14,"Invalid sMThd size.");
+
 
 /**
  * MIDI file track info struct
  */
 
-typedef struct __attribute__((packed)) MTrk {
+typedef struct PACK_ATTR MTrk {
     uint32 id;
-	uint32 headLenght;
+    uint32 headLenght;
 	/* offset track event data 0x08 offset */
 } sMTrk;
+
+StaticAssert(sizeof(sMTrk)==8,"Invalid sMTrk size.");
 
 
 /**
@@ -63,7 +69,7 @@ typedef struct __attribute__((packed)) MTrk {
 *  custom structure for storing connected device info
 */
 
-typedef struct __attribute__((packed)) DeviceInfo{
+typedef struct PACK_ATTR DeviceInfo{
   uint8 nChannel;                  /* channel number on which device receives data */
   uint8 pad[4];
   uint16 mID;                      /* vendor id, complete list in VENDORS.H */
@@ -72,62 +78,87 @@ typedef struct __attribute__((packed)) DeviceInfo{
   uint16 SoftRevLevel;             /* ss ss ss ss	Software revision level (the format is device specific) */
 } sDeviceInfo,*pDeviceInfo;
 
+StaticAssert(sizeof(sDeviceInfo)==13,"Invalid sDeviceInfo size.");
+
 
 /* SMPTE OFFSET struct */
-typedef struct __attribute__((packed)) SMPTEoffset{
+typedef struct PACK_ATTR SMPTEoffset{
     uint8 hr;
     uint8 mn;
     uint8 se;
     uint8 fr;
     uint8 ff;
   } sSMPTEoffset;
+StaticAssert(sizeof(sSMPTEoffset)==5,"Invalid sSMPTEoffset size.");
 
 /* Time signature struct */
 
-typedef struct __attribute__((packed)) TimeSignature{
+typedef struct PACK_ATTR TimeSignature{
  uint8 nn;
  uint8 dd;
  uint8 cc;
  uint8 bb;
 } sTimeSignature;
 
+StaticAssert(sizeof(sTimeSignature)==4,"Invalid sTimeSignature size.");
+
 /*************** event structs */
-typedef struct __attribute__((packed)) NoteOn_t{
+typedef struct PACK_ATTR NoteOn_t{
  int8 noteNb;
  int8 velocity;
 }  sNoteOn_t;
 
-typedef struct __attribute__((packed)) NoteOff_t{
+StaticAssert(sizeof(sNoteOn_t)==2,"Invalid sNoteOn_t size.");
+
+typedef struct PACK_ATTR NoteOff_t{
  int8 noteNb;
  int8 velocity;
 } sNoteOff_t;
 
-typedef struct __attribute__((packed)) NoteAft_t{
+StaticAssert(sizeof(sNoteOff_t)==2,"Invalid sNoteOff_t size.");
+
+
+typedef struct PACK_ATTR NoteAft_t{
  int8 noteNb;
  int8 pressure;
 } sNoteAft_t;
 
-typedef struct __attribute__((packed)) Controller_t{
+StaticAssert(sizeof(sNoteAft_t)==2,"Invalid sNoteAft_t size.");
+
+
+typedef struct PACK_ATTR Controller_t{
  int8 controllerNb;
  int8 value;
 } sController_t;
 
-typedef struct __attribute__((packed)) ProgramChange_t {
+StaticAssert(sizeof(sController_t)==2,"Invalid sController_t size.");
+
+
+typedef struct PACK_ATTR ProgramChange_t {
  int8 programNb;
 } sProgramChange_t;
 
-typedef struct __attribute__((packed)) ChannelAft_t{
+StaticAssert(sizeof(sProgramChange_t)==1,"Invalid sProgramChange_t size.");
+
+
+typedef struct PACK_ATTR ChannelAft_t{
  int8 pressure;
 } sChannelAft_t;
 
-typedef struct __attribute__((packed)) PitchBend_t{
+StaticAssert(sizeof(sChannelAft_t)==1,"Invalid sChannelAft_t size.");
+
+typedef struct PACK_ATTR PitchBend_t{
  int8  LSB;
  int8  MSB;
 } sPitchBend_t;
 
-typedef struct __attribute__((packed)) Tempo_t{
+StaticAssert(sizeof(sPitchBend_t)==2,"Invalid sPitchBend_t size.");
+
+typedef struct PACK_ATTR Tempo_t{
  uint32 tempoVal;
 } sTempo_t;
+
+StaticAssert(sizeof(sTempo_t)==4,"Invalid sTempo_t size.");
 
 const uint8 *getMidiNoteName(const uint8 NoteNb);
 const uint8 *getMidiControllerName(const uint8 NoteNb);
@@ -142,7 +173,8 @@ const uint8 *getNoteName(const uint8 currentChannel,const uint8 currentPN,const 
 */
 
 /* reads Variable Lenght Quantity */
-static inline uint32 readVLQ(uint8 *pChar,uint8 *ubSize){
+static INLINE uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
+{
 // TODO: rewrite this in assembly
 uint32 value=0;
 (*ubSize)=0;
@@ -171,7 +203,8 @@ return(value);
 
 // reads a variable length integer
 // TODO: remove it and replace with uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
-static inline uint32 ReadVarLen(int8* buffer){
+static INLINE uint32 ReadVarLen(int8* buffer)
+{
 uint32 value;
 
 if ((value = *buffer++) & 0x80) {
@@ -186,7 +219,8 @@ if ((value = *buffer++) & 0x80) {
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
-static inline int32 WriteVarLen( int32 value, uint8* out ){
+static INLINE int32 WriteVarLen( int32 value, uint8* out )
+{
     int32 buffer, count = 0;
 
     buffer = value & 0x7f;

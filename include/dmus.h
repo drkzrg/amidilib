@@ -1,12 +1,12 @@
 #ifndef __DMUS_H__
 #define __DMUS_H__
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
-#include "c_vars.h"
+#include "vartypes.h"
 
 // mus header
 typedef struct tagMUSheader_t {
@@ -23,6 +23,6 @@ typedef struct tagMUSheader_t {
 #define MUS_ID 0x4D5553
 
 
-int32 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len);
+retVal Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len);
 
 #endif

@@ -22,3 +22,10 @@ deps/\startup/\*
 *.tgz
 
 build/
+*.dblite
+src
+lib
+include
+libcmini
+atari-gcc-startup
+deps/brownlibcmini

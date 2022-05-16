@@ -2,7 +2,7 @@
     sending midi events to external midi module
 */
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -14,9 +14,8 @@
 #include "midi_rep.h"
 #include "timing/miditim.h"
 
-/****************** event function prototypes */
-/* string table with all event names */
 
+/* string table with all event names */
 const uint8 *arEventNames[T_EVT_COUNT]={
     "Note On",
     "Note Off",
@@ -33,24 +32,31 @@ const uint8 *arEventNames[T_EVT_COUNT]={
     "SysEX Msg"
 };
 
+/*returns pointer to NULL terminated string with event name */
+/* id is enumerated value from eEventType */
+const uint8 *getEventName(const uint32 id)
+{
+  if(id<T_EVT_COUNT)
+    return ((const uint8 *)arEventNames[id]);
+  else return NULL;
+}
 
+/****************** event function prototypes */
 //common
-static void fSetTempo(const void *pEvent){
+static void fSetTempo(const void *pEvent)
+{
  sTempo_EventBlock_t *pPtr=(sTempo_EventBlock_t *)pEvent;
- sSequence_t *seq=0;
- getCurrentSeq(&seq);
+ sSequence_t *seq = getActiveAmSequence();
 
- if(seq!=0){
-   // set new tempo value and indicate that tempo has changed
-   // it will be handled in interrupt routine
-   uint8 activeTrack=seq->ubActiveTrack;
-   sTrackState_t *pCurTrackState=&(seq->arTracks[activeTrack]->currentState);
+ // set new tempo value and indicate that tempo has changed
+ // it will be handled in interrupt routine
+ const uint8 activeTrack = seq->ubActiveTrack;
+ sTrackState_t *pCurTrackState = &(seq->arTracks[activeTrack]->currentState);
 
-   pCurTrackState->currentTempo=pPtr->eventData.tempoVal;
-   amTrace("fSetTempo %lu\n",pCurTrackState->currentTempo);
-   pCurTrackState->currentBPM=60000000/pCurTrackState->currentTempo;
-   seq->timeStep=amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
- }
+ pCurTrackState->currentTempo = pPtr->eventData.tempoVal;
+ amTrace("fSetTempo %u\n",pCurTrackState->currentTempo);
+ pCurTrackState->currentBPM = 60000000/pCurTrackState->currentTempo;
+ seq->timeStep = amCalculateTimeStep(pCurTrackState->currentBPM, seq->timeDivision, SEQUENCER_UPDATE_HZ);
 }
 
 static void fHandleEOT(const void *pEvent){
@@ -84,58 +90,47 @@ static void fHandleSignatureChange(const void *pEvent){
 
 }
 
-/*returns pointer to NULL terminated string with event name */
-/* id is enumerated value from eEventType */
-const uint8 *getEventName(const uint32 id){
-  if(id<T_EVT_COUNT)
-    return ((const uint8 *)arEventNames[id]);
-  else return 0;
-}
-
-
-uint8 getChannelNbFromEventBlock(const sEventBlock_t *pBlock){
-   
-  switch(pBlock->type){
-    
-  case T_NOTEON:
-    return ((sNoteOn_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_NOTEOFF:
-    return ((sNoteOff_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_NOTEAFT:
-    return ((sNoteAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_CONTROL:
-    return ((sController_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_PRG_CH:
-    return ((sPrgChng_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_CHAN_AFT:
-    return ((sChannelAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-  case T_PITCH_BEND:
-    return ((sPitchBend_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
-  break;
-//these events doesn't contain any delta information
-//so we are returning channel out of range	     
-  case T_META_SET_TEMPO:
-  case T_META_EOT:
-  case T_META_CUEPOINT:
-  case T_META_MARKER:
-  case T_META_SET_SIGNATURE:
-  case T_SYSEX:
-    return 127;
-   break;
-  default:
-    return 127;
+uint8 getChannelNbFromEventBlock(const sEventBlock_t *pBlock)
+{
+  switch(pBlock->type)
+  {
+    case T_NOTEON:
+      return ((sNoteOn_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_NOTEOFF:
+      return ((sNoteOff_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_NOTEAFT:
+      return ((sNoteAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_CONTROL:
+      return ((sController_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_PRG_CH:
+      return ((sPrgChng_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_CHAN_AFT:
+      return ((sChannelAft_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    case T_PITCH_BEND:
+      return ((sPitchBend_EventBlock_t *)pBlock->dataPtr)->ubChannelNb;
+    break;
+    //these events doesn't contain any delta information
+    //so we are returning channel out of range	     
+    case T_META_SET_TEMPO:
+    case T_META_EOT:
+    case T_META_CUEPOINT:
+    case T_META_MARKER:
+    case T_META_SET_SIGNATURE:
+    case T_SYSEX:
+      return 127;
+    break;
   };
+ return 127;
 }
 
 
 /* event id is mapped to the position in the array, functionPtr, parameters struct */
-
 #ifdef IKBD_MIDI_SEND_DIRECT
 //event handlers which copy event data to output buffer
 static void  fNoteOnCopyData(const void *pEvent){
@@ -212,8 +207,9 @@ the ordering of members should be the same as described in type sEventList. */
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //callbacks for copying events to intermediate buffer which is sent in one go
-static const sEventInfoBlock_t g_arSeqCmdCopyDataTable[T_EVT_COUNT] = {
-  {sizeof(sNoteOn_EventBlock_t),fNoteOnCopyData},
+static const sEventInfoBlock_t arSequenceCmdCallbackTable[T_EVT_COUNT] = 
+{
+   {sizeof(sNoteOn_EventBlock_t),fNoteOnCopyData},
    {sizeof(sNoteOff_EventBlock_t),fNoteOffCopyData},
    {sizeof(sNoteAft_EventBlock_t), fNoteAftCopyData},
    {sizeof(sController_EventBlock_t),fControllerCopyData},
@@ -228,9 +224,10 @@ static const sEventInfoBlock_t g_arSeqCmdCopyDataTable[T_EVT_COUNT] = {
    {sizeof(sSysEX_EventBlock_t),fHandleSysEXCopyData}
 };
 
-void getEventFuncCopyInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk){
-    infoBlk->size=g_arSeqCmdCopyDataTable[eventType].size;
-    infoBlk->func=g_arSeqCmdCopyDataTable[eventType].func;
+void getEventCallbackHandler(const uint8 eventType, sEventInfoBlock_t *infoBlk)
+{
+    infoBlk->size = arSequenceCmdCallbackTable[eventType].size;
+    infoBlk->func = arSequenceCmdCallbackTable[eventType].func;
 }
 
 #else
@@ -238,7 +235,7 @@ void getEventFuncCopyInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk){
 static void  fNoteOn(const void *pEvent) {
     sNoteOn_EventBlock_t *pPtr=(sNoteOn_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Note On data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+    amTrace((const uint8*)"Sending Note On data to midi out ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 #endif
     note_on(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
@@ -246,7 +243,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fNoteOff(const void *pEvent){
     sNoteOff_EventBlock_t *pPtr=(sNoteOff_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Note Off data to sequencer ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
+    amTrace((const uint8*)"Sending Note Off data to midi out ch:%d note:%d vel:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.velocity);
 #endif
     note_off(pPtr->ubChannelNb, pPtr->eventData.noteNb,pPtr->eventData.velocity);
 }
@@ -254,7 +251,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fNoteAft(const void *pEvent){
     sNoteAft_EventBlock_t *pPtr=(sNoteAft_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Note Aftertouch data to sequencer ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
+    amTrace((const uint8*)"Sending Note Aftertouch data to midi out ch:%d note:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 #endif
     polyphonic_key_press(pPtr->ubChannelNb,pPtr->eventData.noteNb,pPtr->eventData.pressure);
 }
@@ -262,7 +259,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fProgramChange (const void *pEvent){
     sPrgChng_EventBlock_t *pPtr=(sPrgChng_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Program change data to sequencer ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
+    amTrace((const uint8*)"Sending Program change data to midi out ch:%d pn:%d...\n",pPtr->ubChannelNb,pPtr->eventData.programNb);
 #endif
     program_change(pPtr->ubChannelNb,pPtr->eventData.programNb);
 }
@@ -270,7 +267,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fController(const void *pEvent){
     sController_EventBlock_t *pPtr=(sController_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Controller data to sequencer ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
+    amTrace((const uint8*)"Sending Controller data to midi out ch:%d controller:%d value:%d...\n",pPtr->ubChannelNb,pPtr->eventData.controllerNb,pPtr->eventData.value);
 #endif
     control_change(pPtr->eventData.controllerNb, pPtr->ubChannelNb, pPtr->eventData.value,0x00);
 }
@@ -278,7 +275,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fChannelAft(const void *pEvent){
     sChannelAft_EventBlock_t *pPtr=(sChannelAft_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Channel Aftertouch data to sequencer ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
+    amTrace((const uint8*)"Sending Channel Aftertouch data to midi out ch:%d pressure:%d...\n",pPtr->ubChannelNb,pPtr->eventData.pressure);
 #endif
     channel_pressure (pPtr->ubChannelNb,pPtr->eventData.pressure);
 }
@@ -286,7 +283,7 @@ static void  fNoteOn(const void *pEvent) {
  static void  fPitchBend(const void *pEvent){
     sPitchBend_EventBlock_t *pPtr=(sPitchBend_EventBlock_t *)pEvent;
 #ifdef DEBUG_BUILD
-    amTrace((const uint8*)"Sending Pitch bend data to sequencer ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
+    amTrace((const uint8*)"Sending Pitch bend data to midi out ch:%d LSB:%d MSB:%d...\n",pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 #endif
     pitch_bend_2 (pPtr->ubChannelNb,pPtr->eventData.LSB,pPtr->eventData.MSB);
 }
@@ -299,13 +296,13 @@ static void fHandleSysEX(const void *pEvent){
 
 }
 
-
 /** !ORDER IS IMPORTANT! and has to be the same as in enums with T_EVT_COUNT. Additionally
 the ordering of members should be the same as described in type sEventList. */
 
 //callbacks for sending directly events to external device through midi out port
-static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
-  {sizeof(sNoteOn_EventBlock_t),fNoteOn},
+static const sEventInfoBlock_t arSequenceCmdCallbackTable[T_EVT_COUNT] = 
+{
+   {sizeof(sNoteOn_EventBlock_t),fNoteOn},
    {sizeof(sNoteOff_EventBlock_t),fNoteOff},
    {sizeof(sNoteAft_EventBlock_t), fNoteAft},
    {sizeof(sController_EventBlock_t),fController},
@@ -320,12 +317,10 @@ static const sEventInfoBlock_t g_arSeqCmdTable[T_EVT_COUNT] = {
    {sizeof(sSysEX_EventBlock_t),fHandleSysEX}
 };
 
-void getEventFuncInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk){
-    infoBlk->size=g_arSeqCmdTable[eventType].size;
-    infoBlk->func=g_arSeqCmdTable[eventType].func;
+void getEventCallbackHandler(const uint8 eventType, sEventInfoBlock_t *infoBlk)
+{
+    infoBlk->size = arSequenceCmdCallbackTable[eventType].size;
+    infoBlk->func = arSequenceCmdCallbackTable[eventType].func;
 }
 
 #endif
-
-
-

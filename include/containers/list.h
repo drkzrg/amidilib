@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -13,13 +13,13 @@
 
 #ifdef EVENT_LINEAR_BUFFER
 void initEventList(sSequence_t *pSequence, sEventList **listPtr);
-int16 addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr );
-int16 copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest);
+retVal addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr );
+retVal copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest);
 uint32 destroyList(sSequence_t *pSequence, sEventList **listPtr);
 #else
 void initEventList(sEventList **listPtr);
-int16 addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr );
-int16 copyEvent(const sEventBlock_t *src, sEventList **dest);
+retVal addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr );
+retVal copyEvent(const sEventBlock_t *src, sEventList **dest);
 uint32 destroyList(sEventList **listPtr);
 #endif
 

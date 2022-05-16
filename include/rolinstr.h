@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef ROLINSTR_H
 #define ROLINSTR_H
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 /* Roland modules header */
 const uint8 *getMT32InstrName(const uint8 ubInstrNb);

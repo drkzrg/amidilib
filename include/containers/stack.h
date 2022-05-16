@@ -1,13 +1,13 @@
 #ifndef _STACK_H_
 #define _STACK_H_
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 typedef struct SSTACK 
 {
@@ -22,8 +22,8 @@ int32 initStack(sStack *stackState,  const uint32 elementSize, const uint32 init
 void pushStack(sStack *stackState, void *newElement); // void element has to be of the constant size
 void popStack(sStack *stackState);
 void* getTopStackElement(sStack *stackState);
-bool isStackFull(const sStack *stackState);
-bool isStackEmpty(const sStack *stackState);
+Bool isStackFull(const sStack *stackState);
+Bool isStackEmpty(const sStack *stackState);
 void deinitStack(sStack *stackState);
 
 #endif

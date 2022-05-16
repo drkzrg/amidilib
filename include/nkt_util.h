@@ -2,14 +2,14 @@
 #ifndef _NKT_UTIL_H
 #define _NKT_UTIL_H
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "nkt.h"
 #include "midi.h"
 
@@ -35,6 +35,6 @@ typedef struct sRunningStatus{
 } sRunningStatus_t;
 
 
-int32 saveSequence(sNktSeq *pSeq,const uint8 *filepath,bool bCompressed);
+retVal saveNktSequence(sNktSeq *pSeq, const uint8 *filepath, Bool bCompressed);
 
 #endif

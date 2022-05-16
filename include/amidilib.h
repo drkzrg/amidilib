@@ -1,4 +1,4 @@
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -7,12 +7,12 @@
 #ifndef _AMIDILIB_H_
 #define _AMIDILIB_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "midi_rep.h"
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2020 Pawel Goralski\n"
+#define AMIDI_INFO "(c)2007-2021 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 4
@@ -60,13 +60,13 @@ const sAMIDI_version *amGetVersionInfo(void);
  * @param midiData - pointer to loaded midi file data
  * @param midiDataSize - length of midi data in bytes
  * @param ppSequence - pointer to a an adress containing AMIDI sequence to populate
- * @return returns 0 if everything is OK, -1 if error occured
+ * @return returns AM_OK if everything is OK, AM_ERR if error occured
  **/
-int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
+retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
-int16 amInit(void);
+retVal amInit(void);
 
 /** Deinits system, restores standard MIDI buffer */
 void amDeinit(void);

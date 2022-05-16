@@ -1,7 +1,7 @@
 #ifndef ROL_PTCH_H
 #define ROL_PTCH_H
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "mdevtype.h"
 
 #include "vendors.h"
@@ -35,7 +35,7 @@ typedef struct midiModuleSettings{
 void MT32Reset(void);
 
 /** patch MT-32 module to GM timbres */
-void patchMT32toGM(const bool bStandardGMDrumset);
+void patchMT32toGM(const Bool bStandardGMDrumset);
 
 /* these two functions turn parts (channels) 2-10 off on Roland CM-300 and CM-500 modules,
 as well as many other Roland GS devices.

@@ -1,11 +1,11 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 /* Compiler sanity check */
 void compilerSanityCheck(void)
@@ -31,7 +31,7 @@ void compilerSanityCheck(void)
 // TRUE - for little endian, x86, PS2
 // FALSE / for big endian - // Big Endian - GameCube, Atari
 
-const bool checkEndianess(void)
+const Bool checkEndianess(void)
 {
   uint16 word16=1;
 

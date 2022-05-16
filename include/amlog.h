@@ -8,7 +8,7 @@
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 #ifdef DEBUG_BUILD
 #define DEBUG

@@ -1,7 +1,7 @@
 #ifndef _MIDITIM_H_
 #define _MIDITIM_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 /** Calculate timestep function
 *   BPM - beats per minute (tempo)
@@ -11,16 +11,20 @@
 *   @param qpm QPM - quaternotes per minute
 */
 
-static inline uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups){
+static INLINE uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups)
+{
     static uint32 ppu=0;
     static uint32 temp=0;
 
-    temp=(uint32)qpm*(uint32)ppq;
+    temp = (uint32)qpm*(uint32)ppq;
 
-    if(temp<0x10000){
-        ppu=((temp*0x10000)/60)/(uint32)ups;
-    }else{
-        ppu=((temp/60)*0x10000)/(uint32)ups;
+    if(temp<65536)
+    {
+        ppu=((temp*65536)/60)/(uint32)ups;
+    }
+    else
+    {
+        ppu=((temp/60)*65536)/(uint32)ups;
     }
 
  return ppu;

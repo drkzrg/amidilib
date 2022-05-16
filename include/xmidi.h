@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef AXMIDI_H
 #define AXMIDI_H
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amidiseq.h"
 
 /**
@@ -18,7 +18,7 @@
  * @return returns true if data are correct. 
  **/
 
-bool amIsValidXmidiData(void *xmidiData);
+Bool amIsValidXmidiData(void *xmidiData);
 
 /**
  * Gets number of sequences/tracks stored in xmidi data 
@@ -34,9 +34,9 @@ uint16 amGetNbOfXmidiTracks(void *midiData);
  * Transforms XMidi data to Amidilib sequence 
  *
  * @param xmidiData	- pointer to xmidi data
- * @return returns value < 0 on error
+ * @return returns value AM_OK on success, AM_ERR on error
  **/
 
-int16 amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
+retVal amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

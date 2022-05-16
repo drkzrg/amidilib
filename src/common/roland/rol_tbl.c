@@ -1,5 +1,5 @@
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 /* file contains all instrument tables for Roland MT-32 family devices */
 

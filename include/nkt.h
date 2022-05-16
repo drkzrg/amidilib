@@ -1,29 +1,31 @@
 #ifndef NKT_H
 #define NKT_H
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#include <c_vars.h>
+#include "vartypes.h"
 
 #include "mdevtype.h"            // device types
 #include "timing/mfp.h"
 #include "memory/linalloc.h"
 
-typedef enum{
+typedef enum ENKTTRACKSTATE
+{
     // play mode
     NKT_PLAY_ONCE  = (uint16)(0b00000001), // play once if set, loop otherwise
 
     // track state
     NKT_PS_PLAYING = (uint16)(0b00000010), // playing if set, stopped otherwise
     NKT_PS_PAUSED  = (uint16)(0b00000100), // paused if set
-}eNktTrackState;
+} eNktTrackState;
 
 // custom binary midi replay format
-typedef enum{
+typedef enum ENKTMSGTYPE
+{
   NKT_MIDIDATA      = (uint16)(0b00000001),
   NKT_TEMPO_CHANGE  = (uint16)(0b00000010),
   NKT_JUMP          = (uint16)(0b00000100),          //not used atm
@@ -33,7 +35,8 @@ typedef enum{
 } eNktMsgType;
 
 // Midi events update interval
-typedef enum {
+typedef enum ENKTUPDATEFREQ
+{
     NKT_U25HZ=0,
     NKT_U50HZ,
     NKT_U100HZ,
@@ -42,18 +45,25 @@ typedef enum {
 } eNktUpdateFreq;
 
 // Nkt structure in memory / disc / big endian
-typedef struct __attribute__((packed)) NktBlock_t  {
+typedef struct PACK_ATTR NKTBLOCK  
+{
   uint16 msgType;        // msgType
   uint16 blockSize;      // block size (data start: (uint32) eventDataPtr+0, data end: (uint32) eventDataPtr + blockSize(? -1) )
   uint32 bufferOffset;   // offset to data start in linear buffer (eventDataPtr)
-} sNktBlock_t;
+} sNktBlock;
 
-typedef struct __attribute__((packed)) NktTempo{
+StaticAssert(sizeof(sNktBlock)==8, "Invalid sNktBlock size!");
+
+typedef struct PACK_ATTR NKTTEMPO
+{
   uint32 tempo;                    // quaternote duration in ms, 500ms default
   uint32 tuTable[NKT_UMAX];        // precalculated timesteps for 50, 100, 200hz updates for given tempo
 } sNktTempo;                    // to avoid timestep calculation during runtime
 
-typedef struct NktTrack{
+StaticAssert(sizeof(sNktTempo)==20, "Invalid sNktTempo size!");
+
+typedef struct NktTrack
+{
     uint32 nbOfBlocks;            // nb of event blocks
     uint32 currentBlockId;        // currently replayed block id 0-xxxx
     uint32 eventsBlockBufferSize; // nb of bytes used for events buffer
@@ -68,10 +78,11 @@ typedef struct NktTrack{
 
     LinearBufferAllocator lbDataBuffer;  // linear buffer for event data info
     LinearBufferAllocator lbEventsBuffer; // linear buffer for events block info
-}sNktTrack;
+} sNktTrack;
 
 
-typedef struct NktSeq{
+typedef struct NktSeq
+{
     uint16 version;               // version
     uint16 timeDivision;          // track time division
     uint16 currentUpdateFreq;     // as in eNktUpdateFreq enum, indicates midi engine update interval
@@ -90,20 +101,28 @@ typedef struct NktSeq{
 // stuff for file reading
 // binary header, big endian
 
-typedef struct __attribute__((packed)) NktHd{
+typedef struct PACK_ATTR NktHd
+{
     uint32 id;                         // always ID_NKT
     uint16 division;                   // time division
     uint16 version;                    // format version
     uint16 nbOfTracks;                 // number of tracks
 } sNktHd;
 
-typedef struct __attribute__((packed)) NktTrackInfo{
+StaticAssert(sizeof(sNktHd)==10, "Invalid sNktHd size!");
+
+
+typedef struct PACK_ATTR NKTTRACKINFO
+{
     uint32 nbOfBlocks;                 // nb of event blocks in file
     uint32 eventsBlockBufSize;         // (event vlq delta * NbOfBlocks) +  ( NbOfBlocks * sizeof(sNktBlk_t) )
     uint32 eventsBlockPackedSize;      // if packed, size of packed data, contigous event block, 0 otherwise
     uint32 eventDataBufSize;           // nb of bytes for data in event blocks
     uint32 eventDataBlockPackedSize;   // if packed, size of packed data, contigous event data block, 0 otherwise
 } sNktTrackInfo;
+
+StaticAssert(sizeof(sNktTrackInfo)==20, "Invalid sNktTrackInfo size!");
+
 
 // file layout:
 // + sNktHd
@@ -132,19 +151,21 @@ extern void NktInstallReplayRoutNoTimers(void);
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void NktDeinstallReplayRout(void);
 
-void getCurrentSequence(sNktSeq **pSeq);
-void initSequence(sNktSeq *seq, uint16 initialState, bool bInstallUpdate);
+/** returns currently loaded/active nkt sequence pointer */
+sNktSeq * const getActiveNktSequence();
 
-sNktSeq *loadSequence(const uint8 *filepath);
+void initNktSequence(sNktSeq *seq, uint16 initialState, Bool bInstallUpdate);
 
-void destroySequence(sNktSeq *pSeq);
+sNktSeq *loadNktSequence(const uint8 *filepath);
+
+void destroyNktSequence(sNktSeq *pSeq);
 
 // replay control
-bool isSequencePlaying(void);
-void stopSequence(void);
-void pauseSequence(void);
-void playSequence(void);
-void switchReplayMode(void);
+Bool isNktSequencePlaying(void);
+void stopNktSequence(void);
+void pauseNktSequence(void);
+void playNktSequence(void);
+void switchNktReplayMode(void);
 
 void setMidiMasterVolume(const uint8 vol);
 void setMidiMasterBalance(const uint8 bal);
@@ -155,7 +176,7 @@ uint8 getMidiMasterBalance(void);
 #ifdef DEBUG_BUILD
 //debug helpers
 #ifdef MANUAL_STEP
-void initSequenceManual(sNktSeq *pSeq, uint16 initialState);
+void initNktSequenceManual(sNktSeq *pSeq, uint16 initialState);
 #endif
 void printNktSequenceState(void);
 const uint8 *getEventTypeName(const uint16 type);

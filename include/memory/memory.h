@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef __AMEMORY_TOS_H__
 #define __AMEMORY_TOS_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amlog.h"
 
 #include <string.h>

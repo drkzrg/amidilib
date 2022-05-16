@@ -1,59 +1,58 @@
 #ifndef _MIDI_REP_H_
 #define _MIDI_REP_H_
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "amidiseq.h"
 #include "timing/mfp.h"
 
 /** Checks if there is sequence currently playing. 
 * @return TRUE is sequence is playing, FALSE otherwise.
 */
-bool isSeqPlaying(void);
+Bool isAmSequencePlaying(void);
 
 /** stops sequence replay */
-void stopSeq(void);
+void stopAmSequence(void);
 
 /** pause/unpause currently replayed sequence */
-void pauseSeq(void);
+void pauseAmSequence(void);
 
 /** play currently replayed sequence */
-void playSeq(void);
+void playAmSequence(void);
 
 /** setups sequence for replay. Sequence is stopped by default */
-void initSeq(sSequence_t *seq, eTimerType timerType);
+void initAmSequence(sSequence_t *seq, eTimerType timerType);
 
 /** setups sequence for replay. Sequence is stopped by default */
 /** for debug purposes, step not on timer */
-void initSeqManual(sSequence_t *seq);
+void initAmSequenceManual(sSequence_t *seq);
 
 /** mutes selected track or first one if there is only one */
-void muteTrack(const uint16 trackNb,const bool bMute);
+void muteAmTrack(const uint16 trackNb,const Bool bMute);
 
 /** toggles between replay modes. 
  * "play once"(replay stops after end of tracks) and "play in loop" 
  * (replay restarts from beginning) */
-void toggleReplayMode(void);
+void toggleAmReplayMode(void);
 
-/** Returns currently active sequence.
- * @return pointer to currently active sequence
+/** Returns currently active sequence (R / W).
+ * @returns pointer to currently active sequence
  */
-
-void getCurrentSeq(sSequence_t **);
+sSequence_t * const getActiveAmSequence();
 
 /** destroys loaded Sequence.
 *   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null
 *   if operation was completed succesfully. */
 
-void amDestroySequence (sSequence_t **pPtr);
+void destroyAmSequence (sSequence_t **pPtr);
 
 /** Outputs current sequence state. */
-void printSequenceState(void);
+void printAmSequenceState(void);
 
 const uint8 *getPlayStateStr(const uint16 mode);
 

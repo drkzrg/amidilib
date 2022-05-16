@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -54,8 +54,8 @@ static const uint16 DEFAULT_MIDI_CHANNEL = 1;                                   
 static const uint16 DEFAULT_OP_MODE = 0;                                           // default operation mode //TODO: make it on strings / human readable
 static const uint16 DEFAULT_TRACK_STATE = TM_PLAY_ONCE;
 static const uint16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                           // external midi module connection timeout
-static const bool DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
-static const bool DEFAULT_USE_STREAMING = FALSE;                                // not used atm
+static const Bool DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
+static const Bool DEFAULT_USE_STREAMING = FALSE;                                // not used atm
 
 static const uint16 CONFIG_SIZE = 512;		    //should be sufficient		 
 

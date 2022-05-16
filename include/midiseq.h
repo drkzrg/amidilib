@@ -2,13 +2,13 @@
 #ifndef __MIDISEQ_H__
 #define __MIDISEQ_H__
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#include "c_vars.h"
+#include "vartypes.h"
 #include "midi.h"
 #include "midi_cmd.h"	/* for sending midi commands */
 
@@ -119,14 +119,8 @@ typedef struct EventInfoBlock_t{
 typedef struct EventBlock_t{
  uint32 uiDeltaTime;				/* event delta time */
  uint8 type;						/* event type */
- uint8 pad0;                       /* padding */
-
-#ifdef IKBD_MIDI_SEND_DIRECT
- sEventInfoBlock_t copyEventCb;		/* copy to internal buffer function callback info block */
-#else
- sEventInfoBlock_t sendEventCb;		/* send event function callback info block */
-#endif
-
+ uint8 pad0;                       	/* padding */
+ sEventInfoBlock_t eventCb;			/* copy/send to internal buffer function callback info block */
  void *dataPtr;						/* pointer to event data of sEventInfoBlock_t.size * 1 byte (uint8) */
 } sEventBlock_t, *sEventBlockPtr_t;
 
@@ -139,16 +133,11 @@ typedef struct SysEx_t{
 //inline functions for sending data to external module
 const uint8 *getEventName(const uint32 id);
 
-#ifdef IKBD_MIDI_SEND_DIRECT
  /* returns the info struct about event: size and pointer to the handler  */
- void getEventFuncCopyInfo(const uint8 eventType, sEventInfoBlock_t *infoBlk);
-#else
- /* returns the info struct about event: size and pointer to the handler  */
-  void getEventFuncInfo (const uint8 eventType, sEventInfoBlock_t *infoBlk);
-#endif
+ void getEventCallbackHandler(const uint8 eventType, sEventInfoBlock_t *infoBlk);
 
 /* returns channel number from info block (max 16 channels) or 127 if no channel info is available */
- uint8 getChannelNbFromEventBlock (const sEventBlock_t *pBlock);
+ uint8 getChannelNbFromEventBlock(const sEventBlock_t *pBlock);
 
 #endif
 

@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef __MFP_H__
 #define __MFP_H__
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 #define MFP_STOP	0b00000000  /* Timer stop */
 #define MFP_DIV4	0b00000001  /* div 4 */
@@ -35,7 +35,7 @@ typedef enum{
 } eTimerType;
 
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
-extern void installReplayRout(const uint8 mode, const uint8 data, const bool isMultitrack, const eTimerType updateHandlerType);
+extern void installReplayRout(const uint8 mode, const uint8 data, const Bool isMultitrack, const eTimerType updateHandlerType);
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
 extern void deinstallReplayRout(void);

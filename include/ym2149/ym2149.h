@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2020 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef _YM2149_H_
 #define _YM2149_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 // ym2149 registers constants
 static const uint8 LB_OSC1=0;

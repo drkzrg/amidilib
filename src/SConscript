@@ -1,125 +1,151 @@
 
-#    Copyright 2007-2020 Pawel Goralski
+#    Copyright 2007-2021 Pawel Goralski
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
 import sys
 import os
 
+# adds set FastRam flag on executable postbuild action
+def setFastRamFlags(env, toolchainType, target):
+    if(toolchainType != 'GCCBROWNELF'): # TODO fix / patch for brownelf
+        env.AddPostAction(target, Action('m68k-atari-mint-flags --mfastram --mfastload --mfastalloc $TARGET'))
+
+# returns git revision
+def getVersion(env):
+    git = env.WhereIs('git')
+    if git:
+        import subprocess
+        p = subprocess.Popen('git rev-list --count master', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return p.stdout.readline().rstrip()
+    else:
+        print ("git not found")
+
+# calls external tool (brownout) to convert elf files to tos executables
+def convertElfToTos(env, toolchainType, buildTypeName, targetName, outputDirPath, outputExtension):
+    if(toolchainType == 'GCCBROWNELF'):
+        outputPath = outputDirPath + targetName  + '.' + outputExtension
+        print('Converting {}.elf to TOS binary --> {}...'.format(targetName,outputPath))
+        symbolGeneration=''
+
+        if(buildTypeName == "debug"):
+            symbolGeneration=' -x'
+        
+        env.AddPostAction(targetName +'.elf', Action('brown.out' ' -i $TARGET -o ' + outputPath + symbolGeneration))
+
+# move scons database to build folder
+SConsignFile(os.path.join("../build/", '.sconsign.dblite')) 
+
+# Set number of jobs, depending on number of cores
+#num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+#SetOption('num_jobs', num_cpu)
+
+print("Running with %d job(s)." % GetOption('num_jobs')) 
+
 env = Environment(ENV = os.environ,tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2020 Pawel Goralski\n \
+Help("AMIDILIB Copyright 2007-2021 Pawel Goralski\n \
 Type: 'Set build variables in SConstruct'\n \
-where name of 'TARGET_MACHINE' can be: \n \
+where name of 'targetPlatform' can be: \n \
     'F030' - for Atari Falcon030 / TT build\n \
     'ST' - for Atari ST build \n \
     'CT60' - for Atari Falcon CT60/63\n \
- 'USE_CROSSCOMPILER' - enables m68k cross compiler, set to 'y' by default\n \
- 'BUILD_MODE' - build type ('debug', 'release'),\n \
- 'USE_FPU' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
- 'TX_ENABLE' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
- 'CONOUT_ENABLE' - disable / enable console output,\n \
- 'GEMDOS_IO_ENABLE' - uses gemdos i/o instead of standard libc file i/o,\n \
- 'USE_LIBC' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
- 'ENABLE_LTO' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n \
- 'DEBUG_LEVEL' - sets debug level, only valid in debug builds. Level can be set to (0..2), \n")
+ 'host' - 'Cygwin' or 'Linux'\n \
+ 'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF'\n,\
+ 'toolchain_c_prefix' - toolchain compiler name prefix \n,\
+ 'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1')\n,\
+ 'toolchain_prefix' - toolchain prefix path (root of the toolchain folder)\n,\
+ 'toolchain_use_cross' - use cross compiler, set to 'y' by default\n \
+ 'host' - computer host name\n,\
+ 'build_config' - build type ('debug', 'release'),\n \
+ 'use_fpu' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
+ 'enable_lzo_compression' - enable/disable lzo compression support.\n \
+ 'enable_lto' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n \
+ 'ikbd_direct_write' - bypass O/S when writing to MIDI ports\n \
+ 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
+ 'conout_enable' - disable / enable console output,\n \
+ 'gemdos_io_enable' - uses gemdos i/o instead of standard libc file i/o,\n \
+ 'use_libc' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
+ 'debug_level' - sets debug level, only valid in debug builds. Level can be set to (0..2), \n"\
+)
 
-Import('TARGET_MACHINE',\
-        'BUILD_MODE',\
-        'IKBD_DIRECT_WRITE',\
-        'USE_FPU',\
-        'TX_ENABLE',\
-        'CONOUT_ENABLE',\
-        'GEMDOS_IO_ENABLE',\
-        'USE_LIBC',\
-        'ENABLE_LTO',\
-        'USE_CROSSCOMPILER',\
-        'TOOLSET',\
-        'DEBUG_LEVEL'
+Import(
+        'host',\
+        'toolchain',\
+        'toolchain_c_prefix',\
+        'toolchain_version',\
+        'toolchain_prefix',\
+        'toolchain_use_cross',\
+        'targetPlatform',\
+        'build_config',\
+        'use_fpu',\
+        'enable_lzo_compression',\
+        'enable_lto',\
+        'ikbd_direct_write',\
+        'tx_enable',\
+        'conout_enable',\
+        'gemdos_io_enable',\
+        'use_libc',\
+        'debug_level'
         )
-
-build_mode = BUILD_MODE
-use_crosscompiler = USE_CROSSCOMPILER
-targetPlatform = TARGET_MACHINE
-ikbd_direct_write = IKBD_DIRECT_WRITE
-tx_enable = TX_ENABLE
-conout_enable = CONOUT_ENABLE
-gemdos_io_enable = GEMDOS_IO_ENABLE
-use_libc = USE_LIBC
-debug_level = DEBUG_LEVEL
-enable_lto = ENABLE_LTO
-use_fpu = USE_FPU
-
-PREFIX = ''
-GCC_VERSION_STRING = ''
-GCC_PREFIX = ''
 
 # helper paths
 rootdir = Dir('../').abspath
 projdir = Dir('#').abspath
 outputdir = Dir('.').abspath
 
-# helper function, calls external tool (brownout) to convert elf files to tos executables
-def convertElf(prgName, buildMode, outputDirPath, ext):
-    symbolGeneration=''
-    OutDirPath = outputdir + '/'
-
-    if(buildMode=='debug'):
-        symbolGeneration=' -x'
-
-    print('Converting: '+ prgName + env['PROGSUFFIX'] +' -> ' + prgName + ext)
-
-    tosBinary = env.Command(prgName + ext , None, 'brownout -i '+ OutDirPath + prgName + env['PROGSUFFIX'] + ' -o ' + OutDirPath + prgName + ext + symbolGeneration)
-    env.AlwaysBuild(tosBinary)
-    return
-
 # environment 
 LIBRARYNAME = 'amidi'
-PREFIX=''
 
-if(TOOLSET=='GCC434'):
-# Cygwin path
-    PREFIX = '/opt/cross-mint'
-# Linux cross compiler
-#    PREFIX = '/usr'
-    GCC_VERSION_STRING = '4.6.4'
-    GCC_PREFIX = 'm68k-atari-mint'
+PREFIX = toolchain_prefix
+GCC_PREFIX = toolchain_c_prefix
+GCC_VERSION_STRING = toolchain_version
 
-    if(use_libc!='yes'):
+if(toolchain=='GCC'):
+    if(use_libc == 'yes'):
+        if(PREFIX):
+            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include']
+            env['LIBPATH'] = [PREFIX + '/' + 'm68k-atari-mint/lib']
+        else:
+            env['CPPPATH'] = ['m68k-atari-mint/include']
+            env['LIBPATH'] = ['m68k-atari-mint/lib']
+    else:
         env['CPPPATH'] = [projdir + '/../deps/startup/include']
         env['LIBPATH'] = []
+
+elif(toolchain=='GCCBROWNELF'):
+    if(use_libc == 'yes'):
+        if(PREFIX):
+            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
+            env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
+        else:
+            env['CPPPATH'] = [GCC_PREFIX + '/include']
+            env['LIBPATH'] = [GCC_PREFIX + '/lib']
     else:
-        env['CPPPATH'] = [PREFIX + 'm68k-atari-mint/include']
-        env['LIBPATH'] = [PREFIX + 'm68k-atari-mint/lib']
-
-elif(TOOLSET=='GCCBROWNELF'):
-    print projdir + '/../deps/startup/include'
-
-# Linux/Cygwin cross compiler
-    PREFIX = '/opt/cross-mint'
-    GCC_VERSION_STRING = '10.0.2'
-    GCC_PREFIX = 'm68k-ataribrown-elf'
-
-    if(use_libc!='yes'):
-        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/libcmini/include']
         env['LIBPATH'] = []
-    else:
-        env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
-        env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
-
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
 
-env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
-env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-g++'
-env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
-env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
-env['STACK'] = PREFIX + '/bin/' + GCC_PREFIX + '-stack'
-env['AR'] = PREFIX + '/bin/' + GCC_PREFIX + '-ar'
-env['RANLIB'] = PREFIX + '/bin/' + GCC_PREFIX + '-ranlib'
+if(PREFIX):
+    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
+    env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-c++'
+    env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
+    env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
+    env['STACK'] = PREFIX + '/bin/' + GCC_PREFIX + '-stack'
+    env['AR'] = PREFIX + '/bin/' + GCC_PREFIX + '-ar'
+    env['RANLIB'] = PREFIX + '/bin/' + GCC_PREFIX + '-ranlib'
+else:   
+    env['CC'] = GCC_PREFIX + '-gcc'
+    env['CXX'] = GCC_PREFIX + '-c++'
+    env['OBJCOPY'] = GCC_PREFIX + '-objcopy'
+    env['STRIP'] = GCC_PREFIX + '-strip -s'
+    env['STACK'] = GCC_PREFIX + '-stack'
+    env['AR'] = GCC_PREFIX + '-ar'
+    env['RANLIB'] = GCC_PREFIX + '-ranlib'
 
-if(TOOLSET == 'GCCBROWNELF'):
+if(toolchain == 'GCCBROWNELF'):
     env['PROGSUFFIX'] = '.elf'
 else:
     env['PROGSUFFIX'] = '.tos'
@@ -143,7 +169,6 @@ LIB_TARGET='not_set'
 STACK_SIZE=0
     
 TARGET='-DTARGET_'
-CSTARTUP_FOLDER=''
 OBJ_FORMAT=''
 
 if(use_fpu == 'yes'):
@@ -153,7 +178,7 @@ else:
     fpu_flags = '-msoft-float '
     VASM_FLAGS += '-no-fpu '
 
-if(TOOLSET=='GCC434'):
+if(toolchain=='GCC'):
     OBJ_FORMAT='aout'
     fpu_flags = ''
 
@@ -161,24 +186,21 @@ if(TOOLSET=='GCC434'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--traditional-format '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/'
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--traditional-format '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--traditional-format '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68060/'
         LIB_TARGET = '060'
     else:
         print('Unsupported target. Exiting...')
         exit(-1)
-elif(TOOLSET == 'GCCBROWNELF'):
+elif(toolchain == 'GCCBROWNELF'):
     OBJ_FORMAT='brownelf'
 
     if(enable_lto == 'yes'):
@@ -189,7 +211,6 @@ elif(TOOLSET == 'GCCBROWNELF'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68000 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68000 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68000/' 
 
         LIB_TARGET = '000'
 
@@ -199,7 +220,6 @@ elif(TOOLSET == 'GCCBROWNELF'):
         CFLAGS += '-m68020-40 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68020-40 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68030 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68030/'
 
         LIB_TARGET = '030'
 
@@ -215,7 +235,6 @@ elif(TOOLSET == 'GCCBROWNELF'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -fomit-frame-pointer -fleading-underscore -ffunction-sections -fdata-sections ' + fpu_flags
         LDFLAGS += '-m68060 -Wl,--gc-sections -Wl,--emit-relocs -Ttext=0 '
         VASM_FLAGS += '-m68060 -quiet -Felf -quiet -spaces -I../include '
-        CSTARTUP_FOLDER = projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68060/'
 
         LIB_TARGET = '060'
 
@@ -233,11 +252,11 @@ else:
 TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
-if(use_libc != 'yes'):
-    CFLAGS+='-I' + projdir + '/startup/include '
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
+if(use_libc == 'yes'):
+    LDFLAGS+='-Wl,-e__main '
 else:
-    LDFLAGS+='-Wl,-e__start '
+    CFLAGS+='-I' + projdir + '/../deps/atari-gcc-startup/include '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_main '
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
@@ -246,26 +265,22 @@ else:
     VASM_FLAGS += '-DTX_ENABLE=0 '
 
 if (conout_enable == "no"):
-    print "Silent mode. Console output disabled."
+    print ("Silent mode. Console output disabled.")
     CFLAGS += '-DSUPRESS_CON_OUTPUT '
 
 if (gemdos_io_enable == "yes"):
-    print "Use GEMDOS for file I/O not libc functions."
+    print ("Use GEMDOS for file I/O not libc functions.")
     CFLAGS += '-DENABLE_GEMDOS_IO '
-
-# output executable name
-AMIDI_TEST_NAME = 'midiplay' 
-YM2149_TEST_NAME ='ym2149' 
-MIDI_SEQ_TEST_NAME = 'midiout'
-TIMINGS_TEST_NAME = 'midiseq' 
-NKT_REPLAY_NAME = 'nktrep' 
-MID2NKT_NAME = 'mid2nkt' 
 
 env["CPPPATH"] += [projdir + '/../include'] + [projdir + '/../include/lzo'] + [projdir + '/../include/ym2149'] + [projdir + '/../include/input']
 env["LIBPATH"] += [outputdir + '/']
 
 if(use_libc!='yes'):
-    env["LIBPATH"] += [projdir + '/../deps/startup/' + OBJ_FORMAT + '/' + build_mode + '/m68' + LIB_TARGET + '/']
+    env["LIBPATH"] += [projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
+    if(LIB_TARGET=='000'):
+        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/']
+    else:
+        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/m68020-60']
 
 #############################################################################################################################
 # additional defines  
@@ -284,27 +299,27 @@ if(use_libc!='yes'):
 # memory pool is configurable (see eventPoolSize / eventDataAllocatorSize)
 # LZO_DEBUG enables LZO debug mode
 
-if ( build_mode == 'debug'):
-  print "Debug build..."
+if ( build_config == 'debug'):
+  print ("Debug build...")
   if(debug_level=='1'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
-    CFLAGS += '-DDEBUG_BUILD -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST -DEVENT_LINEAR_BUFFER '
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST '
   elif(debug_level=='3'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   
 else:
-    print "Release build... Code optimisation is turned on."
-    CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O2 ' + ' -DUSE_INLINE '
+    print ("Release build... Code optimisation is turned on.")
+    CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O3 ' + ' -DUSE_INLINE '
     
 if(ikbd_direct_write == "yes"):
-    print "Sending data directly via IKBD ENABLED"
+    print ("Sending data directly via IKBD ENABLED")
     CFLAGS += '-DIKBD_MIDI_SEND_DIRECT '
     VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=1 '
 elif(ikbd_direct_write=='no'):
-    print "Sending data directly via IKBD DISABLED"
+    print ("Sending data directly via IKBD DISABLED")
     CFLAGS += ' '
     VASM_FLAGS += '-DIKBD_MIDI_SEND_DIRECT=0 '
 
@@ -339,8 +354,8 @@ amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src 
 env.Library(LIBRARYNAME, amidilib_src)
 
 #################### test programs entry points
-amidi_test_src = [projdir + "/../demo/midi_rep/main.c"]
-midiOut_test_src = [projdir + "/../demo/midi_output/midiTest.c"]
+amidi_test_src = [projdir + "/../demo/midi_rep/midiplay.c"]
+midiOut_test_src = [projdir + "/../demo/midi_output/midiout.c"]
 timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
 ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
 nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
@@ -354,39 +369,59 @@ if (gemdos_io_enable == "yes"):
 
 ADDLIBS=['']
 
-if(use_libc!='yes'):
-    ADDLIBS= ['minilibc' + LIB_TARGET]
+# output executable names
+AMIDI_TEST_NAME = 'midiplay' 
+YM2149_TEST_NAME ='ym2149' 
+MIDI_SEQ_TEST_NAME = 'midiout'
+TIMINGS_TEST_NAME = 'midiseq' 
+NKT_REPLAY_NAME = 'nktrep' 
+MID2NKT_NAME = 'mid2nkt' 
 
-    startup_obj = [CSTARTUP_FOLDER +'mStartup.o', CSTARTUP_FOLDER + 'mStartupAsmC.o' ]
+outputdir = rootdir + '/' + build_config + '/'
 
-    linkedLibs = [LIBRARYNAME] + ADDLIBS
+if(use_libc == 'yes'):
+# build test programs and link them with amidilib
+    ADDLIBS = ['c']
+    
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
 
-    # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj  + env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']),source = [startup_obj + env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, MIDI_SEQ_TEST_NAME, outputdir,'tos')
+    
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, YM2149_TEST_NAME, outputdir,'tos')
+
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
+    
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
+
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
-    # build test programs and link them with amidilib
-    startup_obj=[]
+    #ADDLIBS += ['startup' + LIB_TARGET]
+    ADDLIBS = ['cmini']
+    ADDLIBS += ['gcc']
+    
+    linkedLibs = [LIBRARYNAME] + ADDLIBS
+    
+    # build test programs and link them with amidilib and custom startup code
+    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
+    
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, MIDI_SEQ_TEST_NAME, outputdir,'tos')
 
-    if(TOOLSET == 'GCCBROWNELF'):
-        ADDLIBS = ['c']
-        startup_obj = [PREFIX + '/' + GCC_PREFIX + '/lib/crt0.o']
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, YM2149_TEST_NAME, outputdir,'tos')
+    
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [startup_obj + env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
-
-if(TOOLSET == 'GCCBROWNELF'):
-    convertElf(AMIDI_TEST_NAME, build_mode, rootdir, '.ttp')
-    convertElf(MIDI_SEQ_TEST_NAME, build_mode, rootdir,'.tos')
-    convertElf(YM2149_TEST_NAME, build_mode, rootdir,'.tos')
-    convertElf(TIMINGS_TEST_NAME, build_mode, rootdir, '.tos')
-    convertElf(NKT_REPLAY_NAME, build_mode, rootdir, '.ttp')
-    convertElf(MID2NKT_NAME, build_mode, rootdir, '.ttp')
+    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
+    
+    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
+    convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

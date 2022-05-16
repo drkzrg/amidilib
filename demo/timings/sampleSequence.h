@@ -1,5 +1,5 @@
 
-/** Copyright 2007-2020 Pawel Goralski
+/** Copyright 2007-2021 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -8,7 +8,7 @@
 #ifndef TIM_TEST_SAMPLE_SEQ_H_
 #define TIM_TEST_SAMPLE_SEQ_H_
 
-#include "c_vars.h"
+#include "vartypes.h"
 
 typedef struct{
   uint32 delta;
@@ -17,7 +17,7 @@ typedef struct{
 } sEvent; 
 
 typedef struct{
-  bool bIsActive;
+  Bool bIsActive;
   uint8 volume;
   uint8 dummy;
 }sTrackState; 

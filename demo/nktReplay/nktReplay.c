@@ -18,16 +18,19 @@ int main(int argc, char *argv[]){
 sNktSeq *pNktSeq=0;
 int16 iError=0;
 
-    if( (argc>=1) && strlen(argv[1])!='0' ){
+    if( (argc>=1) && strlen(argv[1])!='0' )
+    {
         printf("Trying to load %s\n",argv[1]);
-    }else{
+    }
+    else
+    {
         printf("No specified nkt filename! exiting\n");
         NktDeinit();
         return 0;
     }
 
     // hardcoded, todo: set config from commandline
-    eMidiDeviceType devType=DT_GS_SOUND_SOURCE;
+    const eMidiDeviceType devType = DT_GS_SOUND_SOURCE;
 
     switch(devType){
         case DT_LA_SOUND_SOURCE:{
@@ -59,17 +62,17 @@ int16 iError=0;
     // set GS / GM source, channel
     NktInit(devType,1);
 
-    pNktSeq=loadSequence(argv[1]);
+    pNktSeq=loadNktSequence(argv[1]);
 
     if(pNktSeq!=NULL){
         printInfoScreen();
         mainLoop(pNktSeq);
 
-        stopSequence();
+        stopNktSequence();
         Supexec(NktDeinstallReplayRout);
 
         // destroy sequence
-        destroySequence(pNktSeq);
+        destroyNktSequence(pNktSeq);
         pNktSeq=0;
 
         NktDeinit();
@@ -81,8 +84,8 @@ int16 iError=0;
   return 0;
 }
 
-void printInfoScreen(void){
-
+void printInfoScreen(void)
+{
   printf("\n===== NKT replay demo v.1.21 =============\n");
   printf("date: %s %s\n",__DATE__,__TIME__);
   printf("    [p] - play loaded tune\n");
@@ -98,24 +101,21 @@ void printInfoScreen(void){
   printf("Ready...\n");
 }
 
-void displayTuneInfo(void){
+void displayTuneInfo(void)
+{
+  const sNktSeq *pPtr = getActiveNktSequence();
 
-  sNktSeq *pPtr=0;
-  getCurrentSequence(&pPtr);
-
-  if(pPtr){
-    printf("PPQN: %u\t",pPtr->timeDivision);
-    printf("Tempo default: %u [ms] last: %u [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
-  }
-
+  printf("PPQN: %u\t",pPtr->timeDivision);
+  printf("Tempo default: %u [ms] last: %u [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
 }
 
-void mainLoop(sNktSeq *pSequence){
+void mainLoop(sNktSeq *pSequence)
+{
     bool bQuit=FALSE;
 #ifdef MANUAL_STEP
-    initSequenceManual(pSequence, NKT_PLAY_ONCE);
+    initNktSequenceManual(pSequence, NKT_PLAY_ONCE);
 #else
-    initSequence(pSequence,NKT_PLAY_ONCE,TRUE);
+    initNktSequence(pSequence,NKT_PLAY_ONCE,TRUE);
 #endif
 
     //install replay rout
@@ -126,9 +126,9 @@ void mainLoop(sNktSeq *pSequence){
       Supexec(IkbdInstall);
 
       //####
-      while(bQuit==FALSE){
-
-        //check keyboard input
+      while(bQuit!=TRUE)
+      {
+        // check keyboard input
         for (uint16 i=0; i<128; ++i) {
 
           if (Ikbd_keyboard[i]==KEY_PRESSED) {
@@ -138,19 +138,19 @@ void mainLoop(sNktSeq *pSequence){
         case SC_ESC:{
           bQuit=TRUE;
           //stop sequence
-          stopSequence();
+          stopNktSequence();
         }break;
         case SC_P:{
           //starts playing sequence if is stopped
-          playSequence();
+          playNktSequence();
          }break;
         case SC_R:{
           //pauses sequence when is playing
-           pauseSequence();
+           pauseNktSequence();
          }break;
          case SC_M:{
           //toggles between play once and play in loop
-          switchReplayMode();
+          switchNktReplayMode();
          }break;
         case SC_I:{
            //displays current track info
@@ -223,7 +223,7 @@ void mainLoop(sNktSeq *pSequence){
           }break;
 #endif
          case SC_SPACEBAR:{
-            stopSequence();
+            stopNktSequence();
          }break;
 
           };

@@ -31,12 +31,6 @@ jobs:
           sudo cp ./vasmm68k_mot /usr/bin/
           sudo cp ./vobjdump /usr/bin/
           cd ..
-      
-      - name: Installing gcc minimal startup
-        run: |
-          echo Getting latest gcc minimal startup
-          sudo chmod +x ./getLatestStartup.sh
-          ./getLatestStartup.sh
 
       - name: Installing gcc cross compiler
         run: |

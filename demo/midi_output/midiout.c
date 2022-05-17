@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.

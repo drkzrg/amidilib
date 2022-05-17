@@ -35,8 +35,8 @@ jobs:
       - name: Installing gcc minimal startup
         run: |
           echo Getting latest gcc minimal startup
-          sudo chmod +x ./getLatestStartup.sh
-          ./getLatestStartup.sh
+          sudo chmod +x ./scripts/getLatestStartup.sh
+          ./scripts/getLatestStartup.sh
 
       - name: Installing gcc cross compiler
         run: |

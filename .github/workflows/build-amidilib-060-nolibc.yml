@@ -47,31 +47,31 @@ jobs:
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
           
-      - name: Clean AMIDILIB release (libc) version
+      - name: Clean AMIDILIB release (nolibc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_060_nolibc_release -c
           cd ..
 
-      - name: Build AMIDILIB release (libc) version
+      - name: Build AMIDILIB release (nolibc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_060_nolibc_release
           cd ../
       
-      - name: Clean AMIDILIB debug (libc) version
+      - name: Clean AMIDILIB debug (nolibc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_060_nolibc_debug -c
           cd ..
 
-      - name: Build AMIDILIB debug (libc) version
+      - name: Build AMIDILIB debug (nolibc) version
         run: |
           cd ./src
           scons --sconstruct=SConstruct_060_nolibc_debug
           cd ../
       
-      - name: Build nktlib (libc) version
+      - name: Build nktlib (nolibc) version
         run: |
           cd ./nktlib
           chmod +x ./updateNktLibBuildFiles.sh
@@ -84,13 +84,13 @@ jobs:
           tar -czvf amidilib-060-nolibc-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
           tar -czvf amidilib-060-nolibc-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
 
-      - name: Upload AMIDILIB (libc) archive
+      - name: Upload AMIDILIB (nolibc) archive
         uses: actions/upload-artifact@v3
         with:
           name: amidilib-060-nolibc
           path: ./amidilib-*.tgz
 
-      - name: Upload nktlib (libc) archive
+      - name: Upload nktlib (nolibc) archive
         uses: actions/upload-artifact@v3
         with:
           name: nktlib-060-nolibc

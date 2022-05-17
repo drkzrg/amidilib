@@ -129,7 +129,7 @@ else:
     exit(-1)
 
 if(PREFIX):
-    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
+    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc' + '-' + GCC_VERSION_STRING
     env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-c++'
     env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
     env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'

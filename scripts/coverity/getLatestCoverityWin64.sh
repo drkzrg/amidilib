@@ -27,4 +27,6 @@ else
 	echo "Coverity archive doesn't exist!"
 fi
 
+chmod +x ./cov-analysis-win64/bin/*
+
 echod "Done!"

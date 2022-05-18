@@ -356,7 +356,7 @@ env.Library(LIBRARYNAME, amidilib_src)
 #################### test programs entry points
 amidi_test_src = [projdir + "/../demo/midi_rep/midiplay.c"]
 midiOut_test_src = [projdir + "/../demo/midi_output/midiout.c"]
-timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
+timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c", projdir + "/../demo/timings/customSeqReplay.s"]
 ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
 nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]

@@ -40,7 +40,7 @@ typedef size_t      MemSize;
 typedef bool        Bool;
 
 // function pointers
-typedef void (*funcPtrVoidVoid)();
+typedef void (*funcPtrVoidVoid)(void);
 typedef void (*funcPtrVoidConstUint)(const uint32);
 
 #define PACK_ATTR __attribute__((packed))
@@ -60,8 +60,12 @@ typedef void (*funcPtrVoidConstUint)(const uint32);
 #define FORCE_INLINE
 #endif
 
+
 #define STRINGISE_IMPL(x) #x
-#define STRINGISE(x) STRINGISE_IMPL(x)
+#define STRINGISE(str) STRINGISE_IMPL( str )
+
+#define CONCAT_IMPL(x,y) (x ## y)
+#define CONCAT(x1,y2)(CONCAT_IMPL( x1, y2 ))
 
 // checks compiler builtin variable sizes 
 void compilerSanityCheck(void);

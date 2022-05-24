@@ -20,7 +20,7 @@
 #include "fmio.h"
 #endif
 
-#include <stdio.h>
+#include "core/amprintf.h"
 
 extern retVal collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 
@@ -91,7 +91,7 @@ void processNoteOff(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* buff
     bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->noteNb;
     bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOff->velocity;
 
-    amTrace(" n: %d  v: %d\n",pNoteOff->noteNb, pNoteOff->velocity);
+    amTrace(" n: %d  v: %d"NL,pNoteOff->noteNb, pNoteOff->velocity);
     (*pMidiData)=(*pMidiData)+sizeof(sNoteOff_t);
 
 }
@@ -118,7 +118,7 @@ void processNoteOn(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* buffe
     bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->noteNb;
     bufferInfo->buffer[bufferInfo->bufPos++]=pNoteOn->velocity;
 
-    amTrace(" n: %d  v: %d\n",pNoteOn->noteNb, pNoteOn->velocity);
+    amTrace(" n: %d  v: %d"NL,pNoteOn->noteNb, pNoteOn->velocity);
     (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 
 }
@@ -142,7 +142,7 @@ void processNoteAft(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t* buff
   bufferInfo->buffer[bufferInfo->bufPos++]=pNoteAft->noteNb;
   bufferInfo->buffer[bufferInfo->bufPos++]=pNoteAft->pressure;
 
-  amTrace(" n: %d  p: %d\n",pNoteAft->noteNb, pNoteAft->pressure);
+  amTrace(" n: %d  p: %d"NL,pNoteAft->noteNb, pNoteAft->pressure);
   (*pMidiData)=(*pMidiData)+sizeof(sNoteAft_t);
 }
 
@@ -166,7 +166,7 @@ void processControllerEvent(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo
     bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->controllerNb;
     bufferInfo->buffer[bufferInfo->bufPos++]=pContrEv->value;
 
-    amTrace(" c: %d  v: %d\n",pContrEv->controllerNb, pContrEv->value);
+    amTrace(" c: %d  v: %d"NL,pContrEv->controllerNb, pContrEv->value);
     (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
@@ -186,7 +186,7 @@ void processProgramChange(uint8 **pMidiData, sRunningStatus_t *rs, sBufferInfo_t
         pPC=(sProgramChange_t *)(*pMidiData);
     }
 
-    amTrace(" p: %d \n",pPC->programNb);
+    amTrace(" p: %d "NL,pPC->programNb);
     bufferInfo->buffer[bufferInfo->bufPos++]=pPC->programNb;
 
     (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
@@ -208,7 +208,7 @@ sChannelAft_t *pChAft=0;
         pChAft=(sChannelAft_t *)(*pMidiData);
     }
 
-    amTrace(" press: %d \n",pChAft->pressure);
+    amTrace(" press: %d "NL,pChAft->pressure);
 
     bufferInfo->buffer[bufferInfo->bufPos++]=pChAft->pressure;
 
@@ -234,7 +234,7 @@ void processPitchBend(uint8 **pMidiData, sRunningStatus_t *rs,sBufferInfo_t* buf
     bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->LSB;
     bufferInfo->buffer[bufferInfo->bufPos++]=pPitchBend->MSB;
 
-    amTrace(" LSB: %d MSB: %d\n",pPitchBend->LSB,pPitchBend->MSB);
+    amTrace(" LSB: %d MSB: %d"NL,pPitchBend->LSB,pPitchBend->MSB);
 
     (*pMidiData)=(*pMidiData)+sizeof(sPitchBend_t);
 }
@@ -261,7 +261,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
     case MT_EOT:{
      amTrace("Write event block:\t");
-     amTrace("delta: %lu Meta End of Track\n", delta);
+     amTrace("delta: %lu Meta End of Track"NL, delta);
 
         stBlock.msgType=NKT_END;
         stBlock.blockSize=0;
@@ -284,7 +284,7 @@ metaLenght=readVLQ((*pMidiData),&size);
     case MT_SET_TEMPO:
     {
         amTrace("\nWrite event block:\t");
-        amTrace("Meta Set Tempo\n");
+        amTrace("Meta Set Tempo"NL);
 
         stBlock.msgType = NKT_TEMPO_CHANGE;
         stBlock.blockSize = 5 * sizeof(uint32);   //uint32 tempo value + 4*uint32 values (25,50,100,200hz timesteps)
@@ -301,7 +301,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
         // range: 0-8355711 ms, 24 bit value
         val1 = val1|val2|val3;
-        amTrace("%u ms per quarter-note\n", val1);
+        amTrace("%u ms per quarter-note"NL, val1);
 
             // write VLQ delta
         uint32 eventsBufPos=((uint32)pTrk->eventBlocksPtr)+bufferInfo->eventsBlockOffset;
@@ -323,7 +323,7 @@ metaLenght=readVLQ((*pMidiData),&size);
         const uint32 bpm = 60000000UL / val1;
         const uint32 tempPPU = bpm * td;
 
-        amTrace("Precalculating update step for TD: %d, BPM:%d\n",td,bpm);
+        amTrace("Precalculating update step for TD: %d, BPM:%d"NL,td,bpm);
 
         // precalculate values for different update steps
         if(tempPPU<65536)
@@ -348,10 +348,10 @@ metaLenght=readVLQ((*pMidiData),&size);
         const uint32 up100Hz = precalc[NKT_U100HZ];
         const uint32 up200Hz = precalc[NKT_U200HZ];
 
-        amTrace("Update step for 25hz: %d  [0x%x]\n",up25Hz,up25Hz);
-        amTrace("Update step for 50hz: %d [0x%x]\n",up50Hz,up50Hz);
-        amTrace("Update step for 100hz: %d [0x%x]\n",up100Hz,up100Hz);
-        amTrace("Update step for 200hz: %d [0x%x]\n",up200Hz,up200Hz);
+        amTrace("Update step for 25hz: %d  [0x%x]"NL,up25Hz,up25Hz);
+        amTrace("Update step for 50hz: %d [0x%x]"NL,up50Hz,up50Hz);
+        amTrace("Update step for 100hz: %d [0x%x]"NL,up100Hz,up100Hz);
+        amTrace("Update step for 200hz: %d [0x%x]"NL,up200Hz,up200Hz);
 
        // write precalculated values to data buffer
        eventsBufPos=((uint32)pTrk->eventDataPtr)+bufferInfo->dataBlockOffset;
@@ -359,23 +359,23 @@ metaLenght=readVLQ((*pMidiData),&size);
        bufferInfo->dataBlockOffset+= NKT_UMAX*sizeof(uint32);
     } break;
 
-    case MT_SEQ_NB:{amTrace("META: MT_SEQ_NB\n");} break;
-    case MT_TEXT:{amTrace("META: MT_TEXT \n");} break;
-    case MT_COPYRIGHT:{amTrace("META: MT_COPYRIGHT \n");} break;
-    case MT_SEQNAME:{amTrace("META: MT_SEQNAME \n");} break;
-    case MT_INSTRNAME:{amTrace("META: MT_INSTRNAME \n");} break;
-    case MT_LYRICS:{amTrace("META: MT_LYRICS\n");} break;
-    case MT_MARKER:{amTrace("META: MT_MARKER \n");} break;
-    case MT_CUEPOINT:{amTrace("META: MT_CUEPOINT \n");} break;
-    case MT_PROGRAM_NAME:{amTrace("META: MT_PROGRAM_NAME \n");} break;
-    case MT_DEVICE_NAME:{amTrace("META: MT_DEVICE_NAME \n");} break;
-    case MT_CH_PREFIX:{amTrace("META: MT_CH_PREFIX \n");} break;
-    case MT_MIDI_CH:{amTrace("META: MT_MIDI_CH \n");} break;
-    case MT_MIDI_PORT:{amTrace("META: MT_MIDI_PORT \n");} break;
-    case MT_SMPTE_OFFSET:{amTrace("META: MT_SMPTE_OFFSET \n");}break;
-    case MT_TIME_SIG:{amTrace("META: MT_TIME_SIG \n");}break;
-    case MT_KEY_SIG:{amTrace("META: MT_KEY_SIG \n");}break;
-    case MT_SEQ_SPEC:{amTrace("META: MT_SEQ_SPEC \n");}break;
+    case MT_SEQ_NB:{amTrace("META: MT_SEQ_NB"NL);} break;
+    case MT_TEXT:{amTrace("META: MT_TEXT "NL);} break;
+    case MT_COPYRIGHT:{amTrace("META: MT_COPYRIGHT "NL);} break;
+    case MT_SEQNAME:{amTrace("META: MT_SEQNAME "NL);} break;
+    case MT_INSTRNAME:{amTrace("META: MT_INSTRNAME "NL);} break;
+    case MT_LYRICS:{amTrace("META: MT_LYRICS"NL);} break;
+    case MT_MARKER:{amTrace("META: MT_MARKER "NL);} break;
+    case MT_CUEPOINT:{amTrace("META: MT_CUEPOINT "NL);} break;
+    case MT_PROGRAM_NAME:{amTrace("META: MT_PROGRAM_NAME "NL);} break;
+    case MT_DEVICE_NAME:{amTrace("META: MT_DEVICE_NAME "NL);} break;
+    case MT_CH_PREFIX:{amTrace("META: MT_CH_PREFIX "NL);} break;
+    case MT_MIDI_CH:{amTrace("META: MT_MIDI_CH "NL);} break;
+    case MT_MIDI_PORT:{amTrace("META: MT_MIDI_PORT "NL);} break;
+    case MT_SMPTE_OFFSET:{amTrace("META: MT_SMPTE_OFFSET "NL);}break;
+    case MT_TIME_SIG:{amTrace("META: MT_TIME_SIG "NL);}break;
+    case MT_KEY_SIG:{amTrace("META: MT_KEY_SIG "NL);}break;
+    case MT_SEQ_SPEC:{amTrace("META: MT_SEQ_SPEC "NL);}break;
  };
 
 (*pMidiData)+=metaLenght;
@@ -460,43 +460,43 @@ void processMidiEvent(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs, sB
               processMetaEvent(delta, pCmd, pSeq, trackNbToProcess, rs, bufferInfo, bEOT);
              break;
              case EV_SOX:                          	/* SySEX midi exclusive */
-               amTrace("delta: %lu SYSEX\n", delta);
+               amTrace("delta: %lu SYSEX"NL, delta);
                rs->recallRS=0;                      /* cancel out midi running status */
                processSysex(pCmd,rs, bufferInfo);
              break;
              case SC_MTCQF:
-               amTrace("delta: %lu SC_MTCQF\n", delta);
+               amTrace("delta: %lu SC_MTCQF"NL, delta);
                rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
-               amTrace((const uint8*)"Event: System common MIDI time code qt frame\n");
+               amTrace((const uint8*)"Event: System common MIDI time code qt frame"NL);
                ++(*pCmd);
                ++(*pCmd);
              break;
            case SC_SONG_POS_PTR:
-               amTrace((const uint8*)"Event: System common Song position pointer\n");
+               amTrace((const uint8*)"Event: System common Song position pointer"NL);
                rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
                 ++(*pCmd);
                 ++(*pCmd);
                 ++(*pCmd);
              break;
              case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-               amTrace((const uint8*)"Event: System common Song select\n");
+               amTrace((const uint8*)"Event: System common Song select"NL);
                rs->recallRS=0;
                ++(*pCmd);
                ++(*pCmd);
              break;
              case SC_UNDEF1:                   /* undefined */
              case SC_UNDEF2:                   /* undefined */
-               amTrace((const uint8*)"Event: System common not defined.\n");
+               amTrace((const uint8*)"Event: System common not defined."NL);
                rs->recallRS=0;
                ++(*pCmd);
              break;
              case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-               amTrace((const uint8*)"Event: System tune request.\n");
+               amTrace((const uint8*)"Event: System tune request."NL);
                rs->recallRS=0;
               ++(*pCmd);
              break;
              default:{
-               amTrace((const uint8*)"Event: Unknown type: %d\n",(*pCmd));
+               amTrace((const uint8*)"Event: Unknown type: %d"NL,(*pCmd));
                /* unknown event, do nothing or maybe throw error? */
              }break;
   } //end switch
@@ -518,8 +518,8 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
     // adjust to track start
     // set track 0
     if(pTrackHd->id!=ID_MTRK){
-        printf( "Error: Cannot find MIDI track [0] chunk. Exiting. \n");
-        amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. \n");
+        amPrintf( "Error: Cannot find MIDI track [0] chunk. Exiting. "NL);
+        amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. "NL);
         return 1;
     };
     trackChunkSize = pTrackHd->headLenght;
@@ -532,7 +532,7 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
     for(int i=0;i<trackNbToProcess;++i){
 
         if(pTrackHd->id!=ID_MTRK){
-         amTrace("Error: Cannot find MIDI track [%d] chunk. Exiting. \n", i+1);
+         amTrace("Error: Cannot find MIDI track [%d] chunk. Exiting. "NL, i+1);
          return 1;
         };
 
@@ -592,34 +592,34 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
        amTrace("[%x]",tempBufInfo.buffer[j]);
       }
 
-      amTrace(" [/DATA]\n");
+      amTrace(" [/DATA]"NL);
 #endif
 
       // write evnt block and data to buffers
-      amTrace("[Write event block]: d: [%lu] type: [%d] size: [%d] startOffset: [%lu]\n",delta,stBlock.msgType,tempBufInfo.bufPos,stBlock.bufferOffset);
+      amTrace("[Write event block]: d: [%lu] type: [%d] size: [%d] startOffset: [%lu]"NL,delta,stBlock.msgType,tempBufInfo.bufPos,stBlock.bufferOffset);
 
       // write VLQ
       uint32 eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
       int32 count=WriteVarLen((int32)delta,(uint8 *)eventsBufPos);
-      amTrace("[E] delta vlq at [%lu]\n",tempBufInfo.eventsBlockOffset);
+      amTrace("[E] delta vlq at [%lu]"NL,tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=count;
 
       // write event info block
       eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventBlocksPtr)+tempBufInfo.eventsBlockOffset;
       amMemCpy((void *)eventsBufPos,&stBlock,sizeof(sNktBlock));
-      amTrace("[E] event info at [%lu]\n",tempBufInfo.eventsBlockOffset);
+      amTrace("[E] event info at [%lu]"NL,tempBufInfo.eventsBlockOffset);
       tempBufInfo.eventsBlockOffset+=sizeof(sNktBlock);
 
       // write to data buffer
 
       eventsBufPos=((uint32)pSeq->pTracks[trackNbToProcess].eventDataPtr)+tempBufInfo.dataBlockOffset;
       amMemCpy((void *)eventsBufPos, &tempBufInfo.buffer[0], stBlock.blockSize);
-      amTrace("[D] event data at [%lu]\n",tempBufInfo.dataBlockOffset);
+      amTrace("[D] event data at [%lu]"NL,tempBufInfo.dataBlockOffset);
 
       tempBufInfo.dataBlockOffset+=stBlock.blockSize;
 
       // next event block
-      amTrace("delta: [%lu] type:[%d] block size:[%u] bytes \n",delta, stBlock.msgType, stBlock.blockSize);
+      amTrace("delta: [%lu] type:[%d] block size:[%u] bytes "NL,delta, stBlock.msgType, stBlock.blockSize);
 
       // clear temp buffer
       tempBufInfo.bufPos=0;
@@ -630,8 +630,8 @@ uint32 midiTrackDataToNkt(void *pMidiData, sNktSeq *pSeq, uint16 trackNbToProces
 
  if(bEOT!=TRUE)
  {
-    amTrace("EOT meta event not found, appending NKT_END event!\n");
-    amTrace("delta: %lu Meta End of Track\n", 0);
+    amTrace("EOT meta event not found, appending NKT_END event!"NL);
+    amTrace("delta: %lu Meta End of Track"NL, 0);
 
     stBlock.msgType=NKT_END;
     stBlock.blockSize=0;
@@ -663,8 +663,8 @@ sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)gUserMemAlloc(sizeof(sMidiTra
 
 if(arMidiInfo==0)
 {
-    amTrace("[MIDI2NKT] No memory for track info. Exiting...\n");
-    printf("[MIDI2NKT] No memory for track info. Exiting \n");
+    amTrace("[MIDI2NKT] No memory for track info. Exiting..."NL);
+    amPrintf("[MIDI2NKT] No memory for track info. Exiting "NL);
     return 0;
 }
 
@@ -676,8 +676,8 @@ for(uint16 i=0;i<nbOfTracks;++i)
 {
 
     if(collectMidiTrackInfo(pMidiData,i,&arMidiInfo[i],&bEOT) != AM_OK){
-        amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting...\n",i);
-        printf("[MIDI2NKT]  MIDI track [%d] parse error. Exiting \n",i);
+        amTrace("[MIDI2NKT]  MIDI track [%d] parse error. Exiting..."NL,i);
+        amPrintf("[MIDI2NKT]  MIDI track [%d] parse error. Exiting "NL,i);
         return 0;
     }
 
@@ -686,12 +686,12 @@ for(uint16 i=0;i<nbOfTracks;++i)
 
     if(bEOT!=TRUE)
     {
-        amTrace("No EOT in midi data found, adding EOT meta event...\n");
+        amTrace("No EOT in midi data found, adding EOT meta event..."NL);
         arMidiInfo[i].eventsBlockSize += 1;
         arMidiInfo[i].eventsBlockSize+=sizeof(sNktBlock);
         ++arMidiInfo[i].nbOfBlocks;
     }
-    amTrace("[Midi track #%d]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes\n",i,arMidiInfo[i].nbOfBlocks,arMidiInfo[i].eventsBlockSize,arMidiInfo[i].dataBlockSize);
+    amTrace("[Midi track #%d]\nEvents:[%ld],\nEvent block: [%ld] bytes,\nData block: [%ld] bytes"NL,i,arMidiInfo[i].nbOfBlocks,arMidiInfo[i].eventsBlockSize,arMidiInfo[i].dataBlockSize);
 
 }
 
@@ -703,7 +703,7 @@ pNewSeq = (sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
 
 if(pNewSeq==0) 
 {
-    amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header.\n");
+    amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for header."NL);
     gUserMemFree(arMidiInfo,0);
     return 0;
 }
@@ -724,7 +724,7 @@ pNewSeq->pTracks=(sNktTrack *) gUserMemAlloc(nbOfTracks*sizeof(sNktTrack), PREFE
 
 if(pNewSeq->pTracks==NULL){
      gUserMemFree(pNewSeq,0);
-     amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for track data.\n");
+     amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for track data."NL);
      return 0;
 }
 
@@ -741,7 +741,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
     // for event blocks and data
     if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255, PREFER_TT)<0)
     {
-        amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for events block buffer.\n");
+        amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for events block buffer."NL);
         gUserMemFree(arMidiInfo,0);
         gUserMemFree(pNewSeq,0);
         return 0;
@@ -749,7 +749,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
 
     if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255, PREFER_TT)<0)
     {
-      amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for data buffer block.\n");
+      amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for data buffer block."NL);
       destroyLinearBuffer(&(pNewSeq->pTracks[i].lbEventsBuffer));
       gUserMemFree(arMidiInfo,0);
       gUserMemFree(pNewSeq,0);
@@ -757,7 +757,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
     }
 
     // allocate memory
-    amTrace("[MIDI2NKT] Reserve memory track: [%d]:\nNb of events: %lu\nEvents block: %ld\nData block: %ld bytes\n",i, pTrk->nbOfBlocks, pTrk->eventsBlockBufferSize, pTrk->dataBufferSize);
+    amTrace("[MIDI2NKT] Reserve memory track: [%d]:\nNb of events: %lu\nEvents block: %ld\nData block: %ld bytes"NL,i, pTrk->nbOfBlocks, pTrk->eventsBlockBufferSize, pTrk->dataBufferSize);
 
     // allocate contigous / linear memory for pNewSeq->NbOfBlocks events
     uint32 lbAllocAdr=0;
@@ -774,7 +774,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
 
     if(pTrk->eventBlocksPtr==0||pTrk->eventDataPtr==0)
     {
-        amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for events block / events data.\n");
+        amTrace("[MIDI2NKT] Fatal error, couldn't allocate memory for events block / events data."NL);
 
         destroyLinearBuffer(&(pTrk->lbDataBuffer));
         destroyLinearBuffer(&(pTrk->lbEventsBuffer));
@@ -793,7 +793,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
 
 
 // transform midi data to nkt format
-   amTrace("[MID->NKT] processing data ...\n");
+   amTrace("[MID->NKT] processing data ..."NL);
 
    // reserve memory for all tracks
    uint32 error = 0;
@@ -806,11 +806,11 @@ for(uint16 i=0;i<nbOfTracks;++i)
 //save
    if(saveNktSequence(pNewSeq,pOutFileName,bCompress) != AM_OK)
    {
-        amTrace("[MIDI2NKT] Fatal error, saving %s failed.\n", pOutFileName);
+        amTrace("[MIDI2NKT] Fatal error, saving %s failed."NL, pOutFileName);
    } 
    else
    {
-        amTrace("[MIDI2NKT] Saved %s .\n", pOutFileName);
+        amTrace("[MIDI2NKT] Saved %s ."NL, pOutFileName);
    }
 
  return pNewSeq;

@@ -26,11 +26,11 @@ uint16 amDecodeTimeDivisionInfo(uint16 timeDivision){
 	uint8 subframe=0;
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
-    amTrace((const uint8*)"Timing (SMPTE): %x, %u\n", subframe,(timeDivision&0x00FF));
+    amTrace((const uint8*)"Timing (SMPTE): %x, %u"NL, subframe,(timeDivision&0x00FF));
     return 0;		//todo:
   }else{
     /* PPQN */
-    amTrace((const uint8*)"Timing (PPQN): %u\n", timeDivision);
+    amTrace((const uint8*)"Timing (PPQN): %u"NL, timeDivision);
     return timeDivision;
    }
 }

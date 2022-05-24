@@ -79,7 +79,7 @@ else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
 
-env['CC'] = PREFIX + '/bin/' + compilerName + 'gcc'
+env['CC'] = PREFIX + '/bin/' + compilerName + '-gcc' + '-' + GCC_VERSION_STRING
 env['CXX'] = PREFIX + '/bin/' + compilerName + 'g++'
 env['OBJCOPY'] = PREFIX + '/bin/' + compilerName + 'objcopy'
 env['STRIP'] = PREFIX + '/bin/' + compilerName + 'strip -s'

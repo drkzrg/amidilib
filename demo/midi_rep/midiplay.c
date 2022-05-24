@@ -5,11 +5,10 @@
     See license.txt for licensing information.
 */
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <stdio.h>
+#include "core/amprintf.h"
 
 //#define MANUAL_STEP 1
 
@@ -51,9 +50,9 @@ int main(int argc, char *argv[])
 {
 
     if( ((argc>=1) && strlen(argv[1])!=0)){
-      printf("Trying to load %s\n",argv[1]);
+      amPrintf("Trying to load %s"NL,argv[1]);
     }else{
-      printf("No specified midi filename! exiting.\n");
+      amPrintf("No specified midi filename! exiting."NL);
       return 0;
     }
 
@@ -71,10 +70,10 @@ int main(int argc, char *argv[])
 
     if(pMidiData!=NULL)
     {
-     printf("Midi file loaded, size: %u bytes.\n",(unsigned int)ulFileLenght);
+     amPrintf("Midi file loaded, size: %u bytes."NL,(unsigned int)ulFileLenght);
      
      /* process MIDI*/
-      printf("Please wait...\n");
+      amPrintf("Please wait..."NL);
 
       sSequence_t *pMusicSeq=0; //here we store our sequence data
       iError = amProcessMidiFileData(argv[1], pMidiData, ulFileLenght, &pMusicSeq);
@@ -85,9 +84,9 @@ int main(int argc, char *argv[])
       if(iError == AM_OK)
       {
 
-	     printf("Sequence name: %s\n",pMusicSeq->pSequenceName);
-	     printf("Nb of tracks: %d\n",pMusicSeq->ubNumTracks);
-       printf("PPQN: %u\n",pMusicSeq->timeDivision);
+	    amPrintf("Sequence name: %s"NL,pMusicSeq->pSequenceName);
+	    amPrintf("Nb of tracks: %d"NL,pMusicSeq->ubNumTracks);
+        amPrintf("PPQN: %u"NL,pMusicSeq->timeDivision);
 	  
 	     #ifdef MIDI_PARSER_TEST
         //output loaded midi file to screen/log
@@ -102,7 +101,7 @@ int main(int argc, char *argv[])
 	  
       } else {
 
-        amTrace((const uint8*)"Error while parsing. Exiting... \n");
+        amTrace((const uint8*)"Error while parsing. Exiting... "NL);
     
         //unload sequence
         destroyAmSequence(&pMusicSeq);
@@ -112,8 +111,8 @@ int main(int argc, char *argv[])
       }
      
     } else { /* MIDI loading failed */
-      amTrace((const uint8*)"Error: Couldn't read %s file...\n",argv[1]);
-      printf( "Error: Couldn't read %s file...\n",argv[1]);
+      amTrace((const uint8*)"Error: Couldn't read %s file..."NL,argv[1]);
+      amPrintf( "Error: Couldn't read %s file..."NL,argv[1]);
       amDeinit();	//deinit our stuff
       return -1;
     }
@@ -176,7 +175,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
         case SC_D:{
           //dumps loaded sequence to NKT file
           {
-            printf("Convert sequence to NKT format...\n");
+            amPrintf("Convert sequence to NKT format..."NL);
             char tempName[128]={0};
             char *pTempPtr=0;
             sNktSeq *pNktSeq=0;
@@ -187,9 +186,9 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
              memcpy(pTempPtr+1,"NKT",4);
 
             if(Seq2NktFile(pSequence, tempName, FALSE)<0){
-               printf("Error during NKT format conversion..\n");
+               amPrintf("Error during NKT format conversion.."NL);
             }else{
-                printf("File saved: %s.\n",tempName);
+                amPrintf("File saved: %s."NL,tempName);
             }
 
           }
@@ -243,26 +242,27 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 }
 
 
-void printInfoScreen(void){
+void printInfoScreen(void)
+{
+
+  const sAMIDI_version *pInfo = amGetVersionInfo();
   
-  const sAMIDI_version *pInfo=amGetVersionInfo();
+  amPrintf(NL "========================================="NL);
+  amPrintf(LIB_NAME NL);
+  amPrintf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
+  amPrintf("date: %s %s"NL,__DATE__,__TIME__);
   
-  printf("\n=========================================\n");
-  printf(LIB_NAME);
-  printf("v.%d.%d.%d\t",pInfo->major,pInfo->minor,pInfo->patch);
-  printf("date: %s %s\n",__DATE__,__TIME__);
-  
-  printf("    [i] - display tune info\n");
-  printf("    [p] - play loaded tune\n");
-  printf("    [r] - pause/unpause played sequence \n");
-  printf("    [m] - toggle play once / loop mode \n");
-  printf("    [d] - Convert sequence to NKT format.\n");
-  printf("    [h] - show this help screen \n");
-  printf("\n    [spacebar] - stop sequence replay \n");
-  printf("    [Esc] - quit\n");
-  printf(AMIDI_INFO);
-  printf("==========================================\n");
-  printf("Ready...\n");
+  amPrintf("    [i] - display tune info"NL);
+  amPrintf("    [p] - play loaded tune"NL);
+  amPrintf("    [r] - pause/unpause played sequence"NL);
+  amPrintf("    [m] - toggle play once / loop mode "NL);
+  amPrintf("    [d] - Convert sequence to NKT format."NL);
+  amPrintf("    [h] - show this help screen "NL);
+  amPrintf(NL "    [spacebar] - stop sequence replay "NL);
+  amPrintf("    [Esc] - quit"NL);
+  amPrintf(AMIDI_INFO NL);
+  amPrintf("=========================================="NL);
+  amPrintf("Ready..."NL);
 } 
 
 void displayTuneInfo(void)
@@ -273,38 +273,41 @@ void displayTuneInfo(void)
   const uint16 td = pPtr->timeDivision;
   const uint16 numTrk = pPtr->ubNumTracks;
   
-  printf("Sequence name %s\n",pPtr->pSequenceName);
-  printf("PPQN/TD: %u\t",td);
-  printf("Tempo: %u [ms]\n",tempo);
+  amPrintf("Sequence name %s"NL,pPtr->pSequenceName);
+  amPrintf("PPQN/TD: %u\t",td);
+  amPrintf("Tempo: %u [ms]"NL,tempo);
   
-  printf("Number of tracks: %d\n",numTrk);
+  amPrintf("Number of tracks: %d"NL,numTrk);
   
   for(uint16 i=0;i<numTrk;++i)
   {
     uint8 *pTrkName = pPtr->arTracks[i]->pTrackName;
-    printf("[Track no. %d] %s\n",(i+1),pTrkName);
+    amPrintf("[Track no. %d] %s"NL,(i+1),pTrkName);
   }
   
-  printf("\nReady...\n");
+  amPrintf("\nReady..."NL);
 }
 
 
 #ifdef MIDI_PARSER_TEST
-void midiParserTest(sSequence_t *pSequence){
-   amTrace((const uint8*)"Parsed MIDI read test\n");
-   amTrace((const uint8*)"Sequence name: %s\n",pSequence->pSequenceName);
-   amTrace((const uint8*)"Nb of tracks: %d\n",pSequence->ubNumTracks);
-   amTrace((const uint8*)"Td/PPQN: %u\n",pSequence->timeDivision);
-   amTrace((const uint8*)"Active track: %d\n",pSequence->ubActiveTrack);
+void midiParserTest(sSequence_t *pSequence)
+{
+   amTrace((const uint8*)"Parsed MIDI read test"NL);
+   amTrace((const uint8*)"Sequence name: %s"NL,pSequence->pSequenceName);
+   amTrace((const uint8*)"Nb of tracks: %d"NL,pSequence->ubNumTracks);
+   amTrace((const uint8*)"Td/PPQN: %u"NL,pSequence->timeDivision);
+   amTrace((const uint8*)"Active track: %d"NL,pSequence->ubActiveTrack);
 	  
-	  //output data loaded in each track
-  for (uint16 i=0;i<pSequence->ubNumTracks;++i){
+  //output data loaded in each track
+  for (uint16 i=0;i<pSequence->ubNumTracks;++i)
+  {
     sTrack_t *p=pSequence->arTracks[i];
     
-    if(p!=0){
+    if(p!=0)
+    {
 	amTrace((const uint8*)"Track #[%d] \t",i+1);
-	amTrace((const uint8*)"Track name: %s\n",p->pTrackName);
-	amTrace((const uint8*)"Track ptr %p\n",p->pTrkEventList);
+	amTrace((const uint8*)"Track name: %s"NL,p->pTrackName);
+	amTrace((const uint8*)"Track ptr %p"NL,p->pTrkEventList);
 	
 	//print out all events
 	if(p->pTrkEventList!=0){
@@ -319,4 +322,3 @@ void midiParserTest(sSequence_t *pSequence){
   }
 }
 #endif
-

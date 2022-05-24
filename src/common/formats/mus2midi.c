@@ -31,14 +31,13 @@ Copyright (C) 2007-2021 Pawel Goralski
 
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <amlog.h>
+#include "core/amprintf.h"
 
 #include <dmus.h>
 #include <midi.h> 
-#include <memory/memory.h>
-#include <memory/endian.h>
-
+#include "memory/memory.h"
+#include "memory/endian.h"
 
 #ifdef ENABLE_GEMDOS_IO
 #include <mint/ostruct.h>
@@ -76,7 +75,7 @@ unsigned char* Midi_WriteTempo(unsigned char* buffer){
     buffer = WriteByte(buffer, 0xa3);
     buffer = WriteByte(buffer, 0x1a);
 
-    amTrace("Midi_WriteTempo() Mus2Midi: 0x%lx\n",0x00FFFFFF&*((uint32 *)(buffer-4)));
+    amTrace("Midi_WriteTempo() Mus2Midi: 0x%lx"NL,0x00FFFFFF&*((uint32 *)(buffer-4)));
 
 	return buffer;
 }
@@ -142,19 +141,19 @@ header.dummy = ReadLE16( header.dummy );
 if (header.channels > MIDI_MAXCHANNELS - 1) {
 
 #ifndef SUPRESS_CON_OUTPUT
-    printf("[Error] Too many channels, only 15 is supported.\n");
+    amPrintf("[Error] Too many channels, only 15 is supported."NL);
 #endif
 
-    amTrace("[Error] Too many channels, only 15 is supported.\n");
+    amTrace("[Error] Too many channels, only 15 is supported."NL);
     return AM_ERR;
 }
 
- amTrace("MUS info:\n");
- amTrace("Score length 0x%x\n",header.scoreLen);
- amTrace("Score start 0x%x\n",header.scoreStart);
- amTrace("Nb of channels 0x%x\n",header.channels);
- amTrace("sec_channels 0x%x\n",header.sec_channels);
- amTrace("Nb of instruments: 0x%x\n",header.instrCnt);
+ amTrace("MUS info:"NL);
+ amTrace("Score length 0x%x"NL,header.scoreLen);
+ amTrace("Score start 0x%x"NL,header.scoreStart);
+ amTrace("Nb of channels 0x%x"NL,header.channels);
+ amTrace("sec_channels 0x%x"NL,header.sec_channels);
+ amTrace("Nb of instruments: 0x%x"NL,header.instrCnt);
 
   // Map channel 15 to 9(percussions)
   for (temp = 0; temp < MIDI_MAXCHANNELS; ++temp) 
@@ -315,47 +314,47 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	*len = bytes_written;
 
 #ifndef SUPRESS_CON_OUTPUT
-    printf("bytes written %u\n",(uint32)(*len));
+    amPrintf("bytes written %u"NL,(uint32)(*len));
 #endif
 
-    amTrace("bytes written %u\n",(uint32)(*len));
+    amTrace("bytes written %u"NL,(uint32)(*len));
 
      if(pOutMidName){
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("Writing MIDI output to file: %s\n", pOutMidName);
+       amPrintf("Writing MIDI output to file: %s"NL, pOutMidName);
 #endif
 
-        amTrace("Writing MIDI output to file: %s\n", pOutMidName);
+        amTrace("Writing MIDI output to file: %s"NL, pOutMidName);
 
 #ifdef ENABLE_GEMDOS_IO
         int16 fileHandle = Fcreate(pOutMidName, 0);
 
         if(fileHandle>0){
-            amTrace("[GEMDOS] Create file, gemdos handle: %d\n",fileHandle);
+            amTrace("[GEMDOS] Create file, gemdos handle: %d"NL,fileHandle);
 
             int32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
-            amTrace("Saved to file: [%d] bytes to gemdos handle %d. \n", bytesWritten,fileHandle);
+            amTrace("Saved to file: [%d] bytes to gemdos handle %d. "NL, bytesWritten,fileHandle);
 
-            amTrace("Closing gemdos handle %d \n", fileHandle);
+            amTrace("Closing gemdos handle %d "NL, fileHandle);
             int16 err=Fclose(fileHandle);
 
             if(err!=GDOS_OK){
-              amTrace("[GEMDOS] Error closing file handle : [%d] \n", fileHandle, getGemdosError(err));
+              amTrace("[GEMDOS] Error closing file handle : [%d] "NL, fileHandle, getGemdosError(err));
             }
 
 #ifndef SUPRESS_CON_OUTPUT
-        printf("Written %d bytes\n",bytes_written);
+        amPrintf("Written %d bytes"NL,bytes_written);
 #endif
 
-        amTrace("Written %d bytes\n",bytes_written);
+        amTrace("Written %d bytes"NL,bytes_written);
 
         }else{
             #ifndef SUPRESS_CON_OUTPUT
-                printf("[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
+                amPrintf("[GEMDOS] Error: %s Couldn't create midi output file: %s"NL,getGemdosError(fileHandle), pOutMidName);
             #endif
 
-            amTrace("[GEMDOS] Error: %s Couldn't create midi output file: %s\n",getGemdosError(fileHandle), pOutMidName);
+            amTrace("[GEMDOS] Error: %s Couldn't create midi output file: %s"NL,getGemdosError(fileHandle), pOutMidName);
         }
 
 #else
@@ -365,17 +364,17 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         fclose(file);
 
 #ifndef SUPRESS_CON_OUTPUT
-       printf("Written %d bytes\n",bytes_written);
+       amPrintf("Written %d bytes"NL,bytes_written);
 #endif
-       amTrace("Written %d bytes\n",bytes_written);
+       amTrace("Written %d bytes"NL,bytes_written);
 #endif
 
       }// end of midi output file write
 
 #ifndef SUPRESS_CON_OUTPUT
-    printf( "Done. [OK]\n");
+    amPrintf( "Done. [OK]"NL);
 #endif
 
- amTrace("Done. OK\n");
+ amTrace("Done. OK"NL);
  return AM_OK;
 }

@@ -1,6 +1,4 @@
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -12,6 +10,7 @@
 #endif
 
 #include "amlog.h"
+#include "core/amprintf.h"
 
 // debugging OUTPUT settings
 #define OUTPUT_BUFFER_SIZE 1024
@@ -50,7 +49,7 @@ void logd(const char *mes,...){
 
     va_list va;
     va_start(va,mes);
-    vsprintf(buffer,(const char *)mes,va);
+    amVsnprintf(buffer,OUTPUT_BUFFER_SIZE,(const char *)mes,va);
     va_end(va);
 
 #if (defined(DEBUG_CONSOLE_OUTPUT)||defined(DEBUG_SERIAL_OUTPUT)||defined(DEBUG_FILE_OUTPUT))
@@ -58,7 +57,7 @@ void logd(const char *mes,...){
 #endif
 
 #ifdef DEBUG_CONSOLE_OUTPUT
-    if(len) printf(buffer);
+    if(len) amPrintf(buffer);
 #endif
 
 #ifdef DEBUG_SERIAL_OUTPUT
@@ -76,9 +75,11 @@ void logd(const char *mes,...){
 
 #ifdef ENABLE_GEMDOS_IO
 
-if(len){
-    if(Fwrite(fh,len,buffer)<0){
-        printf("[GEMDOS] Error: %s\n",getGemdosError(fh));
+if(len)
+{
+    if(Fwrite(fh,len,buffer)<0)
+    {
+        amPrintf("[GEMDOS] Error: %s"NL,getGemdosError(fh));
     }
 }
 
@@ -94,13 +95,14 @@ if(len){
 
 #if defined(DEBUG_SERIAL_OUTPUT_ONLY)
 
-void serialLog(const char *mes,...){
+void serialLog(const char *mes,...)
+{
   int bSerialNotSent=1;
   int bytesSent=0;
 
   va_list va;
   va_start(va,mes);
-  vsprintf(buffer,(const char *)mes,va);
+  amVsnprintf(buffer,OUTPUT_BUFFER_SIZE,(const char *)mes,va);
   va_end(va);
 
   int len=strlen(buffer);
@@ -125,10 +127,10 @@ void initDebug(const char *pFilename){
     fh=Fcreate(pFilename,0);
 
     if(fh<0){
-        printf("Can't create debug file: %s\n",DEBUG_LOG);
-        printf("[GEMDOS] Error: %s\n",getGemdosError(fh));
+        amPrintf("Can't create debug file: %s"NL,DEBUG_LOG);
+        amPrintf("[GEMDOS] Error: %s"NL,getGemdosError(fh));
     }else{
-        printf("Init debug [%d]\n",fh);
+        amPrintf("Init debug [%d]"NL,fh);
     }
 
 #else
@@ -136,7 +138,7 @@ void initDebug(const char *pFilename){
     ofp=fopen(pFilename,"w+b");
 
     if(ofp==NULL){
-        printf("Can't init file output: %s\n",DEBUG_LOG);
+        amPrintf("Can't init file output: %s"NL,DEBUG_LOG);
     }
 #endif
 
@@ -149,17 +151,18 @@ void initDebug(const char *pFilename){
  return;
 }
 
-void deinitDebug(){
+void deinitDebug(void)
+{
 
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-    printf("Deinit debug: [%d] \n", fh);
+    amPrintf("Deinit debug: [%d] "NL, fh);
 
     int16 err=Fclose(fh);
 
     if(err!=GDOS_OK){
-      printf("[GEMDOS] Error closing file handle : [%d] %s\n", fh, getGemdosError(err));
+      amPrintf("[GEMDOS] Error closing file handle : [%d] %s"NL, fh, getGemdosError(err));
     }
 
 #else

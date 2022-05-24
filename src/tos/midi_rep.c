@@ -14,7 +14,7 @@
 #include "midi_send.h"
 #include "containers/list.h"
 
-#include <stdio.h>
+#include "core/amprintf.h"
 
 static sSequence_t *g_CurrentSequence=0;
 
@@ -69,8 +69,8 @@ void initAmSequence(sSequence_t *seq, const eTimerType timerType)
   getMFPTimerSettings(SEQUENCER_UPDATE_HZ,&mode,&data);
 
 #ifdef DEBUG_BUILD
-  amTrace("%dhz update interval, Time step: %d\r\n",SEQUENCER_UPDATE_HZ,seq->timeStep);
-  amTrace("calculated mode: %d, data: %d\n",mode,data);
+  amTrace("%dhz update interval, Time step: %d\r"NL,SEQUENCER_UPDATE_HZ,seq->timeStep);
+  amTrace("calculated mode: %d, data: %d"NL,mode,data);
 #endif
     
   if(seq->seqType==ST_SINGLE)
@@ -291,7 +291,7 @@ void updateStepSingle(void)
   {
     onEndSequence();
     endOfSequence=FALSE;
-    amTrace("End of Sequence\n");
+    amTrace("End of Sequence"NL);
   }
 
   }
@@ -488,7 +488,7 @@ void updateStepMulti(void)
   {
     onEndSequence();
     endOfSequence = FALSE;
-    amTrace("End of Sequence\n");
+    amTrace("End of Sequence"NL);
   }
 
 }
@@ -528,7 +528,7 @@ void stopAmSequence(void)
       if( ((tState->playState&TS_PS_PLAYING)||(tState->playState&TS_PS_PAUSED)) )
       {
         pTrack->currentState.playState&=(~(TS_PS_PLAYING|TS_PS_PAUSED));
-        printf("Stop sequence\n");
+        amPrintf("Stop sequence"NL);
       }
   }
   
@@ -546,7 +546,7 @@ void pauseAmSequence(void)
 {
   AssertMsg(g_CurrentSequence!=0, "Current sequence is NULL");
   
-  //printf("Pause/Resume.\n");
+  //amPrintf("Pause/Resume."NL);
   uint8 activeTrack=0;
 	sTrack_t *pTrack=0;
   // TODO: handling individual tracks for MIDI 2 type
@@ -563,14 +563,14 @@ void pauseAmSequence(void)
       pTrack->currentState.playState&=(uint16)(~TS_PS_PLAYING);
       pTrack->currentState.playState|=(uint16)TS_PS_PAUSED;
 
-      printf("Pause sequence\n");
+      amPrintf("Pause sequence"NL);
       return;
     }
     else if( !(state&TS_PS_PLAYING)&&(state&TS_PS_PAUSED) )
     {
       pTrack->currentState.playState&=(uint16)(~TS_PS_PAUSED); //unpause
       pTrack->currentState.playState|=(uint16)TS_PS_PLAYING;  //set playing state
-      printf("Resume sequence\n");
+      amPrintf("Resume sequence"NL);
     }
   }
 
@@ -592,15 +592,15 @@ void playAmSequence(void)
        pTrack->currentState.playState&=(~(TS_PS_PAUSED));
        pTrack->currentState.playState|=TS_PS_PLAYING;
 
-       printf("Play sequence\t");
+       amPrintf("Play sequence\t");
 
        if(pTrack->currentState.playState&TM_PLAY_ONCE)
        {
-          printf("[ ONCE ]\n");
+          amPrintf("[ ONCE ]"NL);
        }
        else
        {
-         printf("[ LOOP ]\n");
+         amPrintf("[ LOOP ]"NL);
        }
       }
   }
@@ -614,12 +614,12 @@ void muteAmTrack(const uint16 trackNb, const Bool bMute)
  if(bMute==TRUE)
  {
     g_CurrentSequence->arTracks[trackNb]->currentState.playState|=TM_MUTE;
-    printf("Mute track %d\n",trackNb);
+    amPrintf("Mute track %d"NL,trackNb);
   }
   else
   {
     g_CurrentSequence->arTracks[trackNb]->currentState.playState&=(~TM_MUTE);
-    printf("UnMute track %d\n",trackNb);
+    amPrintf("UnMute track %d"NL,trackNb);
   }
   
 }
@@ -635,12 +635,12 @@ void toggleAmReplayMode(void)
   if(state&TM_PLAY_ONCE)
   {
     pTrack->currentState.playState&=(~TM_PLAY_ONCE);
-    printf("Set replay mode: [ LOOP ]\n");
+    amPrintf("Set replay mode: [ LOOP ]"NL);
   }
   else
   {
     pTrack->currentState.playState|=TM_PLAY_ONCE;
-    printf("Set replay mode: [ ONCE ]\n");
+    amPrintf("Set replay mode: [ ONCE ]"NL);
   }
   
 }
@@ -648,7 +648,7 @@ void toggleAmReplayMode(void)
 void destroyAmSequence (sSequence_t **pPtr)
 {
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"destroyAmSequence() destroy sequence at %p initiated... 1..2..3... \n",*pPtr);
+    amTrace((const uint8 *)"destroyAmSequence() destroy sequence at %p initiated... 1..2..3... "NL,*pPtr);
   #endif
 
   sSequence_t *seq = (*pPtr);
@@ -681,7 +681,7 @@ void destroyAmSequence (sSequence_t **pPtr)
   gUserMemFree(seq,0);
   
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"destroyAmSequence() done. \n");
+    amTrace((const uint8 *)"destroyAmSequence() done. "NL);
   #endif
   seq = 0;
 }
@@ -691,9 +691,9 @@ void printAmSequenceState(void)
 
 if(g_CurrentSequence)
 {
-  printf("Td/PPQN: %u\n",g_CurrentSequence->timeDivision);
-  printf("Time step: %u\n",g_CurrentSequence->timeStep);
-  printf("Time elapsedFrac: %u\n",g_CurrentSequence->timeElapsedFrac);
+  amPrintf("Td/PPQN: %u"NL,g_CurrentSequence->timeDivision);
+  amPrintf("Time step: %u"NL,g_CurrentSequence->timeStep);
+  amPrintf("Time elapsedFrac: %u"NL,g_CurrentSequence->timeElapsedFrac);
 
   sTrack_t *pTrack=0;
 
@@ -707,14 +707,14 @@ if(g_CurrentSequence)
       if(pTrack)
       {
 		    sTrackState_t *pTrackState=0;
-        printf("Track state:\n");
+        amPrintf("Track state:"NL);
 		 
         pTrackState=&(pTrack->currentState);
-        printf("\tTime elapsed: %u\n",pTrackState->timeElapsedInt);
-        printf("\tCur BPM: %u\n",pTrackState->currentBPM);
-        printf("\tCur Tempo: %u\n",pTrackState->currentTempo);
-        printf("\tCur Play state: %s\n",getPlayStateStr(pTrackState->playState));
-        printf("\tMute: %s\n",(pTrackState->playState & TM_MUTE)?"TRUE":"FALSE");
+        amPrintf("\tTime elapsed: %u"NL,pTrackState->timeElapsedInt);
+        amPrintf("\tCur BPM: %u"NL,pTrackState->currentBPM);
+        amPrintf("\tCur Tempo: %u"NL,pTrackState->currentTempo);
+        amPrintf("\tCur Play state: %s"NL,getPlayStateStr(pTrackState->playState));
+        amPrintf("\tMute: %s"NL,(pTrackState->playState & TM_MUTE)?"TRUE":"FALSE");
       }
     } break;
     case ST_MULTI:
@@ -722,11 +722,11 @@ if(g_CurrentSequence)
 		  pTrack=g_CurrentSequence->arTracks[g_CurrentSequence->ubActiveTrack];
       sTrackState_t *pTrackState=&(pTrack->currentState);
 
-      printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
-      printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
-      printf("Cur Play state: %s\n",getPlayStateStr(pTrackState->playState));
-      printf("Cur Tempo: %u\n",pTrackState->currentTempo);
-      printf("Cur BPM: %u\n",pTrackState->currentBPM);
+      amPrintf("Nb of tracks: %d"NL,g_CurrentSequence->ubNumTracks);
+      amPrintf("Active track: %d"NL,g_CurrentSequence->ubActiveTrack);
+      amPrintf("Cur Play state: %s"NL,getPlayStateStr(pTrackState->playState));
+      amPrintf("Cur Tempo: %u"NL,pTrackState->currentTempo);
+      amPrintf("Cur BPM: %u"NL,pTrackState->currentBPM);
 
       for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i)
       {
@@ -734,29 +734,29 @@ if(g_CurrentSequence)
 
          if(pTrack)
          {
-            printf("Track[%d]\t",i);
+            amPrintf("Track[%d]\t",i);
             pTrackState=&(pTrack->currentState);
-            printf("\tTime elapsed: %u\t",pTrackState->timeElapsedInt);
-            printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
+            amPrintf("\tTime elapsed: %u\t",pTrackState->timeElapsedInt);
+            amPrintf("\tMute: %s"NL,pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
           }
       }
     }break;
     case ST_MULTI_SUB:
     {
-      printf("Nb of tracks: %d\n",g_CurrentSequence->ubNumTracks);
-      printf("Active track: %d\n",g_CurrentSequence->ubActiveTrack);
+      amPrintf("Nb of tracks: %d"NL,g_CurrentSequence->ubNumTracks);
+      amPrintf("Active track: %d"NL,g_CurrentSequence->ubActiveTrack);
 
       for (uint16 i=0;i<g_CurrentSequence->ubNumTracks;++i)
       {
         pTrack=g_CurrentSequence->arTracks[i];
 				sTrackState_t *pTrackState=0;
-        printf("Track[%d]\n",i);
+        amPrintf("Track[%d]"NL,i);
         pTrackState=&(pTrack->currentState);
-        printf("Time elapsed: %u\n",pTrackState->timeElapsedInt);
-        printf("Cur BPM: %u\n",pTrackState->currentBPM);
-        printf("Cur Tempo: %u\n",pTrackState->currentTempo);
-        printf("Cur play state: %s\n",getPlayStateStr(pTrackState->playState));
-        printf("\tMute: %s\n",pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
+        amPrintf("Time elapsed: %u"NL,pTrackState->timeElapsedInt);
+        amPrintf("Cur BPM: %u"NL,pTrackState->currentBPM);
+        amPrintf("Cur Tempo: %u"NL,pTrackState->currentTempo);
+        amPrintf("Cur play state: %s"NL,getPlayStateStr(pTrackState->playState));
+        amPrintf("\tMute: %s"NL,pTrackState->playState&TM_MUTE?"TRUE":"FALSE");
        }
       } break;
   }; // switch()

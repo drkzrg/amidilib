@@ -2,13 +2,14 @@
 #ifndef AMLOG_H_
 #define AMLOG_H_
 
-/**
-    Copyright 2010-2019 Pawel Goralski
+/**  Copyright 2007-2021 Pawel Goralski
     
+    This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
 #include "vartypes.h"
+#include "core/amprintf.h"
 
 #ifdef DEBUG_BUILD
 #define DEBUG

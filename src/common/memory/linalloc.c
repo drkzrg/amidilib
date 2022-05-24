@@ -7,7 +7,7 @@ static const uint32 DEBUGFILL = 0x000000FFUL;
 void linearBufferPrintInfo(const LinearBufferAllocator *allocatorState)
 {
   AssertMsg(allocatorState != 0, "Linear buffer not initialised or corrupted!");
-  amTrace("LinearBuffer buffer start: %p, size: %ld, current offset: %ld\n",allocatorState->bufferStart, allocatorState->size, allocatorState->offset);
+  amTrace("LinearBuffer buffer start: %p, size: %ld, current offset: %ld"NL,allocatorState->bufferStart, allocatorState->size, allocatorState->offset);
 }
 
 int32 createLinearBuffer(LinearBufferAllocator *allocatorState, const MemSize bufferSize, const eMemoryFlag memType)

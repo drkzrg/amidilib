@@ -1,4 +1,4 @@
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -12,7 +12,7 @@
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2021 Pawel Goralski\n"
+#define AMIDI_INFO "(c)2007-2022 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 4

@@ -208,14 +208,14 @@ retVal processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSeque
    				}
    				else
    				{
-   					amTrace("Error: XMidi track chunk not found!\n");
+   					amTrace("Error: XMidi track chunk not found!"NL);
    					retVal=AM_ERR;
    				}
     		}
    		}
    		else
    		{
-   			amTrace("Error: XMidi XDIR chunk not found!\n");
+   			amTrace("Error: XMidi XDIR chunk not found!"NL);
    			retVal=AM_ERR;
    		}
     } 
@@ -231,7 +231,7 @@ retVal processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSeque
      		}
      		else
    			{
-   				amTrace("Error: XMidi track chunk not found!\n");
+   				amTrace("Error: XMidi track chunk not found!"NL);
    				retVal=AM_ERR;
    			}
       	}
@@ -252,7 +252,7 @@ retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, 
 		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32)); // skipping XMID id
 		
 		// process event
-		amTrace("Processing Xmidi events...\n");
+		amTrace("Processing Xmidi events..."NL);
 
 		uint32 id = *((uint32 *)eventChunk->id);
 		uint32 eventChunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
@@ -292,7 +292,7 @@ retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, 
 	}
 	else
 	{
-		amTrace("Xmidi track data not found...\n");
+		amTrace("Xmidi track data not found..."NL);
 	}
 
     return ret;
@@ -373,7 +373,7 @@ retVal processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 	const uint16 TimbreListEntriesNb = (uint16)(((uintptr)eventChunk->data>>16)&0x0000FFFF);
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
 	
-	amTrace("Timbre list entries size:[%d]: %u [0-16384]\n", chunkSize, TimbreListEntriesNb);
+	amTrace("Timbre list entries size:[%d]: %u [0-16384]"NL, chunkSize, TimbreListEntriesNb);
 
 	uint16 *timbreData = (uint16 *)((uintptr)&eventChunk->data + sizeof(uint32));
 
@@ -382,7 +382,7 @@ retVal processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 		uint8 patchNo = ((*(timbreData))>>8)&0x00FF;
 		uint8 timbreBank = (*(timbreData))&0x00FF;
 
-		amTrace("[%d] Timbre, patch no: %u timbre bank: %u\n", idx, patchNo, timbreBank);
+		amTrace("[%d] Timbre, patch no: %u timbre bank: %u"NL, idx, patchNo, timbreBank);
 
 		++timbreData;
 	}
@@ -403,7 +403,7 @@ retVal processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 {
 	const uint16 BranchPointOffsets = (uint16)(((uintptr)eventChunk->data>>16)&0x000000FF);
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
-	amTrace("Branch point offsets size:[%d]: %u [0-127]\n", chunkSize, BranchPointOffsets);
+	amTrace("Branch point offsets size:[%d]: %u [0-127]"NL, chunkSize, BranchPointOffsets);
 	return AM_OK;
 }
 
@@ -431,7 +431,7 @@ retVal processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 {
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
 	
-	amTrace("Events block size:[%d]:\n", chunkSize);
+	amTrace("Events block size:[%d]:"NL, chunkSize);
 
 	//todo: make it mc68000 friendly
 	uint8 *eventData = (uint8 *)((uintptr)&eventChunk->data);
@@ -443,11 +443,11 @@ retVal processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 		
 		if(val<128)
 		{
-			amTrace("[EVNT] offset: [%u], int count: [%u]\n", offset, val);
+			amTrace("[EVNT] offset: [%u], int count: [%u]"NL, offset, val);
 		}
 		else
 		{
-			amTrace("[EVNT] offset: [%u], midi event: [%u]\n", offset, val);
+			amTrace("[EVNT] offset: [%u], midi event: [%u]"NL, offset, val);
 		}
 
 		offset+=1;

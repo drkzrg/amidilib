@@ -44,7 +44,7 @@ print("Running with %d job(s)." % GetOption('num_jobs'))
 
 env = Environment(ENV = os.environ,tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2021 Pawel Goralski\n \
+Help("AMIDILIB Copyright 2007-2022 Pawel Goralski\n \
 Type: 'Set build variables in SConstruct'\n \
 where name of 'targetPlatform' can be: \n \
     'F030' - for Atari Falcon030 / TT build\n \
@@ -104,25 +104,25 @@ GCC_VERSION_STRING = toolchain_version
 if(toolchain=='GCC'):
     if(use_libc == 'yes'):
         if(PREFIX):
-            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include']
+            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include', projdir + '/../deps/nanoprintf']
             env['LIBPATH'] = [PREFIX + '/' + 'm68k-atari-mint/lib']
         else:
             env['CPPPATH'] = ['m68k-atari-mint/include']
             env['LIBPATH'] = ['m68k-atari-mint/lib']
     else:
-        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/nanoprintf']
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
     if(use_libc == 'yes'):
         if(PREFIX):
-            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
+            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include', projdir + '/../deps/nanoprintf'] 
             env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
         else:
-            env['CPPPATH'] = [GCC_PREFIX + '/include']
+            env['CPPPATH'] = [GCC_PREFIX + '/include', projdir + '/../deps/nanoprintf']
             env['LIBPATH'] = [GCC_PREFIX + '/lib']
     else:
-        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/libcmini/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/nanoprintf']
         env['LIBPATH'] = []
 else:
     print('ERROR: Undefined target toolset. Exiting...')
@@ -253,9 +253,10 @@ TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
 if(use_libc == 'yes'):
-    LDFLAGS+='-Wl,-e__main '
+    CFLAGS+='-DAMIDILIB_USE_LIBC=0 '
+    LDFLAGS+=' '
 else:
-    CFLAGS+='-I' + projdir + '/../deps/atari-gcc-startup/include '
+    CFLAGS+='-DAMIDILIB_USE_LIBC=0 -I' + projdir + '/../deps/atari-gcc-startup/include '
     LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_main '
 
 # skip writing directly to ikbd port completely
@@ -329,7 +330,7 @@ env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
-core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
+core_src = ["common/core/c_vars.c","common/core/amprintf.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
 containers_src = ["common/containers/stack.c","common/containers/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
@@ -362,7 +363,7 @@ nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
-nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
+nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
 
 if (gemdos_io_enable == "yes"):
     nkt_src = nkt_src + discio_src
@@ -402,7 +403,6 @@ if(use_libc == 'yes'):
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
     #ADDLIBS += ['startup' + LIB_TARGET]
-    ADDLIBS = ['cmini']
     ADDLIBS += ['gcc']
     
     linkedLibs = [LIBRARYNAME] + ADDLIBS

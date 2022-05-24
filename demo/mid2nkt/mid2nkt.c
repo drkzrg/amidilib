@@ -1,5 +1,4 @@
 
-#include <stdio.h>
 #include <string.h>
 
 #include "dmus.h"           // MUS->MID conversion
@@ -8,6 +7,8 @@
 #include "midi.h"           // midi
 #include "midi2nkt.h"
 #include <osbind.h>
+
+#include "core/amprintf.h"
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -28,7 +29,7 @@ uint8 *filePath=0;
 
   // check parameters for compression
   if( ((argc==2) && (strlen(argv[1])!=0))){
-      printf("Trying to load %s\n",argv[1]);
+      amPrintf("Trying to load %s"NL,argv[1]);
       filePath = argv[1];
 
   } else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0)){
@@ -37,11 +38,11 @@ uint8 *filePath=0;
        bEnableCompression = TRUE;
       }
 
-      printf("Trying to load %s\n",argv[2]);
+      amPrintf("Trying to load %s"NL,argv[2]);
       filePath=argv[2];
 
   }else{
-      printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
+      amPrintf("No specified mid / mus filename or bad parameters! Exiting ..."NL);
       deinitDebug();
       (void)Cconin();
       return 0;
@@ -62,7 +63,7 @@ uint8 *filePath=0;
 
        if(((pMusHeader->ID)>>8)==MUS_ID){
            // convert it to midi format
-           amTrace((const uint8*)"Converting MUS -> MID ...\n");
+           amTrace((const uint8*)"Converting MUS -> MID ..."NL);
 
            uint8 *pOut=0;
            uint32 len=0;
@@ -80,12 +81,12 @@ uint8 *filePath=0;
            if(pTempPtr){
 
                amMemCpy(pTempPtr+1,"mid",4);
-               printf("[Please Wait] [MUS->MID] Processing midi data..\n");
+               amPrintf("[Please Wait] [MUS->MID] Processing midi data.."NL);
                int32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
            } else {
 
-               printf("[Error] Filename update failed.\n");
+               amPrintf("[Error] Filename update failed."NL);
 
                /* free up buffer and quit */
                amFree(pMidi,0);
@@ -102,7 +103,7 @@ uint8 *filePath=0;
        // check mid 0,1 no quit
        if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
 
-           printf("Midi file loaded, size: %u bytes.\n", ulFileLenght);
+           amPrintf("Midi file loaded, size: %u bytes."NL, ulFileLenght);
 
            uint8 *pTempPtr=0;
 
@@ -112,20 +113,21 @@ uint8 *filePath=0;
            pTempPtr=strrchr(tempName,'.');
            amMemCpy(pTempPtr+1,"nkt",4);
 
-           printf("[ Please wait ] Converting MIDI %d to %s. Compress: %s\n",((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
+           amPrintf("[ Please wait ] Converting MIDI %d to %s. Compress: %s"NL,((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
 
            // convert
            sNktSeq* pSeq = Midi2Nkt(pMidi,tempName, bEnableCompression);
 
-           if(pSeq){
+           if(pSeq)
+           {
                 // release sequence
                 destroyNktSequence(pSeq);
            }else{
-               printf("[MID->NKT] conversion error. Exiting.\n");
+               amPrintf("[MID->NKT] conversion error. Exiting."NL);
            }
 
        }else{
-           printf("File is not in MIDI 0 or 1 format. Exiting... \n");
+           amPrintf("File is not in MIDI 0 or 1 format. Exiting... "NL);
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */
@@ -135,7 +137,7 @@ uint8 *filePath=0;
 
   //done..
    deinitDebug();
-   printf("\nDone. Press any key... \n");
+   amPrintf(NL "Done. Press any key... "NL);
 
    (void)Cconin();
 
@@ -144,7 +146,7 @@ uint8 *filePath=0;
 
 
 void printInfoScreen(void){
-    printf("\n== MID / MUS to NKT converter v.1.4 =========\n");
-    printf("date: %s %s\n",__DATE__,__TIME__);
-    printf("==========================================\n");
+    amPrintf("\n== MID / MUS to NKT converter v.1.4 ========="NL);
+    amPrintf("date: %s %s"NL,__DATE__,__TIME__);
+    amPrintf("=========================================="NL);
 }

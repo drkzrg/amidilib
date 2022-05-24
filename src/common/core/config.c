@@ -5,14 +5,13 @@
     See license.txt for licensing information.
 */
 
-
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdlib.h> //strol
 
-#include <amidilib.h>
-#include <fmio.h>
+#include "amidilib.h"
+#include "fmio.h"
 #include "config.h"
+#include "core/amprintf.h"
 
 //internal configuration
 static tAmidiConfig configuration;
@@ -47,47 +46,48 @@ static const uint32 DEFAULT_EVENT_POOL_SIZE =  24000UL; //nb of events
 static const uint32 DEFAULT_EVENT_ALLOC_SIZE = 32UL;   //event size in bytes
 #endif
 
-static const int32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	    // default operation mode (not used yet)
+static const int32 DEFAULT_MIDI_BUFFER_SIZE = MIDI_SENDBUFFER_SIZE; 	    	      // default operation mode (not used yet)
 
 static const uint16 DEFAULT_CONNECTED_DEVICE_TYPE = DT_LA_SOUND_SOURCE_EXT; 	    // default connected device
-static const uint16 DEFAULT_MIDI_CHANNEL = 1;                                      // default midi channel
-static const uint16 DEFAULT_OP_MODE = 0;                                           // default operation mode //TODO: make it on strings / human readable
+static const uint16 DEFAULT_MIDI_CHANNEL = 1;                                     // default midi channel
+static const uint16 DEFAULT_OP_MODE = 0;                                          // default operation mode //TODO: make it on strings / human readable
 static const uint16 DEFAULT_TRACK_STATE = TM_PLAY_ONCE;
-static const uint16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                           // external midi module connection timeout
+static const uint16 DEFAULT_MIDI_CONNECTION_TIMEOUT = 5;                          // external midi module connection timeout
 static const Bool DEFAULT_HANDSHAKEMODE_ENABLED = FALSE;
-static const Bool DEFAULT_USE_STREAMING = FALSE;                                // not used atm
+static const Bool DEFAULT_USE_STREAMING = FALSE;                                  // not used atm
 
-static const uint16 CONFIG_SIZE = 512;		    //should be sufficient		 
-
+static const uint16 CONFIG_SIZE = 512;		    // should be sufficient		 
 
 int32 parseConfig (const uint8* pData, const MemSize bufferLenght);
 
-int32 saveConfig(const uint8 *configFileName){
+int32 saveConfig(const uint8 *configFileName)
+{
   uint8 configData[CONFIG_SIZE]; 
   configData[0]='\0';
   
   //prepare data
-  uint32 length = 0;
+  uint16 length = 0;
   
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %x\r\n", versionTag,configuration.version);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", connectedDeviceTag,configuration.connectedDeviceType);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", operationModeTag,configuration.operationMode);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %x"NL, versionTag,configuration.version);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, connectedDeviceTag,configuration.connectedDeviceType);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, operationModeTag,configuration.operationMode);
   
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiChannelTag,configuration.midiChannel);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", initialTrackStateTag,configuration.initialTrackState);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, midiChannelTag,configuration.midiChannel);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, initialTrackStateTag,configuration.initialTrackState);
 
 #ifdef EVENT_LINEAR_BUFFER
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %u\r\n", eventPoolSizeTag,configuration.eventPoolSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %u\r\n", eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %u"NL, eventPoolSizeTag,configuration.eventPoolSize);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %u"NL, eventDataAllocatorSizeTag,configuration.eventDataAllocatorSize);
 #endif
 
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiBufferSizeTag,configuration.midiBufferSize);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %d\r\n", midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
-  length+=snprintf(configData + length, CONFIG_SIZE-length,"%s = %s\r\n", streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, midiBufferSizeTag,configuration.midiBufferSize);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %d"NL, midiConnectionTimeoutTag,configuration.midiConnectionTimeOut);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %s"NL, handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
+  length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %s"NL, streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
   
   //save configuration state to file
-  if(saveFile(configFileName,(void *)configData,length)>=0L){
+  if(saveFile(configFileName,(void *)configData,length)>=0L)
+  {
     return 0L;
   }
   
@@ -105,10 +105,10 @@ uint32 cfgLen=0;
   if(cfgData!=NULL){ 
     if(parseConfig(cfgData, cfgLen)<0){
       //not ok reset to defaults
-      printf("Invalid configuration. Reset to defaults.\n");
+      amPrintf("Invalid configuration. Reset to defaults."NL);
       setDefaultConfig();
     }else{
-      printf("Configuration loaded.\n");
+      amPrintf("Configuration loaded."NL);
     }
     
     gUserMemFree(cfgData,0);
@@ -116,7 +116,7 @@ uint32 cfgLen=0;
   }
   else{ 
     setDefaultConfig();
-    printf("Configuration couldn't be loaded. Setting defaults...\n");
+    amPrintf("Configuration couldn't be loaded. Setting defaults..."NL);
     return 0L; //fuck up!
   }
 }
@@ -179,11 +179,11 @@ int32 parseConfig(const uint8* pData, const MemSize bufferLenght){
   int32 iError=0;
   
   //config version 
-  iError=getUShortVal(versionTag,pData,bufferLenght,&configuration.version); 
+  iError = getUShortVal(versionTag,pData,bufferLenght,&configuration.version); 
    
    // check version if ok then proceed if not throw error
    if((iError>=0 && configuration.version!=CONFIG_VERSION)){
-     printf("Wrong configuration version. Resetting to defaults.\n");  
+     amPrintf("Wrong configuration version. Resetting to defaults."NL);  
      iError=-1;
      return (iError);
   }
@@ -273,7 +273,7 @@ int32 getboolVal(const uint8* tagName, const uint8 *data, const MemSize bufferLe
        }
   }
 
-  amTrace("entry '%s' was not found,\n", tagName);
+  amTrace("entry '%s' was not found,"NL, tagName);
   return -1;
 }
 
@@ -294,7 +294,7 @@ int32 getUIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLe
 	}
 	
     } else {
-        amTrace("entry '%s' was not found,\n", tagName);  return -1;
+        amTrace("entry '%s' was not found,"NL, tagName);  return -1;
     }
   
   return -1;
@@ -317,7 +317,7 @@ int32 getIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLen
 	}
     } 
     
-  amTrace("entry '%s' was not found,\n", tagName);  
+  amTrace("entry '%s' was not found,"NL, tagName);  
   return -1;
 }
 
@@ -339,7 +339,7 @@ int32 getUShortVal(const uint8* tagName, const uint8 *data, const MemSize buffer
 	}
     } 
   
-  amTrace("entry '%s' was not found,\n", tagName); 
+  amTrace("entry '%s' was not found,"NL, tagName); 
   return -1;
 }
 
@@ -361,9 +361,6 @@ int32 getShortVal(const uint8* tagName, const uint8 *data, const MemSize bufferL
 	
     } 
     
-  amTrace("config entry '%s' was not found,\n", tagName); 
+  amTrace("config entry '%s' was not found,"NL, tagName); 
   return -1;
 }
-
-
-

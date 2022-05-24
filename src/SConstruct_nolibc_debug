@@ -30,7 +30,7 @@ exports={\
 'ikbd_direct_write':'yes',\
 'conout_enable':'no',\
 'use_libc':'no',\
-'debug_level':'0'\
+'debug_level':'1'\
 })
 
 

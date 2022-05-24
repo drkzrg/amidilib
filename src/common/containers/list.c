@@ -8,6 +8,7 @@
 #include "amlog.h"
 #include "containers/list.h"
 #include "timing/mfp.h"
+#include "core/amprintf.h"
 
 /* adds event to linked list, list has to be inintialised with null */
 // event list, temp event

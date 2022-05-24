@@ -1,6 +1,7 @@
 
 #include "memory/linalloc.h"
 #include "core/debug.h"
+#include "core/amprintf.h"
 
 static const uint32 DEBUGFILL = 0x000000FFUL;
 
@@ -127,4 +128,3 @@ void linearBufferFree(LinearBufferAllocator *allocatorState)
   
   allocatorState->offset = 0UL;
 }
-

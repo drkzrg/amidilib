@@ -12,7 +12,8 @@
 
 /* XMIDI contain midi events */
 #include "midi.h"
-#include <stdio.h>
+
+#include "core/amprintf.h"
 
 /* 
 

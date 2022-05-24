@@ -10,6 +10,7 @@
 
 #include "nkt_util.h"
 #include "memory.h"
+#include "core/amprintf.h"
 
 extern uint8 isMidiChannelEvent(const uint8 byteEvent);
 extern uint8 isMidiRTorSysex(const uint8 byteEvent);

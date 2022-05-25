@@ -1,21 +1,17 @@
 
 	XDEF    _memcpy
 
+    RSRESET
+    sp_return:  rs.l    1
+    sp_pdst:    rs.l    1
+    sp_psrc:    rs.l    1
+    sp_size:    rs.l    1
+
 	TEXT
 _memcpy:
-        rsreset
-.sp_return:     
-		rs.l    1
-.sp_pdst:       
-		rs.l    1
-.sp_psrc:       
-		rs.l    1
-.sp_size:       
-		rs.l    1
-
-    move.l        .sp_pdst(sp),a0
-    move.l        .sp_psrc(sp),a1
-    move.l        .sp_size(sp),d1
+    move.l        sp_pdst(sp),a0
+    move.l        sp_psrc(sp),a1
+    move.l        sp_size(sp),d1
     
     lsr.l        #4,d1                  ; num 16-byte blocks total
     move.l        d1,d0
@@ -28,14 +24,14 @@ _memcpy:
     move.l        (a1)+,(a0)+
     move.l        (a1)+,(a0)+
     move.l        (a1)+,(a0)+
-    dbra        d1,.lp16b
+    dbra           d1,.lp16b
 
 .ev1mb:    
     subq.w        #1,d0
     bpl.s        .lp1mb
 
     moveq        #16-1,d1
-    and.w        .sp_size+2(sp),d1
+    and.w        sp_size+2(sp),d1
     lsl.b        #4+1,d1
     bcc.s        .n8
     move.l        (a1)+,(a0)+
@@ -53,5 +49,5 @@ _memcpy:
     bcc.s        .n1
     move.b        (a1)+,(a0)+
 .n1:
-    move.l        .sp_pdst(sp),d0
+    move.l        sp_pdst(sp),d0
     rts

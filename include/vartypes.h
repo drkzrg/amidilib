@@ -60,6 +60,7 @@ typedef void (*funcPtrVoidConstUint)(const uint32);
 #define FORCE_INLINE
 #endif
 
+#define AM_EXTERN extern
 
 #define STRINGISE_IMPL(x) #x
 #define STRINGISE(str) STRINGISE_IMPL( str )
@@ -75,7 +76,6 @@ void compilerSanityCheck(void);
 // true - for little endian, x86, PS2
 // false / for big endian - // Big Endian - GameCube, Atari
 const Bool checkEndianess();
-
 
 #if (defined(DEBUG) || defined(_DEBUG))
 

@@ -1,61 +1,57 @@
 
 	XDEF    _memcpy
 
+	TEXT
 _memcpy:
-	move.l  d2,-(sp)
-	move.l  4+4(sp),a0      ;a0=source
-	move.l  4+8(sp),a1      ;a1=dest
-	move.l  4+12(sp),d2     ;d2=length
-	
-	cmp.l   #16,d2
-	blo.b   .inf16
-	
-	move.l  a0,d0
-	move.l  a1,d1
-	and.b   #1,d0
-	and.b   #1,d1
-	cmp.b   d0,d1
-	bne.b   .oddcp
-	
-	move.l  a0,d0
-	tst.b   d1
-	beq.b   .alig
+        rsreset
+.sp_return:     
+		rs.l    1
+.sp_pdst:       
+		rs.l    1
+.sp_psrc:       
+		rs.l    1
+.sp_size:       
+		rs.l    1
 
-;both addr are odd
-	move.b  (a1)+,(a0)+
-	subq.l  #1,d2
-	.alig:
-	moveq   #3,d1
-	and.l   d2,d1
-	sub.l   d1,d2
-;=barrier
-.c:
-	move.l  (a1)+,(a0)+
-	subq.l  #4,d2
-	bne.b   .c
-	move.w  d1,d2
-	bra.b   .remai
-	
-.oddcp: 
-	cmp.l   #$10000,d2
-	blo.b   .inf16
-	move.l  a0,d0
-.c2:
-	move.b  (a1)+,(a0)+
-	subq.l  #1,d2
-	bne.b   .c2
-	bra.b   .end
-	
-.inf16:
-	move.l  a0,d0
-.remai:
-	subq.w  #1,d2
-	blo.b   .end
-.c3:
-	move.b  (a1)+,(a0)+
-	dbf     d2,.c3
-	
-.end:
-	move.l  (sp)+,d2
-	
-	rts
+    move.l        .sp_pdst(sp),a0
+    move.l        .sp_psrc(sp),a1
+    move.l        .sp_size(sp),d1
+    
+    lsr.l        #4,d1                  ; num 16-byte blocks total
+    move.l        d1,d0
+    swap          d0                    ; num 1mb blocks (64k * 16bytes)
+    subq.w        #1,d1                 ; num 16-byte blocks remaining
+    bcs.s        .ev1mb
+.lp1mb:
+.lp16b:
+    move.l        (a1)+,(a0)+
+    move.l        (a1)+,(a0)+
+    move.l        (a1)+,(a0)+
+    move.l        (a1)+,(a0)+
+    dbra        d1,.lp16b
+
+.ev1mb:    
+    subq.w        #1,d0
+    bpl.s        .lp1mb
+
+    moveq        #16-1,d1
+    and.w        .sp_size+2(sp),d1
+    lsl.b        #4+1,d1
+    bcc.s        .n8
+    move.l        (a1)+,(a0)+
+    move.l        (a1)+,(a0)+
+.n8:    
+    add.b        d1,d1
+    bcc.s        .n4
+    move.l        (a1)+,(a0)+
+.n4:    
+    add.b        d1,d1
+    bcc.s        .n2
+    move.w        (a1)+,(a0)+
+.n2:    
+    add.b        d1,d1
+    bcc.s        .n1
+    move.b        (a1)+,(a0)+
+.n1:
+    move.l        .sp_pdst(sp),d0
+    rts

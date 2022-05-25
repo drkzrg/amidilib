@@ -6,6 +6,12 @@
 
 #include "core/amprintf.h"
 
+#if AMIDILIB_USE_LIBC
+#include <string.h>
+#else
+#include "amstring.h"
+#endif
+
 #ifdef MANUAL_STEP
 extern void updateStepNkt(void);
 #endif

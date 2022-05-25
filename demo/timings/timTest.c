@@ -16,6 +16,13 @@
 
 #include "ym2149/ym2149.h"
 #include "timing/miditim.h"
+
+#if AMIDILIB_USE_LIBC
+#include <string.h>
+#else
+#include "amstring.h"
+#endif
+
 #include "core/amprintf.h"
 
 #include "sampleSequence.h"

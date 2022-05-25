@@ -1,6 +1,7 @@
 
 	XDEF	_strstr	
 
+	TEXT
 _strstr:
 	; this code is 52 bytes bigger than the c implementation. But it is way faster.
 	;from http://cristi.indefero.net/p/uClibc-cristi/source/tree/ff250619f58caa6b10c951911c43fbb8a34fda8d/libc/string/strstr.c

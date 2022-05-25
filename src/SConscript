@@ -37,8 +37,8 @@ def convertElfToTos(env, toolchainType, buildTypeName, targetName, outputDirPath
 SConsignFile(os.path.join("../build/", '.sconsign.dblite')) 
 
 # Set number of jobs, depending on number of cores
-#num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
-#SetOption('num_jobs', num_cpu)
+num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+SetOption('num_jobs', num_cpu)
 
 print("Running with %d job(s)." % GetOption('num_jobs')) 
 

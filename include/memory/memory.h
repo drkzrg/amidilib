@@ -11,7 +11,11 @@
 #include "vartypes.h"
 #include "amlog.h"
 
+#if AMIDILIB_USE_LIBC
 #include <string.h>
+#else
+#include "amstring.h"
+#endif
 
 /* memory allocation preference */
 

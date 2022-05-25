@@ -5,7 +5,11 @@
     See license.txt for licensing information.
 */
 
+#if AMIDILIB_USE_LIBC
 #include <string.h>
+#else
+#include "amstring.h"
+#endif
 
 #include "vartypes.h"
 #include "amidilib.h"

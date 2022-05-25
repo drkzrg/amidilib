@@ -253,7 +253,7 @@ TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
 if(use_libc == 'yes'):
-    CFLAGS+='-DAMIDILIB_USE_LIBC=0 '
+    CFLAGS+='-DAMIDILIB_USE_LIBC=1 '
     LDFLAGS+=' '
 else:
     CFLAGS+='-DAMIDILIB_USE_LIBC=0 -I' + projdir + '/../deps/atari-gcc-startup/include '
@@ -340,9 +340,11 @@ midiparser_src = ["common/midi/mparser.c"]
 m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
 discio_src = ["tos/fmio.c"]
-timing_src = ["tos/mfp.c","common/timing/miditim.c","tos/common.s"]
+timing_src = ["common/timing/miditim.c","tos/common.s"]
 midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
 memory_src = ["tos/memory.c","common/memory/linalloc.c"]
+string_src = ["tos/string/memcpy.s","tos/string/strcmp.s","tos/string/strlen.s","tos/string/strstr.s"]
+
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
@@ -350,6 +352,9 @@ lzo_src = ["common/lzo/minilzo.c"]
 
 # main library 
 amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
+
+if(use_libc == 'no'):
+    amidilib_src = string_src + amidilib_src
 
 # build library
 env.Library(LIBRARYNAME, amidilib_src)
@@ -402,7 +407,7 @@ if(use_libc == 'yes'):
     env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
-    #ADDLIBS += ['startup' + LIB_TARGET]
+    ADDLIBS += ['startup' + LIB_TARGET]
     ADDLIBS += ['gcc']
     
     linkedLibs = [LIBRARYNAME] + ADDLIBS

@@ -1,5 +1,11 @@
 
+#if AMIDILIB_USE_LIBC
 #include <string.h>
+#else
+#include "amstring.h"
+#endif
+
+#include "core/amprintf.h"
 
 #include "dmus.h"           // MUS->MID conversion
 #include "fmio.h"           // disc i/o
@@ -7,8 +13,6 @@
 #include "midi.h"           // midi
 #include "midi2nkt.h"
 #include <osbind.h>
-
-#include "core/amprintf.h"
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -143,7 +147,6 @@ uint8 *filePath=0;
 
    return 0;
 }
-
 
 void printInfoScreen(void){
     amPrintf("\n== MID / MUS to NKT converter v.1.4 ========="NL);

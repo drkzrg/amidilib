@@ -5,9 +5,15 @@
     See license.txt for licensing information.
 */
 
+#if AMIDILIB_USE_LIBC
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#else
+#include "amstring.h"
+#endif
+
+
 #include "core/amprintf.h"
 
 //#define MANUAL_STEP 1

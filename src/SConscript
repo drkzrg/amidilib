@@ -184,17 +184,17 @@ if(toolchain=='GCC'):
 
     if(targetPlatform == 'ST'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68000 -Wl,--traditional-format '
+        LDFLAGS += '-m68000 '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68020-40 -Wl,--traditional-format '
+        LDFLAGS += '-m68020-40 '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68060 -Wl,--traditional-format '
+        LDFLAGS += '-m68060 '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '060'
     else:
@@ -278,10 +278,6 @@ env["LIBPATH"] += [outputdir + '/']
 
 if(use_libc!='yes'):
     env["LIBPATH"] += [projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
-    if(LIB_TARGET=='000'):
-        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/']
-    else:
-        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/m68020-60']
 
 #############################################################################################################################
 # additional defines  
@@ -301,7 +297,11 @@ if(use_libc!='yes'):
 # LZO_DEBUG enables LZO debug mode
 
 if ( build_config == 'debug'):
+
   print ("Debug build...")
+  
+  LDFLAGS += "-Wl,--traditional-format"
+  
   if(debug_level=='1'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):

@@ -120,7 +120,7 @@ ikbd_imrb:
 	TEXT
 	EVEN
 	dc.b	"XBRA"
-	dc.b	"LSDL"
+	dc.b	"LAMD"
 old_ikbd: 
 	ds.b 4
 ikbd:

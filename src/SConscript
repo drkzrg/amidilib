@@ -388,7 +388,7 @@ if(use_libc == 'yes'):
 # build test programs and link them with amidilib
     ADDLIBS = ['c']
     
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + '.ttp'), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = '.ttp')
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
 
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
@@ -400,10 +400,10 @@ if(use_libc == 'yes'):
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
     
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
 
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
     ADDLIBS += ['startup' + LIB_TARGET]
@@ -412,7 +412,7 @@ else:
     linkedLibs = [LIBRARYNAME] + ADDLIBS
     
     # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + env.Object(string_src) + amidi_test_src ] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + '.ttp'), source = [env.Object(input_src) + env.Object(string_src) + amidi_test_src ] , LIBS = linkedLibs, PROGSUFFIX = '.ttp')
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
     
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(input_src) + env.Object(string_src) + midiOut_test_src ], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
@@ -424,8 +424,8 @@ else:
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + env.Object(string_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + nktReplay_src] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + nktReplay_src] , LIBS = ADDLIBS + [], PROGSUFFIX='.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + mid2nkt_src] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + mid2nkt_src] , LIBS= ADDLIBS + [], PROGSUFFIX = '.ttp'); 
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

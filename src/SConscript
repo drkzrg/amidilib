@@ -257,7 +257,7 @@ if(use_libc == 'yes'):
     LDFLAGS+=' '
 else:
     CFLAGS+='-DAMIDILIB_USE_LIBC=0 -I' + projdir + '/../deps/atari-gcc-startup/include '
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_main '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):

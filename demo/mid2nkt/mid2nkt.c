@@ -38,14 +38,17 @@ uint8 *filePath=0;
 
   } else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0)){
 
-      if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) )){
+      if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) ))
+      {
        bEnableCompression = TRUE;
       }
 
       amPrintf("Trying to load %s"NL,argv[2]);
       filePath=argv[2];
 
-  }else{
+  }
+  else
+  {
       amPrintf("No specified mid / mus filename or bad parameters! Exiting ..."NL);
       deinitDebug();
       (void)Cconin();
@@ -82,14 +85,15 @@ uint8 *filePath=0;
 
            pTempPtr = strrchr(tempName,'.');
 
-           if(pTempPtr){
-
+           if(pTempPtr!=NULL)
+           {
                amMemCpy(pTempPtr+1,"mid",4);
                amPrintf("[Please Wait] [MUS->MID] Processing midi data.."NL);
                int32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
 
-           } else {
-
+           } 
+           else 
+           {
                amPrintf("[Error] Filename update failed."NL);
 
                /* free up buffer and quit */
@@ -114,9 +118,11 @@ uint8 *filePath=0;
            amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
            strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           pTempPtr=strrchr(tempName,'.');
-           amMemCpy(pTempPtr+1,"nkt",4);
+          pTempPtr = strrchr(tempName,'.');
 
+          if(pTempPtr!=NULL)
+          {
+           amMemCpy(pTempPtr+1,"nkt",4);
            amPrintf("[ Please wait ] Converting MIDI %d to %s. Compress: %s"NL,((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
 
            // convert
@@ -126,9 +132,17 @@ uint8 *filePath=0;
            {
                 // release sequence
                 destroyNktSequence(pSeq);
-           }else{
+           }
+           else
+           {
                amPrintf("[MID->NKT] conversion error. Exiting."NL);
            }
+          }
+          else
+          {
+               amPrintf("[Error] Output filename update failed."NL);
+          }
+
 
        }else{
            amPrintf("File is not in MIDI 0 or 1 format. Exiting... "NL);
@@ -148,8 +162,9 @@ uint8 *filePath=0;
    return 0;
 }
 
-void printInfoScreen(void){
-    amPrintf("\n== MID / MUS to NKT converter v.1.4 ========="NL);
+void printInfoScreen(void)
+{
+    amPrintf(NL "== MID / MUS to NKT converter v.1.4 ========="NL);
     amPrintf("date: %s %s"NL,__DATE__,__TIME__);
     amPrintf("=========================================="NL);
 }

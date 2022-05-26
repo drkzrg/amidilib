@@ -155,25 +155,18 @@ void* memmove(void *destination, const void *source, size_t n)
 
 char *strrchr(const char *s, int c)
 {
-    const char *cp = s + strlen(s) + 1;
+    const char *cp = s + strlen(s);
 
-    do{
-        if (*cp == (char) c) return (char*)cp;
-    } while (cp-- > s);
+    do
+    {
+        if (*cp == (char) c) 
+        {
+            return (char*)cp;  
+        }
+
+    } while (--cp >= s);
 
     return NULL;
-}
-
-#include "ctypeint.h"
-
-int tolower(int c)
-{
-    return isupper(c) ? ((c) + 'a' - 'A') : (c);
-}
-
-int toupper(int c)
-{
-    return islower(c) ? ((c) - 'a' + 'A') : (c);
 }
 
 #include <mint/osbind.h>
@@ -330,3 +323,14 @@ unsigned long strtoul(const char *nptr, char **endptr, int base)
     return sign ? -ret : ret;
 }
 
+#include "ctypeint.h"
+
+int tolower(int c)
+{
+    return isupper(c) ? ((c) + 'a' - 'A') : (c);
+}
+
+int toupper(int c)
+{
+    return islower(c) ? ((c) - 'a' + 'A') : (c);
+}

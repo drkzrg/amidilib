@@ -10,6 +10,7 @@
 #
 
 BUILD_ROOT=.
+CURDIR=$(dirname "$0")
 
 if [ -d "${BUILD_ROOT}/deps/atari-gcc-startup" ]; then
 echo Deleting gcc startup folder

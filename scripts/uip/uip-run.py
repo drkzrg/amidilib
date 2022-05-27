@@ -6,7 +6,7 @@ SEND_UDP_PORT = 33332
 import socket
 import fcntl, os
 import sys, select, tty, termios
-import http.client
+import http.client 
 import curses
 
 class non_blocking_console(object):
@@ -101,16 +101,21 @@ def main(args):
     rec_sock.setsockopt(socket.SOL_IP, socket.IP_TTL, 100)
     rec_sock.connect((remote_ip, SEND_UDP_PORT))
 
-    conn = httplib.HTTPConnection(remote_ip)
+    conn = http.client.HTTPConnection(remote_ip)
+    print (inverse_seq + "connecting:" + normal_seq + remote_ip)
     conn.connect()
     print (inverse_seq + "running: " + normal_seq + remote_path)
-    conn.request("GET", remote_path + "?run=" + " ".join(args[2:]))
+    print (inverse_seq + "args: " + normal_seq + " " + args[2] + " " + args[3])
+    
+    tosCommandline = args[2] + " " + args[3]
+    print (inverse_seq + "TOS commandline: " + normal_seq + " " + tosCommandline)
+    
+    conn.request("GET", remote_path + "?run=" + tosCommandline + '"')
     response = conn.getresponse()
     response.read()
 
-    if response.status != 200:
-        msg = 'Error ( HTTP code: ' + str(response.status) + ")"
-        print(msg)
+    if (response.status != 200):
+        print('Error ( HTTP code: ' + str(response.status) + ") " + response.reason, flush=True) 
         return 1
 
     print(inverse_seq + "Remote output:" + normal_seq)

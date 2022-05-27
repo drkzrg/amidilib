@@ -109,9 +109,9 @@ def main(args):
     response.read()
 
     if response.status != 200:
-        msg = 'Error HTTP code: ' + str(response.status)
+        msg = 'Error ( HTTP code: ' + str(response.status) + ")"
         print(msg)
-    return 1
+        return 1
 
     print(inverse_seq + "Remote output:" + normal_seq)
 

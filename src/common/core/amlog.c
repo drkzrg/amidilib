@@ -5,7 +5,7 @@
 #include <mint/osbind.h>
 
 #ifdef ENABLE_GEMDOS_IO
-#include "fmio.h"
+#include "gemdosio.h"
 #include <mint/ostruct.h>
 #endif
 
@@ -19,7 +19,7 @@
 #if defined(DEBUG_FILE_OUTPUT)
 
 #ifdef ENABLE_GEMDOS_IO
-static int16 fh=GDOS_OK;
+static int16 fh=0;
 #else
 static FILE *ofp=0;
 #endif
@@ -119,25 +119,29 @@ void serialLog(const char *mes,...)
 
 #endif
 
-void initDebug(const char *pFilename){
+void initDebug(const char *pFilename)
+{
 
 #ifdef DEBUG_FILE_OUTPUT
 
 #ifdef ENABLE_GEMDOS_IO
-    fh=Fcreate(pFilename,0);
+    fh = Fcreate(pFilename,0);
 
-    if(fh<0){
+    if(fh<0)
+    {
         amPrintf("Can't create debug file: %s"NL,DEBUG_LOG);
         amPrintf("[GEMDOS] Error: %s"NL,getGemdosError(fh));
-    }else{
+    }
+    else
+    {
         amPrintf("Init debug [%d]"NL,fh);
     }
 
 #else
-    ofp=NULL;
-    ofp=fopen(pFilename,"w+b");
+    ofp = fopen(pFilename,"w+b");
 
-    if(ofp==NULL){
+    if(ofp==NULL)
+    {
         amPrintf("Can't init file output: %s"NL,DEBUG_LOG);
     }
 #endif
@@ -159,9 +163,10 @@ void deinitDebug(void)
 #ifdef ENABLE_GEMDOS_IO
     amPrintf("Deinit debug: [%d] "NL, fh);
 
-    int16 err=Fclose(fh);
+    const int16 ret=Fclose(fh);
 
-    if(err!=GDOS_OK){
+    if(ret!=GDOS_OK)
+    {
       amPrintf("[GEMDOS] Error closing file handle : [%d] %s"NL, fh, getGemdosError(err));
     }
 

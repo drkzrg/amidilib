@@ -1,12 +1,12 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#ifndef __FMIO_H__
-#define __FMIO_H__
+#ifndef __GEMDOSIO_H__
+#define __GEMDOSIO_H__
 
 #include "vartypes.h"
 #include "memory/memory.h"

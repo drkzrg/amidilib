@@ -20,7 +20,7 @@
 
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
-#include "fmio.h"           // disc i/o
+#include "gemdosio.h"           // disc i/o
 #include "timing/mfp.h"
 #include "timing/miditim.h"
 
@@ -63,8 +63,7 @@ amPrintf("midi player"NL);
     amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
 #endif
 amPrintf("(c) Nokturnal 2007-22"NL);   
-amPrintf(NL "==============================================="NL);
- 
+amPrintf("==============================================="NL);
 
     if( ((argc>=1) && strlen(argv[1])!=0)){
       amPrintf("Trying to load %s"NL,argv[1]);
@@ -87,6 +86,7 @@ amPrintf(NL "==============================================="NL);
 
     if(pMidiData!=NULL)
     {
+        
      amPrintf("Midi file loaded, size: %u bytes."NL,(unsigned int)ulFileLenght);
      
      /* process MIDI*/

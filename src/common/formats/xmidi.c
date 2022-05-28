@@ -5,7 +5,10 @@
     See license.txt for licensing information.
 */
 
-#include "fmio.h"
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"
+#endif
+
 #include "memory.h"
 #include "xmidi.h"
 #include "memory/endian.h"

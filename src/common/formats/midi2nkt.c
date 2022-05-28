@@ -15,9 +15,7 @@
 #include "lzo/minilzo.h"
 
 #ifdef ENABLE_GEMDOS_IO
-#include <mint/ostruct.h>
-#include <mint/osbind.h>
-#include "fmio.h"
+#include "gemdosio.h"
 #endif
 
 #include "core/amprintf.h"

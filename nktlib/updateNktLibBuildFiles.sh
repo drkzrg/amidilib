@@ -14,7 +14,7 @@ if [ ! -d "./nktlib/src" ]; then
 mkdir ./nktlib/src
 fi
 
-cp ../src/tos/fmio.c ./nktlib/src/
+cp ../src/tos/gemdosio.c ./nktlib/src/
 cp ../src/common/formats/nkt_rep.c  ./nktlib/src/
 cp ../src/common/formats/nkt_rep_m68k.s ./nktlib/src/
 cp ../src/common/roland/rol_ptch.c ./nktlib/src/
@@ -40,7 +40,7 @@ cp ../include/common_m68k.inc ./nktlib/include/
 cp ../include/vartypes.h ./nktlib/include/
 cp ../include/dmus.h ./nktlib/include/
 cp ../include/events.h ./nktlib/include/
-cp ../include/fmio.h ./nktlib/include/
+cp ../include/gemdosio.h ./nktlib/include/
 cp ../include/m68k_defs.inc ./nktlib/include/
 cp ../include/mdevtype.h ./nktlib/include/
 cp ../include/midi.h ./nktlib/include/

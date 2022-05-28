@@ -10,7 +10,11 @@
 #include "timing/miditim.h"
 #include "containers/list.h"
 #include "mformats.h"
-#include "fmio.h"
+
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"
+#endif
+
 #include "midi_send.h"
 #include "memory/endian.h"
 

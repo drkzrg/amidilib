@@ -339,7 +339,7 @@ midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
-discio_src = ["tos/fmio.c"]
+discio_src = ["tos/gemdosio.c"]
 timing_src = ["common/timing/miditim.c","tos/common.s"]
 midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
 memory_src = ["tos/memory.c","common/memory/linalloc.c"]

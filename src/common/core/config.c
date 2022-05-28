@@ -9,7 +9,11 @@
 #include <stdlib.h> //strol
 
 #include "amidilib.h"
-#include "fmio.h"
+
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"
+#endif
+
 #include "config.h"
 #include "core/amprintf.h"
 
@@ -94,20 +98,25 @@ int32 saveConfig(const uint8 *configFileName)
   return -1L;
 }
 
-int32 loadConfig(const uint8 *configFileName){
+int32 loadConfig(const uint8 *configFileName)
+{
 //check if config file exists
 //if not exit else parse it and set config
 void *cfgData=0;
 uint32 cfgLen=0;
  
-  cfgData=loadFile(configFileName,PREFER_TT,&cfgLen);
+  cfgData = loadFile(configFileName,PREFER_TT,&cfgLen);
   
-  if(cfgData!=NULL){ 
-    if(parseConfig(cfgData, cfgLen)<0){
+  if(cfgData!=NULL)
+  { 
+    if(parseConfig(cfgData, cfgLen)<0)
+    {
       //not ok reset to defaults
       amPrintf("Invalid configuration. Reset to defaults."NL);
       setDefaultConfig();
-    }else{
+    }
+    else
+    {
       amPrintf("Configuration loaded."NL);
     }
     
@@ -182,28 +191,33 @@ int32 parseConfig(const uint8* pData, const MemSize bufferLenght){
   iError = getUShortVal(versionTag,pData,bufferLenght,&configuration.version); 
    
    // check version if ok then proceed if not throw error
-   if((iError>=0 && configuration.version!=CONFIG_VERSION)){
+   if((iError>=0 && configuration.version!=CONFIG_VERSION))
+   {
      amPrintf("Wrong configuration version. Resetting to defaults."NL);  
      iError=-1;
      return (iError);
   }
   
-  
   iError=getUShortVal(connectedDeviceTag,pData,bufferLenght,&configuration.connectedDeviceType);
-  if(iError<0){
+  
+  if(iError<0)
+  {
     configuration.connectedDeviceType=DEFAULT_CONNECTED_DEVICE_TYPE;
   }
   
   iError=getUShortVal(operationModeTag,pData,bufferLenght, &configuration.operationMode);
-  if(iError<0){
+
+  if(iError<0)
+  {
     configuration.operationMode=DEFAULT_OP_MODE;
   }
   
   iError=getUShortVal(midiChannelTag,pData,bufferLenght,&configuration.midiChannel);
-  if(iError<0){
+  
+  if(iError<0)
+  {
     configuration.midiChannel=DEFAULT_MIDI_CHANNEL;
   }
-  
 
   iError=getUShortVal(initialTrackStateTag,pData,bufferLenght,&configuration.initialTrackState);
   
@@ -251,22 +265,26 @@ int32 parseConfig(const uint8* pData, const MemSize bufferLenght){
 
 
 // helper functions
-int32 getboolVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, bool *val){
+int32 getboolVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, bool *val)
+{
   
   uint8 *substrPtr=(uint8 *)strstr((const char*)data, (const char*) tagName );
    
-  if(substrPtr) {
-      
+  if(substrPtr)
+  {
        uint8 *rval =(uint8 *)strchr((data + (MemSize)(substrPtr - data)),'=');
 	
-       if(rval!=NULL){
+       if(rval!=NULL)
+       {
             ++rval;
             ++rval;
 	 
-            if(strncmp(rval,TRUE_TAG,4)==0){
+            if(strncmp(rval,TRUE_TAG,4)==0)
+            {
                 *val=TRUE;
                 return 0;
-            }else if(strncmp(rval,FALSE_TAG,4)==0){
+            }else if(strncmp(rval,FALSE_TAG,4)==0)
+            {
                 *val=FALSE;
                 return 0;
             }
@@ -277,7 +295,8 @@ int32 getboolVal(const uint8* tagName, const uint8 *data, const MemSize bufferLe
   return -1;
 }
 
-int32 getUIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, uint32 *val){
+int32 getUIntVal(const uint8* tagName, const uint8 *data, const MemSize bufferLenght, uint32 *val)
+{
   uint8 *substrPtr=(uint8 *) strstr((const char*)data, (const char*) tagName );
   
   if(substrPtr) {

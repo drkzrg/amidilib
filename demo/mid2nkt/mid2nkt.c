@@ -8,7 +8,7 @@
 #include "core/amprintf.h"
 
 #include "dmus.h"           // MUS->MID conversion
-#include "fmio.h"           // disc i/o
+#include "gemdosio.h"           // disc i/o
 #include "amlog.h"          // logging
 #include "midi.h"           // midi
 #include "midi2nkt.h"

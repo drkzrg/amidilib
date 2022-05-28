@@ -24,9 +24,9 @@
 #include "core/amprintf.h"
 
 #ifdef ENABLE_GEMDOS_IO
-#include "fmio.h"
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
+#include "gemdosio.h"
 #endif
 
 // helper function for determining amount of memory we need for data / events buffers

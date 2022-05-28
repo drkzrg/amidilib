@@ -93,8 +93,14 @@ int16 iError=0;
 
 void printInfoScreen(void)
 {
-  amPrintf(NL "===== NKT replay demo v.1.22 ============="NL);
-  amPrintf("date: %s %s"NL,__DATE__,__TIME__);
+  amPrintf(NL "===== NKT replay demo v.1.23 ============="NL);
+
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+
   amPrintf("    [p] - play loaded tune"NL);
   amPrintf("    [r] - pause/unpause played sequence "NL);
   amPrintf("    [m] - toggle play once/loop mode"NL);
@@ -104,6 +110,7 @@ void printInfoScreen(void)
   amPrintf("    [h] - show this help screen"NL);
   amPrintf(NL "    [spacebar] - stop sequence replay "NL);
   amPrintf("    [Esc] - quit"NL);
+  amPrintf("(c) Nokturnal 2007-22"NL);   
   amPrintf("=========================================="NL);
   amPrintf("Ready..."NL);
 }

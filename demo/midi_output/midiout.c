@@ -24,8 +24,13 @@
 
 void printHelpScreen(void)
 {
-  amPrintf("==============================================="NL);
+  amPrintf(NL "==============================================="NL);
   amPrintf("/|\\ midi output test.."NL);
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+ #else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+ #endif   
   amPrintf("[q-h] - play note"NL);
   amPrintf("[1-8] - choose octave "NL);
   amPrintf("'[' or ']' - change program number for active channel -/+ "NL);
@@ -55,7 +60,7 @@ void printHelpScreen(void)
   
   amPrintf("[spacebar] - turn off all sounds "NL);
   amPrintf("[Esc] - quit"NL);
-  amPrintf("(c) Nokturnal 2007-2022"NL);
+  amPrintf("(c) Nokturnal 2007-22"NL);
   amPrintf("================================================"NL);
 }
 

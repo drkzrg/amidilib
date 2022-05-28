@@ -19,6 +19,13 @@ void printHelpScreen()
 {
   amPrintf("==============================================="NL);
   amPrintf("/|\\ ym2149 sound output test.."NL);
+
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+
   amPrintf("'[' or ']' - change octave -/+ "NL);
   amPrintf("[q-h] - play note"NL);
   amPrintf("1,2,3 - enable/disable tone for channel A/B/C "NL);

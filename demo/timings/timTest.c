@@ -357,6 +357,13 @@ void INLINE printHelpScreen(void)
 {
   amPrintf("==============================================="NL);
   amPrintf("/|\\ delta timing and sound output test.."NL);
+
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+ 
   amPrintf("[arrow up/ arrow down] - change tempo " NL "\t500 ms/PQN and 96PPQN"NL);
   amPrintf("[1/2] - enable/disable midi out/ym2149 output "NL);
   amPrintf("[m] - toggle [PLAY ONCE/LOOP] sequence replay mode "NL);
@@ -365,7 +372,7 @@ void INLINE printHelpScreen(void)
   
   amPrintf("[spacebar] - turn off all sounds / stop sequence "NL);
   amPrintf("[Esc] - quit"NL);
-  amPrintf("(c) Nokturnal 2007-2022"NL);
+  amPrintf("(c) Nokturnal 2007-22"NL);
   amPrintf("================================================"NL);
 }
 

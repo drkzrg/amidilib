@@ -165,6 +165,11 @@ uint8 *filePath=0;
 void printInfoScreen(void)
 {
     amPrintf(NL "== MID / MUS to NKT converter v.1.4 ========="NL);
-    amPrintf("date: %s %s"NL,__DATE__,__TIME__);
+ #if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+ #else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+ #endif
+    amPrintf("(c)Nokturnal 2007-22"NL);   
     amPrintf("=========================================="NL);
 }

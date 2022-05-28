@@ -55,6 +55,17 @@ void midiParserTest(sSequence_t *pSequence);
 int main(int argc, char *argv[])
 {
 
+amPrintf(NL "==============================================="NL);
+amPrintf("midi player"NL);
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+amPrintf("(c) Nokturnal 2007-22"NL);   
+amPrintf(NL "==============================================="NL);
+ 
+
     if( ((argc>=1) && strlen(argv[1])!=0)){
       amPrintf("Trying to load %s"NL,argv[1]);
     }else{

@@ -20,17 +20,23 @@
 #include <mint/osbind.h>
 #include "vartypes.h"
 
-static void tosBiosConout(int c, void *wtf)
-{
-    Bconout(2,(uint16)c);
-}
+#define OUTPUT_TEMP_BUFFER  1024
 
 int amCustomPrintf(const char* format, ...)
 {
+  static char tempBuf[OUTPUT_TEMP_BUFFER] = {0};
+  
+  tempBuf[0]='\0';
+
   va_list val;
   va_start(val, format);
-  int const rv = npf_vpprintf(&tosBiosConout,NULL,format,val);
+  int const rv = npf_vsnprintf(&tempBuf[0],OUTPUT_TEMP_BUFFER,format,val);
   va_end(val);
+
+  AssertMsg(rv>=0,"npf_vsnprintf() error");
+
+  (void)Cconws(tempBuf);
+
   return rv;
 }
 

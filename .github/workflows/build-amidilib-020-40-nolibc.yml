@@ -3,6 +3,13 @@ name: build-amidilib-020-40-nolibc
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - 'build/**'
+      - 'DOCS/**'
+      - 'sample_music/**'
+      - 'scripts/**'
+      - 'images/**'
+      - 'extools/**'
   pull_request:
     branches: [ master ]
   workflow_dispatch:

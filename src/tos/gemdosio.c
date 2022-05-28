@@ -391,7 +391,7 @@ int32 saveFile(const uint8 *szFileName, const void *memBlock, const int32 memBlo
         }
         else
         {
-            amTrace("[GEMDOS] Error closing file handle : [%d] "NL, (uint16)fileHandle, getGemdosError((uint16)lRet));
+            amTrace("[GEMDOS] Error closing file handle : [%d] "NL, (uint16)fileHandle, getGemdosError((uint16)iRet));
             retVal = AM_ERR;
         }
       }

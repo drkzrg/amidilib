@@ -386,16 +386,21 @@ retVal amInit(void)
   // setup standard memory callbacks
   amSetDefaultUserMemoryCallbacks();
 
+#if ENABLE_GEMDOS_IO
+  initGemdos();
+#endif  
+
 #ifdef DEBUG_BUILD
  // init logger
  initDebug(outputFilename);
 #endif 
   
-  loadConfig(configFilename);
+  int32 retval = loadConfig(configFilename);
 
   //save configuration
-  if(saveConfig(configFilename)>=0L){
-    amPrintf("Configuration saved sucessfully."NL);
+  if(saveConfig(configFilename) == AM_OK)
+  {
+    amPrintf("Global configuration saved sucessfully."NL);
   }else{
     amPrintf("Error: Cannot save global configuration."NL);
     return AM_ERR;
@@ -458,7 +463,12 @@ void amDeinit(void)
 
 #ifdef DEBUG_BUILD
   deinitDebug();
+#endif
+
+#if ENABLE_GEMDOS_IO
+  deinitGemdos();
 #endif  
+
  /* end sequence */
 }
 

@@ -89,31 +89,27 @@ int32 saveConfig(const uint8 *configFileName)
   length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %s"NL, handshakeCommunicationEnabledTag,configuration.handshakeModeEnabled?TRUE_TAG:FALSE_TAG);
   length+=amSnprintf(configData + length, CONFIG_SIZE-length,"%s = %s"NL, streamedTag,configuration.streamed?TRUE_TAG:FALSE_TAG);
   
-  //save configuration state to file
-  if(saveFile(configFileName,(void *)configData,length)>=0L)
-  {
-    return 0L;
-  }
-  
-  return -1L;
+  // save configuration state to file
+   return saveFile(configFileName,(void *)configData,length);
 }
 
 int32 loadConfig(const uint8 *configFileName)
 {
 //check if config file exists
 //if not exit else parse it and set config
-void *cfgData=0;
 uint32 cfgLen=0;
- 
-  cfgData = loadFile(configFileName,PREFER_TT,&cfgLen);
+int32 retval = AM_OK;
+
+  void *cfgData= loadFile(configFileName,PREFER_TT,&cfgLen);
   
   if(cfgData!=NULL)
   { 
     if(parseConfig(cfgData, cfgLen)<0)
     {
-      //not ok reset to defaults
+      // not ok reset to defaults
       amPrintf("Invalid configuration. Reset to defaults."NL);
       setDefaultConfig();
+      retval = AM_ERR; // TODO return proper error code
     }
     else
     {
@@ -121,13 +117,16 @@ uint32 cfgLen=0;
     }
     
     gUserMemFree(cfgData,0);
-    return 0L;
+    
   }
-  else{ 
+  else
+  { 
     setDefaultConfig();
     amPrintf("Configuration couldn't be loaded. Setting defaults..."NL);
-    return 0L; //fuck up!
+    retval = AM_ERR;
   }
+
+  return retval;
 }
 
 void setConnectedDeviceType(const eMidiDeviceType type){
@@ -183,7 +182,8 @@ const tAmidiConfig *getGlobalConfig(void)
   return &configuration;
 }
 
-int32 parseConfig(const uint8* pData, const MemSize bufferLenght){
+int32 parseConfig(const uint8* pData, const MemSize bufferLenght)
+{
   
   int32 iError=0;
   

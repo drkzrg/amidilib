@@ -27,16 +27,23 @@ uint8 *filePath=0;
 
   amSetDefaultUserMemoryCallbacks();
 
+#if ENABLE_GEMDOS_IO
+  initGemdos();
+#endif
+
   initDebug("MID2NKT.LOG");
 
   printInfoScreen();
 
   // check parameters for compression
-  if( ((argc==2) && (strlen(argv[1])!=0))){
+  if( ((argc==2) && (strlen(argv[1])!=0)))
+  {
       amPrintf("Trying to load %s"NL,argv[1]);
       filePath = argv[1];
 
-  } else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0)){
+  } 
+  else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0))
+  {
 
       if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) ))
       {
@@ -68,22 +75,21 @@ uint8 *filePath=0;
        // check MUS file
        MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
 
-       if(((pMusHeader->ID)>>8)==MUS_ID){
+       if(((pMusHeader->ID)>>8)==MUS_ID)
+       {
            // convert it to midi format
            amTrace((const uint8*)"Converting MUS -> MID ..."NL);
 
-           uint8 *pOut=0;
            uint32 len=0;
 
            // allocate working buffer for midi output
-           pOut = (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
+           uint8 *pOut= (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
            amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
 
            // set midi output name
-           uint8 *pTempPtr=0;
            strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           pTempPtr = strrchr(tempName,'.');
+           uint8 *pTempPtr = strrchr(tempName,(int)'.');
 
            if(pTempPtr!=NULL)
            {
@@ -115,7 +121,7 @@ uint8 *filePath=0;
 
            uint8 *pTempPtr=0;
 
-           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
+           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH-1);
            strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
           pTempPtr = strrchr(tempName,'.');
@@ -155,6 +161,11 @@ uint8 *filePath=0;
 
   //done..
    deinitDebug();
+
+#if ENABLE_GEMDOS_IO
+   deinitGemdos();
+#endif
+
    amPrintf(NL "Done. Press any key... "NL);
 
    (void)Cconin();

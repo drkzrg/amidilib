@@ -46,25 +46,25 @@ sNktSeq* const getActiveNktSequence(void)
   return g_CurrentNktSequence;
 }
 
-static void resetMidiDevice(void){
-
+static void resetMidiDevice(void)
+{
     amAllNotesOff(16);
 
     // reset all controllers
-    for(uint8 i=0;i<16;++i){
+    for(uint8 i=0;i<16;++i)
+    {
       reset_all_controllers(i);
       omni_off(i);
     }
 
-
     #ifdef IKBD_MIDI_SEND_DIRECT
       Supexec(flushMidiSendBuffer);
     #endif
-
 }
 
 // this is called when sequence ends
-static void onEndSequence(void){
+static void onEndSequence(void)
+{
 
   AssertMsg(g_CurrentNktSequence!=0,"Fatal error: Current nkt sequence is NULL.");
   
@@ -83,7 +83,8 @@ static void onEndSequence(void){
 
   // reset all tracks state
 
-  for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+  for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i)
+  {
     g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
     g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
     g_CurrentNktSequence->pTracks[i].currentBlockId=0L;
@@ -266,9 +267,11 @@ static inline void handleMasterSettings(void)
 {
 
     // handle volume/balance/reverb change
-   if(moduleSettings.masterVolume!=requestedMasterVolume){
+   if(moduleSettings.masterVolume!=requestedMasterVolume)
+   {
 
-       if(MT32_MODEL_ID==moduleSettings.modelID){
+       if(MT32_MODEL_ID==moduleSettings.modelID)
+       {
 
             //handle mt32 volume
             if(requestedMasterVolume<=MIDI_MASTER_VOL_MAX_MT32){
@@ -394,7 +397,8 @@ void updateStepNkt(void)
   }
 
 
-  if((sequenceState&NKT_PS_PLAYING)){
+  if((sequenceState&NKT_PS_PLAYING))
+  {
 
       sNktTrack *pCurTrack=&g_CurrentNktSequence->pTracks[0];
 
@@ -422,16 +426,19 @@ void updateStepNkt(void)
 
       // track end?
 
-          if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks){
+      if(nktBlk->msgType&NKT_END || pCurTrack->currentBlockId >= pCurTrack->nbOfBlocks)
+      {
              onEndSequence();
              return;
-         }
+      }
 
-          if( pCurTrack->timeElapsedInt==currentDelta||currentDelta==0){
+          if( pCurTrack->timeElapsedInt==currentDelta||currentDelta==0)
+          {
                 pCurTrack->timeElapsedInt -= currentDelta;
 
               // tempo change ?
-              if(nktBlk->msgType&NKT_TEMPO_CHANGE){
+              if(nktBlk->msgType&NKT_TEMPO_CHANGE)
+              {
                  // set new tempo
                  addr=((uint32)pCurTrack->eventDataPtr)+nktBlk->bufferOffset;
                  uint32 *pMidiDataStartAdr=(uint32 *)(addr);
@@ -671,7 +678,8 @@ void updateStepNktMt(void){
       g_CurrentNktSequence->timeStep=g_CurrentNktSequence->currentTempo.tuTable[g_CurrentNktSequence->currentUpdateFreq];
 
       //rewind all tracks to the first event
-      for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
+      for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i)
+      {
           g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
           g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
           g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
@@ -1155,7 +1163,6 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
             // load data block
     #ifdef ENABLE_GEMDOS_IO
-
             read=Fread(fh,amount,(void *)pTrk->eventDataPtr);
 
             if(read<amount){
@@ -1220,7 +1227,6 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
 // close file
 #ifdef ENABLE_GEMDOS_IO
-
     amTrace("[GEMDOS] Closing file handle : [%d] "NL, fh);
     int16 err=Fclose(fh);
 
@@ -1470,6 +1476,7 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
             // save event block
             amTrace("[MID2NKT] Saving event block.[%d bytes] for track [%d] "NL,pSeq->pTracks[i].eventsBlockBufferSize, i);
 
+#ifdef ENABLE_GEMDOS_IO
             written = Fwrite(fh,pSeq->pTracks[i].eventsBlockBufferSize,(void *)pSeq->pTracks[i].eventBlocksPtr);
 
             if(written<pSeq->pTracks[i].eventsBlockBufferSize){
@@ -1479,12 +1486,14 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
                return -1;
             }else{
                 amTrace("[GEMDOS] written: %d bytes"NL, written);
-
             }
-
+#else
+            StaticAssert(0,"Not implemented!");
+#endif            
             // save data block
             amTrace("[MID2NKT] Saving data block.[%d bytes] for track [%d]"NL,pSeq->pTracks[i].dataBufferSize, i);
 
+#ifdef ENABLE_GEMDOS_IO
             written=Fwrite(fh,pSeq->pTracks[i].dataBufferSize,(void *)pSeq->pTracks[i].eventDataPtr);
 
             if(written<pSeq->pTracks[i].dataBufferSize)
@@ -1496,7 +1505,9 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
             }else{
                 amTrace("[GEMDOS] written: %d bytes"NL, written);
             }
-
+#else
+            StaticAssert(0,"Not implemented!");
+#endif            
         }
 
     return 0;
@@ -1663,6 +1674,8 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
           // save header
           amTrace("[MID2NKT] Saving header... "NL);
+
+#ifdef ENABLE_GEMDOS_IO
           written=Fwrite(fh, sizeof(sNktHd), &nktHd);
 
           if(written<sizeof(sNktHd)){
@@ -1683,7 +1696,9 @@ setNktTrackInfo(pTrackInfo,pSeq);
           }else{
               amTrace("[GEMDOS] written: %d bytes"NL, written);
           }
-
+#else
+          StaticAssert(0,"Not implemented!");
+#endif
 
           // write data / event blocks
           if(saveEventDataBlocks(fh,pSeq)<0){
@@ -1698,6 +1713,8 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
          // save header
          amTrace("[MID2NKT] Saving header... "NL);
+
+#ifdef ENABLE_GEMDOS_IO
          written=Fwrite(fh, sizeof(sNktHd), &nktHd);
 
          if(written<sizeof(sNktHd)){
@@ -1718,7 +1735,9 @@ setNktTrackInfo(pTrackInfo,pSeq);
          }else{
              amTrace("[GEMDOS] written: %d bytes"NL, written);
          }
-
+#else
+         StaticAssert(0,"Not implemented!");
+#endif         
          // write data / event blocks
          if(saveEventDataBlocks(fh,pSeq)<0){
              return AM_ERR;

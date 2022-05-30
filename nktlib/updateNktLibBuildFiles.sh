@@ -23,7 +23,7 @@ cp ../src/tos/memory.c ./nktlib/src/
 cp ../src/common/memory/linalloc.c ./nktlib/src/
 cp ../src/common/formats/midi2nkt.c ./nktlib/src/
 cp ../src/common/formats/mus2midi.c ./nktlib/src/
-cp ../src/common/core/c_vars.c ./nktlib/src/
+cp ../src/common/core/vartypes.c ./nktlib/src/
 cp ../src/common/core/amlog.c ./nktlib/src/
 cp ../src/common/timing/miditim.c ./nktlib/src/
 cp ../src/common/formats/midiInfo.c ./nktlib/src/

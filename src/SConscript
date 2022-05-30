@@ -329,7 +329,7 @@ env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
-core_src = ["common/core/c_vars.c","common/core/amprintf.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
+core_src = ["common/core/vartypes.c","common/core/amprintf.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
 containers_src = ["common/containers/stack.c","common/containers/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
@@ -366,7 +366,7 @@ nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
-nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
+nkt_src = ["common/core/vartypes.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
 
 if (gemdos_io_enable == "yes"):
     nkt_src = nkt_src + discio_src

@@ -149,11 +149,11 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
     initAmSequence(pSequence,MFP_TiC);
 #endif
 
-	  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
-	  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
-	   
-	  /* Install our asm ikbd handler */
-	  Supexec(IkbdInstall);
+	  IkbdClearState();
+
+      // Install our asm ikbd handler 
+      Supexec(IkbdInstall);
+
 	  Bool bQuit=FALSE;
 	  
 	  //####
@@ -161,7 +161,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
       {
 
 	    //check keyboard input  
-	    for (uint16 i=0; i<128; ++i) {
+	    for (uint16 i=0; i<IKBD_TABLE_SIZE; ++i) {
 	    
 	      if (Ikbd_keyboard[i]==KEY_PRESSED) {
 	      Ikbd_keyboard[i]=KEY_UNDEFINED;

@@ -137,8 +137,7 @@ int main(void) {
     
   printHelpScreen();
 
-  amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
-  Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+	IkbdClearState();
 
 	/* Install our asm handler */
 	Supexec(IkbdInstall);
@@ -147,10 +146,12 @@ int main(void) {
 	/* Wait till ESC key pressed */
 	quit = 0;
 	while (!quit) {
-		for (i=0; i<128; i++) {
-			if (Ikbd_keyboard[i]==KEY_PRESSED) {
-				
-			     Ikbd_keyboard[i]=KEY_UNDEFINED;
+		for (i=0; i<IKBD_TABLE_SIZE; i++) 
+		{
+			
+			if (Ikbd_keyboard[i] == KEY_PRESSED) 
+			{
+			  Ikbd_keyboard[i] = KEY_UNDEFINED;
 				
 				switch(i){
 				  case SC_ESC:{

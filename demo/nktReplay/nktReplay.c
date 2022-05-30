@@ -71,7 +71,8 @@ int16 iError=0;
 
     pNktSeq=loadNktSequence(argv[1]);
 
-    if(pNktSeq!=NULL){
+    if(pNktSeq!=NULL)
+    {
         printInfoScreen();
         mainLoop(pNktSeq);
 
@@ -132,20 +133,20 @@ void mainLoop(sNktSeq *pSequence)
     initNktSequence(pSequence,NKT_PLAY_ONCE,TRUE);
 #endif
 
-    //install replay rout
-      amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
-      Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+      IkbdClearState();
 
-      /* Install our asm ikbd handler */
+      // Install our asm ikbd handler 
       Supexec(IkbdInstall);
 
       //####
       while(bQuit!=TRUE)
       {
         // check keyboard input
-        for (uint16 i=0; i<128; ++i) {
+        for (uint16 i=0; i<IKBD_TABLE_SIZE; ++i) 
+        {
 
-          if (Ikbd_keyboard[i]==KEY_PRESSED) {
+          if (Ikbd_keyboard[i]==KEY_PRESSED) 
+          {
           Ikbd_keyboard[i]=KEY_UNDEFINED;
 
           switch(i){

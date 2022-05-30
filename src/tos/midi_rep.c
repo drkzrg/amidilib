@@ -18,7 +18,7 @@
 
 static sSequence_t *g_CurrentSequence=0;
 
-sSequence_t* const getActiveAmSequence()
+sSequence_t* const getActiveAmSequence(void)
 {
   AssertMsg(g_CurrentSequence=!0,"Fatal error: current sequence is NULL");
   return g_CurrentSequence;

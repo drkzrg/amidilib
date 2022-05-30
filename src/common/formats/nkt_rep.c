@@ -27,6 +27,8 @@
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 #include "gemdosio.h"
+#else
+#include <stdio.h>
 #endif
 
 // helper function for determining amount of memory we need for data / events buffers

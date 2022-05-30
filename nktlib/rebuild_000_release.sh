@@ -19,6 +19,9 @@ scons --sconstruct=SConstruct_000_release
 
 echo ############ Cleanup
 find ./nktlib/ -name "*.o" -type f|xargs rm -f
+rm ./nktlib/.sconsign.dblite
+rm ./nktlib/DUMMY.TXT
+
 tar czvf nktlib-000.tgz ./nktlib
 
 echo Done

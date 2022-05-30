@@ -19,6 +19,8 @@ scons --sconstruct=SConstruct_020-40_nolibc_release
 
 echo ############ Cleanup
 find ./nktlib/ -name "*.o" -type f|xargs rm -f
+rm ./nktlib/.sconsign.dblite
+rm ./nktlib/DUMMY.TXT
 
 tar czvf nktlib-020-40-nolibc.tgz ./nktlib
 

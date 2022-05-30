@@ -1072,7 +1072,7 @@ sEventBlock_t tempEvent;
     case MT_EOT:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: End of track"NLNL,(unsigned long)delta);
+      amTrace((const uint8*)"delta: %u\tMeta event: End of track"NL,(unsigned long)delta);
 #endif
     sEot_EventBlock_t *pEvntBlock=0;
     (*pPtr)++;

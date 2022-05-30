@@ -36,6 +36,7 @@ mkdir ./nktlib/include/
 fi
 
 cp ../include/amlog.h ./nktlib/include/
+cp ../include/amstring.h ./nktlib/include/
 cp ../include/common_m68k.inc ./nktlib/include/
 cp ../include/vartypes.h ./nktlib/include/
 cp ../include/dmus.h ./nktlib/include/
@@ -59,6 +60,7 @@ fi
 
 cp ../include/core/assert.h ./nktlib/include/core/
 cp ../include/core/debug.h ./nktlib/include/core/
+cp ../include/core/amprintf.h ./nktlib/include/core/
 
 
 if [ ! -d "./nktlib/include/timing/" ]; then

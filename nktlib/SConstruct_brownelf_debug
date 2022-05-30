@@ -14,11 +14,13 @@ build_config='debug'
 SConscript('SConscript.nktlib',\
 variant_dir='./nktlib', duplicate=0,\
 exports={\
-'targetPlatform':targetPlatform,\
-'use_crosscompiler':toolchainEnv['toolchain_use_cross'],\
-'toolchain':toolchainEnv['toolchain'],\
-'toolchain_version':toolchainEnv['toolchain_version'],\
 'host':toolchainEnv['host'],\
+'toolchain':toolchainEnv['toolchain'],\
+'toolchain_c_prefix':toolchainEnv['toolchain_c_prefix'],\
+'toolchain_version':toolchainEnv['toolchain_version'],\
+'toolchain_prefix':toolchainEnv['toolchain_prefix'],\
+'toolchain_use_cross':toolchainEnv['toolchain_use_cross'],\
+'targetPlatform':targetPlatform,\
 'build_config':build_config,\
 'use_fpu':'no',\
 'enable_lzo_compression':'no',\

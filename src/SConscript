@@ -406,8 +406,6 @@ if(use_libc == 'yes'):
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
     ADDLIBS += ['startup' + LIB_TARGET]
-    #ADDLIBS += ['gcc']
-    
     linkedLibs = [LIBRARYNAME] + ADDLIBS
     
     # build test programs and link them with amidilib and custom startup code

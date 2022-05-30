@@ -113,11 +113,5 @@ void amSetDefaultUserMemoryCallbacks(void);
 // sets user memory allocation functions
 void amSetUserMemoryCallbacks(sUserMemoryCallbacks *func);
 
-// helpers writes a byte/short/long and returns the buffer
-uint8* WriteByte(void* buf, int8 b);
-uint8* WriteShort(void* b, uint16 s);
-uint8* WriteInt(void* b, uint32 i);
-int32 UpdateBytesWritten(int32* bytes_written, int32 to_add, int32 max);
-
 #endif
 

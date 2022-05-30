@@ -52,6 +52,45 @@ Copyright (C) 2007-2021 Pawel Goralski
 #define MUSEVENT_CONTROLLERCHANGE	4
 #define MUSEVENT_END	6
 
+
+// writes a byte, and returns the buffer
+uint8* WriteByte(void* buf, int8 b)
+{
+    uint8* buffer = (uint8*)buf;
+    *buffer = b;
+    ++buffer;
+    return buffer;
+}
+
+uint8* WriteShort(void* b, uint16 s)
+{
+    uint16* buffer = (uint16*)b;
+    *buffer = s;
+    ++buffer;
+    return (uint8 *)buffer;
+}
+
+uint8* WriteInt(void* b, uint32 i)
+{
+ uint32* buffer = (uint32*)b;
+ *buffer = i;
+ ++buffer;
+ return (uint8 *)buffer;
+}
+
+int32 UpdateBytesWritten(int32* bytes_written, int32 to_add, int32 max)
+{
+    *bytes_written += to_add;
+
+    if(max!=-1){
+        if (max && *bytes_written > max){
+            return 0;
+        }
+    } 
+    
+  return 1;
+}
+
 // we are making format 0, nb of tracks==1, div=0xe250(?)
 
 // Format - 0 (1 track only)

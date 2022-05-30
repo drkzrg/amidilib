@@ -32,6 +32,6 @@ void logd(const char *mes,...);
 
 
 void initDebug(const char *pFilename);
-void deinitDebug();
+void deinitDebug(void);
 
 #endif

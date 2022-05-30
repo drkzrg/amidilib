@@ -9,102 +9,99 @@
     include "common_m68k.inc"
     include "m68k_defs.inc"
 
-	xref  update			; function pointer to current interrupt routine
-	xref  updateStepRout		; function pointer holding current replay routine address
-
-	xref _updateStepNkt		; update step for single track replay
-	xref _updateStepNktMt		; update step for multitrack replay
-
-
-        xdef _NktInstallReplayRoutNoTimers	; sets Nkt replay interrupt routine (single / multitrack) without setting timers
-
-	xdef _NktInstallReplayRout	; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
-        xdef _NktDeinstallReplayRout	; removes Nkt replay routine from system
+	xref  update						; function pointer to current interrupt routine
+	xref  updateStepRout				; function pointer holding current replay routine address
+	xref _updateStepNkt					; update step for single track replay
+	xref _updateStepNktMt				; update step for multitrack replay
+    xdef _NktInstallReplayRoutNoTimers	; sets Nkt replay interrupt routine (single / multitrack) without setting timers
+	xdef _NktInstallReplayRout			; initialises Nkt replay interrupt routine (single / multitrack) on selected timer
+    xdef _NktDeinstallReplayRout		; removes Nkt replay routine from system
 	xdef _NktMidiUpdateHook
-	xdef _clearMidiOutputBuffer	; clears MidiOutputBuffer
-        even
+	xdef _clearMidiOutputBuffer			; clears MidiOutputBuffer
+    
+    TEXT
 
 replayNkt:
-        movem.l   d0-7/a0-6,-(a7)	; save registers
+    movem.l   d0-7/a0-6,-(a7)	; save registers
 
-        move.l	updateStepRout,d0	; check if anything is installed
+    move.l	updateStepRout,d0	; check if anything is installed
 	tst.l	d0
 	beq.s	.nothingToDo
 
-        move.l	d0,a0
+    move.l	d0,a0
 
 	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
 
-        if (IKBD_MIDI_SEND_DIRECT==1)
+    if (IKBD_MIDI_SEND_DIRECT==1)
 	echo	"[nkt_rep_m68k.s] IKBD MIDI DATA SEND DIRECT ENABLED"
 
-        move.w	#0,d1
-        move.l 	#_MIDIsendBuffer,a0
-        move.w	_MIDIbytesToSend,d1
+    move.w	#0,d1
+    move.l 	#_MIDIsendBuffer,a0
+    move.w	_MIDIbytesToSend,d1
 
 	move.w  sr,-(a7)
 	or.w	#$2300,sr		; disable some interrupts
 
 
-        cmpi.w   #0,d1
-        beq.s   .done       ;if 0 bytes do nothing
+    cmpi.w   #0,d1
+    beq.s   .done       ;if 0 bytes do nothing
 
-        ifne (__VASM & m68000)
-        echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
+    ifne (__VASM & m68000)
+    echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
 
 .send:
-      ; slap data to d0
-      move.w	(a0)+,d0  ; get word
+    ; slap data to d0
+    move.w	(a0)+,d0  ; get word
 
-      move.w	d0,d2		;make copy
-      andi.w	#$FF00,d2
-      lsr.w	#8,d2
+    move.w	d0,d2		;make copy
+    andi.w	#$FF00,d2
+    lsr.w	#8,d2
 .wait1:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait1		;no, wait!
-      move.b	d2,$fffffc06.w	;write to MIDI data register
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait1		;no, wait!
+    move.b	d2,$fffffc06.w	;write to MIDI data register
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      ;not done
-      move.w	d0,d2
-      andi.w	#$00FF,d2
+    ;not done
+    move.w	d0,d2
+    andi.w	#$00FF,d2
 .wait2:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait2		;no, wait!
-      move.b	d2,$fffffc06.w	;write to MIDI data register
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait2		;no, wait!
+    move.b	d2,$fffffc06.w	;write to MIDI data register
 
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      bra.s	.send
+    bra.s	.send
 
-      else
-      echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
+    else
+    echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
 
 .send:
       ; slap data to d0
-      move.b	(a0)+,d0  ; get byte
+    move.b	(a0)+,d0  ; get byte
 
 .wait:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait		;no, wait!
-      move.b	d0,$fffffc06.w	;write to MIDI data register
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait		;no, wait!
+    move.b	d0,$fffffc06.w	;write to MIDI data register
 
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      bra.s	.send
+    bra.s	.send
 
-      endif  ;end 68030>= part
+    endif  ;end 68030>= part
 
 .done:
-        move.w	#0,_MIDIbytesToSend
+    move.w	#0,_MIDIbytesToSend
 	move.w    (a7)+,sr             ;restore sr
 
 	else
@@ -132,18 +129,18 @@ replayNkt:
 
 .nothingToDo:
 
-        movem.l   (a7)+,d0-7/a0-6	;restore registers
+    movem.l   (a7)+,d0-7/a0-6	;restore registers
 	rte
 
 
 _NktMidiUpdateHook:
 	movem.l   d0-7/a0-6,-(a7)	; save registers
 
-        move.l	updateStepRout,d0	; check if anything is installed
+    move.l	updateStepRout,d0	; check if anything is installed
 	tst.l	d0
 	beq.s	.nothingToDo
 
-        move.l	d0,a0
+    move.l	d0,a0
 	jsr 	(a0)			; update sequence state and send events / copy events to internal send buffer
 
 	if	(TX_ENABLE==0)
@@ -166,54 +163,54 @@ _NktMidiUpdateHook:
 	echo "[nkt_rep_m68k.s] Midi send 68000 target variant"
 
 .send:
-      ; slap data to d0
-      move.w	(a0)+,d0  ; get word
+    ; slap data to d0
+    move.w	(a0)+,d0  ; get word
 
-      move.w	d0,d2		; make copy
-      andi.w	#$FF00,d2
-      lsr.w	#8,d2
+    move.w	d0,d2		; make copy
+    andi.w	#$FF00,d2
+    lsr.w	#8,d2
 .wait1:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait1		;no, wait!
-      move.b	d2,$fffffc06.w	;write to MIDI data register
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait1		;no, wait!
+    move.b	d2,$fffffc06.w	;write to MIDI data register
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      ;not done
-      move.w	d0,d2
-      andi.w	#$00FF,d2
+    ;not done
+    move.w	d0,d2
+    andi.w	#$00FF,d2
 .wait2:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait2		;no, wait!
-      move.b	d2,$fffffc06.w	;write to MIDI data register
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait2		;no, wait!
+    move.b	d2,$fffffc06.w	;write to MIDI data register
 
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      bra.s	.send
+    bra.s	.send
 
-      else
-      echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
+    else
+    echo "[nkt_rep_m68k.s] Midi send 68030 target variant"
 
 .send:
-      ; slap data to d0
-      move.b	(a0),d0  ; get byte
-      clr.b	(a0)+ 	 ; clear it
+    ; slap data to d0
+    move.b	(a0),d0  ; get byte
+    clr.b	(a0)+ 	 ; clear it
 
 .wait:
-      btst	#1,$fffffc04.w	;is data register empty?
-      beq.s	.wait		;no, wait!
-      move.b	d0,$fffffc06.w	;write to MIDI data register
+    btst	#1,$fffffc04.w	;is data register empty?
+    beq.s	.wait		;no, wait!
+    move.b	d0,$fffffc06.w	;write to MIDI data register
 
-      subq.w	#1,d1
-      cmpi.w	#0,d1
-      beq.s	.done
+    subq.w	#1,d1
+    cmpi.w	#0,d1
+    beq.s	.done
 
-      bra.s	.send
+    bra.s	.send
 
-      endif  ;end 68030>= part
+    endif  ;end 68030>= part
 .done:
 	move.w	#0,_MIDIbytesToSend
 	else
@@ -258,7 +255,7 @@ _NktInstallReplayRoutNoTimers:
 ; #####################################################################################
 
 _NktInstallReplayRout:
-        movem.l	d0-d7/a0-a6,-(sp)
+    movem.l	d0-d7/a0-a6,-(sp)
 	move.w	sr,-(sp)	;save status register
 
 	move.w  #0,midiIntCounter
@@ -275,18 +272,18 @@ _NktInstallReplayRout:
 	move.l	#_updateStepNkt, updateStepRout
 .done:
 
-        or.w	#$0700,sr	;turn off all interupts
+    or.w	#$0700,sr	;turn off all interupts
 
-        if(AUTO_INT_ENABLE==1)
+    if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
 	bclr.b	#3,$fffffa17.w
 	endif
 
 	move.l  #replayNkt, update	  ; set interrupt update function
 
-        move.l	$114,oldVector            ; save TiC
-        move.l  #stopTiC, stopTimerIntPtr
-        move.l  #updateTiC, updateTimerIntPtr
+    move.l	$114,oldVector            ; save TiC
+    move.l  #stopTiC, stopTimerIntPtr
+    move.l  #updateTiC, updateTimerIntPtr
 
 	if(AUTO_INT_ENABLE==1)
 	echo	"[nkt_rep_m68k.s] AUTO INT ENABLED"
@@ -297,17 +294,17 @@ _NktInstallReplayRout:
 
 	move.l  #vectorTiC, $114.w	; install custom vector
 
-        move.l    stopTimerIntPtr,a0
-        jsr       (a0)
-        move.l    updateTimerIntPtr,a0
-        jsr       (a0)
+    move.l    stopTimerIntPtr,a0
+    jsr       (a0)
+    move.l    updateTimerIntPtr,a0
+    jsr       (a0)
 .error:
-        move.w 	(sp)+,sr 		;restore Status Register
-        movem.l (sp)+,d0-d7/a0-a6	;restore registers
-        rts
+    move.w 	(sp)+,sr 		;restore Status Register
+    movem.l (sp)+,d0-d7/a0-a6	;restore registers
+    rts
 
 _NktDeinstallReplayRout:
-        movem.l	  d0-d7/a0-a6,-(sp)
+    movem.l	d0-d7/a0-a6,-(sp)
 	move.w	sr,-(sp)		;save status register
 
 	or.w	#$0700,sr
@@ -329,8 +326,8 @@ _NktDeinstallReplayRout:
 	move.l	  #0, updateStepRout	; clear update step rout
 
 	move.w 	  (sp)+,sr 		;restore Status Register
-        movem.l (sp)+,d0-d7/a0-a6
-        rts
+    movem.l (sp)+,d0-d7/a0-a6
+    rts
 
 _clearMidiOutputBuffer:
 	movem.l	  d0-d7/a0-a6,-(sp)

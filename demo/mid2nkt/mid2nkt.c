@@ -73,15 +73,15 @@ uint8 *filePath=0;
   }
 
   // load midi file into memory
-  uint32 iError=0;
-  uint32 ulFileLenght=0L;
-  void *pMidi=0;
-  char tempName[MAX_GEMDOS_FILEPATH];
-
-  pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
+  uint32 ulFileLenght=0;
+  
+  void *pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
 
    if(pMidi!=NULL)
    {
+
+        char tempName[MAX_GEMDOS_FILEPATH];
+
        // check MUS file
        MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
 

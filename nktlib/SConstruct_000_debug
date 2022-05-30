@@ -26,7 +26,7 @@ exports={\
 'enable_lzo_compression':'no',\
 'enable_lto':'no',\
 'tx_enable':'no',\
-'gemdos_io_enable':'yes',\
+'gemdos_io_enable':'no',\
 'ikbd_direct_write':'yes',\
 'conout_enable':'yes',\
 'use_libc':'yes',\

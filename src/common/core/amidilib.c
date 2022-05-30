@@ -386,7 +386,7 @@ retVal amInit(void)
   // setup standard memory callbacks
   amSetDefaultUserMemoryCallbacks();
 
-#if ENABLE_GEMDOS_IO
+#ifdef ENABLE_GEMDOS_IO
   initGemdos();
 #endif  
 
@@ -465,7 +465,7 @@ void amDeinit(void)
   deinitDebug();
 #endif
 
-#if ENABLE_GEMDOS_IO
+#ifdef ENABLE_GEMDOS_IO
   deinitGemdos();
 #endif  
 

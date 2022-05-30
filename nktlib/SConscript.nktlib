@@ -286,15 +286,15 @@ else:
     lib_dir='./lib/aout/'
     
 # gemdos i/o
-gemdos_src=""
+gemdosio_src=[]
 
-if(gemdos_io_enable=='yes'):
-    gemdos_src = ["./src/gemdosio.c"]
+if(gemdos_io_enable == 'yes'):
+    gemdosio_src = ["./src/gemdosio.c"]
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
 nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c","./src/midiInfo.c"]
-
 lzo_src = ["./src/minilzo.c"]
 
 # build library
-env.Library(lib_dir + LIBRARYNAME + LIB_POSTFIX, nkt_replay_src + nkt_conv_src + lzo_src + gemdos_src)
+libname = lib_dir + LIBRARYNAME + LIB_POSTFIX
+env.Library(libname, nkt_replay_src + nkt_conv_src + lzo_src + gemdosio_src)

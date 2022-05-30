@@ -1,5 +1,5 @@
 
-#    Copyright 2007-2021 Pawel Goralski
+#    Copyright 2007-2022 Pawel Goralski
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
@@ -37,36 +37,35 @@ def convertElfToTos(env, toolchainType, buildTypeName, targetName, outputDirPath
 SConsignFile(os.path.join("../build/", '.sconsign.dblite')) 
 
 # Set number of jobs, depending on number of cores
-#num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
-#SetOption('num_jobs', num_cpu)
+num_cpu = int(os.environ.get('NUMBER_OF_PROCESSORS', 2))
+SetOption('num_jobs', num_cpu)
 
 print("Running with %d job(s)." % GetOption('num_jobs')) 
 
 env = Environment(ENV = os.environ,tools=['default'])
 
-Help("AMIDILIB Copyright 2007-2021 Pawel Goralski\n \
-Type: 'Set build variables in SConstruct'\n \
-where name of 'targetPlatform' can be: \n \
-    'F030' - for Atari Falcon030 / TT build\n \
-    'ST' - for Atari ST build \n \
-    'CT60' - for Atari Falcon CT60/63\n \
- 'host' - 'Cygwin' or 'Linux'\n \
- 'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF'\n,\
- 'toolchain_c_prefix' - toolchain compiler name prefix \n,\
- 'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1')\n,\
- 'toolchain_prefix' - toolchain prefix path (root of the toolchain folder)\n,\
- 'toolchain_use_cross' - use cross compiler, set to 'y' by default\n \
- 'host' - computer host name\n,\
- 'build_config' - build type ('debug', 'release'),\n \
- 'use_fpu' - enable/disable hardware fpu code generation (valid only on F030 builds),\n \
- 'enable_lzo_compression' - enable/disable lzo compression support.\n \
- 'enable_lto' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n \
- 'ikbd_direct_write' - bypass O/S when writing to MIDI ports\n \
- 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n \
- 'conout_enable' - disable / enable console output,\n \
- 'gemdos_io_enable' - uses gemdos i/o instead of standard libc file i/o,\n \
- 'use_libc' - if set to 'no', builds library without libc dependencies, reducing binary size,\n \
- 'debug_level' - sets debug level, only valid in debug builds. Level can be set to (0..2), \n"\
+Help("AMIDILIB Copyright 2007-2022 Pawel Goralski\n\
+Type: 'Set build variables in SConstruct'\n\
+where name of 'targetPlatform' can be: \n\
+    'F030' - for Atari Falcon030 / TT build\n\
+    'ST' - for Atari ST build \n\
+    'CT60' - for Atari Falcon CT60/63\n\
+ 'host' - computer host name,\n\
+ 'toolchain' - toolchain type 'GCC' or 'GCCBROWNELF',\n\
+ 'toolchain_c_prefix' - toolchain compiler name prefix,\n\
+ 'toolchain_version' - compiler version string (x.x.x, eg. '4.3.4' or '7.3.1'),\n\
+ 'toolchain_prefix' - toolchain prefix path (root of the toolchain folder),\n\
+ 'toolchain_use_cross' - use cross compiler, set to 'y' by default\n\
+ 'build_config' - build type ('debug', 'release'),\n\
+ 'use_fpu' - enable/disable hardware fpu code generation (valid only on F030 builds),\n\
+ 'enable_lzo_compression' - enable/disable lzo compression support.\n\
+ 'enable_lto' - enable link time optimisation. Only valid on gcc 6.x.x> brownelf compilers.\n\
+ 'ikbd_direct_write' - bypass O/S when writing to MIDI ports\n\
+ 'tx_enable' - skips writing to ACIA ikbd port, sending bytes is via ikbd tx interrupt,\n\
+ 'conout_enable' - disable / enable console output,\n\
+ 'gemdos_io_enable' - uses gemdos i/o instead of standard libc file i/o,\n\
+ 'use_libc' - if set to 'no', builds library without libc dependencies, reducing binary size,\n\
+ 'debug_level' - sets debug level, only valid in debug builds. Level can be set to (0..2)\n"\
 )
 
 Import(
@@ -104,32 +103,32 @@ GCC_VERSION_STRING = toolchain_version
 if(toolchain=='GCC'):
     if(use_libc == 'yes'):
         if(PREFIX):
-            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include']
+            env['CPPPATH'] = [PREFIX + '/' + 'm68k-atari-mint/include', projdir + '/../deps/nanoprintf']
             env['LIBPATH'] = [PREFIX + '/' + 'm68k-atari-mint/lib']
         else:
             env['CPPPATH'] = ['m68k-atari-mint/include']
             env['LIBPATH'] = ['m68k-atari-mint/lib']
     else:
-        env['CPPPATH'] = [projdir + '/../deps/startup/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/nanoprintf']
         env['LIBPATH'] = []
 
 elif(toolchain=='GCCBROWNELF'):
     if(use_libc == 'yes'):
         if(PREFIX):
-            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include']
+            env['CPPPATH'] = [PREFIX + '/' + GCC_PREFIX + '/include', projdir + '/../deps/nanoprintf'] 
             env['LIBPATH'] = [PREFIX + '/' + GCC_PREFIX + '/lib']
         else:
-            env['CPPPATH'] = [GCC_PREFIX + '/include']
+            env['CPPPATH'] = [GCC_PREFIX + '/include', projdir + '/../deps/nanoprintf']
             env['LIBPATH'] = [GCC_PREFIX + '/lib']
     else:
-        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/libcmini/include']
+        env['CPPPATH'] = [projdir + '/../deps/atari-gcc-startup/include', projdir + '/../deps/nanoprintf']
         env['LIBPATH'] = []
 else:
     print('ERROR: Undefined target toolset. Exiting...')
     exit(-1)
 
 if(PREFIX):
-    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc'
+    env['CC'] = PREFIX + '/bin/' + GCC_PREFIX + '-gcc' + '-' + GCC_VERSION_STRING
     env['CXX'] = PREFIX + '/bin/' + GCC_PREFIX + '-c++'
     env['OBJCOPY'] = PREFIX + '/bin/' + GCC_PREFIX + '-objcopy'
     env['STRIP'] = PREFIX + '/bin/' + GCC_PREFIX + '-strip -s'
@@ -184,17 +183,17 @@ if(toolchain=='GCC'):
 
     if(targetPlatform == 'ST'):
         CFLAGS += '-m68000 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68000 -Wl,--traditional-format '
+        LDFLAGS += '-m68000 '
         VASM_FLAGS += '-m68000 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '000'
     elif(targetPlatform == 'F030'):
         CFLAGS += '-m68020-40  ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68020-40 -Wl,--traditional-format '
+        LDFLAGS += '-m68020-40 '
         VASM_FLAGS += '-m68030 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '030'
     elif(targetPlatform == 'CT60'):
         CFLAGS += '-m68060 ' + CODEGEN + ' -ffast-math -fomit-frame-pointer ' + fpu_flags
-        LDFLAGS += '-m68060 -Wl,--traditional-format '
+        LDFLAGS += '-m68060 '
         VASM_FLAGS += '-m68060 -quiet -Faout -quiet -spaces -I../include '
         LIB_TARGET = '060'
     else:
@@ -253,10 +252,11 @@ TARGET = TARGET + targetPlatform
 
 # indicate that we are not linking to standard libc libraries
 if(use_libc == 'yes'):
-    LDFLAGS+='-Wl,-e__main '
+    CFLAGS+='-DAMIDILIB_USE_LIBC=1 '
+    LDFLAGS+=' '
 else:
-    CFLAGS+='-I' + projdir + '/../deps/atari-gcc-startup/include '
-    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_main '
+    CFLAGS+='-DAMIDILIB_USE_LIBC=0 -I' + projdir + '/../deps/atari-gcc-startup/include '
+    LDFLAGS+='-nostdlib -nostartfiles -Wl,-e_start '
 
 # skip writing directly to ikbd port completely
 if (tx_enable == "yes"):
@@ -277,10 +277,6 @@ env["LIBPATH"] += [outputdir + '/']
 
 if(use_libc!='yes'):
     env["LIBPATH"] += [projdir + '/../deps/atari-gcc-startup/lib/' + OBJ_FORMAT + '/' + build_config + '/m68' + LIB_TARGET + '/']
-    if(LIB_TARGET=='000'):
-        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/']
-    else:
-        env["LIBPATH"] += [projdir + '/../deps/libcmini/build/m68020-60']
 
 #############################################################################################################################
 # additional defines  
@@ -300,7 +296,11 @@ if(use_libc!='yes'):
 # LZO_DEBUG enables LZO debug mode
 
 if ( build_config == 'debug'):
+
   print ("Debug build...")
+  
+  LDFLAGS += "-Wl,--traditional-format"
+  
   if(debug_level=='1'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
@@ -329,7 +329,7 @@ env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
-core_src = ["common/core/c_vars.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
+core_src = ["common/core/c_vars.c","common/core/amprintf.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
 containers_src = ["common/containers/stack.c","common/containers/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
@@ -338,10 +338,11 @@ midiparser_src = ["common/midi/mparser.c"]
 
 m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
-discio_src = ["tos/fmio.c"]
-timing_src = ["tos/mfp.c","common/timing/miditim.c","tos/common.s"]
+discio_src = ["tos/gemdosio.c"]
+timing_src = ["common/timing/miditim.c","tos/common.s"]
 midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
 memory_src = ["tos/memory.c","common/memory/linalloc.c"]
+string_src = ["tos/string/ctype.c","tos/string/ctype2.c","tos/string/string.c","tos/string/memcpy.s","tos/string/memcmp.s","tos/string/memset.s","tos/string/strcmp.s","tos/string/strlen.s","tos/string/strstr.s"]
 
 # other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 ym2149_src = ["common/ym2149.c"]
@@ -350,19 +351,22 @@ lzo_src = ["common/lzo/minilzo.c"]
 # main library 
 amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
+if(use_libc == 'no'):
+    amidilib_src = string_src + amidilib_src
+
 # build library
 env.Library(LIBRARYNAME, amidilib_src)
 
 #################### test programs entry points
 amidi_test_src = [projdir + "/../demo/midi_rep/midiplay.c"]
 midiOut_test_src = [projdir + "/../demo/midi_output/midiout.c"]
-timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c","tos/testReplay.s"]
+timings_test_src = [projdir + "/../demo/timings/timTest.c", projdir + "/../demo/timings/sampleSequence.c", projdir + "/../demo/timings/customSeqReplay.s"]
 ym2149_test_src = [projdir + "/../demo/ymOutput/ymTest.c"]
 nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
-nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c" ]
+nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
 
 if (gemdos_io_enable == "yes"):
     nkt_src = nkt_src + discio_src
@@ -383,7 +387,7 @@ if(use_libc == 'yes'):
 # build test programs and link them with amidilib
     ADDLIBS = ['c']
     
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + '.ttp'), source = [env.Object(input_src) + amidi_test_src] , LIBS = ADDLIBS + [LIBRARYNAME] , PROGSUFFIX = '.ttp')
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
 
     env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + midiOut_test_src], LIBS = ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
@@ -395,33 +399,32 @@ if(use_libc == 'yes'):
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
     
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
 
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = env['PROGSUFFIX']);
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
-    #ADDLIBS += ['startup' + LIB_TARGET]
-    ADDLIBS = ['cmini']
-    ADDLIBS += ['gcc']
+    ADDLIBS += ['startup' + LIB_TARGET]
+    #ADDLIBS += ['gcc']
     
     linkedLibs = [LIBRARYNAME] + ADDLIBS
     
     # build test programs and link them with amidilib and custom startup code
-    env.Program(target = (AMIDI_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(input_src) + amidi_test_src] , LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (AMIDI_TEST_NAME + '.ttp'), source = [env.Object(input_src) + env.Object(string_src) + amidi_test_src ] , LIBS = linkedLibs, PROGSUFFIX = '.ttp')
     convertElfToTos(env, toolchain, build_config, AMIDI_TEST_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(input_src) + midiOut_test_src], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (MIDI_SEQ_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(input_src) + env.Object(string_src) + midiOut_test_src ], LIBS = linkedLibs, PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, MIDI_SEQ_TEST_NAME, outputdir,'tos')
 
-    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (YM2149_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + env.Object(string_src) + ym2149_test_src],  LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, YM2149_TEST_NAME, outputdir,'tos')
     
-    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
+    env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + env.Object(string_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (NKT_REPLAY_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src ] , LIBS = ADDLIBS + [], PROGSUFFIX=env['PROGSUFFIX']);
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + nktReplay_src] , LIBS = ADDLIBS + [], PROGSUFFIX='.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MID2NKT_NAME + env['PROGSUFFIX']), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src  ] , LIBS= ADDLIBS + [], PROGSUFFIX = env['PROGSUFFIX']);    
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + mid2nkt_src] , LIBS= ADDLIBS + [], PROGSUFFIX = '.ttp'); 
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

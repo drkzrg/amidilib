@@ -1,15 +1,22 @@
 #!/bin/bash
-# deploy/rebuild helper script
 
-#    Copyright 2007-2021 Pawel Goralski
+# helper script
+# builds given configuration in debug/release
+# can copy build to emulator folder or directly
+# to remote machine via tcp/ip with curl
+
+# Copyright 2007-2022 Pawel Goralski
 #    
-#    This file is part of AMIDILIB.
-#    See license.txt for licensing information.
+# This file is part of AMIDILIB.
+# See license.txt for licensing information.
+#
 
 args=("$@") 
 ARGS=${#args[@]} 
 cleanall=0 
 stripsymbols=0
+
+CURDIR=$(dirname "$0")
 
 for (( i=0;i<$ARGS;++i)); do 
 if [ ${args[${i}]} = "--clean" ]; then
@@ -44,79 +51,80 @@ MIDISEQ_BIN='midiseq.tos'
 NKTREP_BIN='nktrep.ttp'
 MID2NKT_BIN='mid2nkt.ttp'
 
-# remote machine settings
+# remote machine ip, where we want to copy build
 # if send_to_native_machine=1 copy binaries to remote native machine via curl
 send_to_native_machine=1
 execute_on_remote=0
 remote_exec=$MIDIOUT_BIN
 remote_parm=''
-REMOTE_MACHINE='6.6.6.15'
+REMOTE_MACHINE='192.168.66.15'
 REMOTE_PATH='/e/adebug/'
 
 tools_prefix='/opt/cross-mint/bin/'
-cross_prefix='m68k-ataribrown-elf-'
+cross_prefix='m68k-atari-mint-'
+BUILD_VARIANT=SConstruct_020-40_nolibc
 BUILD_CONFIG='release'
-BUILD_DIR='../build/brownelf/'$BUILD_CONFIG'/'
+BUILD_DIR=${CURDIR}/../build/aout/${BUILD_CONFIG}/
 
 function process()
 {
 echo Processing $BUILD_DIR$1
 if [ -f $BUILD_DIR$1 ];
 then
-#   $tools_prefix$cross_prefix"stack" $BUILD_DIR$1 --size=$stack_size
-#   $tools_prefix$cross_prefix"flags" -S $BUILD_DIR$1
+${tools_prefix}${cross_prefix}stack ${BUILD_DIR}${1} --size=$stack_size
+${tools_prefix}${cross_prefix}flags -S ${BUILD_DIR}${1}
 
-   if [ $stripsymbols -eq 1 ]
+   if [ ${stripsymbols} -eq 1 ]
    then
-        echo Stripping symbols from $1
-        $tools_prefix$cross_prefix"strip" -s $BUILD_DIR$1
+        echo Stripping symbols from ${1}
+        ${tools_prefix}${cross_prefix}strip -s ${BUILD_DIR}${1}
    fi
 
-    if [ $send_to_native_machine -eq 1 ]
+    if [ ${send_to_native_machine} -eq 1 ]
     then
-        echo Sending $1 to $REMOTE_MACHINE$REMOTE_PATH$1
-        curl -0T "$BUILD_DIR$1" $REMOTE_MACHINE$REMOTE_PATH$1
+        echo Sending ${1} to ${REMOTE_MACHINE}${REMOTE_PATH}${1}
+        curl -0T "${BUILD_DIR}${1}" ${REMOTE_MACHINE}${REMOTE_PATH}${1}
     fi
 
-   if [ $copy_to_emu_dir -eq 1 ]
+   if [ ${copy_to_emu_dir} -eq 1 ]
    then
-        cp -v $BUILD_DIR$1 $install_dir
+        cp -v ${BUILD_DIR}${1} ${install_dir}
    fi
 fi
 }
 
 function delete_if_exists()
 {
-if [ -f $BUILD_DIR$1 ];     
+if [ -f ${BUILD_DIR}${1} ];     
 then
-   rm $BUILD_DIR$1
+   rm ${BUILD_DIR}${1}
 fi
 }
 
 # delete binaries if they exist
 echo "############################# Removing binaries .. "
-delete_if_exists $MIDIREP_BIN
-delete_if_exists $YM2149_TEST_BIN
-delete_if_exists $MIDIOUT_BIN
-delete_if_exists $MIDISEQ_BIN
-delete_if_exists $NKTREP_BIN
-delete_if_exists $MID2NKT_BIN
+delete_if_exists ${MIDIREP_BIN}
+delete_if_exists ${YM2149_TEST_BIN}
+delete_if_exists ${MIDIOUT_BIN}
+delete_if_exists ${MIDISEQ_BIN}
+delete_if_exists ${NKTREP_BIN}
+delete_if_exists ${MID2NKT_BIN}
 
 # clean all stuff
-if [ $cleanall -eq 1 ]; then
+if [ ${cleanall} -eq 1 ]; then
   echo "############################# Cleaning build .. "
-  scons --sconstruct=SConstruct_brownelf_$BUILD_CONFIG -c
+  scons --sconstruct=${BUILD_VARIANT}_${BUILD_CONFIG} -c
 fi
 
 #launch build
 echo "############################# Starting build ... "   
-scons --sconstruct=SConstruct_brownelf_$BUILD_CONFIG
+scons --sconstruct=${BUILD_VARIANT}_${BUILD_CONFIG}
 
-process $MIDIREP_BIN
-process $YM2149_TEST_BIN
-process $MIDIOUT_BIN
-process $MIDISEQ_BIN
-process $NKTREP_BIN
-process $MID2NKT_BIN
+process ${MIDIREP_BIN}
+process ${YM2149_TEST_BIN}
+process ${MIDIOUT_BIN}
+process ${MIDISEQ_BIN}
+process ${NKTREP_BIN}
+process ${MID2NKT_BIN}
 
 echo "############################## Done .."

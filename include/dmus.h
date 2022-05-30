@@ -23,6 +23,6 @@ typedef struct tagMUSheader_t {
 #define MUS_ID 0x4D5553
 
 
-retVal Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len);
+int16 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len);
 
 #endif

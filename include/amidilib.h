@@ -1,4 +1,4 @@
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -12,7 +12,7 @@
 #include "mdevtype.h"
 
 #define LIB_NAME "AMIDILIB : (X)MIDI replay library\n"
-#define AMIDI_INFO "(c)2007-2021 Pawel Goralski\n"
+#define AMIDI_INFO "(c)2007-2022 Pawel Goralski\n"
 
 #define AMIDI_MAJOR_VERSION 1
 #define AMIDI_MINOR_VERSION 4
@@ -62,11 +62,11 @@ const sAMIDI_version *amGetVersionInfo(void);
  * @param ppSequence - pointer to a an adress containing AMIDI sequence to populate
  * @return returns AM_OK if everything is OK, AM_ERR if error occured
  **/
-retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
+int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */
-retVal amInit(void);
+int16 amInit(void);
 
 /** Deinits system, restores standard MIDI buffer */
 void amDeinit(void);

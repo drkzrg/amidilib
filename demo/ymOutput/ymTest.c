@@ -1,39 +1,47 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 #include <stdlib.h>
 #include <ctype.h>
-#include <stdio.h>
 
 #include "vartypes.h"
+
+#include "core/amprintf.h"
 #include "input/ikbd.h"
 #include "ym2149/ym2149.h"
 
-#include <osbind.h>
+#include <mint/osbind.h>
 
-void printHelpScreen(){
-  printf("===============================================\n");
-  printf("/|\\ ym2149 sound output test..\n");
-  printf("'[' or ']' - change octave -/+ \n");
-  printf("[q-h] - play note\n");
-  printf("1,2,3 - enable/disable tone for channel A/B/C \n");
-  printf("7,8,9 - enable/disable noise for channel A/B/C \n");
-  printf("',' or '.' - change envelope -/+ \n");
-  printf("';' or ''' - change noise generator period -/+ \n");
-  printf("'z' or 'x' - change channels amplitude -/+ \n");
-  printf("[i] - show this help screen \n");
-  printf("[spacebar] - turn off all sounds \n");
-  printf("[Esc] - quit\n");
-  printf("(c)Nokturnal 2010\n");
-  printf("================================================\n");
-  
+void printHelpScreen()
+{
+  amPrintf("==============================================="NL);
+  amPrintf("/|\\ ym2149 sound output test.."NL);
+
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+
+  amPrintf("'[' or ']' - change octave -/+ "NL);
+  amPrintf("[q-h] - play note"NL);
+  amPrintf("1,2,3 - enable/disable tone for channel A/B/C "NL);
+  amPrintf("7,8,9 - enable/disable noise for channel A/B/C "NL);
+  amPrintf("',' or '.' - change envelope -/+ "NL);
+  amPrintf("';' or ''' - change noise generator period -/+ "NL);
+  amPrintf("'z' or 'x' - change channels amplitude -/+ "NL);
+  amPrintf("[i] - show this help screen "NL);
+  amPrintf("[spacebar] - turn off all sounds "NL);
+  amPrintf("[Esc] - quit"NL);
+  amPrintf("(c)Nokturnal 2007-22"NL);
+  amPrintf("================================================"NL);
 }
 
-
-int main(void) {
+int main(void) 
+{
   
   turnOffKeyclick();
   
@@ -67,164 +75,208 @@ int main(void) {
   uint8 noteBase=noteBaseArray[currentBaseIdx];
   uint8 currentEnvelope=getEnvelopeId(currentEnvIdx);
   
-  while(bQuitFlag!=TRUE){
-    
+  while(bQuitFlag!=TRUE)
+  {
       input=(uint16)Crawcin();
 
-      if(input!=0){
+      if(input!=0)
+      {
     
-      switch(toupper((uint8)input)){
+      switch(toupper((uint8)input))
+      {
     
-	case 0x1b:{
-	  bQuitFlag=TRUE;
-	}
-	break;
-	case ' ':{
-	  ymSoundOff();
-	}
-	break;
+			case 0x1b:
+			{
+	  			bQuitFlag=TRUE;
+			} break;
+			
+			case ' ':
+			{
+	  		ymSoundOff();
+			} break;
 	
-	case '1':{
-	  if(ymRegisters[CH_A].toneEnable){
-	    ymRegisters[CH_A].toneEnable=0;
-	    printf("[Channel A] tone OFF\n");
-	  }else{
-	    ymRegisters[CH_A].toneEnable=1;
-	    printf("[Channel A] tone ON\n");
-	  }
+			case '1':
+			{
+	  		if(ymRegisters[CH_A].toneEnable)
+	  		{
+	    		ymRegisters[CH_A].toneEnable=0;
+	    		amPrintf("[Channel A] tone OFF"NL);
+	  		}
+	  		else
+	  		{
+	    		ymRegisters[CH_A].toneEnable=1;
+	    		amPrintf("[Channel A] tone ON"NL);
+	  		}
 	
-	 setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
+	 		setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  
-	}break;
+			} break;
 	
-	case '2':{
-	if(ymRegisters[CH_B].toneEnable){
-	    ymRegisters[CH_B].toneEnable=0;
-	    printf("[Channel B] tone OFF\n");
-	  }else{
-	    ymRegisters[CH_B].toneEnable=1;
-	    printf("[Channel B] tone ON\n");
-	  }
+		case '2':
+		{
+			if(ymRegisters[CH_B].toneEnable)
+			{
+	    	ymRegisters[CH_B].toneEnable=0;
+	    	amPrintf("[Channel B] tone OFF"NL);
+	  	}
+	  	else
+	  	{
+	    	ymRegisters[CH_B].toneEnable=1;
+	    	amPrintf("[Channel B] tone ON"NL);
+	  	}
 	  
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	 
-	}break;
-	case '3':{
-	if(ymRegisters[CH_C].toneEnable){
+		}	break;
+	case '3':
+	{
+		if(ymRegisters[CH_C].toneEnable)
+		{
 	    ymRegisters[CH_C].toneEnable=0;
-	    printf("[Channel C] tone OFF\n");
-	  }else{
+	    amPrintf("[Channel C] tone OFF"NL);
+	  }
+	  else
+	  {
 	    ymRegisters[CH_C].toneEnable=1;
-	    printf("[Channel C] tone ON\n");
-	  }
+	    amPrintf("[Channel C] tone ON"NL);
+	 }
+	 
 	 setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	  
-	}break;
+
+	} break;
 	
-	case '7':{
-	  if(ymRegisters[CH_A].noiseEnable){
+	case '7':
+	{
+	  if(ymRegisters[CH_A].noiseEnable)
+	  {
 	    ymRegisters[CH_A].noiseEnable=0;
-	    printf("[Channel A] noise OFF\n");
-	  }else{
+	    amPrintf("[Channel A] noise OFF"NL);
+	  }
+	  else
+	  {
 	    ymRegisters[CH_A].noiseEnable=1;
-	    printf("[Channel A] noise ON\n");
+	    amPrintf("[Channel A] noise ON"NL);
 	  }
 	  
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	 
-	}break;
+	} break;
 	
-	case '8':{
-	  if(ymRegisters[CH_B].noiseEnable){
+	case '8':
+	{
+	  if(ymRegisters[CH_B].noiseEnable)
+	  {
 	    ymRegisters[CH_B].noiseEnable=0;
-	    printf("[Channel B] noise OFF\n");
-	  }else{
+	    amPrintf("[Channel B] noise OFF"NL);
+	  }
+	  else
+	  {
 	    ymRegisters[CH_B].noiseEnable=1;
-	    printf("[Channel B] noise ON\n");
+	    amPrintf("[Channel B] noise ON"NL);
 	  }
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	 
-	}break;
+	} break;
 	
-	case '9':{
-	if(ymRegisters[CH_C].noiseEnable){
+	case '9':
+	{
+		if(ymRegisters[CH_C].noiseEnable)
+		{
 	    ymRegisters[CH_C].noiseEnable=0;
-	    printf("[Channel C] noise OFF\n");
-	  }else{
-	    ymRegisters[CH_C].noiseEnable=1;
-	    printf("[Channel C] noise ON\n");
+	    amPrintf("[Channel C] noise OFF"NL);
 	  }
+	  else
+	  {
+	    ymRegisters[CH_C].noiseEnable=1;
+	    amPrintf("[Channel C] noise ON"NL);
+	  }
+
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	 
-	}break;
+	} break;
 	
-	case '[':{
-	  if(currentBaseIdx!=0){
+	case '[':
+	{
+	  if(currentBaseIdx!=0)
+	  {
 	    currentBaseIdx--;
-	    printf("Changed octave to: %d\n",currentBaseIdx+1);
+	    amPrintf("Changed octave to: %d"NL,currentBaseIdx+1);
 	    idx=idx-12;
 	 
 	    setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  }
-	}break;
-	case ']':{
-	if(currentBaseIdx!=7){
+	} break;
+	case ']':
+	{
+	
+		if(currentBaseIdx!=7)
+		{
 	    currentBaseIdx++;
-	    printf("Changed octave to: %d\n",currentBaseIdx+1);
+	    amPrintf("Changed octave to: %d"NL,currentBaseIdx+1);
 	    idx=idx+12;
 	    
 	    setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  }
-	}break;
-	case ',':{
-	  if(currentEnvIdx!=0){
+	} break;
+	case ',':
+	{
+	  if(currentEnvIdx!=0)
+	  {
 	    currentEnvIdx--;
-	    printf("Changed envelope to: %d\n",currentEnvIdx);
+	    amPrintf("Changed envelope to: %d"NL,currentEnvIdx);
 	    
 	    setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  }
 	
-	}break;
-	case '.':{
-	if(currentEnvIdx!=7){
+	} break;
+	case '.':
+	{
+		if(currentEnvIdx!=7)
+		{
 	   currentEnvIdx++;
-	   printf("Changed envelope to: %d\n",currentEnvIdx);
+	   amPrintf("Changed envelope to: %d"NL,currentEnvIdx);
 	   setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  }
 	}break;
-	case ';':{
-	 if(noisegenPeriod!=0){
-	  noisegenPeriod--;
-	   printf("Changed noise generator period to: %d\n",noisegenPeriod);
+	case ';':
+	{
+	 if(noisegenPeriod!=0)
+	 {
+	  	noisegenPeriod--;
+	   	amPrintf("Changed noise generator period to: %d"NL,noisegenPeriod);
 	    setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	 }
 	}break;
-	case '\'':{
-	if(noisegenPeriod!=31){
-	  noisegenPeriod++;
-	   printf("Changed noise generator period to: %d\n",noisegenPeriod);
-	   setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	 }
-	}break;
-	case 'Z':{
+	case '\'':
+	{
+		if(noisegenPeriod!=31)
+		{
+	  	noisegenPeriod++;
+	   	amPrintf("Changed noise generator period to: %d"NL,noisegenPeriod);
+	   	setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
+	 	}
+	} break;
+	
+	case 'Z':
+	{
 	  
-	  if(channelAmp!=0){
+	  if(channelAmp!=0)
+	  {
 	    channelAmp--;
-	    
-	    printf("Changed channel amplitude to: %d\n",channelAmp);
+	    amPrintf("Changed channel amplitude to: %d"NL,channelAmp);
 	    ymRegisters[CH_A].amp=channelAmp;
 	    ymRegisters[CH_B].amp=channelAmp;
 	    ymRegisters[CH_C].amp=channelAmp;
 	    
 	    setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	 
 	  }
 	}break;
 	
-	case 'X':{
-	  if(channelAmp!=16){
-	    channelAmp++;
-	     printf("Changed channel amplitude to: %d\n",channelAmp);
+	case 'X':
+	{
+	  if(channelAmp!=16)
+	  {
+	     channelAmp++;
+	     amPrintf("Changed channel amplitude to: %d"NL,channelAmp);
 	     ymRegisters[CH_A].amp=channelAmp;
 	     ymRegisters[CH_B].amp=channelAmp;
 	     ymRegisters[CH_C].amp=channelAmp;
@@ -232,82 +284,93 @@ int main(void) {
 	     setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	  }
 
-	}break;
-	case 'I':{
+	} break;
+	case 'I':
+	{
 	  printHelpScreen();
-	}break;
-	case 'Q':{
-	  
+	} break;
+
+	case 'Q':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+0;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'A':{
+	case 'A':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+1;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'W':{
+	case 'W':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+2;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'S':{
+	case 'S':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+3;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'E':{
+	case 'E':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+4;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'D':{
+	case 'D':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+5;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;  
 	
-	case 'R':{
+	case 'R':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+6;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'F':{
+	case 'F':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+7;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'T':{
+	case 'T':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+8;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;  
 	
-	case 'G':{
+	case 'G':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+9;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
 	}
 	break;
 	
-	case 'Y':{
+	case 'Y':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+10;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	}
-	break;
+	} break;
 	
-	case 'H':{
+	case 'H':
+	{
 	  idx=noteBaseArray[currentBaseIdx]+11;
 	  setYm2149(ymRegisters,idx,currentEnvIdx, noisegenPeriod);
-	}
-	break;
+	} break;
 	
     }
       
@@ -317,7 +380,7 @@ int main(void) {
   
   //turn off sound output 
   ymSoundOff();
-  printf("Program terminated...\n");
+  amPrintf("Program terminated..."NL);
 
 return 0;
 }

@@ -43,7 +43,7 @@ void toggleAmReplayMode(void);
 /** Returns currently active sequence (R / W).
  * @returns pointer to currently active sequence
  */
-sSequence_t * const getActiveAmSequence();
+sSequence_t * const getActiveAmSequence(void);
 
 /** destroys loaded Sequence.
 *   @param pPtr pointer to a pointer with loaded sequence data. Passed pointer is null

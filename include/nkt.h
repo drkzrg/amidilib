@@ -152,7 +152,7 @@ extern void NktInstallReplayRoutNoTimers(void);
 extern void NktDeinstallReplayRout(void);
 
 /** returns currently loaded/active nkt sequence pointer */
-sNktSeq * const getActiveNktSequence();
+sNktSeq * const getActiveNktSequence(void);
 
 void initNktSequence(sNktSeq *seq, uint16 initialState, Bool bInstallUpdate);
 

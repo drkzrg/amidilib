@@ -1,8 +1,0 @@
-REMOTE_MACHINE='6.6.6.15'
-REMOTE_PATH='/e/adebug'
-PRG='MIDIPLAY.TTP'
-PARAM='U8_ETHPL.MID'
-
-#echo Launching debugger with $PRG and parameters: $PARAM
-curl -0 $REMOTE_MACHINE$REMOTE_PATH/ADEBUG.TTP?run="$PRG $PARAM"
-#./uip-run.py $REMOTE_MACHINE$REMOTE_PATH/ADEBUG.TTP $PRG $PARAM

@@ -1,13 +1,23 @@
 
-#include <stdio.h>
+#if AMIDILIB_USE_LIBC
 #include <string.h>
+#else
+#include <osbind.h>
+#include "amstring.h"
+#endif
+
+#include "core/amprintf.h"
 
 #include "dmus.h"           // MUS->MID conversion
-#include "fmio.h"           // disc i/o
 #include "amlog.h"          // logging
 #include "midi.h"           // midi
 #include "midi2nkt.h"
-#include <osbind.h>
+
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"       // disc i/o
+#else
+#include <stdio.h>
+#endif
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -22,28 +32,43 @@ uint8 *filePath=0;
 
   amSetDefaultUserMemoryCallbacks();
 
+#ifdef ENABLE_GEMDOS_IO
+  initGemdos();
+#endif
+
   initDebug("MID2NKT.LOG");
 
   printInfoScreen();
 
   // check parameters for compression
-  if( ((argc==2) && (strlen(argv[1])!=0))){
-      printf("Trying to load %s\n",argv[1]);
+  if( ((argc==2) && (strlen(argv[1])!=0)))
+  {
+      amPrintf("Trying to load %s"NL,argv[1]);
       filePath = argv[1];
 
-  } else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0)){
+  } 
+  else if((argc==3) && (strlen(argv[1])!=0)&&(strlen(argv[2])!=0))
+  {
 
-      if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) )){
+      if( ( (strcmp("-c",argv[1])==0) || (strcmp("--compress", argv[1])==0) ))
+      {
        bEnableCompression = TRUE;
       }
 
-      printf("Trying to load %s\n",argv[2]);
+      amPrintf("Trying to load %s"NL,argv[2]);
       filePath=argv[2];
 
-  }else{
-      printf("No specified mid / mus filename or bad parameters! Exiting ...\n");
+  }
+  else
+  {
+      amPrintf("No specified mid / mus filename or bad parameters! Exiting ..."NL);
       deinitDebug();
-      (void)Cconin();
+
+#if AMIDILIB_USE_LIBC
+#else   
+   (void)Cconin();
+#endif
+
       return 0;
   }
 
@@ -60,32 +85,31 @@ uint8 *filePath=0;
        // check MUS file
        MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
 
-       if(((pMusHeader->ID)>>8)==MUS_ID){
+       if(((pMusHeader->ID)>>8)==MUS_ID)
+       {
            // convert it to midi format
-           amTrace((const uint8*)"Converting MUS -> MID ...\n");
+           amTrace((const uint8*)"Converting MUS -> MID ..."NL);
 
-           uint8 *pOut=0;
            uint32 len=0;
 
            // allocate working buffer for midi output
-           pOut = (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
+           uint8 *pOut= (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
            amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
 
            // set midi output name
-           uint8 *pTempPtr=0;
            strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           pTempPtr = strrchr(tempName,'.');
+           uint8 *fileExtPtr = strrchr(tempName,(int)'.');
 
-           if(pTempPtr){
-
-               amMemCpy(pTempPtr+1,"mid",4);
-               printf("[Please Wait] [MUS->MID] Processing midi data..\n");
+           if(fileExtPtr!=NULL)
+           {
+               amMemCpy(fileExtPtr+1,"mid",4);
+               amPrintf("[Please Wait] [MUS->MID] Processing midi data.."NL);
                int32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
-
-           } else {
-
-               printf("[Error] Filename update failed.\n");
+           } 
+           else 
+           {
+               amPrintf("[Error] Filename update failed."NL);
 
                /* free up buffer and quit */
                amFree(pMidi,0);
@@ -100,32 +124,41 @@ uint8 *filePath=0;
        uint32 delta=0;
 
        // check mid 0,1 no quit
-       if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
+       if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1))
+       {
+          amPrintf("Midi file loaded, size: %u bytes."NL, ulFileLenght);
+          
+          amMemSet(tempName,0,MAX_GEMDOS_FILEPATH-1);
+          strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           printf("Midi file loaded, size: %u bytes.\n", ulFileLenght);
+          uint8 *fileExtPtr = strrchr(tempName,'.');
 
-           uint8 *pTempPtr=0;
-
-           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
-           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
-
-           pTempPtr=strrchr(tempName,'.');
-           amMemCpy(pTempPtr+1,"nkt",4);
-
-           printf("[ Please wait ] Converting MIDI %d to %s. Compress: %s\n",((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
+          if(fileExtPtr!=NULL)
+          {
+           amMemCpy(fileExtPtr+1,"nkt",4);
+           amPrintf("[ Please wait ] Converting MIDI %d to %s. Compress: %s"NL,((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
 
            // convert
            sNktSeq* pSeq = Midi2Nkt(pMidi,tempName, bEnableCompression);
 
-           if(pSeq){
+           if(pSeq)
+           {
                 // release sequence
                 destroyNktSequence(pSeq);
-           }else{
-               printf("[MID->NKT] conversion error. Exiting.\n");
            }
+           else
+           {
+               amPrintf("[MID->NKT] conversion error. Exiting."NL);
+           }
+          }
+          else
+          {
+               amPrintf("[Error] Output filename update failed."NL);
+          }
+
 
        }else{
-           printf("File is not in MIDI 0 or 1 format. Exiting... \n");
+           amPrintf("File is not in MIDI 0 or 1 format. Exiting... "NL);
        }
 
        /* free up buffer with loaded midi file, we don't need it anymore */
@@ -135,16 +168,29 @@ uint8 *filePath=0;
 
   //done..
    deinitDebug();
-   printf("\nDone. Press any key... \n");
 
+#ifdef ENABLE_GEMDOS_IO
+   deinitGemdos();
+#endif
+
+   amPrintf(NL "Done. Press any key... "NL);
+
+#if AMIDILIB_USE_LIBC
+#else   
    (void)Cconin();
+#endif
 
    return 0;
 }
 
-
-void printInfoScreen(void){
-    printf("\n== MID / MUS to NKT converter v.1.4 =========\n");
-    printf("date: %s %s\n",__DATE__,__TIME__);
-    printf("==========================================\n");
+void printInfoScreen(void)
+{
+    amPrintf(NL "== MID / MUS to NKT converter v.1.4 ========="NL);
+ #if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+ #else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+ #endif
+    amPrintf("(c)Nokturnal 2007-22"NL);   
+    amPrintf("=========================================="NL);
 }

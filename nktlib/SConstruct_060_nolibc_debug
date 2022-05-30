@@ -1,5 +1,5 @@
 
-#    Copyright 2007-2021 Pawel Goralski
+#    Copyright 2007-2022 Pawel Goralski
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
 
@@ -14,10 +14,13 @@ build_config='debug'
 SConscript('SConscript.nktlib',\
 variant_dir='./nktlib', duplicate=0,\
 exports={\
-'targetPlatform':targetPlatform,\
-'use_crosscompiler':toolchainEnv['use_crosscompiler'],\
+'host':toolchainEnv['host'],\
 'toolchain':toolchainEnv['toolchain'],\
+'toolchain_c_prefix':toolchainEnv['toolchain_c_prefix'],\
 'toolchain_version':toolchainEnv['toolchain_version'],\
+'toolchain_prefix':toolchainEnv['toolchain_prefix'],\
+'toolchain_use_cross':toolchainEnv['toolchain_use_cross'],\
+'targetPlatform':targetPlatform,\
 'host':toolchainEnv['host'],\
 'build_config':build_config,\
 'use_fpu':'no',\

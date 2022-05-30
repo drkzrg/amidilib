@@ -4,7 +4,13 @@
 #include "timing/mfp.h"
 #include "midi_send.h"
 
-#include <stdio.h>
+#include "core/amprintf.h"
+
+#if AMIDILIB_USE_LIBC
+#include <string.h>
+#else
+#include "amstring.h"
+#endif
 
 #ifdef MANUAL_STEP
 extern void updateStepNkt(void);
@@ -14,17 +20,18 @@ void printInfoScreen(void);
 
 void mainLoop(sNktSeq *pSequence);
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
 sNktSeq *pNktSeq=0;
 int16 iError=0;
 
     if( (argc>=1) && strlen(argv[1])!='0' )
     {
-        printf("Trying to load %s\n",argv[1]);
+        amPrintf("Trying to load %s"NL,argv[1]);
     }
     else
     {
-        printf("No specified nkt filename! exiting\n");
+        amPrintf("No specified nkt filename! exiting"NL);
         NktDeinit();
         return 0;
     }
@@ -34,28 +41,28 @@ int16 iError=0;
 
     switch(devType){
         case DT_LA_SOUND_SOURCE:{
-            printf("Configuring MT-32 compatible midi device.\n");
+            amPrintf("Configuring MT-32 compatible midi device."NL);
         }break;     /* native MT32 */
         case DT_LA_SOUND_SOURCE_EXT:{
-            printf("Configuring extended MT-32 compatible midi device(CM-32L/CM-64).\n");
+            amPrintf("Configuring extended MT-32 compatible midi device(CM-32L/CM-64)."NL);
         }break;   /* for extended MT 32 modules with extra patches like CM-32L/CM-64 */
         case DT_GS_SOUND_SOURCE:{
-             printf("Configuring GS compatible midi device.\n");
+             amPrintf("Configuring GS compatible midi device."NL);
         }break;       /* for pure GS/GM sound source */
         case DT_LA_GS_MIXED:{
-              printf("Configuring GS compatible midi device with LA module.\n");
+              amPrintf("Configuring GS compatible midi device with LA module."NL);
         }break;           /* if both LA/GS sound sources are available, like in CM-500 */
         case DT_GM_SOUND_SOURCE:{
-            printf("Configuring General MIDI compatible device.\n");
+            amPrintf("Configuring General MIDI compatible device."NL);
         }break;
         case DT_MT32_GM_EMULATION:{
-              printf("Configuring MT-32 compatible midi device with GM instrument patch set.\n");
+              amPrintf("Configuring MT-32 compatible midi device with GM instrument patch set."NL);
         }break;     /* before loading midi data MT32 sound banks has to be patched */
         case DT_XG_GM_YAMAHA:{
-              printf("Configuring XG Yamaha GM device (currently unsupported).\n");
+              amPrintf("Configuring XG Yamaha GM device (currently unsupported)."NL);
         }break;
         default:{
-               printf("Configuring Generic GM/GS compatible midi device.\n");
+               amPrintf("Configuring Generic GM/GS compatible midi device."NL);
         }break;
     }
 
@@ -64,7 +71,8 @@ int16 iError=0;
 
     pNktSeq=loadNktSequence(argv[1]);
 
-    if(pNktSeq!=NULL){
+    if(pNktSeq!=NULL)
+    {
         printInfoScreen();
         mainLoop(pNktSeq);
 
@@ -78,7 +86,7 @@ int16 iError=0;
         NktDeinit();
 
     }else{
-        printf("Error: Loading %s failed.\n", argv[1]);
+        amPrintf("Error: Loading %s failed."NL, argv[1]);
     }
 
   return 0;
@@ -86,27 +94,34 @@ int16 iError=0;
 
 void printInfoScreen(void)
 {
-  printf("\n===== NKT replay demo v.1.21 =============\n");
-  printf("date: %s %s\n",__DATE__,__TIME__);
-  printf("    [p] - play loaded tune\n");
-  printf("    [r] - pause/unpause played sequence \n");
-  printf("    [m] - toggle play once/loop mode\n");
-  printf("    [arrow up/down] - adjust master volume\n");
-  printf("    [arrow left/right] - adjust master balance\n");
-  printf("    [i] - display tune info\n");
-  printf("    [h] - show this help screen\n");
-  printf("\n    [spacebar] - stop sequence replay \n");
-  printf("    [Esc] - quit\n");
-  printf("==========================================\n");
-  printf("Ready...\n");
+  amPrintf(NL "===== NKT replay demo v.1.23 ============="NL);
+
+#if AMIDILIB_USE_LIBC
+    amPrintf("build date: %s %s"NL,__DATE__,__TIME__);
+#else  
+    amPrintf("build date: %s %s nolibc"NL,__DATE__,__TIME__);
+#endif
+
+  amPrintf("    [p] - play loaded tune"NL);
+  amPrintf("    [r] - pause/unpause played sequence "NL);
+  amPrintf("    [m] - toggle play once/loop mode"NL);
+  amPrintf("    [arrow up/down] - adjust master volume"NL);
+  amPrintf("    [arrow left/right] - adjust master balance"NL);
+  amPrintf("    [i] - display tune info"NL);
+  amPrintf("    [h] - show this help screen"NL);
+  amPrintf(NL "    [spacebar] - stop sequence replay "NL);
+  amPrintf("    [Esc] - quit"NL);
+  amPrintf("(c) Nokturnal 2007-22"NL);   
+  amPrintf("=========================================="NL);
+  amPrintf("Ready..."NL);
 }
 
 void displayTuneInfo(void)
 {
   const sNktSeq *pPtr = getActiveNktSequence();
 
-  printf("PPQN: %u\t",pPtr->timeDivision);
-  printf("Tempo default: %u [ms] last: %u [ms]\n",pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
+  amPrintf("PPQN: %u\t",pPtr->timeDivision);
+  amPrintf("Tempo default: %u [ms] last: %u [ms]"NL,pPtr->defaultTempo.tempo, pPtr->currentTempo.tempo);
 }
 
 void mainLoop(sNktSeq *pSequence)
@@ -118,20 +133,20 @@ void mainLoop(sNktSeq *pSequence)
     initNktSequence(pSequence,NKT_PLAY_ONCE,TRUE);
 #endif
 
-    //install replay rout
-      amMemSet(Ikbd_keyboard, KEY_UNDEFINED, sizeof(Ikbd_keyboard));
-      Ikbd_mousex = Ikbd_mousey = Ikbd_mouseb = Ikbd_joystick = 0;
+      IkbdClearState();
 
-      /* Install our asm ikbd handler */
+      // Install our asm ikbd handler 
       Supexec(IkbdInstall);
 
       //####
       while(bQuit!=TRUE)
       {
         // check keyboard input
-        for (uint16 i=0; i<128; ++i) {
+        for (uint16 i=0; i<IKBD_TABLE_SIZE; ++i) 
+        {
 
-          if (Ikbd_keyboard[i]==KEY_PRESSED) {
+          if (Ikbd_keyboard[i]==KEY_PRESSED) 
+          {
           Ikbd_keyboard[i]=KEY_UNDEFINED;
 
           switch(i){
@@ -169,7 +184,7 @@ void mainLoop(sNktSeq *pSequence)
               if(_midiMasterVolume<127){
                   ++_midiMasterVolume;
                   setMidiMasterVolume(_midiMasterVolume);
-                  printf("[Master Volume]: %d \n", _midiMasterVolume);
+                  amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
               }
 
          }break;
@@ -179,7 +194,7 @@ void mainLoop(sNktSeq *pSequence)
               if(_midiMasterVolume>0){
                 --_midiMasterVolume;
                 setMidiMasterVolume(_midiMasterVolume);
-                printf("[Master Volume]: %d \n", _midiMasterVolume);
+                amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
               }
 
           }break;
@@ -192,7 +207,7 @@ void mainLoop(sNktSeq *pSequence)
               if(_midiMasterBalance>0){
                   --_midiMasterBalance;
                   setMidiMasterBalance(_midiMasterBalance);
-                  printf("<< [Master Pan]: %d \n", _midiMasterBalance);
+                  amPrintf("<< [Master Pan]: %d "NL, _midiMasterBalance);
               }
 
           }break;
@@ -203,7 +218,7 @@ void mainLoop(sNktSeq *pSequence)
               if(_midiMasterBalance<127){
                   ++_midiMasterBalance;
                   setMidiMasterBalance(_midiMasterBalance);
-                  printf("[Master Pan] >>: %d \n", _midiMasterBalance);
+                  amPrintf("[Master Pan] >>: %d "NL, _midiMasterBalance);
               }
 
           }break;
@@ -235,8 +250,6 @@ void mainLoop(sNktSeq *pSequence)
         }
 
        } //end of for
-
-
       }
     /* Uninstall our ikbd handler */
     Supexec(IkbdUninstall);

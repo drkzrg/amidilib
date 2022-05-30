@@ -1,28 +1,19 @@
-;
 ;	IKBD 6301 interrupt routine
 ;    
 ;	Copyright (C) 2002	Patrice Mandin
-;	Copyright (C) 2011	Pawel Goralski (devpac/vasm version)
+;	Copyright (C) 2011-22 Pawel Goralski (devpac/vasm version)
 	
-;	This library is free software; you can redistribute it and/or
-;	modify it under the terms of the GNU Lesser General Public
-;	License as published by the Free Software Foundation; either
-;	version 2.1 of the License, or (at your option) any later version.
-;
-;	This library is distributed in the hope that it will be useful,
-;	but WITHOUT ANY WARRANTY; without even the implied warranty of
-;	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;	Lesser General Public License for more details.
-;
-;	You should have received a copy of the GNU Lesser General Public
-;	License along with this library; if not, write to the Free Software
-;	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+IKBD_TABLE_SIZE	equ	128
 
+KEY_PRESSED		equ	$ff
+KEY_UNDEFINED	equ	$80
+KEY_RELEASED	equ	$00
 
 	TEXT
 
 	XDEF	_IkbdInstall
 	XDEF	_IkbdUninstall
+	XDEF    _IkbdClearState
 
 	XDEF	_Ikbd_keyboard
 	XDEF	_Ikbd_mouseb
@@ -36,16 +27,15 @@ _IkbdInstall:
 	movem.l	d0-d1/a0-a1,-(sp)
 
 	; Disable all interrupts
-
+	move.w  sr,d1
 	move.w	#$2700,sr
 
 	; Save MFP registers used for ACIA interrupt
-
-	lea	$fffffa00.w,a0
+	lea		$fffffa00.w,a0
 	btst	#6, $09(a0)
-	sne	ikbd_ierb
+	sne		ikbd_ierb
 	btst	#6,$15(a0)
-	sne	ikbd_imrb
+	sne		ikbd_imrb
 
 	; Set our MFP routine
 
@@ -61,8 +51,7 @@ _IkbdInstall:
 	move.b	#$08,$fffffc02.w
 
 	; Re-enable interrupts
-
-	move.w	#$2300,sr
+	move.w	d1,sr
 
 	movem.l	(sp)+,d0-d1/a0-a1
 	rts
@@ -70,8 +59,10 @@ _IkbdInstall:
 ;--- Uninstall our IKBD vector ---
 
 _IkbdUninstall:
-	move.l	a0,-(SP)
+	move.l	a0,-(sp)
+
 	; Disable interrupts
+	move.w  sr,d1
 	move.w	#$2700,sr
 
 	; Restore previous MFP registers
@@ -80,29 +71,30 @@ _IkbdUninstall:
 
 	bclr	#6,$09(a0)
 	tst.b	ikbd_ierb
-	beq.s	ikbd_restoreierb
+	beq.s	.ikbd_restoreierb
 	bset	#6,$09(a0)
-ikbd_restoreierb:
 
+.ikbd_restoreierb:
 	bclr	#6,$15(a0)
 	tst.b	ikbd_imrb
-	beq.s	ikbd_restoreimrb
+	beq.s	.ikbd_restoreimrb
 	bset	#6,$15(a0)
-ikbd_restoreimrb:
+
+.ikbd_restoreimrb:
 	move.l	old_ikbd,$118.w
 
 	; Clear keyboard buffer
 
 	lea	$fffffc00.w,a0
-ikbd_videbuffer:
+.ikbd_videbuffer:
 	btst	#0,(a0)
-	beq.s	ikbd_finbuffer
+	beq.s	.ikbd_finbuffer
 	tst.b	$02(a0)
-	bra.s	ikbd_videbuffer
+	bra.s	.ikbd_videbuffer
 
-ikbd_finbuffer:
+.ikbd_finbuffer:
 	; Re-enable interrupts
-	move.w	#$2300,sr
+	move.w	d1,sr
 	move.l	(sp)+,a0
 	rts
 
@@ -120,55 +112,62 @@ ikbd_imrb:
 	TEXT
 	EVEN
 	dc.b	"XBRA"
-	dc.b	"LSDL"
+	dc.b	"LAMD"
 old_ikbd: 
 	ds.b 4
 ikbd:
 	; test if byte coming from IKBD or MIDI
-
-	btst	#0,$fffffc00.w
-	beq.s	ikbd_endit
-
 	movem.l	d0-d1/a0,-(sp)
+
+	btst    #0,$fffffc00.w
+	;beq.s	ikbd_oldmidi        ; jump to old midi handler
+	beq.s	ikbd_endit 			; do nothig
+
 	move.b	$fffffc02.w,d0
 
 	; Joystick packet ?
 	
 	cmp.b	#$ff,d0
-	beq.s	ikbd_yes_joystick
+	beq.s	.ikbd_yes_joystick
 
 	; Mouse packet ?
 
 	cmp.b	#$f8,d0
-	bmi.s	ikbd_no_mouse
+	bmi.s	.ikbd_no_mouse
 	cmp.b	#$fc,d0
-	bpl.s	ikbd_no_mouse
+	bpl.s	.ikbd_no_mouse
 
-ikbd_yes_mouse:
+.ikbd_yes_mouse:
 	and.w	#3,d0
 	move.w	d0,_Ikbd_mouseb
 
 	move.l	#ikbd_mousex,$118.w
-	bra.s	ikbd_endit_stack
+	bra.s	.ikbd_endit_stack
 
-ikbd_yes_joystick:
+.ikbd_yes_joystick:
 	move.l	#ikbd_joystick,$118.w
-	bra.s	ikbd_endit_stack
+	bra.s	.ikbd_endit_stack
 
 	; Keyboard press/release
 
-ikbd_no_mouse:
+.ikbd_no_mouse:
 	move.b	d0,d1
 	lea	_Ikbd_keyboard,a0
 	and.l	#$7f,d1
 	tas	d0
 	spl	0(a0,d1.w)
 
-ikbd_endit_stack:
+.ikbd_endit_stack:
 	movem.l	(sp)+,d0-d1/a0
 ikbd_endit:
 	bclr	#6,$fffffa11.w
 	rte
+
+	; call old MIDI interrupt
+ikbd_oldmidi:
+	movem.l	(sp)+,d0-d1/a0
+	move.l	old_ikbd,-(sp)
+	rts
 
 ikbd_mousex:
 	; test if byte coming from IKBD or MIDI
@@ -215,11 +214,30 @@ ikbd_joystick:
 	move.l	#ikbd,$118.w
 	bra.s	ikbd_endit
 
-	BSS
+_IkbdClearState:
+	movem.l	d0/a0,-(sp)
 	
-	EVEN
+	move.w  #$8080,d0					
+	lea.l   _Ikbd_keyboard,a0
 
-_Ikbd_keyboard: ds.b 128
+	rept    64
+	move.w 	d1,(a0)+
+	endr
+	
+	move.w  #$0000,d0
+	lea.l   _Ikbd_mousex,a0
+
+	move.w 	d0,(a0)+
+	move.w 	d0,(a0)+
+	move.w 	d0,(a0)+
+
+	movem.l (sp)+,d0/a0
+	rts
+
+	BSS
+
+	EVEN
+_Ikbd_keyboard: ds.b IKBD_TABLE_SIZE
 _Ikbd_mousex: 	ds.b 2
 _Ikbd_mousey:	ds.b 2
 _Ikbd_mouseb:	ds.b 2

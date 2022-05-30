@@ -1,12 +1,12 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-#ifndef __FMIO_H__
-#define __FMIO_H__
+#ifndef __GEMDOSIO_H__
+#define __GEMDOSIO_H__
 
 #include "vartypes.h"
 #include "memory/memory.h"
@@ -68,6 +68,20 @@ typedef enum EGDOSERROR
 const uint8 *getLastGemdosError(void);
 
 /**
+ * initialises GEMDOS. Setups custom DTA structure to not corrupt commandline.
+ *
+ */
+
+void initGemdos(void);
+
+/**
+ * deinitialises GEMDOS. 
+ *
+ */
+
+void deinitGemdos(void);
+
+/**
  * loads file to specific type of memory(ST/TT RAM).
  * 
  * @param szFileName NULL terminated full path with name
@@ -86,7 +100,7 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag, uint32 *fileL
  * @return pointer to const char * array with error description
  */
 
-int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBlockSize);
+int32 saveFile(const uint8 *szFileName, const void *memBlock, const int32 memBlockSize);
 
 
 #endif

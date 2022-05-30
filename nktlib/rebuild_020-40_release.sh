@@ -1,7 +1,7 @@
 #!/bin/bash
 # build helper script
 
-#    Copyright 2007-2021 Pawel Goralski
+#    Copyright 2007-2022 Pawel Goralski
 #    
 #    This file is part of AMIDILIB.
 #    See license.txt for licensing information.
@@ -19,6 +19,8 @@ scons --sconstruct=SConstruct_020-40_release
 
 echo ############ Cleanup
 find ./nktlib/ -name "*.o" -type f|xargs rm -f
+rm ./nktlib/.sconsign.dblite
+rm ./nktlib/DUMMY.TXT
 
 tar czvf nktlib-020-40.tgz ./nktlib
 

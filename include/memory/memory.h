@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -11,7 +11,11 @@
 #include "vartypes.h"
 #include "amlog.h"
 
+#if AMIDILIB_USE_LIBC
 #include <string.h>
+#else
+#include "amstring.h"
+#endif
 
 /* memory allocation preference */
 
@@ -108,12 +112,6 @@ void amSetDefaultUserMemoryCallbacks(void);
 
 // sets user memory allocation functions
 void amSetUserMemoryCallbacks(sUserMemoryCallbacks *func);
-
-// helpers writes a byte/short/long and returns the buffer
-uint8* WriteByte(void* buf, int8 b);
-uint8* WriteShort(void* b, uint16 s);
-uint8* WriteInt(void* b, uint32 i);
-int32 UpdateBytesWritten(int32* bytes_written, int32 to_add, int32 max);
 
 #endif
 

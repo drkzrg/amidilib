@@ -2,17 +2,22 @@
 #if AMIDILIB_USE_LIBC
 #include <string.h>
 #else
+#include <osbind.h>
 #include "amstring.h"
 #endif
 
 #include "core/amprintf.h"
 
 #include "dmus.h"           // MUS->MID conversion
-#include "gemdosio.h"           // disc i/o
 #include "amlog.h"          // logging
 #include "midi.h"           // midi
 #include "midi2nkt.h"
-#include <osbind.h>
+
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"       // disc i/o
+#else
+#include <stdio.h>
+#endif
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -27,7 +32,7 @@ uint8 *filePath=0;
 
   amSetDefaultUserMemoryCallbacks();
 
-#if ENABLE_GEMDOS_IO
+#ifdef ENABLE_GEMDOS_IO
   initGemdos();
 #endif
 
@@ -89,14 +94,13 @@ uint8 *filePath=0;
            // set midi output name
            strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           uint8 *pTempPtr = strrchr(tempName,(int)'.');
+           uint8 *fileExtPtr = strrchr(tempName,(int)'.');
 
-           if(pTempPtr!=NULL)
+           if(fileExtPtr!=NULL)
            {
-               amMemCpy(pTempPtr+1,"mid",4);
+               amMemCpy(fileExtPtr+1,"mid",4);
                amPrintf("[Please Wait] [MUS->MID] Processing midi data.."NL);
                int32 ret = Mus2Midi(pMidi,(unsigned char *)pOut,0,&len);
-
            } 
            else 
            {
@@ -115,20 +119,18 @@ uint8 *filePath=0;
        uint32 delta=0;
 
        // check mid 0,1 no quit
-       if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1)){
+       if(((sMThd *)pMidi)->id==ID_MTHD && ((sMThd *)pMidi)->headLenght==6L&& (((sMThd *)pMidi)->format==0||((sMThd *)pMidi)->format==1))
+       {
+          amPrintf("Midi file loaded, size: %u bytes."NL, ulFileLenght);
+          
+          amMemSet(tempName,0,MAX_GEMDOS_FILEPATH-1);
+          strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
 
-           amPrintf("Midi file loaded, size: %u bytes."NL, ulFileLenght);
+          uint8 *fileExtPtr = strrchr(tempName,'.');
 
-           uint8 *pTempPtr=0;
-
-           amMemSet(tempName,0,MAX_GEMDOS_FILEPATH-1);
-           strncpy(tempName,filePath,MAX_GEMDOS_FILEPATH-1);
-
-          pTempPtr = strrchr(tempName,'.');
-
-          if(pTempPtr!=NULL)
+          if(fileExtPtr!=NULL)
           {
-           amMemCpy(pTempPtr+1,"nkt",4);
+           amMemCpy(fileExtPtr+1,"nkt",4);
            amPrintf("[ Please wait ] Converting MIDI %d to %s. Compress: %s"NL,((sMThd *)pMidi)->format, tempName, bEnableCompression?"YES":"NO");
 
            // convert
@@ -162,13 +164,16 @@ uint8 *filePath=0;
   //done..
    deinitDebug();
 
-#if ENABLE_GEMDOS_IO
+#ifdef ENABLE_GEMDOS_IO
    deinitGemdos();
 #endif
 
    amPrintf(NL "Done. Press any key... "NL);
 
+#if AMIDILIB_USE_LIBC
+#else   
    (void)Cconin();
+#endif
 
    return 0;
 }

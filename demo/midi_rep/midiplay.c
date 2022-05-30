@@ -13,16 +13,18 @@
 #include "amstring.h"
 #endif
 
-
 #include "core/amprintf.h"
-
-//#define MANUAL_STEP 1
 
 #include "amidilib.h"
 #include "amidiseq.h"       // sequence structs
-#include "gemdosio.h"           // disc i/o
 #include "timing/mfp.h"
 #include "timing/miditim.h"
+
+#ifdef ENABLE_GEMDOS_IO
+#include "gemdosio.h"       // disc i/o
+#else
+#include <stdio.h>
+#endif
 
 // nkt conversion
 #include "nkt.h"
@@ -34,7 +36,9 @@
 
 #include "input/ikbd.h"
 
-#ifdef MANUAL_STEP
+#define MANUAL_STEP 0
+
+#if MANUAL_STEP
 extern void updateStepSingle(void);
 extern void updateStepMulti(void);
 #endif
@@ -143,7 +147,7 @@ amPrintf("==============================================="NL);
 void mainLoop(sSequence_t *pSequence, const char *pFileName)
 {
       //install replay rout
-#ifdef MANUAL_STEP
+#if MANUAL_STEP
     initAmSequenceManual(pSequence);
 #else
     initAmSequence(pSequence,MFP_TiC);
@@ -218,7 +222,7 @@ void mainLoop(sSequence_t *pSequence, const char *pFileName)
 		 case SC_SPACEBAR:{
 		  stopAmSequence();
 		 }break;
-#ifdef MANUAL_STEP
+#if MANUAL_STEP
           case SC_ENTER:{
 
             for(int i=0;i<SEQUENCER_UPDATE_HZ;++i){

@@ -63,7 +63,12 @@ uint8 *filePath=0;
   {
       amPrintf("No specified mid / mus filename or bad parameters! Exiting ..."NL);
       deinitDebug();
-      (void)Cconin();
+
+#if AMIDILIB_USE_LIBC
+#else   
+   (void)Cconin();
+#endif
+
       return 0;
   }
 

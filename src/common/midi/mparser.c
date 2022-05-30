@@ -9,7 +9,7 @@
 #include "string.h"
 
 #ifdef MIDI_PARSER_DEBUG
-#include "amidilib.h"
+#include "core/debug.h"
 #endif
 
 /* for saving last running status */

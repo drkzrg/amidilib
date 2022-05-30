@@ -111,7 +111,7 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
  return T_UNSUPPORTED;
 }
 
-retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
+int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
 {
     (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), PREFER_TT,0);
  
@@ -155,7 +155,7 @@ retVal amProcessMidiFileData(const char *filename, void *midiData, const uint32 
     return AM_ERR; 
    }
 
-   retVal iRetVal = AM_OK;
+   int16 iRetVal = AM_OK;
 
    switch(midiType)
    {
@@ -381,7 +381,7 @@ static _IOREC *g_psMidiBufferInfo;
 
 extern Bool CON_LOG;
 
-retVal amInit(void)
+int16 amInit(void)
 {
   // setup standard memory callbacks
   amSetDefaultUserMemoryCallbacks();

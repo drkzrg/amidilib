@@ -90,8 +90,8 @@ typedef struct IFFCHUNK
 } sIffChunk;
 
 sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk);
-retVal processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence);
-retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence);
+int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence);
+int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence);
 
 int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
 int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence);
@@ -189,10 +189,10 @@ sIffChunk *getXmidiTrackStart(const uint16 trackNo, sIffChunk *chunk)
 	return trackStart;
 }
 
-retVal processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence)
+int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequence_t **ppCurSequence)
 {
 	const uint32 iffId = *((uint32 *)firstChunk->id);
-	retVal retVal = AM_OK;
+	int16 retVal = AM_OK;
 
 	if ( iffId == ID_FORM)  
 	{
@@ -245,9 +245,9 @@ retVal processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSeque
 }
 
 // 
-retVal processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence)
+int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, sSequence_t **ppCurSequence)
 {
-	retVal ret = AM_OK;
+	int16 ret = AM_OK;
 
 	// trackData Start should be at FORM<len>XMID chunk..
 	if( *((uint32 *)trackDataStart->id) == ID_FORM && ((uint32)trackDataStart->data) == ID_XMID )
@@ -339,10 +339,10 @@ Bool amIsValidXmidiData(void *midiData)
  return isValid;
 }
 
-retVal amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
+int16 amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppCurSequence)
 {
 	int32 chunkSize = 0;
-	retVal ret=AM_OK;
+	int16 ret=AM_OK;
 	
 	const void *endData = (void *)( (uintptr)data + (uintptr)dataLength );
 	sIffChunk *fc = (sIffChunk *)data;
@@ -372,7 +372,7 @@ retVal amProcessXmidiData(void *data, const uint32 dataLength, sSequence_t **ppC
 ] 
 */
 
-retVal processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
+int16 processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	const uint16 TimbreListEntriesNb = (uint16)(((uintptr)eventChunk->data>>16)&0x0000FFFF);
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
@@ -403,7 +403,7 @@ retVal processXmidiTimb(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 	] 
 */
 
-retVal processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
+int16 processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	const uint16 BranchPointOffsets = (uint16)(((uintptr)eventChunk->data>>16)&0x000000FF);
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
@@ -431,7 +431,7 @@ retVal processXmidiRbrn(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t
 	} 
 */
 
-retVal processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
+int16 processXmidiEvnt(sIffChunk *eventChunk, const uint16 trackNo, sSequence_t **ppCurSequence)
 {
 	const uint32 chunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
 	

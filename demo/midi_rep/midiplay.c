@@ -77,7 +77,7 @@ amPrintf("==============================================="NL);
     }
 
     uint16 iRet = 0;
-    retVal iError = AM_OK;
+    int16 iError = AM_OK;
     
     /* init library */
     iError = amInit();

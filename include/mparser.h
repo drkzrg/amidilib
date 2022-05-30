@@ -40,7 +40,7 @@ eMidiFileType amGetMidiDataType( void *const pMidiPtr);
 *	@param iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 *	@return pointer to the next chunk or NULL if EOT occured.
 */
-void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, retVal *iRetVal);
+void *processMidiTracks(void *trackStartPtr, const eMidiFileType fileTypeFlag, sSequence_t **ppCurSequence, int16 *iRetVal);
 
 /* combine bytes function (14 bit values) for pitch bend */
 uint16 amCombinePitchBendBytes(const uint8 bFirst, const uint8 bSecond);

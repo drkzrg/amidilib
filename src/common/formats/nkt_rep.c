@@ -32,7 +32,7 @@
 #endif
 
 // helper function for determining amount of memory we need for data / events buffers
-extern retVal collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
+extern int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 extern uint16 isMultitrackReplay;
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq);
@@ -1504,7 +1504,7 @@ int32 saveEventDataBlocks(int16 fh, sNktSeq *pSeq)
 
 
 
-retVal saveNktSequence(sNktSeq *pSeq, const uint8 *filepath, Bool bCompress)
+int16 saveNktSequence(sNktSeq *pSeq, const uint8 *filepath, Bool bCompress)
 {
 
 if(filepath==0||strlen(filepath)==0) {

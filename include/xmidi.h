@@ -37,6 +37,6 @@ uint16 amGetNbOfXmidiTracks(void *midiData);
  * @return returns value AM_OK on success, AM_ERR on error
  **/
 
-retVal amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
+int16 amProcessXmidiData(void *xmidiData, const uint32 dataLength, sSequence_t **ppCurSequence);
 
 #endif

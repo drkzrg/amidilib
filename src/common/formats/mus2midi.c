@@ -140,7 +140,7 @@ static const uint8 MidiMap[] = {
     0x79,	//14	// reset all controllers
 };
 
-retVal Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len)
+int16 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len)
 {
 // mus header and instruments
 MUSheader_t header;

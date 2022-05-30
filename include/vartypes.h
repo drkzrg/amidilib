@@ -103,8 +103,6 @@ const Bool checkEndianess();
 #define Assert(condition) do { } while (false)
 #endif
 
-typedef int16 retVal;
-
 #define AM_OK 0
 #define AM_ERR -1
 

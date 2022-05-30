@@ -14,9 +14,9 @@
 // event list, temp event
 
 #ifdef EVENT_LINEAR_BUFFER
-retVal addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
+int16 addEvent(sSequence_t *pSequence, sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #else
-retVal addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
+int16 addEvent(sEventList **listPtr, const sEventBlock_t *eventBlockPtr )
 #endif
 {
  sEventList *pTempPtr = NULL;
@@ -68,9 +68,9 @@ else
 }
 
 #ifdef EVENT_LINEAR_BUFFER
-retVal copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest)
+int16 copyEvent(sSequence_t *pSequence, const sEventBlock_t *src, sEventList **dest)
 #else
-retVal copyEvent(const sEventBlock_t *src, sEventList **dest)
+int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
 #endif
 {
   #ifdef DEBUG_MEM

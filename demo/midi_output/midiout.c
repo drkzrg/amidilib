@@ -125,7 +125,7 @@ int main(void) {
   turnOffKeyclick();
 
   /* init library */
-  retVal iError=amInit();
+  int16 iError=amInit();
  
   if(iError!=AM_OK) return -1;
   

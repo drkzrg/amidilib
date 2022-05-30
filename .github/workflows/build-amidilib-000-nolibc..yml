@@ -77,14 +77,6 @@ jobs:
           cd ./src
           scons --sconstruct=SConstruct_000_nolibc_debug
           cd ../
-      
-      - name: Build nktlib (nolibc) version
-        run: |
-          cd ./nktlib
-          chmod +x ./updateNktLibBuildFiles.sh
-          chmod +x ./rebuild_000_nolibc_release.sh
-          ./updateNktLibBuildFiles.sh
-          ./rebuild_000_nolibc_release.sh
 
       - name: Create binary archive
         run: |
@@ -96,9 +88,4 @@ jobs:
         with:
           name: amidilib-000-nolibc
           path: ./amidilib-*.tgz
-
-      - name: Upload nktlib (nolibc) archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: nktlib-000-nolibc
-          path: ./nktlib/nktlib-*.tgz
+          

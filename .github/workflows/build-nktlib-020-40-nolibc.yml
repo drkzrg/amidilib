@@ -1,5 +1,5 @@
 
-name: build-amidilib-060-libc
+name: build-nktlib-020-40-nolibc
 on:
   push:
     branches: [ master ]
@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-amidilib-060-libc:
+  build-nktlib-020-40-nolibc:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,6 +38,12 @@ jobs:
           sudo cp ./vasmm68k_mot /usr/bin/
           sudo cp ./vobjdump /usr/bin/
           cd ..
+      
+      - name: Installing gcc minimal startup
+        run: |
+          echo Getting latest gcc minimal startup
+          sudo chmod +x ./scripts/getLatestStartup.sh
+          ./scripts/getLatestStartup.sh
 
       - name: Installing gcc cross compiler
         run: |
@@ -47,39 +53,18 @@ jobs:
           sudo chmod 775 /opt/cross-mint
           wget -q "https://nokturnal.pl/downloads/atari/toolchains/m68k-atari-mint-base-20200501-linux64.tar.xz"
           tar -C /opt/cross-mint/ --strip-components=1 -xf ./m68k-atari-mint-base-20200501-linux64.tar.xz
-          
-      - name: Clean AMIDILIB release (libc) version
-        run: |
-          cd ./src
-          scons --sconstruct=SConstruct_060_release -c
-          cd ..
-
-      - name: Build AMIDILIB release (libc) version
-        run: |
-          cd ./src
-          scons --sconstruct=SConstruct_060_release
-          cd ../
       
-      - name: Clean AMIDILIB debug (libc) version
+      - name: Build nktlib (nolibc) version
         run: |
-          cd ./src
-          scons --sconstruct=SConstruct_060_debug -c
-          cd ..
+          cd ./nktlib
+          chmod +x ./updateNktLibBuildFiles.sh
+          chmod +x ./rebuild_020-40_nolibc_release.sh
+          ./updateNktLibBuildFiles.sh
+          ./rebuild_020-40_nolibc_release.sh
 
-      - name: Build AMIDILIB debug (libc) version
-        run: |
-          cd ./src
-          scons --sconstruct=SConstruct_060_debug
-          cd ../
-
-      - name: Create binary archive
-        run: |
-          tar -czvf amidilib-060-release.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/release/ .
-          tar -czvf amidilib-060-debug.tgz --exclude=*.o --exclude=*{/common,/tos} -C ./build/aout/debug/ .
-
-      - name: Upload AMIDILIB (libc) archive
+      - name: Upload nktlib (nolibc) archive
         uses: actions/upload-artifact@v3
         with:
-          name: amidilib-060-libc
-          path: ./amidilib-*.tgz
+          name: nktlib-020-40-nolibc
+          path: ./nktlib/nktlib-*.tgz
           

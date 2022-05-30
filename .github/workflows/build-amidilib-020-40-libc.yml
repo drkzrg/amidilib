@@ -71,14 +71,6 @@ jobs:
           cd ./src
           scons --sconstruct=SConstruct_020-40_debug
           cd ../
-      
-      - name: Build nktlib (libc) version
-        run: |
-          cd ./nktlib
-          chmod +x ./updateNktLibBuildFiles.sh
-          chmod +x ./rebuild_020-40_release.sh
-          ./updateNktLibBuildFiles.sh
-          ./rebuild_020-40_release.sh
 
       - name: Create binary archive
         run: |
@@ -90,9 +82,4 @@ jobs:
         with:
           name: amidilib-020-40-libc
           path: ./amidilib-*.tgz
-
-      - name: Upload nktlib (libc) archive
-        uses: actions/upload-artifact@v3
-        with:
-          name: nktlib-020-40-libc
-          path: ./nktlib/nktlib-*.tgz
+          

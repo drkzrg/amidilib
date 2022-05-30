@@ -43,6 +43,8 @@ Copyright (C) 2007-2021 Pawel Goralski
 #include <mint/ostruct.h>
 #include <mint/osbind.h>
 #include "gemdosio.h"
+#else
+#include <stdio.h>
 #endif
 
 #define MUSEVENT_KEYOFF	0

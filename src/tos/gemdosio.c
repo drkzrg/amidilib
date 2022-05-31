@@ -240,94 +240,86 @@ void deinitGemdos(void)
 
 
 /* loads file to specified type memory */
-void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag,  uint32 *fileLenght)
+void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag, uint32 *fileLenght)
 {
-    amTrace("[GEMDOS] load file: %s"NL,szFileName);
+    *fileLenght = 0;
 
+    amTrace("[GEMDOS] load file: %s"NL,szFileName);
     int32 fileHandle = Fopen( szFileName, S_READWRITE );
-    *fileLenght=0L;
 
     if(fileHandle>0)
     {
-    
-    int16 iRet = Fsfirst( szFileName, 0 );
+     int32 iRet = Fsfirst(szFileName,0);
 
-    if(iRet==0)
-    {
-
-    /* file found */
-    void *pData=NULL;
-	 
-    *fileLenght=(uint32)ourDta.dta_size;
-
-    /* allocate buffer */
-     pData = gUserMemAlloc((MemSize)(*fileLenght)+1,memFlag,0);
-     
-     if(pData!=NULL)
+     if(iRet == GDOS_OK)
      {
-      amMemSet(pData,0,(*fileLenght)+1);
+        // file found 
+        const uint32 fileLength = ourDta.dta_size;
 
-      int32 lRet = Fread((uint16)fileHandle, (*fileLenght), pData );
+        // allocate buffer 
+        void *pData= gUserMemAlloc(((MemSize)fileLength)+1,memFlag,0);
 
-      if(lRet<0)
-      {
+        if(pData!=NULL)
+        {
+            amMemSet(pData,0,fileLength);
+            int32 retVal = Fread((uint16)fileHandle, (int32)fileLenght, pData);
+
+            if(retVal<0)
+            {
+                if(retVal == GDOS_INVALID_HANDLE)
+                {
+                    amPrintf("[GEMDOS] Error: Invalid file handle for %s"NL, szFileName);
+                }
+                else
+                {
+                    amPrintf("[GEMDOS] Error: %s (%s)"NL, getGemdosError((int16)retVal), szFileName);
+                }
         
-        if(lRet == GDOS_INVALID_HANDLE)
+            }
+            else
+            {
+                // not all data being read 
+                if(retVal!=(int32)fileLenght)
+                {
+                    amPrintf((const char *)"Fatal error, unexpected end of file (%s)."NL, szFileName);
+                    amTrace("[GEMDOS] Read error. Unexpected EOF (%s)."NL, szFileName);
+
+                    //so we have error, free up memory 
+                    gUserMemFree(pData,0);
+                }
+            }
+
+            amTrace("[GEMDOS] Closing file handle : [%d] "NL, (uint16)fileHandle);
+
+            retVal = Fclose((uint16)fileHandle);
+
+            if(retVal != GDOS_OK)
+            {
+                if(retVal == GDOS_INVALID_HANDLE)
+                {
+                    amPrintf("[GEMDOS] Error: Invalid file handle when closing %s"NL, szFileName);
+                }
+                else
+                {
+                    amTrace("[GEMDOS] Error closing file handle : [%d] "NL, (uint16)fileHandle, getGemdosError((uint16)retVal));
+                }
+            }
+
+            *fileLenght = fileLength;
+            return (pData);
+        } 
+        else 
         {
-            amPrintf("[GEMDOS] Error: Invalid file handle for %s"NL, szFileName);
+            // no memory available 
+            amPrintf("Not enough memory to load %s"NL, szFileName);
+            amTrace("Not enough memory to load %s"NL, szFileName);
         }
-        else
-        {
-            amPrintf("[GEMDOS] Error: %s (%s)"NL, getGemdosError((int16)lRet), szFileName);
-        }
-        
-      }
-      else
-      {
-          /* not all data being read */
-          if(lRet!=(*fileLenght))
-          {
-            amPrintf((const char *)"Fatal error, unexpected end of file (%s)."NL, szFileName);
-            amTrace("[GEMDOS] Read error. Unexpected EOF (%s)."NL, szFileName);
-
-            /* so we have error, free up memory */
-            gUserMemFree(pData,0);
-          }
-
-      }
-
-      amTrace("[GEMDOS] Closing file handle : [%d] "NL, (uint16)fileHandle);
-
-      lRet = Fclose((uint16)fileHandle);
-
-      if(lRet != GDOS_OK)
-      {
-        if(lRet == GDOS_INVALID_HANDLE)
-        {
-            amPrintf("[GEMDOS] Error: Invalid file handle when closing %s"NL, szFileName);
-        }
-        else
-        {
-            amTrace("[GEMDOS] Error closing file handle : [%d] "NL, (uint16)fileHandle, getGemdosError((uint16)lRet));
-        }
-      }
-
-      return (pData);
-     } 
-     else 
-     {
-      /*no memory available */
-      amPrintf("Not enough memory to load %s"NL, szFileName);
-      amTrace("Not enough memory to load %s"NL, szFileName);
-      return NULL;
-     }
-
     }
     else
     {
-      amTrace("[GEMDOS] Closing file handle : [%d] "NL, (uint16)fileHandle);
+      amTrace("[GEMDOS] Closing file handle : [%d]"NL, (uint16)fileHandle);
 
-      int16 retVal = Fclose((uint16)fileHandle);
+      const int16 retVal = Fclose((uint16)fileHandle);
 
       if(retVal != GDOS_OK)
       {
@@ -342,21 +334,19 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag,  uint32 *file
             amTrace("[GEMDOS] Error closing file handle : [%d] "NL, (uint16)fileHandle, getGemdosError(retVal));
         }
       }
-
-      return NULL;
      }
-    
     }
     else
     {
-        /* print GEMDOS error code */
+        // invalid handle 
         amPrintf("[GEMDOS] Error: %s when opening %s"NL, getGemdosError((uint16)fileHandle), szFileName);
         amTrace("[GEMDOS] Error: %s when opening %s"NL, getGemdosError((uint16)fileHandle), szFileName);
-        return NULL;
     }
+
+ return NULL;
 }
 
-int32 saveFile(const uint8 *szFileName, const void *memBlock, const int32 memBlockSize)
+int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBlockSize)
 {
     int16 fileHandle = Fcreate( szFileName, 0 );
     int32 iRet = GDOS_OK;    

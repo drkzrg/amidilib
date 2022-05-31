@@ -100,7 +100,7 @@ void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag, uint32 *fileL
  * @return pointer to const char * array with error description
  */
 
-int32 saveFile(const uint8 *szFileName, const void *memBlock, const int32 memBlockSize);
+int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBlockSize);
 
 
 #endif

@@ -28,6 +28,18 @@
 #define DEFAULT_LOG_LEVEL TL_ERR_REPORT_ALL
 #endif
 
+// ovverride setting if SUPRESS_CON_OUTPUT is defined
+#ifdef SUPRESS_CON_OUTPUT
+
+#ifdef DEBUG_OUTPUT_TO_CONSOLE
+#undef DEBUG_OUTPUT_TO_CONSOLE
+#define DEBUG_OUTPUT_TO_CONSOLE 0
+#else
+#define DEBUG_OUTPUT_TO_CONSOLE 0
+#endif
+
+#endif
+
 typedef enum 
 {
     TL_ERR_REPORT_ALL = 0,

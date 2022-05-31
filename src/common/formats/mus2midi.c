@@ -179,12 +179,8 @@ header.instrCnt = ReadLE16( header.instrCnt );
 header.dummy = ReadLE16( header.dummy );
 
 // only 15 supported
-if (header.channels > MIDI_MAXCHANNELS - 1) {
-
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("[Error] Too many channels, only 15 is supported."NL,0);
-#endif
-
+if (header.channels > MIDI_MAXCHANNELS - 1) 
+{
     amTrace("[Error] Too many channels, only 15 is supported."NL,0);
     return AM_ERR;
 }
@@ -354,24 +350,17 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
 	// Store length written
 	*len = bytes_written;
 
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("bytes written %u"NL,(uint32)(*len));
-#endif
-
     amTrace("bytes written %u"NL,(uint32)(*len));
 
-     if(pOutMidName){
-
-#ifndef SUPRESS_CON_OUTPUT
-       amPrintf("Writing MIDI output to file: %s"NL, pOutMidName);
-#endif
-
+     if(pOutMidName)
+     {
         amTrace("Writing MIDI output to file: %s"NL, pOutMidName);
 
 #ifdef ENABLE_GEMDOS_IO
         int16 fileHandle = Fcreate(pOutMidName, 0);
 
-        if(fileHandle>0){
+        if(fileHandle>0)
+        {
             amTrace("[GEMDOS] Create file, gemdos handle: %d"NL,fileHandle);
 
             int32 bytesWritten = Fwrite(fileHandle, bytes_written, midiTrackHeaderOut - sizeof(sMThd));
@@ -384,17 +373,10 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
               amTrace("[GEMDOS] Error closing file handle : [%d] "NL, fileHandle, getGemdosError(err));
             }
 
-#ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Written %d bytes"NL,bytes_written);
-#endif
-
-        amTrace("Written %d bytes"NL,bytes_written);
-
-        }else{
-            #ifndef SUPRESS_CON_OUTPUT
-                amPrintf("[GEMDOS] Error: %s Couldn't create midi output file: %s"NL,getGemdosError(fileHandle), pOutMidName);
-            #endif
-
+        	amTrace("Written %d bytes"NL,bytes_written);
+        }
+        else
+        {
             amTrace("[GEMDOS] Error: %s Couldn't create midi output file: %s"NL,getGemdosError(fileHandle), pOutMidName);
         }
 
@@ -404,18 +386,11 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
         fwrite(midiTrackHeaderOut - sizeof(sMThd), bytes_written, 1, file);
         fclose(file);
 
-#ifndef SUPRESS_CON_OUTPUT
-       amPrintf("Written %d bytes"NL,bytes_written);
-#endif
-       amTrace("Written %d bytes"NL,bytes_written);
+       	amTrace("Written %d bytes"NL,bytes_written);
 #endif
 
-      }// end of midi output file write
+      } // end of midi output file write
 
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf( "Done. [OK]"NL);
-#endif
-
- amTrace("Done. OK"NL,0);
+ amTrace("Done. [OK]"NL,0);
  return AM_OK;
 }

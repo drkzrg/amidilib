@@ -24,6 +24,8 @@
 
 int amCustomPrintf(const char* format, ...)
 {
+
+#ifndef SUPRESS_CON_OUTPUT
   static char tempBuf[OUTPUT_TEMP_BUFFER] = {0};
   
   tempBuf[0]='\0';
@@ -36,6 +38,9 @@ int amCustomPrintf(const char* format, ...)
   AssertMsg(rv>=0,"npf_vsnprintf() error");
 
   (void)Cconws(tempBuf);
+#else
+  int const rv = 0;
+#endif
 
   return rv;
 }

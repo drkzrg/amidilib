@@ -146,10 +146,6 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         // error not handled
         amTrace("Error: processSeqEvent() error not handled"NL,0);
 
-#ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Error: processSeqEvent() error not handled"NL,0);
-#endif
-
         return;
         break;
   };

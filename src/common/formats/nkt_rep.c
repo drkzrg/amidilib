@@ -700,13 +700,8 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
     if(pNewSeq==0)
     {
-      amTrace("Error: Couldn't allocate memory for sequence header."NL,0);
-
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("Error: Couldn't allocate memory for sequence header."NL);
-#endif
-
-      return NULL;
+     amTrace("Error: Couldn't allocate memory for sequence header."NL,0);
+     return NULL;
     }
 
     amMemSet(pNewSeq,0,sizeof(sNktSeq));
@@ -725,14 +720,10 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
     FILE *fp=0;
 #endif
 
-    if(pFilePath){
-         // create file header
-
-#ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Loading NKT file: %s"NL,pFilePath);
-#endif
-
-        amTrace("Loading NKT file: %s"NL,pFilePath);
+    if(pFilePath)
+    {
+       // create file header
+       amTrace("Loading NKT file: %s"NL,pFilePath);
 
 #ifdef ENABLE_GEMDOS_IO
        fh=Fopen(pFilePath,S_READ);
@@ -745,20 +736,11 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 #else
        if(fp==NULL){
 #endif
-
-            #ifndef SUPRESS_CON_OUTPUT
-                amPrintf("Error: Couldn't open : %s. File doesn't exists."NL,pFilePath);
-            #endif
-
             amTrace("Error: Couldn't open : %s. File doesn't exists."NL,pFilePath);
             gUserMemFree(pNewSeq,0);
             return NULL;
          }
       }else{
-
-        #ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Error: empty file path. Exiting..."NL,0);
-        #endif
 
         amTrace("Error: empty file path. Exiting..."NL,0);
         gUserMemFree(pNewSeq,0);
@@ -786,12 +768,8 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 #endif
 
 // check header
-    if(tempHd.id!=ID_NKT){
-
-        #ifndef SUPRESS_CON_OUTPUT
-            amPrintf("Error: File %s isn't valid!"NL,pFilePath);
-        #endif
-
+    if(tempHd.id!=ID_NKT)
+    {
         amTrace("Error: File %s isn't valid!/. Exiting..."NL,pFilePath);
 
         #ifdef ENABLE_GEMDOS_IO
@@ -860,11 +838,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
    if( trackData[0].nbOfBlocks==0 || trackData[0].eventsBlockBufSize==0 || trackData[0].eventDataBufSize==0 ){
 
-    #ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Error: File %s has no data or event blocks!"NL,pFilePath);
-    #endif
-
-    amTrace("\n Error: File %s has no data or event blocks!"NL,pFilePath);
+    amTrace(NL " Error: File %s has no data or event blocks!"NL,pFilePath);
 
     #ifdef ENABLE_GEMDOS_IO
         amTrace("[GEMDOS] Closing file handle : [%d] "NL, fh);
@@ -1010,10 +984,6 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
         // create linear buffer
         if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255,PREFER_TT)<0){
 
-            #ifndef SUPRESS_CON_OUTPUT
-            amPrintf("Error: loadSequence() Couldn't allocate memory for event block buffer."NL,0);
-            #endif
-
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer."NL,0);
 
             #ifdef ENABLE_GEMDOS_IO
@@ -1042,9 +1012,6 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
          if(pTrk->eventBlocksPtr==0){
 
-#ifndef SUPRESS_CON_OUTPUT
-            amPrintf("Error: loadSequence() Linear buffer out of memory."NL);
-#endif
             amTrace("Error: loadSequence() Linear buffer out of memory."NL,0);
 
             #ifdef ENABLE_GEMDOS_IO
@@ -1068,11 +1035,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
          if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255,PREFER_TT)<0){
 
-            #ifndef SUPRESS_CON_OUTPUT
-                amPrintf("Error: loadSequence() Couldn't allocate memory for temp data buffer."NL);
-            #endif
-
-             amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. "NL,0);
+            amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. "NL,0);
 
             #ifdef ENABLE_GEMDOS_IO
                 amTrace("[GEMDOS] Closing file handle : [%d] "NL, fh);
@@ -1103,10 +1066,6 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
        amTrace("Allocated %u b for event data buffer"NL,pTrk->dataBufferSize);
 
        if(pTrk->eventDataPtr==0){
-
-           #ifndef SUPRESS_CON_OUTPUT
-                amPrintf("Error: loadSequence() Linear buffer out of memory."NL);
-           #endif
 
            amTrace("Error: loadSequence() Linear buffer out of memory."NL,0);
 
@@ -1294,12 +1253,7 @@ void stopNktSequence(void)
   {
     g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PLAYING|NKT_PS_PAUSED));
 
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("Stop sequence"NL);
-#endif
-
     setMT32Message("Stopped...");
-
   }
 
   resetMidiDevice();
@@ -1316,9 +1270,6 @@ void pauseNktSequence()
     g_CurrentNktSequence->sequenceState&=(~NKT_PS_PLAYING);
     g_CurrentNktSequence->sequenceState|=NKT_PS_PAUSED;
 
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("Pause sequence"NL);
-#endif
     setMT32Message("Paused...");
   } 
   else if(!(state&NKT_PS_PLAYING)&&(state&NKT_PS_PAUSED) )
@@ -1342,18 +1293,17 @@ void playNktSequence(void)
       g_CurrentNktSequence->sequenceState&=(~(NKT_PS_PAUSED));
       g_CurrentNktSequence->sequenceState|=NKT_PS_PLAYING;
 
-#ifndef SUPRESS_CON_OUTPUT
-      amPrintf("Play sequence\t");
+      amTrace("Play sequence\t",0);
 
       if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE)
       {
-        amPrintf("[ ONCE ]"NL);
+        amTrace("[ ONCE ]"NL,0);
       }
       else
       {
-        amPrintf("[ LOOP ]"NL);
+        amTrace("[ LOOP ]"NL,0);
       }
-#endif
+
       }
 }
 
@@ -1364,16 +1314,12 @@ void switchNktReplayMode(void)
   if(g_CurrentNktSequence->sequenceState&NKT_PLAY_ONCE)
   {
     g_CurrentNktSequence->sequenceState&=(~NKT_PLAY_ONCE);
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("Set replay mode: [ LOOP ]"NL);
-#endif
+    amTrace("Set replay mode: [ LOOP ]"NL,0);
   }
   else
   {
     g_CurrentNktSequence->sequenceState|=NKT_PLAY_ONCE;
-#ifndef SUPRESS_CON_OUTPUT
-    amPrintf("Set replay mode: [ ONCE ]"NL);
-#endif
+    amTrace("Set replay mode: [ ONCE ]"NL,0);
   }
 }
 
@@ -1422,26 +1368,24 @@ static const uint8 *getSequenceStateStr(const uint16 state)
 void printNktSequenceState(void)
 {
 
-#ifndef SUPRESS_CON_OUTPUT
+if(g_CurrentNktSequence)
+{
+    amTrace("Td/PPQN: %u"NL,g_CurrentNktSequence->timeDivision);
+    amTrace("Time step: %u"NL,g_CurrentNktSequence->timeStep);
 
-if(g_CurrentNktSequence){
-    amPrintf("Td/PPQN: %u"NL,g_CurrentNktSequence->timeDivision);
-    amPrintf("Time step: %u"NL,g_CurrentNktSequence->timeStep);
-
-    for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i){
-        amPrintf("[%d] Time elapsedFrac: %u\t",i,g_CurrentNktSequence->pTracks[i].timeElapsedFrac);
-        amPrintf("\tTime elapsed: %u"NL,g_CurrentNktSequence->pTracks[i].timeElapsedInt);
+    for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i)
+    {
+        amTrace("[%d] Time elapsedFrac: %u\t",i,g_CurrentNktSequence->pTracks[i].timeElapsedFrac);
+        amTrace("\tTime elapsed: %u"NL,g_CurrentNktSequence->pTracks[i].timeElapsedInt);
     }
 
-    amPrintf("\tDefault Tempo: %u"NL,g_CurrentNktSequence->defaultTempo.tempo);
-    amPrintf("\tLast Tempo: %u"NL,g_CurrentNktSequence->currentTempo.tempo);
+    amTrace("\tDefault Tempo: %u"NL,g_CurrentNktSequence->defaultTempo.tempo);
+    amTrace("\tLast Tempo: %u"NL,g_CurrentNktSequence->currentTempo.tempo);
 
-    amPrintf("\tSequence state: %s"NL,getSequenceStateStr(g_CurrentNktSequence->sequenceState));
+    amTrace("\tSequence state: %s"NL,getSequenceStateStr(g_CurrentNktSequence->sequenceState));
   }
 
  printMidiSendBufferState();
-
-#endif
 
 }
 
@@ -1806,4 +1750,3 @@ void setNktTrackInfo(sNktTrackInfo* trackInfo, const sNktSeq *pNktSeq)
     }
 
 }
-

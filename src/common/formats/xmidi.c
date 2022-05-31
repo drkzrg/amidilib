@@ -212,14 +212,14 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
    				}
    				else
    				{
-   					amTrace("Error: XMidi track chunk not found!"NL);
+   					amTrace("Error: XMidi track chunk not found!"NL,0);
    					retVal=AM_ERR;
    				}
     		}
    		}
    		else
    		{
-   			amTrace("Error: XMidi XDIR chunk not found!"NL);
+   			amTrace("Error: XMidi XDIR chunk not found!"NL,0);
    			retVal=AM_ERR;
    		}
     } 
@@ -235,7 +235,7 @@ int16 processXmidiTrackData(const uint16 trackNo, sIffChunk *firstChunk, sSequen
      		}
      		else
    			{
-   				amTrace("Error: XMidi track chunk not found!"NL);
+   				amTrace("Error: XMidi track chunk not found!"NL,0);
    				retVal=AM_ERR;
    			}
       	}
@@ -256,7 +256,7 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 		sIffChunk *eventChunk = (sIffChunk *)(((uintptr)&trackDataStart->data) + sizeof(uint32)); // skipping XMID id
 		
 		// process event
-		amTrace("Processing Xmidi events..."NL);
+		amTrace("Processing Xmidi events..."NL,0);
 
 		uint32 id = *((uint32 *)eventChunk->id);
 		uint32 eventChunkSize = ReadBE32(eventChunk->size) + roundUp(eventChunk->size);
@@ -296,7 +296,7 @@ int16 processXmidiTrackEvents(const uint16 trackNo, sIffChunk *trackDataStart, s
 	}
 	else
 	{
-		amTrace("Xmidi track data not found..."NL);
+		amTrace("Xmidi track data not found..."NL,0);
 	}
 
     return ret;

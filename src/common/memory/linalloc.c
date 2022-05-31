@@ -1,6 +1,6 @@
 
+#include "core/assert.h"
 #include "memory/linalloc.h"
-#include "core/debug.h"
 #include "core/amprintf.h"
 
 static const uint32 DEBUGFILL = 0x000000FFUL;

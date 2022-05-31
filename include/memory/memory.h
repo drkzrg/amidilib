@@ -9,7 +9,7 @@
 #define __AMEMORY_TOS_H__
 
 #include "vartypes.h"
-#include "amlog.h"
+#include "core/logger.h"
 
 #if AMIDILIB_USE_LIBC
 #include <string.h>
@@ -84,7 +84,7 @@ static inline void *amMemCpy (void *pDest, const void *pSrc, const MemSize iSize
   if( (pbSrc<pbDest && (pbSrc + iSize)>pbDest ) || (pbDest<pbSrc && (pbDest +iSize) >pbSrc))
   {
     #ifdef DEBUG_MEM
-      amTrace((const uint8 *)"\tamMemCpy() overlaps. Using amMemMove()\n");
+      amTrace("\tamMemCpy() overlaps. Using amMemMove()" NL,0);
     #endif
     return amMemMove(pDest,pSrc,iSize);
   }
@@ -100,7 +100,7 @@ static inline void *amMemSet ( void *pSrc, const int32 iCharacter, const MemSize
   #ifdef DEBUG_MEM
     if(pPtr!=pSrc) amTrace((const uint8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
     else{
-      amTrace((const uint8 *)"\tamMemSet() memory: %p, %d value written: %x!\n",pSrc,iNum,iCharacter);
+      amTrace("\tamMemSet() memory: %p, %d value written: %x!" NL,pSrc,iNum,iCharacter);
     }
   #endif
 

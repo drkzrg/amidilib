@@ -282,12 +282,9 @@ if(use_libc!='yes'):
 # additional defines  
 #############################################################################################################################
 # DEBUG_BUILD - enables debug build
-# DEBUG_FILE_OUTPUT enables log output to files (works only if DEBUG_BUILD is defined)  
-# DEBUG_CONSOLE_OUTPUT enables log output to console (works only if DEBUG_BUILD is defined)  
-# DEBUG_SERIAL_OUTPUT debug enables output to serial port (works only if DEBUG_BUILD is defined)
-# DEBUG_MEM logs memory function calling (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# DEBUG_MEM logs memory function calling (works only if (DEBUG_BUILD && (DEBUG_OUTPUT_TO_*) == true )
 # FORCE_MALLOC forces use of libc malloc() for memory allocation, not native functions
-# MIDI_PARSER_DEBUG output midi parsing (works only if DEBUG_BUILD && (DEBUG_FILE_OUTPUT||DEBUG_CONSOLE_OUTPUT) is enabled)
+# MIDI_PARSER_DEBUG output midi parsing (works only if (DEBUG_BUILD && (DEBUG_OUTPUT_TO_*) == true )
 # MIDI_PARSER_TEST outputs loaded and parsed midi file in human readable form
 # IKBD_MIDI_SEND_DIRECT all Midiws() calls will be replaced with low level function that writes to hardware.
 # USE_INLINE if defined some functions are inlined
@@ -302,13 +299,13 @@ if ( build_config == 'debug'):
   LDFLAGS += "-Wl,--traditional-format"
   
   if(debug_level=='1'):
-    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DLOAD_TEST '
   elif(debug_level=='2'):
-    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST '
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER -DMIDI_PARSER_DEBUG -DMIDI_PARSER_TEST ' + '-DUSE_INLINE ' + '-DLOAD_TEST '
   elif(debug_level=='3'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
-    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
+    CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DLOAD_TEST '
   
 else:
     print ("Release build... Code optimisation is turned on.")
@@ -329,7 +326,7 @@ env["ASFLAGS"] = VASM_FLAGS
 env['VASM_FLAGS'] = VASM_FLAGS
 
 # core functionality
-core_src = ["common/core/c_vars.c","common/core/amprintf.c","common/core/amlog.c","common/core/amidilib.c","common/core/config.c"]
+core_src = ["common/core/vartypes.c","common/core/amprintf.c","common/core/logger.c","common/core/amidilib.c","common/core/config.c"]
 containers_src = ["common/containers/stack.c","common/containers/list.c"]
 roland_src = ["common/roland/rol_ptch.c","common/roland/rol_tbl.c"]
 nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c"]
@@ -366,7 +363,7 @@ nktReplay_src = [projdir + "/../demo/nktReplay/nktReplay.c"]
 mid2nkt_src = [projdir + "/../demo/mid2nkt/mid2nkt.c"]
 
 ##################### nkt
-nkt_src = ["common/core/c_vars.c","common/core/amlog.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
+nkt_src = ["common/core/vartypes.c","common/core/logger.c","common/roland/rol_ptch.c","common/formats/midi2nkt.c","common/formats/mus2midi.c","common/formats/midiInfo.c","common/formats/nkt_rep_m68k.s","common/formats/nkt_rep.c", "common/core/amprintf.c"]
 
 if (gemdos_io_enable == "yes"):
     nkt_src = nkt_src + discio_src
@@ -406,8 +403,6 @@ if(use_libc == 'yes'):
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
     ADDLIBS += ['startup' + LIB_TARGET]
-    #ADDLIBS += ['gcc']
-    
     linkedLibs = [LIBRARYNAME] + ADDLIBS
     
     # build test programs and link them with amidilib and custom startup code

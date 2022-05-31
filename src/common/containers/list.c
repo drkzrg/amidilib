@@ -5,9 +5,9 @@
     See license.txt for licensing information.
 */
 
-#include "amlog.h"
 #include "containers/list.h"
 #include "timing/mfp.h"
+#include "core/logger.h"
 #include "core/amprintf.h"
 
 /* adds event to linked list, list has to be inintialised with null */
@@ -74,7 +74,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
 #endif
 {
   #ifdef DEBUG_MEM
-    amTrace((const uint8 *)"copyEvent() src: %p dst: %p"NL,src,dest);
+    amTrace("copyEvent() src: %p dst: %p"NL,src,dest);
   #endif
     
 #ifdef EVENT_LINEAR_BUFFER
@@ -85,7 +85,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
     
     if((*dest)==NULL)
     {
-		  amTrace((const uint8 *)"copyEvent() out of memory [event block]"NL);
+		  amTrace("copyEvent() out of memory [event block]"NL,0);
 		#ifdef EVENT_LINEAR_BUFFER
       linearBufferPrintInfo(&(pSequence->eventBuffer));
 		#endif
@@ -108,7 +108,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
     
 	   if((*dest)->eventBlock.dataPtr==NULL)
      {
-	    amTrace((const uint8 *)"copyEvent() out of memory [callback block]"NL);
+	    amTrace("copyEvent() out of memory [callback block]"NL,0);
 	    
 #ifdef EVENT_LINEAR_BUFFER
       linearBufferPrintInfo(&(pSequence->eventBuffer));
@@ -132,7 +132,7 @@ uint32 destroyList(sEventList **listPtr)
 sEventList *pTemp=NULL,*pCurrentPtr=NULL;
 
 #ifdef DEBUG_MEM
-amTrace((const uint8 *)"destroyList()"NL);
+AM_PRINT((const uint8 *)"destroyList()"NL);
 #endif
 	
 	if(*listPtr!=NULL){
@@ -220,79 +220,79 @@ void printEventBlock(const sEventBlockPtr_t pPtr)
    uint8 *pbuf=NULL;
    int x=0;
 
-   amTrace((const uint8*)"*********** event info: "NL);
-   amTrace((const uint8*)"delta: %lu\t",pPtr->uiDeltaTime);
-   amTrace((const uint8*)"event type: %d\t",pPtr->type);
-   amTrace((const uint8*)"copy/send event callback: %p\t",pPtr->eventCb.func);
-   amTrace((const uint8*)"copy/send data size: %u\t",pPtr->eventCb.size);
-   amTrace((const uint8*)"data pointer: %p"NL,pPtr->dataPtr);
-   amTrace((const uint8*)"data: \t");
+   amTrace("*********** event info: "NL,0);
+   amTrace("delta: %lu\t",pPtr->uiDeltaTime);
+   amTrace("event type: %d\t",pPtr->type);
+   amTrace("copy/send event callback: %p\t",pPtr->eventCb.func);
+   amTrace("copy/send data size: %u\t",pPtr->eventCb.size);
+   amTrace("data pointer: %p"NL,pPtr->dataPtr);
+   amTrace("data: \t",0);
    
    pbuf = (uint8 *)pPtr->dataPtr;
    
    for(x=0;x<pPtr->eventCb.size;x++)
    {
-    amTrace((const uint8*)"0x%x ",pbuf[x]);
+    amTrace("0x%x ",pbuf[x]);
    }
 
-   amTrace(""NL);
+   amTrace(""NL,0);
     switch((uint16)(pPtr->type))
     {
     
     case T_NOTEON:
     {
-      amTrace((const uint8*)"T_NOTEON: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_NOTEON: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_NOTEOFF:{
-      amTrace((const uint8*)"T_NOTEOFF: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_NOTEOFF: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_NOTEAFT:{
-      amTrace((const uint8*)"T_NOTEAFT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_NOTEAFT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_CONTROL:
     {
-      amTrace((const uint8*)"T_CONTROL: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_CONTROL: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_PRG_CH:
     {
-      amTrace((const uint8*)"T_PRG_CH: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_PRG_CH: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_CHAN_AFT:
     {
-        amTrace((const uint8*)"T_CHAN_AFT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+        amTrace("T_CHAN_AFT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_PITCH_BEND:
     {
-      amTrace((const uint8*)"T_PITCH_BEND: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_PITCH_BEND: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_META_SET_TEMPO:
     {
-      amTrace((const uint8*)"T_META_SET_TEMPO: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_META_SET_TEMPO: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_META_EOT:
     {
-      amTrace((const uint8*)"T_META_EOT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_META_EOT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_META_CUEPOINT:
     {
-      amTrace((const uint8*)"T_META_CUEPOINT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_META_CUEPOINT: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_META_MARKER:
     {
-      amTrace((const uint8*)"T_META_MARKER: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_META_MARKER: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_META_SET_SIGNATURE:
     {
-      amTrace((const uint8*)"T_META_SET_SIGNATURE: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_META_SET_SIGNATURE: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     case T_SYSEX:
     {
-      amTrace((const uint8*)"T_SYSEX: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
+      amTrace("T_SYSEX: block pointer: %p, function pointer: %p"NL,pPtr,pPtr->eventCb.func);
     } break;
     default:
     {
-      AssertMsg(0,"printEventBlock() error unknown/unsupported event type."NL);
-      amTrace((const uint8*)"printEventBlock() error unknown/unsupported event type %d"NL,(uint16)(pPtr->type));
+      AssertMsg(false,"printEventBlock() error unknown/unsupported event type."NL);
+      amTrace("printEventBlock() error unknown/unsupported event type %d"NL,(uint16)(pPtr->type));
     } break;
  }
 

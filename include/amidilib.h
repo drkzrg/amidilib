@@ -62,7 +62,7 @@ const sAMIDI_version *amGetVersionInfo(void);
  * @param ppSequence - pointer to a an adress containing AMIDI sequence to populate
  * @return returns AM_OK if everything is OK, AM_ERR if error occured
  **/
-int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 midiDataSize, sSequence_t **ppSequence);
+int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 midiDataSize, sSequence_t **ppSequence);
 
 /** Inits system, set ups new, larger 32k MIDI system buffer
 *	@return 1 if everything went ok */

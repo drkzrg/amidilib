@@ -291,7 +291,7 @@ void updateStepSingle(void)
   {
     onEndSequence();
     endOfSequence=FALSE;
-    amTrace("End of Sequence"NL);
+    amTrace("End of Sequence"NL,0);
   }
 
   }
@@ -488,7 +488,7 @@ void updateStepMulti(void)
   {
     onEndSequence();
     endOfSequence = FALSE;
-    amTrace("End of Sequence"NL);
+    amTrace("End of Sequence"NL,0);
   }
 
 }
@@ -648,7 +648,7 @@ void toggleAmReplayMode(void)
 void destroyAmSequence (sSequence_t **pPtr)
 {
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"destroyAmSequence() destroy sequence at %p initiated... 1..2..3... "NL,*pPtr);
+    amTrace("destroyAmSequence() destroy sequence at %p initiated... 1..2..3... "NL,*pPtr);
   #endif
 
   sSequence_t *seq = (*pPtr);
@@ -681,7 +681,7 @@ void destroyAmSequence (sSequence_t **pPtr)
   gUserMemFree(seq,0);
   
   #ifdef DEBUG_BUILD
-    amTrace((const uint8 *)"destroyAmSequence() done. "NL);
+    amTrace("destroyAmSequence() done."NL,0);
   #endif
   seq = 0;
 }

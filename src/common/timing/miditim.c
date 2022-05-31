@@ -3,7 +3,8 @@
 #include <mint/osbind.h>
 
 #include "timing/miditim.h"
-#include "amlog.h"
+#include "core/logger.h"
+#include "core/amprintf.h"
 
 /* function for calculating tempo */
 
@@ -26,11 +27,11 @@ uint16 amDecodeTimeDivisionInfo(uint16 timeDivision){
 	uint8 subframe=0;
     timeDivision&=0x7FFF;
     subframe=timeDivision>>7;
-    amTrace((const uint8*)"Timing (SMPTE): %x, %u"NL, subframe,(timeDivision&0x00FF));
+    amTrace("Timing (SMPTE): %x, %u"NL, subframe,(timeDivision&0x00FF));
     return 0;		//todo:
   }else{
     /* PPQN */
-    amTrace((const uint8*)"Timing (PPQN): %u"NL, timeDivision);
+    amTrace("Timing (PPQN): %u"NL, timeDivision);
     return timeDivision;
    }
 }

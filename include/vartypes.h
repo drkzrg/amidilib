@@ -77,33 +77,7 @@ void compilerSanityCheck(void);
 // false / for big endian - // Big Endian - GameCube, Atari
 const Bool checkEndianess();
 
-#if (defined(DEBUG) || defined(_DEBUG))
-
-#include "core/libc.h"
-
-#   define AssertMsg(condition, message) \
-    do { \
-        if (! (condition)) { \
-            printf("Assertion %s failed in %s at %d line. Message: %s\n", \
-            #condition, __FILE__, __LINE__, message);\
-        } \
-    } while (false)
-
-#   define Assert(condition) \
-    do { \
-        if (! (condition)) { \
-            printf("Assertion %s failed in %s at %d line. \n", \
-            #condition, __FILE__, __LINE__);\
-        } \
-    } while (false)
-
-#else
-
-#define AssertMsg(condition, message) do { } while (false)
-#define Assert(condition) do { } while (false)
-#endif
-
-#define AM_OK 0
-#define AM_ERR -1
+#define AM_OK ((int16)(0))
+#define AM_ERR ((int16)(-1))
 
 #endif

@@ -51,7 +51,7 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         } break;
         case T_NOTEAFT:{
             // dump data
-            amTrace("T_NOTEAFT "NL);
+            amTrace("T_NOTEAFT "NL,0);
             sNoteAft_EventBlock_t *pEventBlk=(sNoteAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)]=(EV_NOTE_AFTERTOUCH)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.noteNb; (*bufPos)++;
@@ -61,7 +61,7 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
             return;
         } break;
         case T_CONTROL:{
-            amTrace("T_CONTROL "NL);
+            amTrace("T_CONTROL "NL,0);
             // program change (dynamic according to connected device)
             sController_EventBlock_t *pEventBlk=(sController_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
@@ -74,7 +74,7 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         } break;
         case T_PRG_CH:{
         // program change (dynamic according to connected device)
-         amTrace("T_PRG_CH "NL);
+         amTrace("T_PRG_CH "NL,0);
             sPrgChng_EventBlock_t *pEventBlk=(sPrgChng_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)]=(EV_PROGRAM_CHANGE)|pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)]=pEventBlk->eventData.programNb; (*bufPos)++;
@@ -83,7 +83,7 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         } break;
         case T_CHAN_AFT:{
             // dump data
-         amTrace("T_CHAN_AFT "NL);
+         amTrace("T_CHAN_AFT "NL,0);
             sChannelAft_EventBlock_t *pEventBlk=(sChannelAft_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
             tab[(*bufPos)] = (EV_CHANNEL_AFTERTOUCH) | pEventBlk->ubChannelNb; (*bufPos)++;
             tab[(*bufPos)] = pEventBlk->eventData.pressure; (*bufPos)++;
@@ -92,7 +92,7 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         } break;
         case T_PITCH_BEND:{
             // dump data
-         amTrace("T_PITCH_BEND "NL);
+         amTrace("T_PITCH_BEND "NL,0);
             sPitchBend_EventBlock_t  *pEventBlk=(sPitchBend_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
 
             tab[(*bufPos)]=(EV_PITCH_BEND)|pEventBlk->ubChannelNb; (*bufPos)++;
@@ -103,52 +103,48 @@ void processSeqEvent(sEventList *pCurEvent, uint8 *tab,uint32 *bufPos, uint32 *b
         } break;
         case T_META_SET_TEMPO:{
             //set tempo
-        amTrace("T_META_SET_TEMPO "NL);
+        amTrace("T_META_SET_TEMPO "NL,0);
            // sTempo_EventBlock_t  *pEventBlk=(sTempo_EventBlock_t  *)&(pCurEvent->eventBlock);
             // skip
             return;
         } break;
         case T_META_EOT:{
              // skip
-           amTrace("T_META_EOT "NL);
+           amTrace("T_META_EOT "NL,0);
            // sEot_EventBlock_t *pEventBlk=(sEot_EventBlock_t *)&(pCurEvent->eventBlock);
             return;
         } break;
         case T_META_CUEPOINT:{
             //skip
-          amTrace("T_META_CUEPOINT "NL);
+          amTrace("T_META_CUEPOINT "NL,0);
             //sCuePoint_EventBlock_t *pEventBlk=(sCuePoint_EventBlock_t *)&(pCurEvent->eventBlock);
             return;
         } break;
         case T_META_MARKER:{
             //skip
-         amTrace("T_META_MARKER "NL);
+         amTrace("T_META_MARKER "NL,0);
             //sMarker_EventBlock_t *pEventBlk=(sMarker_EventBlock_t *)&(pCurEvent->eventBlock);
             return;
         } break;
         case T_META_SET_SIGNATURE:{
         //skip
-         amTrace("T_META_SET_SIGNATURE "NL);
+         amTrace("T_META_SET_SIGNATURE "NL,0);
             //sTimeSignature_EventBlock_t *pEventBlk=(sTimeSignature_EventBlock_t *)&(pCurEvent->eventBlock);
              return;
         } break;
         case T_SYSEX:{
         // copy data
-         amTrace("T_SYSEX "NL);
+         amTrace("T_SYSEX "NL,0);
         // format depends on connected device
           sSysEX_EventBlock_t *pEventBlk=(sSysEX_EventBlock_t *)pCurEvent->eventBlock.dataPtr;
-          amTrace((const uint8*)"Copy SysEX Message."NL);
+          amTrace("Copy SysEX Message."NL,0);
           //TODO: check buffer overflow
           amMemCpy(&tab[(*bufPos)],pEventBlk->pBuffer,pEventBlk->bufferSize);
           (*bufDataSize)+=pEventBlk->bufferSize;
         } break;
     default:
         // error not handled
-        amTrace("Error: processSeqEvent() error not handled"NL);
-
-#ifndef SUPRESS_CON_OUTPUT
-        amPrintf("Error: processSeqEvent() error not handled"NL);
-#endif
+        amTrace("Error: processSeqEvent() error not handled"NL,0);
 
         return;
         break;
@@ -246,7 +242,7 @@ static int32 handleSingleTrack(const sSequence_t *pSeq, const Bool bCompress, FI
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
 
-                amTrace("Write End of Track "NL);
+                amTrace("Write End of Track "NL,0);
                 stBlock.blockSize=0;
                 stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
@@ -370,12 +366,12 @@ static int32 handleSingleTrack(const sSequence_t *pSeq, const Bool bCompress, FI
                 if(bufPos>0){
                     stBlock.blockSize=bufDataSize;
 
-                    amTrace("[DATA] ");
+                    amTrace("[DATA] ",0);
 
                         for(int j=0;j<bufDataSize;j++){
                             amTrace("0x%x ",tempBuffer[j]);
                         }
-                    amTrace(" [/DATA]"NL);
+                    amTrace(" [/DATA]"NL,0);
 
                     //write block to file
 
@@ -491,7 +487,7 @@ static int32 handleMultiTrack(const sSequence_t *pSeq, const Bool bCompress, FIL
 
             if((eventPtr!=NULL) &&(eventPtr->eventBlock.type==T_META_EOT)){
 
-                amTrace("Write End of Track "NL);
+                amTrace("Write End of Track "NL,0);
                 stBlock.blockSize=0;
                 stBlock.msgType=(uint16)seq2nktMap[eventPtr->eventBlock.type];
 
@@ -593,12 +589,12 @@ static int32 handleMultiTrack(const sSequence_t *pSeq, const Bool bCompress, FIL
                 if(bufPos>0){
                     stBlock.blockSize=bufDataSize;
 
-                    amTrace("[DATA] ");
+                    amTrace("[DATA] ",0);
 
                         for(int j=0;j<bufDataSize;j++){
                             amTrace("0x%x ",tempBuffer[j]);
                         }
-                    amTrace(" [/DATA]"NL);
+                    amTrace(" [/DATA]"NL,0);
 
                     //write block to file
 

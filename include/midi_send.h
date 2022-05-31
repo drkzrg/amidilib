@@ -2,7 +2,9 @@
 #define __MIDI_SEND_H__
 
 #include "vartypes.h"
-#include "amlog.h"
+
+#include "core/logger.h"
+#include "core/amprintf.h"
 
 #include <mint/osbind.h>
 
@@ -72,15 +74,16 @@ static INLINE void flushMidiSendBuffer(void){
 
 #ifdef DEBUG_BUILD
 static void printMidiSendBufferState(void){
-    amTrace("Midi send buffer bytes to send: %d\n",MIDIbytesToSend);
+    amTrace("Midi send buffer bytes to send: %d" NL,MIDIbytesToSend);
 
     if(MIDIbytesToSend>0){
         int i=0;
-        for(i;i<MIDIbytesToSend;++i){
+        for(i;i<MIDIbytesToSend;++i)
+        {
             amTrace("0x%02x ",MIDIsendBuffer[i]);
         }
 
-        amTrace(".\n");
+        amTrace("." NL,0);
     }
 }
 #endif

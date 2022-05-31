@@ -6,10 +6,7 @@
 #include "amstring.h"
 #endif
 
-#include "core/amprintf.h"
-
 #include "dmus.h"           // MUS->MID conversion
-#include "amlog.h"          // logging
 #include "midi.h"           // midi
 #include "midi2nkt.h"
 
@@ -18,6 +15,9 @@
 #else
 #include <stdio.h>
 #endif
+
+#include "core/amprintf.h"
+#include "core/logger.h"    // logging
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -36,7 +36,7 @@ uint8 *filePath=0;
   initGemdos();
 #endif
 
-  initDebug("MID2NKT.LOG");
+  initLogger("mid2nkt.log");
 
   printInfoScreen();
 
@@ -62,7 +62,7 @@ uint8 *filePath=0;
   else
   {
       amPrintf("No specified mid / mus filename or bad parameters! Exiting ..."NL);
-      deinitDebug();
+      deinitLogger();
 
 #if AMIDILIB_USE_LIBC
 #else   
@@ -73,22 +73,21 @@ uint8 *filePath=0;
   }
 
   // load midi file into memory
-  uint32 iError=0;
-  uint32 ulFileLenght=0L;
-  void *pMidi=0;
-  char tempName[MAX_GEMDOS_FILEPATH];
-
-  pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
+  uint32 ulFileLenght=0;
+  
+  void *pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght,FILE_RO);
 
    if(pMidi!=NULL)
    {
+        char tempName[MAX_GEMDOS_FILEPATH];
+
        // check MUS file
        MUSheader_t *pMusHeader=(MUSheader_t *)pMidi;
 
        if(((pMusHeader->ID)>>8)==MUS_ID)
        {
            // convert it to midi format
-           amTrace((const uint8*)"Converting MUS -> MID ..."NL);
+           amTrace("Converting MUS -> MID ..."NL,0);
 
            uint32 len=0;
 
@@ -167,7 +166,7 @@ uint8 *filePath=0;
     }
 
   //done..
-   deinitDebug();
+   deinitLogger();
 
 #ifdef ENABLE_GEMDOS_IO
    deinitGemdos();

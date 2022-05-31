@@ -292,7 +292,7 @@ if(gemdos_io_enable == 'yes'):
     gemdosio_src = ["./src/gemdosio.c"]
 
 nkt_replay_src = ["./src/nkt_rep.c","./src/nkt_rep_m68k.s","./src/rol_ptch.c","./src/common.s","./src/memory.c","./src/linalloc.c"]
-nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/c_vars.c","./src/amlog.c","./src/miditim.c","./src/midiInfo.c"]
+nkt_conv_src = ["./src/midi2nkt.c","./src/mus2midi.c","./src/vartypes.c","./src/logger.c","./src/miditim.c","./src/midiInfo.c"]
 lzo_src = ["./src/minilzo.c"]
 
 # build library

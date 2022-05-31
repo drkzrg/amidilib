@@ -16,6 +16,13 @@
  #define XB_DEV_KBD 1    	/* Keyboard port */
  #define XB_DEV_MIDI 2		/* MIDI interface */
 
+typedef enum EGEMDOSFILEATTRIB
+{
+	FILE_RO=0,
+	FILE_WO,
+	FILE_RW 
+} eGemdosFileAttrib;
+
 typedef enum EGDOSERROR
 {
 	/* GEMDOS errors */
@@ -91,7 +98,7 @@ void deinitGemdos(void);
  * valid pointer - if file was loaded.
  */
 
-void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag, uint32 *fileLenght);
+void *loadFile(const uint8 *szFileName, const eMemoryFlag memFlag, uint32 *fileLenght, const eGemdosFileAttrib attrib);
 
 /**
  * loads gets text description of actual GEMDOS error.

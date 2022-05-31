@@ -111,7 +111,7 @@ if(((pMusHeader->ID)>>8) == MUS_ID){
  return T_UNSUPPORTED;
 }
 
-int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 dataSize, sSequence_t **ppSequence)
+int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 dataSize, sSequence_t **ppSequence)
 {
     (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), PREFER_TT,0);
  
@@ -128,7 +128,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const uint32 d
 
 #ifdef EVENT_LINEAR_BUFFER
    const MemSize memSize = getGlobalConfig()->eventPoolSize * getGlobalConfig()->eventDataAllocatorSize;
-   amTrace((const uint8 *)"amProcessMidiFileData() trying to allocate %d Kb"NL,memSize/1024);
+   amTrace((const uint8 *)"amProcessMidiFileData() trying to allocate %d Kb"NL,(memSize/1024));
 
    if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0)
    {

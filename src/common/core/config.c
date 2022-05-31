@@ -100,7 +100,7 @@ int32 loadConfig(const uint8 *configFileName)
 uint32 cfgLen=0;
 int32 retval = AM_OK;
 
-  void *cfgData= loadFile(configFileName,PREFER_TT,&cfgLen);
+  void *cfgData= loadFile(configFileName,PREFER_TT,&cfgLen,FILE_RW);
   
   if(cfgData!=NULL)
   { 

@@ -75,7 +75,7 @@ uint8 *filePath=0;
   // load midi file into memory
   uint32 ulFileLenght=0;
   
-  void *pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght);
+  void *pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght,FILE_RO);
 
    if(pMidi!=NULL)
    {

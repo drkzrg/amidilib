@@ -9,7 +9,8 @@
 #include "string.h"
 
 #ifdef MIDI_PARSER_DEBUG
-#include "core/debug.h"
+#include "core/logger.h"
+#include "core/amprintf.h"
 #endif
 
 /* for saving last running status */
@@ -148,11 +149,11 @@ if((*recallRS)==0){
 }
 
 #ifdef MIDI_PARSER_DEBUG
-  amTrace((const uint8*)"delta: %u\t",delta);
-  amTrace((const uint8*)"event: Note off ");
-  amTrace((const uint8*)"ch: %d\t",(pEvntBlock->ubChannelNb)+1);
-  amTrace((const uint8*)"note: %d(%s)\t",pNoteOff->noteNb,getMidiNoteName(pNoteOff->noteNb));
-  amTrace((const uint8*)"vel: %d"NL,pNoteOff->velocity);
+  amTrace("delta: %u\t",delta);
+  amTrace("event: Note off ",0);
+  amTrace("ch: %d\t",(pEvntBlock->ubChannelNb)+1);
+  amTrace("note: %d(%s)\t",pNoteOff->noteNb,getMidiNoteName(pNoteOff->noteNb));
+  amTrace("vel: %d"NL,pNoteOff->velocity);
 #endif
 
    return retCode;
@@ -251,11 +252,11 @@ static INLINE int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, 
  }
 
  #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"delta: %lu\t",delta);
-    amTrace((const uint8*)"event: Note on ");
-    amTrace((const uint8*)"ch: %d\t",channel);
-    amTrace((const uint8*)"note: %d(%s)\t",note,getMidiNoteName(note));
-    amTrace((const uint8*)"vel: %d "NL,velocity);
+    amTrace("delta: %lu\t",delta);
+    amTrace("event: Note on ",0);
+    amTrace("ch: %d\t",channel);
+    amTrace("note: %d(%s)\t",note,getMidiNoteName(note));
+    amTrace("vel: %d "NL,velocity);
  #endif
 
  return retCode;
@@ -341,7 +342,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
     }
 
 #ifdef MIDI_PARSER_DEBUG
-     amTrace((const uint8*)"delta: %u\tevent: Note Aftertouch note: %d, pressure: %d"NL,(unsigned long)delta, noteNb,pressure);
+     amTrace("delta: %u\tevent: Note Aftertouch note: %d, pressure: %d"NL,(unsigned long)delta, noteNb,pressure);
 #endif
 
    return retCode;
@@ -431,7 +432,7 @@ static INLINE int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallR
 #endif
   }
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d"NL,delta, channelNb+1, controllerNb,getMidiControllerName(controllerNb), value);
+    amTrace("delta: %lu\tevent: Controller ch: %d, nb:%d name: %s\tvalue: %d"NL,delta, channelNb+1, controllerNb,getMidiControllerName(controllerNb), value);
 #endif
 
    return retCode;
@@ -520,10 +521,10 @@ sEventBlock_t tempEvent;
      }
 
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"delta: %lu\t",delta);
-    amTrace((const uint8*)"event: Program change ");
-    amTrace((const uint8*)"ch: %d\t",channel);
-    amTrace((const uint8*)"program nb: %d"NL,PN);
+    amTrace("delta: %lu\t",delta);
+    amTrace("event: Program change ",0);
+    amTrace("ch: %d\t",channel);
+    amTrace("program nb: %d"NL,PN);
 #endif
 
     return retCode;
@@ -604,7 +605,7 @@ int16 retCode = AM_OK;
     }
 
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %lu\tevent: Channel aftertouch pressure: %d"NL,delta, param);
+        amTrace("delta: %lu\tevent: Channel aftertouch pressure: %d"NL,delta, param);
 #endif
 
  return retCode;
@@ -694,7 +695,7 @@ tempEvent.dataPtr=0;
   }
 
  #ifdef MIDI_PARSER_DEBUG
- amTrace((const uint8*)"delta: %u\tevent: Pitch bend LSB: %d, MSB:%d"NL,(unsigned long)delta,pPitchBend->LSB,pPitchBend->MSB);
+ amTrace("delta: %u\tevent: Pitch bend LSB: %d, MSB:%d"NL,(unsigned long)delta,pPitchBend->LSB,pPitchBend->MSB);
  #endif
 
   return retCode;
@@ -729,13 +730,13 @@ static INLINE int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 del
   pEvntBlock=(sSysEX_EventBlock_t *)tempEvent.dataPtr;
 
 #ifdef MIDI_PARSER_DEBUG
-  amTrace((const uint8*)"SOX: ");
+  amTrace("SOX: ",0);
 #endif
    pTmpPtr=(*pPtr); //save start
 
    while( (*(*pPtr))!=EV_EOX){
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"0x%x, ",*(*pPtr));
+    amTrace("0x%x, ",*(*pPtr));
 #endif
      (*pPtr)++;
       /*count Sysex msg data bytes */
@@ -748,7 +749,7 @@ static INLINE int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 del
     amMemCpy(pEvntBlock->pBuffer,pTmpPtr,ulCount*sizeof(uint8));
 
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)" EOX, size: %lu"NL,ulCount);
+    amTrace(" EOX, size: %lu"NL,ulCount);
 #endif
 
  /* add event to list */
@@ -789,12 +790,12 @@ sEventBlock_t tempEvent;
     case MT_SEQ_NB:
     {
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Sequence nb: ",(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Sequence nb: ",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"%d"NL, ubLenght);
+        amTrace("%d"NL, ubLenght);
 #endif
         (*pPtr)++;
         addr=((uint32)(*pPtr))+ubLenght*sizeof(uint8);
@@ -804,45 +805,45 @@ sEventBlock_t tempEvent;
     case MT_TEXT:
     {
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Text:",(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Text:",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d ",ubLenght);
+        amTrace("meta size: %d ",ubLenght);
 #endif
     /* set to the start of the string */
         (*pPtr)++;
         amMemCpy(textBuffer, (*pPtr),ubLenght*sizeof(uint8) );
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"%s "NL,textBuffer);
+        amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
     case MT_COPYRIGHT:
     {
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Copyright: ",(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Copyright: ",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d ",ubLenght);
+        amTrace("meta size: %d ",ubLenght);
 #endif
         /* set to the start of the string */
         (*pPtr)++;
         amMemCpy(textBuffer, (*pPtr),ubLenght*sizeof(uint8) );
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"%s "NL,textBuffer);
+        amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
     case MT_SEQNAME:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: Sequence name: ",(unsigned long)delta);
+      amTrace("delta: %u\tMeta event: Sequence name: ",(unsigned long)delta);
 #endif
       ++(*pPtr);
       ubLenght=readVLQ((*pPtr),&ubSize);
@@ -863,20 +864,20 @@ sEventBlock_t tempEvent;
 
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d ",ubLenght);
-        amTrace((const uint8*)"%s "NL,pTrack->pTrackName);
+        amTrace("meta size: %d ",ubLenght);
+        amTrace("%s "NL,pTrack->pTrackName);
 #endif
       ret = AM_OK;
     } break;
     case MT_INSTRNAME:
     {
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Instrument name: ",(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Instrument name: ",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d",ubLenght);
+        amTrace("meta size: %d",ubLenght);
 #endif
         /* set to the start of the string */
         (*pPtr)++;
@@ -884,26 +885,26 @@ sEventBlock_t tempEvent;
         (*pPtr)=((*pPtr)+ubLenght);
 
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"%s "NL,textBuffer);
+        amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
     case MT_LYRICS:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: Lyrics: ",(unsigned long)delta);
+      amTrace("delta: %u\tMeta event: Lyrics: ",(unsigned long)delta);
 #endif
       (*pPtr)++;
       ubLenght=readVLQ((*pPtr),&ubSize);
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"meta size: %d ",ubLenght);
+      amTrace("meta size: %d ",ubLenght);
 #endif
       /* set to the start of the string */
       (*pPtr)++;
       amMemCpy(textBuffer, (*pPtr),ubLenght*sizeof(uint8));
       (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"%s "NL,textBuffer);
+      amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
@@ -911,7 +912,7 @@ sEventBlock_t tempEvent;
     case MT_MARKER:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: Marker: ", delta);
+      amTrace("delta: %u\tMeta event: Marker: ", delta);
 #endif
       sMarker_EventBlock_t *pEvntBlock=0;
 
@@ -943,8 +944,8 @@ sEventBlock_t tempEvent;
 #endif
 
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"meta size: %d ",ubLenght);
-      amTrace((const uint8*)"%s "NL,textBuffer);
+      amTrace("meta size: %d ",ubLenght);
+      amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
@@ -952,7 +953,7 @@ sEventBlock_t tempEvent;
     case MT_CUEPOINT:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: Cuepoint"NL,(unsigned long)delta);
+      amTrace("delta: %u\tMeta event: Cuepoint"NL,(unsigned long)delta);
 #endif
     sCuePoint_EventBlock_t *pEvntBlock=0;
 
@@ -987,8 +988,8 @@ sEventBlock_t tempEvent;
 #endif
 
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"meta size: %d ",ubLenght);
-    amTrace((const uint8*)"%s "NL,pEvntBlock->pCuePointName);
+    amTrace("meta size: %d ",ubLenght);
+    amTrace("%s "NL,pEvntBlock->pCuePointName);
 #endif
       ret = AM_OK;
     } break;
@@ -997,7 +998,7 @@ sEventBlock_t tempEvent;
     {
         /* program(patch) name */
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Program (patch) name: ",(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Program (patch) name: ",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
@@ -1008,8 +1009,8 @@ sEventBlock_t tempEvent;
         (*pPtr)=((*pPtr)+ubLenght);
 
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d ",ubLenght);
-        amTrace((const uint8*)"%s "NL,textBuffer);
+        amTrace("meta size: %d ",ubLenght);
+        amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
@@ -1017,7 +1018,7 @@ sEventBlock_t tempEvent;
     {
       /* device (port) name */
 #ifdef MIDI_PARSER_DEBUG
-    amTrace((const uint8*)"delta: %u\tMeta event: Device (port) name: ",(unsigned long)delta);
+    amTrace("delta: %u\tMeta event: Device (port) name: ",(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=readVLQ((*pPtr),&ubSize);
@@ -1027,14 +1028,14 @@ sEventBlock_t tempEvent;
         amMemCpy(textBuffer, (*pPtr),ubLenght*sizeof(uint8) );
         (*pPtr)=((*pPtr)+ubLenght);
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"meta size: %d ",ubLenght);
-        amTrace((const uint8*)"%s "NL,textBuffer);
+        amTrace("meta size: %d ",ubLenght);
+        amTrace("%s "NL,textBuffer);
 #endif
       ret = AM_OK;
     } break;
     case MT_CH_PREFIX:{
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Channel prefix"NL,(unsigned long)delta);
+        amTrace("delta: %u\tMeta event: Channel prefix"NL,(unsigned long)delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1051,7 +1052,7 @@ sEventBlock_t tempEvent;
 
         /*get port nb*/
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Midi channel nb: %d"NL,(unsigned long)delta,*(*pPtr));
+        amTrace("delta: %u\tMeta event: Midi channel nb: %d"NL,(unsigned long)delta,*(*pPtr));
 #endif
         (*pPtr)++;
       ret = AM_OK;
@@ -1064,7 +1065,7 @@ sEventBlock_t tempEvent;
 
         /*get port nb*/
 #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"delta: %u\tMeta event: Midi port nb: %d"NL,(unsigned long)delta,*(*pPtr));
+        amTrace("delta: %u\tMeta event: Midi port nb: %d"NL,(unsigned long)delta,*(*pPtr));
 #endif
         (*pPtr)++;
       ret = AM_OK;
@@ -1072,7 +1073,7 @@ sEventBlock_t tempEvent;
     case MT_EOT:
     {
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: End of track"NL,(unsigned long)delta);
+      amTrace("delta: %u\tMeta event: End of track"NL,(unsigned long)delta);
 #endif
     sEot_EventBlock_t *pEvntBlock=0;
     (*pPtr)++;
@@ -1107,7 +1108,7 @@ sEventBlock_t tempEvent;
       uint8 ulVal[3]={0};   /* for retrieving set tempo info */
       sTempo_EventBlock_t *pEvntBlock=NULL;
     #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %u\tMeta event: Set tempo: ",(unsigned long)delta);
+      amTrace("delta: %u\tMeta event: Set tempo: ",(unsigned long)delta);
     #endif
 
       (*pPtr)++;
@@ -1138,7 +1139,7 @@ sEventBlock_t tempEvent;
       pEvntBlock->eventData.tempoVal= val1;
 
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"%lu ms per quarter-note"NL, val1);
+      amTrace("%lu ms per quarter-note"NL, val1);
 #endif
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
@@ -1151,7 +1152,7 @@ sEventBlock_t tempEvent;
     {
        sSMPTEoffset SMPTEinfo;
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %lu\tMeta event: SMPTE offset:"NL,delta);
+      amTrace("delta: %lu\tMeta event: SMPTE offset:"NL,delta);
 #endif
       (*pPtr)++;
       ubLenght=(*(*pPtr));
@@ -1162,11 +1163,11 @@ sEventBlock_t tempEvent;
       *pPtr=(uint8*)addr;
 /* print out info */
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"hr: %d"NL,SMPTEinfo.hr);
-      amTrace((const uint8*)"mn: %d"NL,SMPTEinfo.mn);
-      amTrace((const uint8*)"se: %d"NL,SMPTEinfo.fr);
-      amTrace((const uint8*)"fr: %d"NL,SMPTEinfo.fr);
-      amTrace((const uint8*)"ff: %d"NL,SMPTEinfo.ff);
+      amTrace("hr: %d"NL,SMPTEinfo.hr);
+      amTrace("mn: %d"NL,SMPTEinfo.mn);
+      amTrace("se: %d"NL,SMPTEinfo.fr);
+      amTrace("fr: %d"NL,SMPTEinfo.fr);
+      amTrace("ff: %d"NL,SMPTEinfo.ff);
 #endif
       ret = AM_OK;
     } break;
@@ -1176,7 +1177,7 @@ sEventBlock_t tempEvent;
      sTimeSignature_EventBlock_t *pEvntBlock=NULL;
 
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %lu\tMeta event: Time signature: ",delta);
+      amTrace("delta: %lu\tMeta event: Time signature: ",delta);
 #endif
       (*pPtr)++;
       ubLenght=(*(*pPtr));
@@ -1199,7 +1200,7 @@ sEventBlock_t tempEvent;
 
       /* print out info */
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"Time signature change nn: %d\tdd: %d\tcc: %d\tbb: %d\r"NL,timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
+      amTrace("Time signature change nn: %d\tdd: %d\tcc: %d\tbb: %d\r"NL,timeSign.nn,timeSign.dd,timeSign.cc,timeSign.bb);
 #endif
     /* add event to list */
 #ifdef EVENT_LINEAR_BUFFER
@@ -1214,7 +1215,7 @@ sEventBlock_t tempEvent;
       uint8 param1=0,param2=0;
 
 #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %lu\tMeta event: Key signature: ",delta);
+      amTrace("delta: %lu\tMeta event: Key signature: ",delta);
 #endif
         (*pPtr)++;
         ubLenght=(*(*pPtr));
@@ -1223,21 +1224,21 @@ sEventBlock_t tempEvent;
         (*pPtr)++;
         param2=(*(*pPtr));
 #ifdef MIDI_PARSER_DEBUG
-        if (param2==0) {amTrace((const uint8*)"scale: major ");}
-        else if(param2==1) {amTrace((const uint8*)"scale: minor ");}
-         else { amTrace((const uint8*)"error: wrong key signature scale. "); }
+        if (param2==0) {amTrace("scale: major ",0);}
+        else if(param2==1) {amTrace("scale: minor ",0);}
+         else { amTrace("error: wrong key signature scale. ",0); }
 
         if(param1==0)
-            {amTrace((const uint8*)"Key of C"NL);}
+            {amTrace("Key of C"NL,0);}
         else if (((int8)param1==-1))
-            {amTrace((const uint8*)"1 flat"NL);}
+            {amTrace("1 flat"NL,0);}
         else if(((int8)param1)==1)
-            {amTrace((const uint8*)"1 sharp"NL);}
+            {amTrace("1 sharp"NL,0);}
         else if ((param1>1&&param1<=7))
-            {amTrace((const uint8*)" %d sharps"NL,param1);}
+            {amTrace(" %d sharps"NL,param1);}
         else if (( ((int8)param1)<-1&& ((int8)param1)>=-7))
-            {amTrace((const uint8*)" %ld flats"NL,(uint32)param1);}
-        else {amTrace((const uint8*)" error: wrong key signature. %d"NL,param1);}
+            {amTrace(" %ld flats"NL,(uint32)param1);}
+        else {amTrace(" error: wrong key signature. %d"NL,param1);}
 #endif
 
       (*pPtr)++;
@@ -1246,7 +1247,7 @@ sEventBlock_t tempEvent;
     case MT_SEQ_SPEC:
     {
     #ifdef MIDI_PARSER_DEBUG
-      amTrace((const uint8*)"delta: %lu\tMeta event: Sequencer specific data."NL,delta);
+      amTrace("delta: %lu\tMeta event: Sequencer specific data."NL,delta);
     #endif
       (*pPtr)++;
       ubLenght=(*(*pPtr));
@@ -1258,7 +1259,7 @@ sEventBlock_t tempEvent;
     default:
     {
     #ifdef MIDI_PARSER_DEBUG
-       amTrace((const uint8*)"delta: %lu\tUnknown meta event."NL,delta);
+       amTrace("delta: %lu\tUnknown meta event."NL,delta);
     #endif
        (*pPtr)++;
        ubLenght=(*(*pPtr));
@@ -1266,7 +1267,7 @@ sEventBlock_t tempEvent;
        /* file also could be broken */
 
     #ifdef MIDI_PARSER_DEBUG
-        amTrace((const uint8*)"id: %d, size: %d"NL /*parameters: %ld "NL*/,ubVal,*(*pPtr));
+        amTrace("id: %d, size: %d"NL /*parameters: %ld "NL*/,ubVal,*(*pPtr));
     #endif
         (*pPtr)=(*pPtr)+ubLenght;
         ret = AM_OK;
@@ -1367,37 +1368,37 @@ static INLINE void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, co
       break;
       case SC_MTCQF:
         recallStatus=0;                        /* Midi time code quarter frame, 1 byte */
-        amTrace((const uint8*)"Event: System common MIDI time code qt frame"NL);
+        amTrace("Event: System common MIDI time code qt frame"NL,0);
         ++pCmd;
         ++pCmd;
       break;
       case SC_SONG_POS_PTR:
-        amTrace((const uint8*)"Event: System common Song position pointer"NL);
+        amTrace("Event: System common Song position pointer"NL,0);
         recallStatus=0;                      /* Song position pointer, 2 data bytes */
         ++pCmd;
         ++pCmd;
         ++pCmd;
       break;
       case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-        amTrace((const uint8*)"Event: System common Song select"NL);
+        amTrace("Event: System common Song select"NL,0);
         recallStatus=0;
         ++pCmd;
         ++pCmd;
       break;
       case SC_UNDEF1:                   /* undefined */
       case SC_UNDEF2:                  /* undefined */
-    amTrace((const uint8*)"Event: System common not defined."NL);
+    amTrace("Event: System common not defined."NL,0);
         recallStatus=0;
         ++pCmd;
       break;
       case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-    amTrace((const uint8*)"Event: System tune request."NL);
+    amTrace("Event: System tune request."NL,0);
         recallStatus=0;
         ++pCmd;
       break;
       default:
       {
-        amTrace((const uint8*)"Event: Unknown type: %d"NL,(*pCmd));
+        amTrace("Event: Unknown type: %d"NL,(*pCmd));
         /* unknown event, do nothing or maybe throw error? */
       } break;
     }
@@ -1419,7 +1420,7 @@ sChunkHeader *pHeader = (sChunkHeader *)trackStartPtr;
 
 if(pHeader->id != ID_MTRK) 
 {
-  amTrace((const uint8*)"Fatal error: Wrong midi track id"NL);
+  amTrace("Fatal error: Wrong midi track id"NL,0);
   return NULL;
 }
 
@@ -1432,13 +1433,13 @@ sSequence_t * const sequence = *ppCurSequence;
 
 if(sequence==0) 
 {
-  amTrace((const uint8*)"Fatal error: Sequence pointer is null!"NL);
+  amTrace("Fatal error: Sequence pointer is null!"NL,0);
   return NULL;
 }
 
 const uint8 numTracks = sequence->ubNumTracks;
 
-amTrace((const uint8*)"Number of tracks to process: %d"NL, numTracks);
+amTrace("Number of tracks to process: %d"NL, numTracks);
 
 uint8 currentTrackNb = 0;
 
@@ -1556,7 +1557,7 @@ switch(fileTypeFlag)
     } break;
  };
  
- amTrace((const uint8*)"Finished processing..."NL);
+ amTrace("Finished processing..."NL,0);
  return NULL;
 }
 

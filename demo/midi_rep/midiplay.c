@@ -125,7 +125,7 @@ amPrintf("==============================================="NL);
      } 
      else 
      {
-        amTrace((const uint8*)"Error while parsing. Exiting... "NL);
+        amTrace("Error while parsing. Exiting... "NL,0);
     
         //unload sequence
         destroyAmSequence(&pMusicSeq);
@@ -137,8 +137,8 @@ amPrintf("==============================================="NL);
     else 
     { 
       /* MIDI loading failed */
-      amTrace((const uint8*)"Error: Couldn't read %s file..."NL,argv[1]);
-      amPrintf( "Error: Couldn't read %s file..."NL,argv[1]);
+      amTrace("Error: Couldn't read %s file..."NL,argv[1]);
+      amPrintf("Error: Couldn't read %s file..."NL,argv[1]);
       amDeinit();	//deinit our stuff
       return -1;
     }
@@ -326,11 +326,11 @@ void displayTuneInfo(void)
 #ifdef MIDI_PARSER_TEST
 void midiParserTest(sSequence_t *pSequence)
 {
-   amTrace((const uint8*)"Parsed MIDI read test"NL);
-   amTrace((const uint8*)"Sequence name: %s"NL,pSequence->pSequenceName);
-   amTrace((const uint8*)"Nb of tracks: %d"NL,pSequence->ubNumTracks);
-   amTrace((const uint8*)"Td/PPQN: %u"NL,pSequence->timeDivision);
-   amTrace((const uint8*)"Active track: %d"NL,pSequence->ubActiveTrack);
+   amTrace("Parsed MIDI read test"NL,0);
+   amTrace("Sequence name: %s"NL,pSequence->pSequenceName);
+   amTrace("Nb of tracks: %d"NL,pSequence->ubNumTracks);
+   amTrace("Td/PPQN: %u"NL,pSequence->timeDivision);
+   amTrace("Active track: %d"NL,pSequence->ubActiveTrack);
 	  
   //output data loaded in each track
   for (uint16 i=0;i<pSequence->ubNumTracks;++i)
@@ -339,9 +339,9 @@ void midiParserTest(sSequence_t *pSequence)
     
     if(p!=0)
     {
-	amTrace((const uint8*)"Track #[%d] \t",i+1);
-	amTrace((const uint8*)"Track name: %s"NL,p->pTrackName);
-	amTrace((const uint8*)"Track ptr %p"NL,p->pTrkEventList);
+	amTrace("Track #[%d] \t",i+1);
+	amTrace("Track name: %s"NL,p->pTrackName);
+	amTrace("Track ptr %p"NL,p->pTrkEventList);
 	
 	//print out all events
 	if(p->pTrkEventList!=0){

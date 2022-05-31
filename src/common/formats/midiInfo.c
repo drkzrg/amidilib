@@ -163,46 +163,46 @@ metaLenght=readVLQ((*pMidiData),&size);
 
  switch(metaType){
     case MT_SEQ_NB:{
-     amTrace("Meta SEQUENCE NB"NL);
+     amTrace("Meta SEQUENCE NB"NL,0);
     }break;
     case MT_TEXT:{
-     amTrace("Meta TEXT"NL);
+     amTrace("Meta TEXT"NL,0);
     }break;
     case MT_COPYRIGHT:{
-     amTrace("Meta COPYRIGHT"NL);
+     amTrace("Meta COPYRIGHT"NL,0);
     }break;
     case MT_SEQNAME:{
-     amTrace("Meta SEQUENCE NAME"NL);
+     amTrace("Meta SEQUENCE NAME"NL,0);
     }break;
     case MT_INSTRNAME:{
-     amTrace("Meta INSTRUMENT NAME"NL);
+     amTrace("Meta INSTRUMENT NAME"NL,0);
     }break;
     case MT_LYRICS:{
-     amTrace("Meta LYRICS"NL);
+     amTrace("Meta LYRICS"NL,0);
     }break;
     case MT_MARKER:{
-     amTrace("Meta MARKER"NL);
+     amTrace("Meta MARKER"NL,0);
     }break;
     case MT_CUEPOINT:{
-     amTrace("Meta CUEPOINT"NL);
+     amTrace("Meta CUEPOINT"NL,0);
     }break;
     case MT_PROGRAM_NAME:{
-     amTrace("Meta PROGRAM NAME"NL);
+     amTrace("Meta PROGRAM NAME"NL,0);
     }break;
     case MT_DEVICE_NAME:{
-        amTrace("Meta DEVICE NAME"NL);
+        amTrace("Meta DEVICE NAME"NL,0);
     }break;
     case MT_CH_PREFIX:{
-        amTrace("Meta CH PREFIX"NL);
+        amTrace("Meta CH PREFIX"NL,0);
     }break;
     case MT_MIDI_CH:{
-        amTrace("Meta MIDI CH"NL);
+        amTrace("Meta MIDI CH"NL,0);
     }break;
     case MT_MIDI_PORT:{
-        amTrace("Meta MIDI PORT"NL);
+        amTrace("Meta MIDI PORT"NL,0);
     }break;
     case MT_EOT:{
-     amTrace("Meta EOT"NL);
+     amTrace("Meta EOT"NL,0);
 
      //vlq
      uint32 deltaVLQ=0;
@@ -217,7 +217,7 @@ metaLenght=readVLQ((*pMidiData),&size);
      *bEOT=TRUE;
     }break;
     case MT_SET_TEMPO:{
-     amTrace("Meta Change tempo"NL);
+     amTrace("Meta Change tempo"NL,0);
 
      //vlq
      uint32 deltaVLQ=0;
@@ -230,10 +230,10 @@ metaLenght=readVLQ((*pMidiData),&size);
       ++(bufferInfo->nbOfBlocks);
     } break;
 
-    case MT_SMPTE_OFFSET:{amTrace("Meta SMPTE offset"NL);}break;
-    case MT_TIME_SIG:{amTrace("Meta TIME SIGNATURE"NL);}break;
-    case MT_KEY_SIG:{amTrace("Meta KEY SIGNATURE"NL);}break;
-    case MT_SEQ_SPEC:{amTrace("Meta SEQ SPEC"NL);}break;
+    case MT_SMPTE_OFFSET:{amTrace("Meta SMPTE offset"NL,0);}break;
+    case MT_TIME_SIG:{amTrace("Meta TIME SIGNATURE"NL,0);}break;
+    case MT_KEY_SIG:{amTrace("Meta KEY SIGNATURE"NL,0);}break;
+    case MT_SEQ_SPEC:{amTrace("Meta SEQ SPEC"NL,0);}break;
  };
 
 (*pMidiData)+=metaLenght;
@@ -327,36 +327,36 @@ void collectMidiEventInfo(const uint32 delta, uint8 **pCmd, sRunningStatus_t *rs
         case SC_MTCQF:
           amTrace("delta: %u SC_MTCQF"NL, delta);
           rs->recallRS=0;                        /* Midi time code quarter frame, 1 byte */
-          amTrace((const uint8*)"Event: System common MIDI time code qt frame"NL);
+          amTrace("Event: System common MIDI time code qt frame"NL,0);
           ++(*pCmd);
           ++(*pCmd);
         break;
       case SC_SONG_POS_PTR:
-          amTrace((const uint8*)"Event: System common Song position pointer"NL);
+          amTrace("Event: System common Song position pointer"NL,0);
           rs->recallRS=0;                      /* Song position pointer, 2 data bytes */
            ++(*pCmd);
            ++(*pCmd);
            ++(*pCmd);
         break;
         case SC_SONG_SELECT:              /* Song select 0-127, 1 data byte*/
-          amTrace((const uint8*)"Event: System common Song select"NL);
+          amTrace("Event: System common Song select"NL,0);
           rs->recallRS=0;
           ++(*pCmd);
           ++(*pCmd);
         break;
         case SC_UNDEF1:                   /* undefined */
         case SC_UNDEF2:                   /* undefined */
-          amTrace((const uint8*)"Event: System common not defined."NL);
+          amTrace("Event: System common not defined."NL,0);
           rs->recallRS=0;
           ++(*pCmd);
         break;
         case SC_TUNE_REQUEST:             /* tune request, no data bytes */
-          amTrace((const uint8*)"Event: System tune request."NL);
+          amTrace("Event: System tune request."NL,0);
           rs->recallRS=0;
           ++(*pCmd);
         break;
         default:{
-          amTrace((const uint8*)"Event: Unknown type: %d"NL,(*pCmd));
+          amTrace("Event: Unknown type: %d"NL,(*pCmd));
           /* unknown event, do nothing or maybe throw error? */
         }break;
      } //end switch
@@ -376,7 +376,7 @@ int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pB
     pTrackHd=(sChunkHeader *)startTrkPtr;
 
     if(pTrackHd->id!=ID_MTRK){
-     amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. "NL);
+     amTrace("Error: Cannot find MIDI track [0] chunk. Exiting. "NL,0);
      return AM_ERR;
     };
 

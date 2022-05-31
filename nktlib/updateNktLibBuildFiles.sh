@@ -24,7 +24,7 @@ cp ../src/common/memory/linalloc.c ./nktlib/src/
 cp ../src/common/formats/midi2nkt.c ./nktlib/src/
 cp ../src/common/formats/mus2midi.c ./nktlib/src/
 cp ../src/common/core/vartypes.c ./nktlib/src/
-cp ../src/common/core/amlog.c ./nktlib/src/
+cp ../src/common/core/logger.c ./nktlib/src/
 cp ../src/common/timing/miditim.c ./nktlib/src/
 cp ../src/common/formats/midiInfo.c ./nktlib/src/
 cp ../src/common/lzo/minilzo.c ./nktlib/src/
@@ -35,7 +35,7 @@ if [ ! -d "./nktlib/include/" ]; then
 mkdir ./nktlib/include/
 fi
 
-cp ../include/amlog.h ./nktlib/include/
+cp ../include/core/logger.h ./nktlib/include/
 cp ../include/amstring.h ./nktlib/include/
 cp ../include/common_m68k.inc ./nktlib/include/
 cp ../include/vartypes.h ./nktlib/include/
@@ -59,7 +59,7 @@ mkdir ./nktlib/include/core/
 fi
 
 cp ../include/core/assert.h ./nktlib/include/core/
-cp ../include/core/debug.h ./nktlib/include/core/
+cp ../include/core/logger.h ./nktlib/include/core/
 cp ../include/core/amprintf.h ./nktlib/include/core/
 
 

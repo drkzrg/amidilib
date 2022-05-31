@@ -57,14 +57,15 @@ static const uint8 *g_arMidiDeviceTypeName[]={
   "Yamaha XG GM mode"
 };
 
-const sAMIDI_version *amGetVersionInfo(void){
+const sAMIDI_version *amGetVersionInfo(void)
+{
   return (const sAMIDI_version *)(&version); 
 }
 
 eMidiFileType amGetMidiDataType(void * const pMidiPtr)
 {
   sMThd *pMidiInfo=0;
-  amTrace((const uint8 *)"Checking header info... ");
+  amTrace("Checking header info...",0);
   pMidiInfo=(sMThd *)pMidiPtr;
   
   /* check midi header */
@@ -74,19 +75,19 @@ eMidiFileType amGetMidiDataType(void * const pMidiPtr)
      {
   	 case T_MIDI0:
   	  /* Midi Format 0 detected */
-  	 amTrace((const uint8*)"MIDI type 0 found"NL);
+  	 amTrace("MIDI type 0 found"NL,0);
      return T_MIDI0;
   	 break;
 
   	case T_MIDI1:
   	 /* Midi Format 1 detected */
-  	 amTrace((const uint8*)"MIDI type 1 found"NL);
+  	 amTrace("MIDI type 1 found"NL,0);
      return T_MIDI1;
   	 break;
 
       case T_MIDI2:
   	/* Midi Format 2 detected */
-  	amTrace((const uint8*)"MIDI type 2 found"NL);
+  	amTrace("MIDI type 2 found"NL,0);
     return T_MIDI2;
   	break;
    };
@@ -95,15 +96,16 @@ eMidiFileType amGetMidiDataType(void * const pMidiPtr)
 /* check XMIDI file */
 if(amIsValidXmidiData(pMidiPtr))
 {
-  amTrace((const uint8*)"XMIDI file found."NL);
+  amTrace("XMIDI file found."NL,0);
   return T_XMIDI;
 }
 
 /* Check MUS */
 MUSheader_t *pMusHeader=(MUSheader_t *)pMidiPtr;
 
-if(((pMusHeader->ID)>>8) == MUS_ID){
-  amTrace((const uint8*)"Doom MUS found."NL);
+if(((pMusHeader->ID)>>8) == MUS_ID)
+{
+  amTrace("Doom MUS found."NL,0);
   return T_MUS ;
 }
 
@@ -119,7 +121,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
     
     if(sequence==0)
     {
-      amTrace((const uint8*)"Error: Cannot allocate memory for sequence."NL);
+      amTrace("Error: Cannot allocate memory for sequence."NL,0);
       amPrintf("Error: Cannot allocate memory for sequence."NL);
       return AM_ERR;
     }
@@ -128,11 +130,11 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
 
 #ifdef EVENT_LINEAR_BUFFER
    const MemSize memSize = getGlobalConfig()->eventPoolSize * getGlobalConfig()->eventDataAllocatorSize;
-   amTrace((const uint8 *)"amProcessMidiFileData() trying to allocate %d Kb"NL,(memSize/1024));
+   amTrace("amProcessMidiFileData() trying to allocate %d Kb"NL,(memSize/1024));
 
    if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0)
    {
-       amPrintf( "Error: Cannot allocate memory for sequence internal event buffer..."NL);
+       amPrintf("Error: Cannot allocate memory for sequence internal event buffer..."NL);
        gUserMemFree(sequence,0);
        return AM_ERR;
    }
@@ -143,14 +145,14 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
    if(midiType == T_INVALID)
    {
     /* not MIDI file, do nothing */
-    amTrace((const uint8*)"It's not valid (X)MIDI file..."NL);
+    amTrace("It's not valid (X)MIDI file..."NL,0);
     amPrintf( "It's not valid MIDI file..."NL);
     return AM_ERR;
    } 
    else if(midiType == T_UNSUPPORTED)
    {
     /* unsupported MIDI type format, do nothing*/
-    amTrace((const uint8*)"Unsupported (X)MIDI file format..."NL);
+    amTrace("Unsupported (X)MIDI file format..."NL,0);
     amPrintf( "Unsupported MIDI file format..."NL);
     return AM_ERR; 
    }
@@ -345,7 +347,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
             else
             {
               iRetVal = AM_ERR;   
-              amTrace("Error processing MUS file."NL);
+              amTrace("Error processing MUS file."NL,0);
             }
 
             // free up working buffer
@@ -354,13 +356,13 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
           else
           {
             iRetVal = AM_ERR;   
-            amTrace("No filename provided."NL);
+            amTrace("No filename provided."NL,0);
           }
           
         }
         else
         {
-            amTrace("Error: Out of memory."NL);
+            amTrace("Error: Out of memory."NL,0);
             iRetVal = AM_ERR;
         }
 
@@ -392,7 +394,7 @@ int16 amInit(void)
 
 #ifdef DEBUG_BUILD
  // init logger
- initDebug(outputFilename);
+ initLogger(outputFilename);
 #endif 
   
   int32 retval = loadConfig(configFilename);
@@ -462,7 +464,7 @@ void amDeinit(void)
 #endif
 
 #ifdef DEBUG_BUILD
-  deinitDebug();
+  deinitLogger();
 #endif
 
 #ifdef ENABLE_GEMDOS_IO
@@ -509,18 +511,18 @@ void amGetDeviceInfoResponse(const uint8 channel)
 //	 if(data!=0){
 	  
 //	  if(bFlag!=TRUE){
-//		amTrace((const uint8*)"Received device info on ch: %d\t",channel);
+//		amTrace("Received device info on ch: %d\t",channel);
 // 	    bFlag=TRUE;
 //	}
 	
-//		amTrace((const uint8*)"%x\t",(unsigned int)data);
+//		amTrace("%x\t",(unsigned int)data);
 //    }
 
 //}
 
   if(bTimeout==TRUE) 
   {
-    amTrace((const uint8*)"Timeout on ch: %d\t",channel);
+    amTrace("Timeout on ch: %d\t",channel);
   }
 
 }
@@ -528,7 +530,7 @@ void amGetDeviceInfoResponse(const uint8 channel)
 const int8 *amGetConnectedDeviceInfo(void)
 {
   /*  request on all channels */
-  amTrace((const uint8*)"Quering connected MIDI device..."NL);
+  amTrace("Quering connected MIDI device..."NL,0);
   
   for(uint8 channel=0;channel<0x7f;++channel)
   {
@@ -553,7 +555,7 @@ void VLQtest(void)
     
     uint8 valsize;
     
-    amTrace((const uint8*)"VLQ decoding test"NL);
+    amTrace("VLQ decoding test"NL,0);
     
     for (iCounter=0;iCounter<10;iCounter++)   {
         uint8 *pValPtr=NULL;
@@ -565,7 +567,7 @@ void VLQtest(void)
 		while((*pValPtr)==0x00){pValPtr++;}
         
 		result = readVLQ(pValPtr,&valsize);
-     	amTrace((const uint8*)"VLQ value:%x, decoded: %x, size: %d"NL,(unsigned int)val[iCounter], (unsigned int)result, valsize );
+     	amTrace("VLQ value:%x, decoded: %x, size: %d"NL,(unsigned int)val[iCounter], (unsigned int)result, valsize );
     }
     /* End of VLQ test */
 }

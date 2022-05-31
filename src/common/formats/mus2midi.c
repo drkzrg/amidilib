@@ -31,7 +31,7 @@ Copyright (C) 2007-2021 Pawel Goralski
 
 #include <assert.h>
 #include <stdlib.h>
-#include <amlog.h>
+#include <core/logger.h>
 #include "core/amprintf.h"
 
 #include <dmus.h>
@@ -182,14 +182,14 @@ header.dummy = ReadLE16( header.dummy );
 if (header.channels > MIDI_MAXCHANNELS - 1) {
 
 #ifndef SUPRESS_CON_OUTPUT
-    amPrintf("[Error] Too many channels, only 15 is supported."NL);
+    amPrintf("[Error] Too many channels, only 15 is supported."NL,0);
 #endif
 
-    amTrace("[Error] Too many channels, only 15 is supported."NL);
+    amTrace("[Error] Too many channels, only 15 is supported."NL,0);
     return AM_ERR;
 }
 
- amTrace("MUS info:"NL);
+ amTrace("MUS info:"NL,0);
  amTrace("Score length 0x%x"NL,header.scoreLen);
  amTrace("Score start 0x%x"NL,header.scoreStart);
  amTrace("Nb of channels 0x%x"NL,header.channels);
@@ -416,6 +416,6 @@ if (header.channels > MIDI_MAXCHANNELS - 1) {
     amPrintf( "Done. [OK]"NL);
 #endif
 
- amTrace("Done. OK"NL);
+ amTrace("Done. OK"NL,0);
  return AM_OK;
 }

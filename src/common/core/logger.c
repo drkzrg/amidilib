@@ -1,5 +1,5 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
@@ -143,7 +143,7 @@ void logOutputTraceSimple(const eTraceLevel level, const char* const message, ..
 
 }
 
-void logOutputTrace(const eTraceLevel level, const char * const sourceName, const size_t lineNb, const char * const message, ...)
+void logOutputTrace(const eTraceLevel level, const char * const sourceName, const uint32_t lineNb, const char * const message, ...)
 {
     if (level < globalTraceLevel) return;
 
@@ -157,7 +157,7 @@ void logOutputTrace(const eTraceLevel level, const char * const sourceName, cons
     const int32_t srcLen = strlen(sourceName);
     const char* truncSourcePathStart = (srcLen > MIN_SRCPATHLEN) ? (sourceName + srcLen - MIN_SRCPATHLEN) : sourceName;
 
-    amSnprintf(outputTraceBuffer, DEBUG_OUTPUT_BUFFER_SIZE, DEBUG_TRACE_FMT, arDebugLevelString[level], (uint32_t)lineNb, truncSourcePathStart);
+    amSnprintf(outputTraceBuffer, DEBUG_OUTPUT_BUFFER_SIZE, DEBUG_TRACE_FMT, arDebugLevelString[level], lineNb, truncSourcePathStart);
 
     int32_t outBufferLength = strlen(outputTraceBuffer);
     
@@ -224,7 +224,7 @@ void logOutputTrace(const eTraceLevel level, const char * const sourceName, cons
 
 #else
 
-void logOutputTrace(const eTraceLevel level, const char* const sourceName, const size_t lineNb, const char* const message, ...)
+void logOutputTrace(const eTraceLevel level, const char* const sourceName, const uint32_t lineNb, const char* const message, ...)
 {}
 
 void logOutputTraceSimple(const eTraceLevel level, const char* const message, ...)

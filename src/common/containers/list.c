@@ -80,7 +80,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
 #ifdef EVENT_LINEAR_BUFFER
     (*dest) = linearBufferAlloc(&(pSequence->eventBuffer), sizeof(sEventList));
 #else
-    (*dest)=(sEventList *)gUserMemAllocCb(sizeof(sEventList),PREFER_TT,0);
+    (*dest)=(sEventList *)gUserMemAllocCb(sizeof(sEventList),MF_PREFER_FASTRAM,0);
 #endif
     
     if((*dest)==NULL)
@@ -103,7 +103,7 @@ int16 copyEvent(const sEventBlock_t *src, sEventList **dest)
 #ifdef EVENT_LINEAR_BUFFER
         (*dest)->eventBlock.dataPtr = linearBufferAlloc(&(pSequence->eventBuffer),(src->eventCb.size * sizeof(uint8)));
 #else
-        (*dest)->eventBlock.dataPtr = gUserMemAllocCb((src->eventCb.size * sizeof(uint8)),PREFER_TT,0);
+        (*dest)->eventBlock.dataPtr = gUserMemAllocCb((src->eventCb.size * sizeof(uint8)),MF_PREFER_FASTRAM,0);
 #endif
     
 	   if((*dest)->eventBlock.dataPtr==NULL)

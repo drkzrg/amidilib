@@ -5,6 +5,7 @@
 #include "midi_send.h"
 
 #include "core/amprintf.h"
+#include "core/machine.h"
 
 #if AMIDILIB_USE_LIBC
 #include <string.h>
@@ -32,9 +33,10 @@ int16 iError=0;
     else
     {
         amPrintf("No specified nkt filename! exiting"NL);
-        NktDeinit();
         return 0;
     }
+
+    Supexec(checkMachine);
 
     // hardcoded, todo: set config from commandline
     const eMidiDeviceType devType = DT_GS_SOUND_SOURCE;

@@ -334,6 +334,7 @@ nkt_format_src = ["common/formats/seq2nkt.c","common/formats/midi2nkt.c","common
 midiformats_src = ["common/formats/xmidi.c","common/formats/mus2midi.c"] + nkt_format_src
 midiparser_src = ["common/midi/mparser.c"]
 
+# other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
 m68kasm_common_src = ["tos/common.s"]
 input_src =  ["tos/ikbd.s"]
 discio_src = ["tos/gemdosio.c"]
@@ -341,13 +342,13 @@ timing_src = ["common/timing/miditim.c","tos/common.s"]
 midi_src = ["tos/midi_rep.c","common/midi/midiseq.c","common/midi/midi.c","tos/common.s","tos/midiReplay.s"]
 memory_src = ["tos/memory.c","common/memory/linalloc.c"]
 string_src = ["tos/string/ctype.c","tos/string/ctype2.c","tos/string/string.c","tos/string/memcpy.s","tos/string/memcmp.s","tos/string/memset.s","tos/string/strcmp.s","tos/string/strlen.s","tos/string/strstr.s"]
-
-# other: native keyboard input (Atari only), ym2149 output, random functions, lzo compression
+machine_src =["tos/machine.c"]
 ym2149_src = ["common/ym2149.c"]
 lzo_src = ["common/lzo/minilzo.c"]
+ct60_src = ["tos/ct60/ct60_m68k.s", "tos/svidel/sv.c"];
 
 # main library 
-amidilib_src = core_src + containers_src + discio_src + memory_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
+amidilib_src = core_src + machine_src + containers_src + discio_src + memory_src + machine_src + ct60_src + timing_src + midi_src + midiparser_src + roland_src + midiformats_src + lzo_src
 
 if(use_libc == 'no'):
     amidilib_src = string_src + amidilib_src
@@ -397,10 +398,10 @@ if(use_libc == 'yes'):
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']), source = [env.Object(m68kasm_common_src) + env.Object(input_src) + env.Object(ym2149_src) + timings_test_src], LIBS=ADDLIBS + [LIBRARYNAME], PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
     
-    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(machine_src) + env.Object(ct60_src) + env.Object(lzo_src) + nktReplay_src] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
 
-    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(machine_src) + env.Object(ct60_src) + env.Object(lzo_src) + mid2nkt_src ] , LIBS=ADDLIBS + [''], PROGSUFFIX = '.ttp');
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')
 else:
     ADDLIBS += ['startup' + LIB_TARGET]
@@ -419,8 +420,8 @@ else:
     env.Program(target = (TIMINGS_TEST_NAME + env['PROGSUFFIX']),source = [env.Object(m68kasm_common_src)+ env.Object(input_src) + env.Object(ym2149_src) + env.Object(string_src) + timings_test_src], LIBS = linkedLibs , PROGSUFFIX = env['PROGSUFFIX'])
     convertElfToTos(env, toolchain, build_config, TIMINGS_TEST_NAME, outputdir, 'tos')
 
-    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + nktReplay_src] , LIBS = ADDLIBS + [], PROGSUFFIX='.ttp');
+    env.Program(target = (NKT_REPLAY_NAME + '.ttp'), source = [env.Object(nkt_src) + env.Object(input_src) + env.Object(timing_src) + env.Object(memory_src) + env.Object(machine_src) + env.Object(ct60_src) + env.Object(lzo_src) + env.Object(string_src) + nktReplay_src] , LIBS = ADDLIBS + [], PROGSUFFIX='.ttp');
     convertElfToTos(env, toolchain, build_config, NKT_REPLAY_NAME, outputdir, 'ttp')
     
-    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(lzo_src) + env.Object(string_src) + mid2nkt_src] , LIBS= ADDLIBS + [], PROGSUFFIX = '.ttp'); 
+    env.Program(target = (MID2NKT_NAME + '.ttp'), source = [env.Object(nkt_src)  + env.Object(timing_src)+ env.Object(memory_src) + env.Object(machine_src) + env.Object(ct60_src) + env.Object(lzo_src) + env.Object(string_src) + mid2nkt_src] , LIBS= ADDLIBS + [], PROGSUFFIX = '.ttp'); 
     convertElfToTos(env, toolchain, build_config, MID2NKT_NAME, outputdir, 'ttp')

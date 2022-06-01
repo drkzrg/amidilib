@@ -657,7 +657,7 @@ sNktSeq *pNewSeq=0;
 Bool bEOT=FALSE;
 uint16 nbOfTracks=((sMThd *)pMidiData)->nTracks;
 
-sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)gUserMemAlloc(sizeof(sMidiTrackInfo_t)*nbOfTracks,PREFER_TT,0);
+sMidiTrackInfo_t *arMidiInfo = (sMidiTrackInfo_t *)gUserMemAlloc(sizeof(sMidiTrackInfo_t)*nbOfTracks,MF_PREFER_FASTRAM,0);
 
 if(arMidiInfo==0)
 {
@@ -697,7 +697,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
 // and amount of bytes wee need to store midi data
 
 // reserve memory for sequence header
-pNewSeq = (sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
+pNewSeq = (sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),MF_PREFER_FASTRAM,0);
 
 if(pNewSeq==0) 
 {
@@ -718,7 +718,7 @@ pNewSeq->timeDivision=DEFAULT_PPQN;
 pNewSeq->version=NKT_VERSION;
 
 pNewSeq->nbOfTracks=nbOfTracks;  // save nb of tracks
-pNewSeq->pTracks=(sNktTrack *) gUserMemAlloc(nbOfTracks*sizeof(sNktTrack), PREFER_TT,0);
+pNewSeq->pTracks=(sNktTrack *) gUserMemAlloc(nbOfTracks*sizeof(sNktTrack), MF_PREFER_FASTRAM,0);
 
 if(pNewSeq->pTracks==NULL){
      gUserMemFree(pNewSeq,0);
@@ -737,7 +737,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
 
     // reserve and initialise linear memory buffers
     // for event blocks and data
-    if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255, PREFER_TT)<0)
+    if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255, MF_PREFER_FASTRAM)<0)
     {
         amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for events block buffer."NL,0);
         gUserMemFree(arMidiInfo,0);
@@ -745,7 +745,7 @@ for(uint16 i=0;i<nbOfTracks;++i)
         return 0;
     }
 
-    if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255, PREFER_TT)<0)
+    if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255, MF_PREFER_FASTRAM)<0)
     {
       amTrace("[MIDI2NKT] Fatal error, couldn't reserve memory for data buffer block."NL,0);
       destroyLinearBuffer(&(pNewSeq->pTracks[i].lbEventsBuffer));

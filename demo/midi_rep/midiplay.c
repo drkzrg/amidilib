@@ -90,7 +90,7 @@ amPrintf("==============================================="NL);
 
     // load midi file into memory 
     uint32 fileLenght = 0;
-    void *pMidiData = loadFile((uint8 *)argv[1], PREFER_TT, &fileLenght, FILE_RO);
+    void *pMidiData = loadFile((uint8 *)argv[1], MF_PREFER_FASTRAM, &fileLenght, FILE_RO);
 
     if(pMidiData!=NULL)
     {

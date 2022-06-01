@@ -8,6 +8,7 @@
 */
 
 // enable / disable output
+#include "vartypes.h"
 
 #if (_DEBUG || DEBUG)
 
@@ -23,16 +24,16 @@
 #define DEFAULT_LOG_LEVEL TL_ERR_FATAL
 #else
 #define DEBUG_OUTPUT_TO_CONSOLE 0
-#define DEBUG_OUTPUT_TO_FILE 1
+#define DEBUG_OUTPUT_TO_FILE 0
 #define DEBUG_OUTPUT_TO_DEBUGGER 0
-#define DEBUG_OUTPUT_TO_SERIAL 0
+#define DEBUG_OUTPUT_TO_SERIAL 1
 #undef DEFAULT_LOG_LEVEL
 #define DEFAULT_LOG_LEVEL TL_ERR_REPORT_ALL
 #endif
 
 #define DEBUG_OUTPUT_BUFFER_SIZE (1024)  
 
-// ovverride setting if SUPRESS_CON_OUTPUT is defined
+// override setting if SUPRESS_CON_OUTPUT is defined
 #ifdef SUPRESS_CON_OUTPUT
 
 #ifdef DEBUG_OUTPUT_TO_CONSOLE
@@ -75,7 +76,7 @@ typedef enum
 #define DbgTrace(SID,msg, ...) logOutputTrace(SID(msg),__VA_ARGS__)
 #define DbgHalt() do {;} while (1)
 
-void logOutputTrace(const eTraceLevel level, const char* const sourceName, const size_t lineNb, const char* const message, ...);
+void logOutputTrace(const eTraceLevel level, const char* const sourceName, const uint32_t lineNb, const char* const message, ...);
 void logOutputTraceSimple(const eTraceLevel level, const char* const message, ...);
 #else
 
@@ -90,7 +91,7 @@ void logOutputTraceSimple(const eTraceLevel level, const char* const message, ..
 #define DbgTrace(SID,msg, ...) ((void)0)
 #define DbgHalt() ((void)0)
 
-void logOutputTrace(const eTraceLevel level, const char* const sourceName, const size_t lineNb, const char* const message, ...);
+void logOutputTrace(const eTraceLevel level, const char* const sourceName, const uint32_t lineNb, const char* const message, ...);
 void logOutputTraceSimple(const eTraceLevel level, const char* const message, ...);
 #endif
 

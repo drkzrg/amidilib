@@ -30,8 +30,8 @@
 #include "config.h"
 
 #include <mint/ostruct.h>
-
 #include "core/amprintf.h"
+#include "core/machine.h"
 
 static const sAMIDI_version version = { AMIDI_MAJOR_VERSION, AMIDI_MINOR_VERSION, AMIDI_PATCHLEVEL };
 
@@ -115,7 +115,7 @@ if(((pMusHeader->ID)>>8) == MUS_ID)
 
 int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 dataSize, sSequence_t **ppSequence)
 {
-    (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), PREFER_TT,0);
+    (*ppSequence) = (sSequence_t *) gUserMemAlloc( sizeof(sSequence_t), MF_PREFER_FASTRAM,0);
  
     sSequence_t *sequence = *ppSequence;
     
@@ -132,7 +132,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
    const MemSize memSize = getGlobalConfig()->eventPoolSize * getGlobalConfig()->eventDataAllocatorSize;
    amTrace("amProcessMidiFileData() trying to allocate %d Kb"NL,(memSize/1024));
 
-   if(createLinearBuffer(&(sequence->eventBuffer), memSize, PREFER_TT)<0)
+   if(createLinearBuffer(&(sequence->eventBuffer), memSize, MF_PREFER_FASTRAM)<0)
    {
        amPrintf("Error: Cannot allocate memory for sequence internal event buffer..."NL);
        gUserMemFree(sequence,0);
@@ -187,7 +187,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
              midiData = (void *)((uint32)midiData + sizeof(sMThd));
 
              /* create one track list only */
-             sequence->arTracks[0] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
+             sequence->arTracks[0] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),MF_PREFER_FASTRAM,0);
              amMemSet(sequence->arTracks[0], 0, sizeof(sTrack_t));
              sequence->arTracks[0]->pTrkEventList = 0;
 
@@ -213,7 +213,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
 	  
           for(uint16 i=0;i<pMidiInfo->nTracks;++i)
           {
-            sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
+            sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),MF_PREFER_FASTRAM,0);
             amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
           }
 	  
@@ -242,7 +242,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
 	  
            for(uint16 i=0;i<pMidiInfo->nTracks;++i)
            {
-             sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
+             sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),MF_PREFER_FASTRAM,0);
              amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
              /* init event list */
@@ -274,7 +274,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
 
             for(uint16 i=0;i<iNumTracks;++i)
             {
-              sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
+              sequence->arTracks[i] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),MF_PREFER_FASTRAM,0);
               amMemSet(sequence->arTracks[i], 0, sizeof(sTrack_t));
 
               /* init event list */
@@ -307,7 +307,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
         amPrintf("Converting MUS to MIDI"NL);
 
         // allocate 64kb working buffer for midi output
-        uint8 *pOut = (uint8 *)gUserMemAlloc(64 * 1024,PREFER_TT,0);
+        uint8 *pOut = (uint8 *)gUserMemAlloc(64 * 1024,MF_PREFER_FASTRAM,0);
         
         if(pOut)
         {
@@ -337,7 +337,7 @@ int16 amProcessMidiFileData(const char *filename, void *midiData, const int32 da
               midiData = (void *)((uint32)pOut + sizeof(sMThd));
               
               /* create one track list only */
-              sequence->arTracks[0] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),PREFER_TT,0);
+              sequence->arTracks[0] = (sTrack_t *)gUserMemAlloc(sizeof(sTrack_t),MF_PREFER_FASTRAM,0);
               amMemSet(sequence->arTracks[0], 0, sizeof(sTrack_t));
 
               /* init event list */
@@ -383,6 +383,9 @@ static _IOREC *g_psMidiBufferInfo;
 
 int16 amInit(void)
 {
+
+  Supexec(checkMachine);
+
   // setup standard memory callbacks
   amSetDefaultUserMemoryCallbacks();
 

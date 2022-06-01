@@ -258,7 +258,7 @@ if ( build_config == 'debug'):
   elif(debug_level=='3'):
     CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER '
   else:
-        CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE '  + '-DDEBUG_SERIAL_OUTPUT ' + '-DLOAD_TEST '
+        CFLAGS += '-DDEBUG_BUILD -DEVENT_LINEAR_BUFFER ' + '-DUSE_INLINE ' + '-DNDEBUG ' 
 
   LIB_POSTFIX = LIB_TARGET+'d'
 else:

@@ -1,13 +1,15 @@
 
-/**  Copyright 2007-2021 Pawel Goralski
+/**  Copyright 2007-2022 Pawel Goralski
     
     This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 
-// atari TOS version
 #include <stdlib.h>
+
 #include "memory/memory.h"
+#include "ct60/ct60.h"
+#include "core/machine.h"
 
 // global memory allocation callbacks
 funcMemAlloc gUserMemAlloc;
@@ -16,7 +18,7 @@ funcMemRealloc gUserMemRealloc;
 
 #if defined (FORCE_MALLOC)
 
-void* amMalloc(unsigned int size, short int ramflag, void *param)
+void* amMalloc(const uint32_t size, const eMemoryFlag ramflag, void *param)
 {
     return malloc(size);
 }
@@ -31,14 +33,22 @@ void amFree(void *ptr, void *param)
 
 #include <mint/osbind.h>
 
-void* amMalloc(unsigned int size, short int memflag, void *param)
+void* amMalloc(const uint32_t size, const eMemoryFlag ramflag, void *param)
 {
-    return (void *)Malloc(size);
-}
+  void *pMem = 0;
+  
+  const sMachineInfo * const info = getMachineInfo();
 
-void* amMallocEx(unsigned int size, short int memflag, void *param)
-{
-    return (void *)Mxalloc(size,(short int)memflag);
+  if (info->gemdos_ver >= 0x1900)
+  {
+    pMem = (void *)Mxalloc(size, ramflag);
+  }
+  else
+  {
+    pMem = (void *)Malloc(size);
+  }
+
+  return pMem;
 }
 
 void amFree(void *ptr, void *param)
@@ -56,13 +66,7 @@ void* amRealloc( void *pPtr, const MemSize newSize, void *param)
 // sets default memory allocation functions
 void amSetDefaultUserMemoryCallbacks(void)
 {
-
-#ifdef TARGET_ST    
     gUserMemAlloc = (funcMemAlloc)amMalloc;
-#else
-    gUserMemAlloc = (funcMemAlloc)amMallocEx;
-#endif
-
     gUserMemFree = (funcMemFree)amFree;
     gUserMemRealloc = (funcMemRealloc)amRealloc;
 }
@@ -76,3 +80,40 @@ void amSetUserMemoryCallbacks(sUserMemoryCallbacks *func)
     if(gUserMemFree!=0) gUserMemFree = func->cbUserMemFree;
     if(gUserMemRealloc!=0) gUserMemRealloc = func->cbMemRealloc;
 }
+
+uint32 amGetFreeMemory(const eMemoryFlag memFlag) 
+{
+  AssertMsg(memFlag != MF_SUPERVIDELRAM,"SuperVidel memory not supported yet [TODO].");
+
+  void *pMem = 0;
+  const sMachineInfo * const info = getMachineInfo();
+
+  if (info->gemdos_ver >= 0x1900) 
+  {
+    if(memFlag == MF_SUPERVIDELRAM)
+    { 
+      // TODO: more hardware checks
+      ct60_vmalloc(-1,0);
+    }
+    else
+    {
+      pMem = (void *)Mxalloc(-1L, memFlag);
+    }
+
+  } 
+  else 
+  {
+    // no fastram at all
+    if (memFlag == MF_PREFER_FASTRAM)
+    {
+      pMem = (void *)0;
+    }
+    else
+    {
+      pMem = (void *)Malloc(-1L);
+    }
+  }
+
+  return ((uint32)pMem);
+}
+

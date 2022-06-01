@@ -18,6 +18,7 @@
 
 #include "core/amprintf.h"
 #include "core/logger.h"    // logging
+#include "core/machine.h"
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 Bool bEnableCompression=FALSE;
 uint8 *filePath=0;
 
+  Supexec(checkMachine);
   amSetDefaultUserMemoryCallbacks();
 
 #ifdef ENABLE_GEMDOS_IO
@@ -75,7 +77,7 @@ uint8 *filePath=0;
   // load midi file into memory
   uint32 ulFileLenght=0;
   
-  void *pMidi = loadFile(filePath, PREFER_TT, &ulFileLenght,FILE_RO);
+  void *pMidi = loadFile(filePath, MF_PREFER_FASTRAM, &ulFileLenght,FILE_RO);
 
    if(pMidi!=NULL)
    {
@@ -92,7 +94,7 @@ uint8 *filePath=0;
            uint32 len=0;
 
            // allocate working buffer for midi output
-           uint8 *pOut= (uint8 *)amMalloc(MIDI_OUT_TEMP, PREFER_TT,NULL);
+           uint8 *pOut= (uint8 *)amMalloc(MIDI_OUT_TEMP, MF_PREFER_FASTRAM,NULL);
            amMemSet(tempName,0,MAX_GEMDOS_FILEPATH);
 
            // set midi output name

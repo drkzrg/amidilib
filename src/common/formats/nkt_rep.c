@@ -22,6 +22,7 @@
 #include "minilzo.h" //lzo pack / depack
 
 #include "core/amprintf.h"
+#include "core/machine.h"
 
 #ifdef ENABLE_GEMDOS_IO
 #include <mint/ostruct.h>
@@ -696,7 +697,7 @@ void updateStepNktMt(void)
 
 sNktSeq *loadNktSequence(const uint8 *pFilePath){
     // create header
-    sNktSeq *pNewSeq=(sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),PREFER_TT,0);
+    sNktSeq *pNewSeq=(sNktSeq *)gUserMemAlloc(sizeof(sNktSeq),MF_PREFER_FASTRAM,0);
 
     if(pNewSeq==0)
     {
@@ -790,7 +791,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
    //read track data
    sNktTrackInfo *trackData=0;
-   trackData=(sNktTrackInfo *)gUserMemAlloc(tempHd.nbOfTracks * sizeof(sNktTrack), PREFER_TT,0);
+   trackData=(sNktTrackInfo *)gUserMemAlloc(tempHd.nbOfTracks * sizeof(sNktTrack), MF_PREFER_FASTRAM,0);
 
    if(trackData==NULL){
       amTrace("Error: Couldn't allocate memory for track info."NL,0);
@@ -864,7 +865,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
         pNewSeq->version = tempHd.version;
         pNewSeq->nbOfTracks = tempHd.nbOfTracks;
 
-        pNewSeq->pTracks=(sNktTrack *)gUserMemAlloc(pNewSeq->nbOfTracks*sizeof(sNktTrack),PREFER_TT,0);
+        pNewSeq->pTracks=(sNktTrack *)gUserMemAlloc(pNewSeq->nbOfTracks*sizeof(sNktTrack),MF_PREFER_FASTRAM,0);
 
         if(pNewSeq->pTracks==0)
         {
@@ -911,8 +912,8 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
                 amTrace("[LZO] Allocating temp events buffer"NL,0);
                 uint32 amount = pTrk->eventsBlockBufferSize*3;
 
-                pPackedEvents=(lzo_voidp) gUserMemAlloc(amount, PREFER_TT,0);
-                pPackedDataSource=(lzo_voidp) gUserMemAlloc(pTrk->eventsBlockBufferSize,PREFER_TT,0);
+                pPackedEvents=(lzo_voidp) gUserMemAlloc(amount, MF_PREFER_FASTRAM,0);
+                pPackedDataSource=(lzo_voidp) gUserMemAlloc(pTrk->eventsBlockBufferSize,MF_PREFER_FASTRAM,0);
 
                 if(pPackedEvents!=NULL&&pPackedDataSource!=NULL){
 
@@ -947,9 +948,9 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
                 amTrace("[LZO] Allocating temp data buffer"NL,0);
                 amount = pTrk->dataBufferSize*3;
 
-                pPackedData=(lzo_voidp)gUserMemAlloc(amount,PREFER_TT,0);
+                pPackedData=(lzo_voidp)gUserMemAlloc(amount,MF_PREFER_FASTRAM,0);
 
-                pPackedDataSource=(lzo_voidp)gUserMemAlloc(pTrk->dataBufferSize,PREFER_TT,0);
+                pPackedDataSource=(lzo_voidp)gUserMemAlloc(pTrk->dataBufferSize,MF_PREFER_FASTRAM,0);
 
 
                 if(pPackedData!=NULL && pPackedDataSource!=NULL)
@@ -982,7 +983,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
         uint32 lbAllocAdr=0;
 
         // create linear buffer
-        if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255,PREFER_TT)<0){
+        if(createLinearBuffer(&(pTrk->lbEventsBuffer),pTrk->eventsBlockBufferSize+255,MF_PREFER_FASTRAM)<0){
 
             amTrace("Error: loadSequence() Couldn't allocate memory for event block buffer."NL,0);
 
@@ -1033,7 +1034,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
 
          amTrace("Allocated %u k for event block buffer"NL,pTrk->eventsBlockBufferSize);
 
-         if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255,PREFER_TT)<0){
+         if(createLinearBuffer(&(pTrk->lbDataBuffer),pTrk->dataBufferSize+255,MF_PREFER_FASTRAM)<0){
 
             amTrace("Error: loadSequence() Couldn't allocate memory for temp data buffer. "NL,0);
 
@@ -1327,7 +1328,8 @@ AM_EXTERN void installMidiResetHandler(void);
 
 void NktInit(const eMidiDeviceType devType, const uint8 channel)
 {
-
+    Supexec(checkMachine);
+    
     amSetDefaultUserMemoryCallbacks();
     
     initLogger("nkt.log");
@@ -1478,7 +1480,7 @@ if(pSeq->nbOfTracks==0)
     return AM_ERR;
 }
 
-pTrackInfo=(sNktTrackInfo *)gUserMemAlloc( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), PREFER_TT, 0);
+pTrackInfo=(sNktTrackInfo *)gUserMemAlloc( (sizeof(sNktTrackInfo) * pSeq->nbOfTracks), MF_PREFER_FASTRAM, 0);
 
 if(pTrackInfo==0) 
 {
@@ -1522,7 +1524,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
           amTrace("[LZO] Allocating work buffer: %d bytes"NL,workMemSize);
 
-          lzo_voidp workMem=(lzo_voidp)gUserMemAlloc(workMemSize,PREFER_TT,0); // lzo work buffer
+          lzo_voidp workMem=(lzo_voidp)gUserMemAlloc(workMemSize,MF_PREFER_FASTRAM,0); // lzo work buffer
 
           if(workMem!=0){
 
@@ -1530,7 +1532,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
               amTrace("[LZO] Compressing events block."NL,0);
               MemSize tempBufSize=(pSeq->pTracks[0].eventsBlockBufferSize+pSeq->pTracks[0].eventsBlockBufferSize/16+64+3);
-              lzo_bytep tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,PREFER_TT,0);
+              lzo_bytep tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,MF_PREFER_FASTRAM,0);
 
               if(tempBuffer==NULL){
                   amTrace("[LZO] Error, no memory for events block output buffer."NL,0);
@@ -1567,7 +1569,7 @@ setNktTrackInfo(pTrackInfo,pSeq);
 
               amTrace("[LZO] Compressing data block."NL,0);
               tempBufSize=pSeq->pTracks[0].dataBufferSize+pSeq->pTracks[0].dataBufferSize/16+64+3;
-              tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,PREFER_TT,0);
+              tempBuffer=(lzo_bytep)gUserMemAlloc(tempBufSize,MF_PREFER_FASTRAM,0);
 
               if(tempBuffer==NULL){
                   amTrace("[LZO] Error, no memory for data block output buffer."NL,0);

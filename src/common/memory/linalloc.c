@@ -44,17 +44,17 @@ void destroyLinearBuffer(LinearBufferAllocator *allocatorState)
   switch(allocatorState->memType)
   {
     //release memory block depending on type
-    case ST_RAM:
-    case TT_RAM:
-    case PREFER_ST:
-    case PREFER_TT:
+    case MF_STRAM:
+    case MF_FASTRAM:
+    case MF_PREFER_STRAM:
+    case MF_PREFER_FASTRAM:
     {
 #ifdef DEBUG_MEM
       amMemSet(allocatorState->bufferStart, DEBUGFILL, allocatorState->size);
 #endif 
       gUserMemFree(allocatorState->bufferStart,0);
     } break;
-    case PREFER_SUPERVIDEL:
+    case MF_SUPERVIDELRAM:
     default:
     {
       AssertMsg(false,"Invalid / unsupported memory type passed!");
@@ -110,16 +110,16 @@ void linearBufferFree(LinearBufferAllocator *allocatorState)
    switch(allocatorState->memType)
    {
     //clean memory for whole block
-    case ST_RAM:
-    case TT_RAM:
-    case PREFER_ST:
-    case PREFER_TT:
+    case MF_STRAM:
+    case MF_FASTRAM:
+    case MF_PREFER_STRAM:
+    case MF_PREFER_FASTRAM:
     {
 #ifdef DEBUG_MEM
         amMemSet(allocatorState->bufferStart,DEBUGFILL,(MemSize)allocatorState->size);
 #endif      
     } break;
-    case PREFER_SUPERVIDEL:
+    case MF_SUPERVIDELRAM:
     default:
     {
         AssertMsg(false,"Invalid / unsupported memory type passed!");

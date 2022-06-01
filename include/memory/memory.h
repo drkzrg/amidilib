@@ -20,15 +20,13 @@
 /* memory allocation preference */
 
 #if defined (FORCE_MALLOC)
-
 typedef enum EMEMORYFLAG 
 {
-  ST_RAM = 0,
-  TT_RAM ,
-  PREFER_ST,
-  PREFER_TT,
-  PREFER_DSP,         
-  PREFER_SUPERVIDEL, 
+  MF_STRAM,
+  MF_FASTRAM,
+  MF_PREFER_STRAM,
+  MF_PREFER_FASTRAM,
+  MF_SUPERVIDELRAM = 66
 } eMemoryFlag;
 
 #else
@@ -37,18 +35,17 @@ typedef enum EMEMORYFLAG
 
 typedef enum EMEMORYFLAG 
 {
-  ST_RAM = MX_STRAM,
-  TT_RAM = MX_TTRAM,
-  PREFER_ST = MX_PREFSTRAM,
-  PREFER_TT = MX_PREFTTRAM,
-  PREFER_DSP = PREFER_TT + 1,         // f030 only, not used atm
-  PREFER_SUPERVIDEL = PREFER_TT + 2,  // f030 + CT60 only, not used atm
+  MF_STRAM = MX_STRAM,
+  MF_FASTRAM = MX_TTRAM,
+  MF_PREFER_STRAM = MX_PREFSTRAM,
+  MF_PREFER_FASTRAM = MX_PREFTTRAM,
+  MF_SUPERVIDELRAM = 66
 } eMemoryFlag;
 
 #endif
 
 /* memory callback types */
-typedef void *(*funcMemAlloc)(size_t size, uint32 memflag, void *param);
+typedef void *(*funcMemAlloc)(const uint32_t size, const eMemoryFlag ramflag, void *param);
 typedef void *(*funcMemRealloc)(void *pPtr, const size_t newSize, void *param);
 typedef void (*funcMemFree)(void* ptr, void *param);
 
@@ -63,7 +60,7 @@ AM_EXTERN funcMemAlloc gUserMemAlloc;
 AM_EXTERN funcMemFree gUserMemFree;
 AM_EXTERN funcMemRealloc gUserMemRealloc;
 
-void *amMalloc(unsigned int size, short int ramflag, void *param);
+void *amMalloc(const uint32_t size, const eMemoryFlag ramflag, void *param);
 void amFree(void *ptr, void *param);
 
 static inline int amMemCmp ( const void *pSrc1, const void *pSrc2, const MemSize iNum)
@@ -98,7 +95,7 @@ static inline void *amMemSet ( void *pSrc, const int32 iCharacter, const MemSize
   pPtr = memset(pSrc,iCharacter,iNum);
 
   #ifdef DEBUG_MEM
-    if(pPtr!=pSrc) amTrace((const uint8 *)"\tamMemSet() warning: returned pointers aren't equal!\n");
+    if(pPtr!=pSrc) amTrace((const uint8 *)"\tamMemSet() warning: returned pointers aren't equal!"NL);
     else{
       amTrace("\tamMemSet() memory: %p, %d value written: %x!" NL,pSrc,iNum,iCharacter);
     }
@@ -112,6 +109,14 @@ void amSetDefaultUserMemoryCallbacks(void);
 
 // sets user memory allocation functions
 void amSetUserMemoryCallbacks(sUserMemoryCallbacks *func);
+
+/**
+ * gets amount of free preferred memory type (ST/FastRam/SuperVidel).
+ * @param memFlag memory allocation preference flag
+ * @return 0L - if no memory available, 0L< otherwise
+ */
+
+uint32 amGetFreeMemory(const eMemoryFlag memFlag); 
 
 #endif
 

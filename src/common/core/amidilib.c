@@ -381,8 +381,6 @@ static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
 #endif
 
-AM_EXTERN Bool CON_LOG;
-
 int16 amInit(void)
 {
   // setup standard memory callbacks

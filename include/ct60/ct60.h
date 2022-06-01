@@ -1,8 +1,9 @@
 #ifndef CT60_H
 #define CT60_H
 
-/**  Copyright 2011-21 Pawel Goralski
-    This file is part of Nidhoggr engine.
+/**  Copyright 2007-2022 Pawel Goralski
+    
+    This file is part of AMIDILIB.
     See license.txt for licensing information.
 */
 

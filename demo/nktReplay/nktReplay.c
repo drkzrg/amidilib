@@ -144,113 +144,125 @@ void mainLoop(sNktSeq *pSequence)
         // check keyboard input
         for (uint16 i=0; i<IKBD_TABLE_SIZE; ++i) 
         {
-
           if (Ikbd_keyboard[i]==KEY_PRESSED) 
           {
-          Ikbd_keyboard[i]=KEY_UNDEFINED;
+            Ikbd_keyboard[i]=KEY_UNDEFINED;
 
-          switch(i){
-        case SC_ESC:{
-          bQuit=TRUE;
-          //stop sequence
-          stopNktSequence();
-        }break;
-        case SC_P:{
-          //starts playing sequence if is stopped
-          playNktSequence();
-         }break;
-        case SC_R:{
-          //pauses sequence when is playing
-           pauseNktSequence();
-         }break;
-         case SC_M:{
-          //toggles between play once and play in loop
-          switchNktReplayMode();
-         }break;
-        case SC_I:{
-           //displays current track info
-           displayTuneInfo();
-         }break;
-        case SC_H:{
-           //displays help/startup screen
-            printInfoScreen();
-         }break;
+            switch(i)
+            {
+                case SC_ESC:
+                {
+                    bQuit=TRUE;
+                    // stop sequence
+                    stopNktSequence();
+                } break;
+                case SC_P:
+                {
+                    // starts playing sequence if is stopped
+                    playNktSequence();
+                } break;
+                case SC_R:
+                {
+                    // pauses sequence when is playing
+                    pauseNktSequence();
+                } break;
+                case SC_M:
+                {
+                    // toggles between play once and play in loop
+                    switchNktReplayMode();
+                } break;
+                case SC_I:
+                {
+                    // displays current track info
+                    displayTuneInfo();
+                } break;
+                case SC_H:
+                {
+                    // displays help/startup screen
+                    printInfoScreen();
+                } break;
 
-         // adjust master volume
-         case SC_ARROW_UP:{
+                // adjust master volume
+                case SC_ARROW_UP:
+                {
+                    uint8 _midiMasterVolume=getMidiMasterVolume();
 
-              uint8 _midiMasterVolume=getMidiMasterVolume();
+                    if(_midiMasterVolume<127)
+                    {
+                        ++_midiMasterVolume;
+                        setMidiMasterVolume(_midiMasterVolume);
+                        amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
+                    }
+                } break;
 
-              if(_midiMasterVolume<127){
-                  ++_midiMasterVolume;
-                  setMidiMasterVolume(_midiMasterVolume);
-                  amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
-              }
+                case SC_ARROW_DOWN:
+                {
+                    uint8 _midiMasterVolume = getMidiMasterVolume();
 
-         }break;
-          case SC_ARROW_DOWN:{
-              uint8 _midiMasterVolume=getMidiMasterVolume();
+                    if(_midiMasterVolume>0)
+                    {
+                      --_midiMasterVolume;
+                      setMidiMasterVolume(_midiMasterVolume);
+                      amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
+                    }
+                } break;
 
-              if(_midiMasterVolume>0){
-                --_midiMasterVolume;
-                setMidiMasterVolume(_midiMasterVolume);
-                amPrintf("[Master Volume]: %d "NL, _midiMasterVolume);
-              }
+                // adjust balance
+                case SC_ARROW_LEFT:
+                {
+                  uint8 _midiMasterBalance=getMidiMasterBalance();
 
-          }break;
+                  if(_midiMasterBalance>0)
+                  {
+                    --_midiMasterBalance;
+                    setMidiMasterBalance(_midiMasterBalance);
+                    amPrintf("<< [Master Pan]: %d "NL, _midiMasterBalance);
+                  }
+                } break;
 
-          // adjust balance
-          case SC_ARROW_LEFT:{
+                case SC_ARROW_RIGHT:
+                {
+                    uint8 _midiMasterBalance=getMidiMasterBalance();
 
-              uint8 _midiMasterBalance=getMidiMasterBalance();
+                    if(_midiMasterBalance<127)
+                    {
+                        ++_midiMasterBalance;
+                        setMidiMasterBalance(_midiMasterBalance);
+                        amPrintf("[Master Pan] >>: %d "NL, _midiMasterBalance);
+                    }
 
-              if(_midiMasterBalance>0){
-                  --_midiMasterBalance;
-                  setMidiMasterBalance(_midiMasterBalance);
-                  amPrintf("<< [Master Pan]: %d "NL, _midiMasterBalance);
-              }
-
-          }break;
-          case SC_ARROW_RIGHT:{
-
-              uint8 _midiMasterBalance=getMidiMasterBalance();
-
-              if(_midiMasterBalance<127){
-                  ++_midiMasterBalance;
-                  setMidiMasterBalance(_midiMasterBalance);
-                  amPrintf("[Master Pan] >>: %d "NL, _midiMasterBalance);
-              }
-
-          }break;
+                } break;
 
 #ifdef MANUAL_STEP
-          case SC_ENTER:{
+                case SC_ENTER:
+                {
+                    for(int i=0;i<200;++i)
+                    {
+                        updateStepNkt();
+                    }
 
-            for(int i=0;i<200;++i){
-                updateStepNkt();
-            }
+                    printNktSequenceState();
 
-            printNktSequenceState();
+                    // clear buffer after each update step
+                    Supexec(flushMidiSendBuffer);
 
-            // clear buffer after each update step
-            Supexec(flushMidiSendBuffer);
-
-          }break;
+                } break;
 #endif
-         case SC_SPACEBAR:{
-            stopNktSequence();
-         }break;
+                case SC_SPACEBAR:
+                {
+                    stopNktSequence();
+                } break;
 
-          };
-          //end of switch
-        }
+          }; // end of switch
+        } // end if
 
-        if (Ikbd_keyboard[i]==KEY_RELEASED) {
+        if (Ikbd_keyboard[i]==KEY_RELEASED)
+        {
           Ikbd_keyboard[i]=KEY_UNDEFINED;
         }
 
        } //end of for
-      }
+      } //end while
     /* Uninstall our ikbd handler */
     Supexec(IkbdUninstall);
 }

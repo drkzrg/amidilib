@@ -21,7 +21,11 @@
 #include "core/logger.h"
 #include <mint/osbind.h>
 
+#if NDEBUG
+char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE];
+#else
 AM_EXTERN char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE];
+#endif
 
 int amCustomPrintf(const char* format, ...)
 {

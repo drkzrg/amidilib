@@ -50,21 +50,7 @@ do {\
 
 
 #elif defined(NDEBUG)
-
 // disable all asserts in final build
-#define StaticAssert(condition, message) ((void)0)
-#define AssertFatal(condition,message) ((void)0)
-#define AssertMsg(condition, message) ((void)0)
-#define AssertMsgRts(condition,message,rval) if(!condition) return rval
-#define Assert(condition) ((void)0)
-
-#else
-
-#include <assert.h>
-#define AssertFatal(condition,message) ((void)0)
-#define AssertMsg(condition, message) ((void)0)
-#define AssertMsgRts(condition,message,rval) if(!condition) return rval
-#define Assert(condition) ((void)0)
 
 #if __STDC_VERSION__ >= 199901L
 #define StaticAssert(condition, message) _Static_assert(condition, message)
@@ -72,6 +58,25 @@ do {\
 // no static asserts in versions below c99
 #define StaticAssert(condition, message) ((void)0)
 #endif
+
+#define AssertFatal(condition,message) ((void)0)
+#define AssertMsg(condition, message) ((void)0)
+#define AssertMsgRts(condition,message,rval) if(!condition) return rval
+#define Assert(condition) ((void)0)
+
+#else
+
+#if __STDC_VERSION__ >= 199901L
+#define StaticAssert(condition, message) _Static_assert(condition, message)
+#else
+// no static asserts in versions below c99
+#define StaticAssert(condition, message) ((void)0)
+#endif
+
+#define AssertFatal(condition,message) ((void)0)
+#define AssertMsg(condition, message) ((void)0)
+#define AssertMsgRts(condition,message,rval) if(!condition) return rval
+#define Assert(condition) ((void)0)
 
 #endif
 

@@ -19,12 +19,14 @@
 #define DEBUG_OUTPUT_TO_FILE 0
 #define DEBUG_OUTPUT_TO_DEBUGGER 0
 #define DEBUG_OUTPUT_TO_SERIAL 0
+#undef DEFAULT_LOG_LEVEL
 #define DEFAULT_LOG_LEVEL TL_ERR_FATAL
 #else
 #define DEBUG_OUTPUT_TO_CONSOLE 0
-#define DEBUG_OUTPUT_TO_FILE 0
+#define DEBUG_OUTPUT_TO_FILE 1
 #define DEBUG_OUTPUT_TO_DEBUGGER 0
-#define DEBUG_OUTPUT_TO_SERIAL 1
+#define DEBUG_OUTPUT_TO_SERIAL 0
+#undef DEFAULT_LOG_LEVEL
 #define DEFAULT_LOG_LEVEL TL_ERR_REPORT_ALL
 #endif
 
@@ -83,7 +85,7 @@ void logOutputTraceSimple(const eTraceLevel level, const char* const message, ..
 #define AM_MSG(msg,...) ((void)0)
 #define AM_MSG_WARN(msg,...) ((void)0)
 
-#define AM_PRINT(msg,...) ((void)0)
+#define amTrace(msg,...) ((void)0)
 
 #define DbgTrace(SID,msg, ...) ((void)0)
 #define DbgHalt() ((void)0)

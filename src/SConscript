@@ -310,7 +310,7 @@ if ( build_config == 'debug'):
 else:
     print ("Release build... Code optimisation is turned on.")
     LDFLAGS += "-s "
-    CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O3 ' + ' -DUSE_INLINE '
+    CFLAGS += '-DEVENT_LINEAR_BUFFER ' +' -O3 ' + ' -DUSE_INLINE ' + '-DNDEBUG '
     
 if(ikbd_direct_write == "yes"):
     print ("Sending data directly via IKBD ENABLED")

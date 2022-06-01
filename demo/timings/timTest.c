@@ -34,8 +34,8 @@
 #include "timing/mfp.h"
 #include <mint/osbind.h>
 
-extern void customSeqReplay(void);
-extern void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput);
+AM_EXTERN void customSeqReplay(void);
+AM_EXTERN void playNote(uint8 channel,uint8 noteNb, bool bMidiOutput, bool bYmOutput);
 volatile bool handleTempoChange;
 bool midiOutputEnabled;
 bool ymOutputEnabled;

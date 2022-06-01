@@ -12,8 +12,8 @@
 #include "memory.h"
 #include "core/amprintf.h"
 
-extern uint8 isMidiChannelEvent(const uint8 byteEvent);
-extern uint8 isMidiRTorSysex(const uint8 byteEvent);
+AM_EXTERN uint8 isMidiChannelEvent(const uint8 byteEvent);
+AM_EXTERN uint8 isMidiRTorSysex(const uint8 byteEvent);
 
 // helper functions for determining amount of data stored in midi file before actual conversion
 

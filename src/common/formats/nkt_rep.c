@@ -32,8 +32,8 @@
 #endif
 
 // helper function for determining amount of memory we need for data / events buffers
-extern int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
-extern uint16 isMultitrackReplay;
+AM_EXTERN int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
+AM_EXTERN uint16 isMultitrackReplay;
 
 void setNktHeader(sNktHd* header, const sNktSeq *pNktSeq);
 void setNktTrackInfo(sNktTrackInfo* header, const sNktSeq *pNktSeq);
@@ -1323,7 +1323,7 @@ void switchNktReplayMode(void)
   }
 }
 
-extern void installMidiResetHandler(void);
+AM_EXTERN void installMidiResetHandler(void);
 
 void NktInit(const eMidiDeviceType devType, const uint8 channel)
 {

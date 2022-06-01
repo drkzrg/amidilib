@@ -20,7 +20,7 @@
 
 #include "core/amprintf.h"
 
-extern int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
+AM_EXTERN int16 collectMidiTrackInfo(void *pMidiData, uint16 trackNb, sMidiTrackInfo_t *pBufInfo, Bool *bEOT);
 
 // from mparser.c
 uint8  isMidiChannelEvent(const uint8 byteEvent){

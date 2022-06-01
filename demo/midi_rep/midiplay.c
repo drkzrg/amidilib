@@ -39,8 +39,8 @@
 #define MANUAL_STEP 0
 
 #if MANUAL_STEP
-extern void updateStepSingle(void);
-extern void updateStepMulti(void);
+AM_EXTERN void updateStepSingle(void);
+AM_EXTERN void updateStepMulti(void);
 #endif
 
 // display info screen

@@ -59,9 +59,9 @@ typedef struct SUSER_MEMORY_CALLBACKS
   funcMemRealloc cbMemRealloc;
 } sUserMemoryCallbacks;
 
-extern funcMemAlloc gUserMemAlloc;
-extern funcMemFree gUserMemFree;
-extern funcMemRealloc gUserMemRealloc;
+AM_EXTERN funcMemAlloc gUserMemAlloc;
+AM_EXTERN funcMemFree gUserMemFree;
+AM_EXTERN funcMemRealloc gUserMemRealloc;
 
 void *amMalloc(unsigned int size, short int ramflag, void *param);
 void amFree(void *ptr, void *param);

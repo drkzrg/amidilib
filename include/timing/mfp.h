@@ -35,16 +35,16 @@ typedef enum{
 } eTimerType;
 
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
-extern void installReplayRout(const uint8 mode, const uint8 data, const Bool isMultitrack, const eTimerType updateHandlerType);
+AM_EXTERN void installReplayRout(const uint8 mode, const uint8 data, const Bool isMultitrack, const eTimerType updateHandlerType);
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
-extern void deinstallReplayRout(void);
+AM_EXTERN void deinstallReplayRout(void);
 
 /** installs sequence replay routine (hooked to timer B atm) [to remove] */
-extern void installReplayRoutGeneric(uint8 mode,uint8 data,funcPtrVoidVoid func);
+AM_EXTERN void installReplayRoutGeneric(uint8 mode,uint8 data,funcPtrVoidVoid func);
 
 /** deinstalls sequence replay routine (hooked to timer B atm) */
-extern void deinstallReplayRoutGeneric(void);
+AM_EXTERN void deinstallReplayRoutGeneric(void);
 
 /* ***** */
 /* calculates settings for MFP timers for given frequency of tick */

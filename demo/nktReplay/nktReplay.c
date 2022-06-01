@@ -13,7 +13,7 @@
 #endif
 
 #ifdef MANUAL_STEP
-extern void updateStepNkt(void);
+AM_EXTERN void updateStepNkt(void);
 #endif
 
 void printInfoScreen(void);

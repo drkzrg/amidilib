@@ -1,5 +1,8 @@
-extern unsigned char const __libc_ctype[256];
-extern unsigned char const __libc_ctype2[256];
+
+#include "vartypes.h"
+
+AM_EXTERN unsigned char const __libc_ctype[256];
+AM_EXTERN unsigned char const __libc_ctype2[256];
 
 #undef _IScntrl
 #undef _ISdigit

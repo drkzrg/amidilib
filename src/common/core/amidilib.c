@@ -381,7 +381,7 @@ static _IOREC g_sOldMidiBufferInfo;
 static _IOREC *g_psMidiBufferInfo;
 #endif
 
-extern Bool CON_LOG;
+AM_EXTERN Bool CON_LOG;
 
 int16 amInit(void)
 {

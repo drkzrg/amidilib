@@ -20,11 +20,11 @@ static const sSysEX_t arCM500AllPartsOff = {8,(uint8 []){0xf0,ID_ROLAND,MT32_DEV
 static const sSysEX_t arEnableGM = {6,(uint8 []){0xf0,0x7e,0x7f,0x09,0x01,0xf7}};
 static const sSysEX_t arDisableGM = {6,(uint8 []){0xf0,0x7e,0x7f,0x09,0x00,0xf7}};
 
-volatile extern sMidiModuleSettings moduleSettings;
-extern uint8 mt32TextMsg[20];
+volatile AM_EXTERN sMidiModuleSettings moduleSettings;
+AM_EXTERN uint8 mt32TextMsg[20];
 
-volatile extern uint8 requestedMasterVolume;
-volatile extern uint8 requestedMasterBalance;
+volatile AM_EXTERN uint8 requestedMasterVolume;
+volatile AM_EXTERN uint8 requestedMasterBalance;
 
 void setMidiMasterVolume(const uint8 vol){
     requestedMasterVolume = vol;

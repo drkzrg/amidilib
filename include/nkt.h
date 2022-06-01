@@ -143,13 +143,13 @@ void NktInit(const eMidiDeviceType devType, const uint8 channel);
 void NktDeinit(void);
 
 /** installs update sequence, single/multitrack variant hooked to selected timer type */
-extern void NktInstallReplayRout(void);
+AM_EXTERN void NktInstallReplayRout(void);
 
 /** installs update sequence, single/multitrack variant not hooked to timer */
-extern void NktInstallReplayRoutNoTimers(void);
+AM_EXTERN void NktInstallReplayRoutNoTimers(void);
 
 /** deinstalls sequence replay routine installed with installReplayRout()  */
-extern void NktDeinstallReplayRout(void);
+AM_EXTERN void NktDeinstallReplayRout(void);
 
 /** returns currently loaded/active nkt sequence pointer */
 sNktSeq * const getActiveNktSequence(void);

@@ -7,7 +7,6 @@
     See license.txt for licensing information.
 */
 
-#include "core/logger.h"
 #include "ct60/ct60.h"
 
 #ifndef C_SupV
@@ -148,10 +147,10 @@ values Replace Red, Green, Blue.
 
 #define BPint8C (0x0007)
 #define BPint32 (0x0005)
-#define SVEXT_BASERES (a)((a & 0xf) << 9)
+//#define SVEXT_BASERES (a)((a & 0xf) << 9)
 #define SVEXT_FORMAT (0x0040) /* 0 = 4:3, 1 = wide resolution  */
 #define SVEXT_DUAL (0x8000)   /* enable dual screen, don't touch atm */
-#define SVEXT (0x4000)
+//#define SVEXT (0x4000)
 
 // for VideoMode enumeration
 

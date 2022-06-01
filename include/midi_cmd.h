@@ -57,6 +57,20 @@ amTrace("Send SysEx size: %u"NL,pMsg->size);
 #endif
 }
 
+static AM_INLINE void sendSysEXNoLog(const sSysEX_t *pMsg)
+{
+
+#ifdef IKBD_MIDI_SEND_DIRECT
+ amMemCpy(&MIDIsendBuffer[MIDIbytesToSend],pMsg->data,pMsg->size);
+ MIDIbytesToSend+=pMsg->size;
+
+ Supexec(flushMidiSendBuffer);
+#else
+    MIDI_SEND_DATA(pMsg->size,pMsg->data);
+#endif
+}
+
+
 /* common, channel voice messages */
 /**
  * sends NOTE OFF MIDI message (key depressed)

@@ -265,7 +265,6 @@ static AM_INLINE void handleMasterSettings(void) AM_FORCE_INLINE;
 
 static AM_INLINE void handleMasterSettings(void) 
 {
-
     // handle volume/balance/reverb change
    if(moduleSettings.masterVolume!=requestedMasterVolume)
    {
@@ -284,7 +283,7 @@ static AM_INLINE void handleMasterSettings(void)
                 arSetMasterVolumeMT32.data[IDX_MASTER_VOL]=requestedMasterVolume;
                 arSetMasterVolumeMT32.data[9]=amCalcRolandChecksum(&arSetMasterVolumeMT32.data[5],&arSetMasterVolumeMT32.data[8]);
 
-                sendSysEX(&arSetMasterVolumeMT32);
+                sendSysEXNoLog(&arSetMasterVolumeMT32);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
                 Supexec(flushMidiSendBuffer);
@@ -306,7 +305,7 @@ static AM_INLINE void handleMasterSettings(void)
                 arSetTextMT32.data[28]=amCalcRolandChecksum(&arSetTextMT32.data[5],&arSetTextMT32.data[27]);
 
                 // update text
-                sendSysEX(&arSetTextMT32);
+                sendSysEXNoLog(&arSetTextMT32);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
                 Supexec(flushMidiSendBuffer);
@@ -334,7 +333,7 @@ static AM_INLINE void handleMasterSettings(void)
                 arSetMasterVolumeGM.data[IDX_MASTER_VOL]=requestedMasterVolume;
                 arSetMasterVolumeGM.data[9]=amCalcRolandChecksum(&arSetMasterVolumeGM.data[5],&arSetMasterVolumeGM.data[8]);
 
-                sendSysEX(&arSetMasterVolumeGM);
+                sendSysEXNoLog(&arSetMasterVolumeGM);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
                 Supexec(flushMidiSendBuffer);
@@ -355,7 +354,7 @@ static AM_INLINE void handleMasterSettings(void)
             arSetMasterBalanceGM.data[IDX_MASTER_PAN]=requestedMasterBalance;
             arSetMasterBalanceGM.data[9]=amCalcRolandChecksum(&arSetMasterBalanceGM.data[5],&arSetMasterBalanceGM.data[8]);
 
-            sendSysEX(&arSetMasterBalanceGM);
+            sendSysEXNoLog(&arSetMasterBalanceGM);
 
 #ifdef IKBD_MIDI_SEND_DIRECT
             Supexec(flushMidiSendBuffer);
@@ -528,7 +527,8 @@ void updateStepNkt(void)
 
 // update step for multitrack replay
 
-void updateStepNktMt(void){
+void updateStepNktMt(void)
+{
 
  // handle master volume, balance, reverb, mt32 text
  handleMasterSettings();

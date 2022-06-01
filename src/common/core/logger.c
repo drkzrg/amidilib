@@ -26,6 +26,7 @@ eTraceLevel globalTraceLevel;
 
 static const eTraceLevel defaultTraceLevel = DEFAULT_LOG_LEVEL;
 
+#if DEBUG_OUTPUT_TO_SERIAL
 // Atari serial output
 // TODO: console output to RAWCON(2(CON)->5(RAWCON))
 // 1 - serial,
@@ -33,6 +34,7 @@ static const eTraceLevel defaultTraceLevel = DEFAULT_LOG_LEVEL;
 // 7 - scc (modem 2, doesn't work under Hatari)
 
 static const uint8 SERIAL_OUTPUT_CHANNEL=7;
+#endif
 
 #if DEBUG_OUTPUT_TO_FILE
 

@@ -64,15 +64,14 @@ static const char* arDebugLevelString[TL_ERR_NUM] =
 
 #define MIN_SRCPATHLEN 32
 #define DEBUG_TRACE_FMT "\n%s[source]:(l:%u)%s\n# "
-#define DEBUG_OUTPUT_BUFFER_SIZE (1024)  
 
-static char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE] = {0};
+char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE] = {0};
 
 void logOutputTraceSimple(const eTraceLevel level, const char* const message, ...)
 {
     if (level < globalTraceLevel) return;
 
-#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_FILE_OUTPUT||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
+#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
     int32_t sendCharsFlag=1;
     int32_t bytesSent=0;
 #endif
@@ -148,7 +147,7 @@ void logOutputTrace(const eTraceLevel level, const char * const sourceName, cons
 
     outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE-1]='\0';
 
-#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_FILE_OUTPUT||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
+#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
     int32_t sendCharsFlag=1;
     int32_t bytesSent=0;
 #endif

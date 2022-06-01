@@ -15,28 +15,29 @@
 #define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
 
 #define NANOPRINTF_IMPLEMENTATION 
+
 #include "nanoprintf.h"
-
-#include "vartypes.h"
-#include "core/logger.h"
 #include <mint/osbind.h>
+#include "vartypes.h"
 
-extern char *outputTraceBuffer;
+#define OUTPUT_TEMP_BUFFER  1024
 
 int amCustomPrintf(const char* format, ...)
 {
+
 #ifndef SUPRESS_CON_OUTPUT
-  AssertFatal(outputTraceBuffer!=NULL,"outputTraceBuffer cannot be NULL!");  
-  outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE-1]='\0';
+  static char tempBuf[OUTPUT_TEMP_BUFFER] = {0};
+  
+  tempBuf[0]='\0';
 
   va_list val;
   va_start(val, format);
-  int const rv = npf_vsnprintf(&outputTraceBuffer[0],DEBUG_OUTPUT_BUFFER_SIZE,format,val);
+  int const rv = npf_vsnprintf(&tempBuf[0],OUTPUT_TEMP_BUFFER,format,val);
   va_end(val);
 
   AssertMsg(rv>=0,"npf_vsnprintf() error");
 
-  (void)Cconws(outputTraceBuffer);
+  (void)Cconws(tempBuf);
 #else
   int const rv = 0;
 #endif

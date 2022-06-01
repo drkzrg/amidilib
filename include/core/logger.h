@@ -28,8 +28,6 @@
 #define DEFAULT_LOG_LEVEL TL_ERR_REPORT_ALL
 #endif
 
-#define DEBUG_OUTPUT_BUFFER_SIZE (1024)  
-
 // ovverride setting if SUPRESS_CON_OUTPUT is defined
 #ifdef SUPRESS_CON_OUTPUT
 

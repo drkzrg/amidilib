@@ -19,13 +19,13 @@
 #include "core/assert.h"
 #include "core/logger.h"
 #include "core/amprintf.h"
+
 #include "memory/memory.h"
 
 eTraceLevel globalTraceLevel;
 
 static const eTraceLevel defaultTraceLevel = DEFAULT_LOG_LEVEL;
 
-#if DEBUG_OUTPUT_TO_SERIAL
 // Atari serial output
 // TODO: console output to RAWCON(2(CON)->5(RAWCON))
 // 1 - serial,
@@ -33,7 +33,6 @@ static const eTraceLevel defaultTraceLevel = DEFAULT_LOG_LEVEL;
 // 7 - scc (modem 2, doesn't work under Hatari)
 
 static const uint8 SERIAL_OUTPUT_CHANNEL=7;
-#endif
 
 #if DEBUG_OUTPUT_TO_FILE
 
@@ -65,16 +64,15 @@ static const char* arDebugLevelString[TL_ERR_NUM] =
 
 #define MIN_SRCPATHLEN 32
 #define DEBUG_TRACE_FMT "\n%s[source]:(l:%u)%s\n# "
+#define DEBUG_OUTPUT_BUFFER_SIZE (1024)  
 
-char *outputTraceBuffer = NULL;
+static char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE] = {0};
 
 void logOutputTraceSimple(const eTraceLevel level, const char* const message, ...)
 {
-    AssertFatal(outputTraceBuffer!=NULL,"outputTraceBuffer cannot be NULL!");
-
     if (level < globalTraceLevel) return;
 
-#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
+#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_FILE_OUTPUT||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
     int32_t sendCharsFlag=1;
     int32_t bytesSent=0;
 #endif
@@ -146,13 +144,11 @@ void logOutputTraceSimple(const eTraceLevel level, const char* const message, ..
 
 void logOutputTrace(const eTraceLevel level, const char * const sourceName, const size_t lineNb, const char * const message, ...)
 {
-    AssertFatal(outputTraceBuffer!=NULL,"outputTraceBuffer cannot be NULL!");
-
     if (level < globalTraceLevel) return;
 
     outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE-1]='\0';
 
-#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
+#if (DEBUG_OUTPUT_TO_CONSOLE||DEBUG_OUTPUT_TO_FILE||DEBUG_FILE_OUTPUT||DEBUG_OUTPUT_TO_DEBUGGER||DEBUG_OUTPUT_TO_SERIAL)
     int32_t sendCharsFlag=1;
     int32_t bytesSent=0;
 #endif
@@ -244,12 +240,6 @@ void initLogger(const char *const logName)
 {
     globalTraceLevel = defaultTraceLevel;
 
-    outputTraceBuffer = amMalloc(DEBUG_OUTPUT_BUFFER_SIZE,PREFER_TT,0);
-
-    if(outputTraceBuffer)
-    {
-        amMemSet(outputTraceBuffer,DEBUG_OUTPUT_BUFFER_SIZE);
-        
 #if DEBUG_OUTPUT_TO_SERIAL
     Bconmap(SERIAL_OUTPUT_CHANNEL);
 #endif    
@@ -286,11 +276,6 @@ void initLogger(const char *const logName)
 #endif
 
 #endif
-    }
-    else
-    {
-        AssertFatal(false,"initLogger() out of memory for internal buffer.");
-    }
 }
 
 void deinitLogger(void) 
@@ -312,8 +297,4 @@ void deinitLogger(void)
 #endif
 
 #endif
-
-  amFree(outputTraceBuffer,0);
-  outputTraceBuffer=0;
-
 }

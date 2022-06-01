@@ -240,8 +240,8 @@ int16 Mus2Midi(uint8* bytes, uint8* out, const int8 *pOutMidName,uint32* len)
 		uint8 channel=0;
 		uint8 status=0, bit1=0, bit2=0, bitc = 2;
 
- 		  status=0, bit1=0, bit2=0, bitc = 2;
- 		  out_local = temp_buffer;
+ 		status=0, bit1=0, bit2=0, bitc = 2;
+ 		out_local = temp_buffer;
 
 		// Read in current bit
 		event		= *cur++;

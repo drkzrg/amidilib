@@ -261,7 +261,7 @@ static sSysEX_t arSetTextMT32         =  {30,(uint8 []){0xf0,0x41,0x10,0x16,0x12
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xf7}};
 
-static inline void handleMasterSettings(void) FORCE_INLINE;
+static inline void handleMasterSettings(void) AM_FORCE_INLINE;
 
 static inline void handleMasterSettings(void) 
 {

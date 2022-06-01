@@ -11,7 +11,7 @@
 *   @param qpm QPM - quaternotes per minute
 */
 
-static INLINE uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups)
+static AM_INLINE uint32 amCalculateTimeStep(const uint16 qpm,const uint16 ppq,const uint16 ups)
 {
     static uint32 ppu=0;
     static uint32 temp=0;

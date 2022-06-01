@@ -109,7 +109,7 @@ static Bool isXmidiEventChunk(const uint32 id)
 	return isXmidiEvent;
 }
 
-static INLINE int32 roundUp(const int32 val)
+static AM_INLINE int32 roundUp(const int32 val)
 {
    if((val % 2)==0) return 0;
    return 1; // padded data

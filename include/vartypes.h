@@ -49,15 +49,15 @@ typedef void (*funcPtrVoidConstUint)(const uint32);
 #ifdef USE_INLINE
 
 #if (__STDC_VERSION__ >= 199901L) 
-#define INLINE inline        /* use standard inline */
-#define FORCE_INLINE __attribute__((always_inline))
+#define AM_INLINE inline        /* use standard inline */
+#define AM_FORCE_INLINE __attribute__((always_inline))
 #else
-#define INLINE              /* no inline */
-#define FORCE_INLINE
+#define AM_INLINE              /* no inline */
+#define AM_FORCE_INLINE
 #endif
 #else
-#define INLINE              /* no inline */
-#define FORCE_INLINE
+#define AM_INLINE              /* no inline */
+#define AM_FORCE_INLINE
 #endif
 
 #define AM_EXTERN extern

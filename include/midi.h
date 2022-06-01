@@ -173,7 +173,7 @@ const uint8 *getNoteName(const uint8 currentChannel,const uint8 currentPN,const 
 */
 
 /* reads Variable Lenght Quantity */
-static INLINE uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
+static AM_INLINE uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
 {
 // TODO: rewrite this in assembly
 uint32 value=0;
@@ -203,7 +203,7 @@ return(value);
 
 // reads a variable length integer
 // TODO: remove it and replace with uint32 readVLQ(uint8 *pChar,uint8 *ubSize)
-static INLINE uint32 ReadVarLen(int8* buffer)
+static AM_INLINE uint32 ReadVarLen(int8* buffer)
 {
 uint32 value;
 
@@ -219,7 +219,7 @@ if ((value = *buffer++) & 0x80) {
 }
 
 // Writes a variable length integer to a buffer, and returns bytes written
-static INLINE int32 WriteVarLen( int32 value, uint8* out )
+static AM_INLINE int32 WriteVarLen( int32 value, uint8* out )
 {
     int32 buffer, count = 0;
 

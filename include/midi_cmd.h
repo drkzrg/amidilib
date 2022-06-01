@@ -42,7 +42,7 @@ extern uint8 MIDIsendBuffer[32*1024]; //buffer from which we will send all data 
 extern volatile uint16 MIDIbytesToSend;
 
 // sends SysEX message without recalculating the checksum
-static INLINE void sendSysEX(const sSysEX_t *pMsg){
+static AM_INLINE void sendSysEX(const sSysEX_t *pMsg){
 
 amTrace("Send SysEx size: %u \n",pMsg->size);
 
@@ -65,7 +65,7 @@ amTrace("Send SysEx size: %u \n",pMsg->size);
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
 
-static INLINE void note_off (const uint8 channel,const uint8 note,const uint8 velocity ){
+static AM_INLINE void note_off (const uint8 channel,const uint8 note,const uint8 velocity ){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_OFF|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
@@ -86,7 +86,7 @@ static INLINE void note_off (const uint8 channel,const uint8 note,const uint8 ve
  * @param note specifies which note to play 0-127 (0x00-0x7F)
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
-static INLINE void note_on (const uint8 channel,const uint8 note, const uint8 velocity){
+static AM_INLINE void note_on (const uint8 channel,const uint8 note, const uint8 velocity){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_ON|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
@@ -107,7 +107,7 @@ static INLINE void note_on (const uint8 channel,const uint8 note, const uint8 ve
  * @param value value 0-127 (0x00-0x7F)
  */
 
-static INLINE void polyphonic_key_press(const uint8 channel,const uint8 note,const uint8 value){
+static AM_INLINE void polyphonic_key_press(const uint8 channel,const uint8 note,const uint8 value){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_AFTERTOUCH|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
@@ -127,7 +127,7 @@ static INLINE void polyphonic_key_press(const uint8 channel,const uint8 note,con
  * @param value value sent to given controller 0-127 (0x00-0x7F)
  */
 
-static INLINE void control_change(const uint8 controller,const uint8 channel,const uint8 value1,const uint8 value2){
+static AM_INLINE void control_change(const uint8 controller,const uint8 channel,const uint8 value1,const uint8 value2){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=controller;
@@ -149,7 +149,7 @@ static INLINE void control_change(const uint8 controller,const uint8 channel,con
  * @param programNb program number 1-128 (0x00-0x7F)
  */
 
-static INLINE void program_change(const uint8 channel,const uint8 programNb){
+static AM_INLINE void program_change(const uint8 channel,const uint8 programNb){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PROGRAM_CHANGE|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=programNb;
@@ -167,7 +167,7 @@ static INLINE void program_change(const uint8 channel,const uint8 programNb){
  * @remarks valid only for GS sound source
  */
 
-static INLINE void channel_pressure (const uint8 channel,const uint8 value){
+static AM_INLINE void channel_pressure (const uint8 channel,const uint8 value){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CHANNEL_AFTERTOUCH|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=value;
@@ -183,7 +183,7 @@ static INLINE void channel_pressure (const uint8 channel,const uint8 value){
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  * @param value signed uint16 value -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
-static INLINE void pitch_bend (const uint8 channel,const uint16 value){
+static AM_INLINE void pitch_bend (const uint8 channel,const uint16 value){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PITCH_BEND|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=(uint8)((value>>4)&0x0F);
@@ -203,7 +203,7 @@ static INLINE void pitch_bend (const uint8 channel,const uint16 value){
  * @param sbyte uint8 value which gives with fbyte int16 value with range: -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
 
-static INLINE void pitch_bend_2 (const uint8 channel, const uint8 fbyte,const uint8 sbyte){
+static AM_INLINE void pitch_bend_2 (const uint8 channel, const uint8 fbyte,const uint8 sbyte){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PITCH_BEND|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=fbyte;
@@ -222,7 +222,7 @@ static INLINE void pitch_bend_2 (const uint8 channel, const uint8 fbyte,const ui
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void all_sounds_off(const uint8 channel){
+static AM_INLINE void all_sounds_off(const uint8 channel){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_SOUNDS_OFF;
@@ -241,7 +241,7 @@ static INLINE void all_sounds_off(const uint8 channel){
  * sends RESET ALL CONTROLLERS MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void reset_all_controllers(const uint8 channel){
+static AM_INLINE void reset_all_controllers(const uint8 channel){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_RESET_ALL;
@@ -259,7 +259,7 @@ static INLINE void reset_all_controllers(const uint8 channel){
  * sends ALL NOTES OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void all_notes_off(const uint8 channel){
+static AM_INLINE void all_notes_off(const uint8 channel){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_ALL_NOTES_OFF;
@@ -277,7 +277,7 @@ static INLINE void all_notes_off(const uint8 channel){
  * sends OMNI OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void omni_off(const uint8 channel){
+static AM_INLINE void omni_off(const uint8 channel){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_OFF;
@@ -294,7 +294,7 @@ static INLINE void omni_off(const uint8 channel){
  * sends OMNI ON MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void omni_on(const uint8 channel){
+static AM_INLINE void omni_on(const uint8 channel){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_ON;
@@ -311,7 +311,7 @@ static INLINE void omni_on(const uint8 channel){
  * sends MONO MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void mono_mode(const uint8 channel,const uint8 numberOfMono){
+static AM_INLINE void mono_mode(const uint8 channel,const uint8 numberOfMono){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_MONO;
@@ -329,7 +329,7 @@ static INLINE void mono_mode(const uint8 channel,const uint8 numberOfMono){
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void poly_mode(const uint8 channel,const uint8 numberOfPoly){
+static AM_INLINE void poly_mode(const uint8 channel,const uint8 numberOfPoly){
 #ifdef IKBD_MIDI_SEND_DIRECT
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_POLY;
@@ -351,7 +351,7 @@ static INLINE void poly_mode(const uint8 channel,const uint8 numberOfPoly){
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
 
-static INLINE void copy_note_off (const uint8 channel,const uint8 note,const uint8 velocity ){
+static AM_INLINE void copy_note_off (const uint8 channel,const uint8 note,const uint8 velocity ){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_OFF|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
 	MIDIsendBuffer[MIDIbytesToSend++]=velocity;
@@ -365,7 +365,7 @@ static INLINE void copy_note_off (const uint8 channel,const uint8 note,const uin
  * @param velocity with what velocity 0-127 (0x00-0x7F)
  */
 
-static INLINE void copy_note_on (const uint8 channel,const uint8 note,const uint8 velocity){
+static AM_INLINE void copy_note_on (const uint8 channel,const uint8 note,const uint8 velocity){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_ON|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
 	MIDIsendBuffer[MIDIbytesToSend++]=velocity;
@@ -379,7 +379,7 @@ static INLINE void copy_note_on (const uint8 channel,const uint8 note,const uint
  * @param value value 0-127 (0x00-0x7F)
  */
 
-static INLINE void copy_polyphonic_key_press(const uint8 channel,const uint8 note,const uint8 value){
+static AM_INLINE void copy_polyphonic_key_press(const uint8 channel,const uint8 note,const uint8 value){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_NOTE_AFTERTOUCH|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=note;
 	MIDIsendBuffer[MIDIbytesToSend++]=value;
@@ -392,7 +392,7 @@ static INLINE void copy_polyphonic_key_press(const uint8 channel,const uint8 not
  * @param value value sent to given controller 0-127 (0x00-0x7F)
  */
 
-static INLINE void copy_control_change(const uint8 controller,const uint8 channel,const uint8 value1, const uint8 value2){
+static AM_INLINE void copy_control_change(const uint8 controller,const uint8 channel,const uint8 value1, const uint8 value2){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=controller;
 	MIDIsendBuffer[MIDIbytesToSend++]=value1;
@@ -405,7 +405,7 @@ static INLINE void copy_control_change(const uint8 controller,const uint8 channe
  * @param programNb program number 1-128 (0x00-0x7F)
  */
 
-static INLINE void copy_program_change(const uint8 channel, const uint8 programNb){
+static AM_INLINE void copy_program_change(const uint8 channel, const uint8 programNb){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PROGRAM_CHANGE|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=programNb;
 }
@@ -417,7 +417,7 @@ static INLINE void copy_program_change(const uint8 channel, const uint8 programN
  * @remarks valid only for GS sound source
  */
 
-static INLINE void copy_channel_pressure (const uint8 channel, const uint8 value){
+static AM_INLINE void copy_channel_pressure (const uint8 channel, const uint8 value){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CHANNEL_AFTERTOUCH|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=value;
 }
@@ -427,7 +427,7 @@ static INLINE void copy_channel_pressure (const uint8 channel, const uint8 value
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  * @param value signed uint16 value -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
-static INLINE void copy_pitch_bend (const uint8 channel,const uint16 value){
+static AM_INLINE void copy_pitch_bend (const uint8 channel,const uint16 value){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PITCH_BEND|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=(uint8)((value>>4)&0x0F);
 	MIDIsendBuffer[MIDIbytesToSend++]=(uint8)(value&0x0F);
@@ -440,7 +440,7 @@ static INLINE void copy_pitch_bend (const uint8 channel,const uint16 value){
  * @param sbyte uint8 value which gives with fbyte int16 value with range: -8192 - 0 - +8191 (0x0000 - 0x4000 - 0x7F7F)
  */
 
-static INLINE void copy_pitch_bend_2 (const uint8 channel, const uint8 fbyte,const uint8 sbyte)
+static AM_INLINE void copy_pitch_bend_2 (const uint8 channel, const uint8 fbyte,const uint8 sbyte)
 {
     MIDIsendBuffer[MIDIbytesToSend++]=EV_PITCH_BEND|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=fbyte; //LSB
@@ -453,7 +453,7 @@ static INLINE void copy_pitch_bend_2 (const uint8 channel, const uint8 fbyte,con
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void copy_all_sounds_off(const uint8 channel){
+static AM_INLINE void copy_all_sounds_off(const uint8 channel){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_SOUNDS_OFF;
 	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
@@ -463,7 +463,7 @@ static INLINE void copy_all_sounds_off(const uint8 channel){
  * copies RESET ALL CONTROLLERS MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void copy_reset_all_controllers(const uint8 channel){
+static AM_INLINE void copy_reset_all_controllers(const uint8 channel){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_RESET_ALL;
 	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
@@ -473,7 +473,7 @@ static INLINE void copy_reset_all_controllers(const uint8 channel){
  * copies ALL NOTES OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void copy_all_notes_off(const uint8 channel){
+static AM_INLINE void copy_all_notes_off(const uint8 channel){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_ALL_NOTES_OFF;
 	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
@@ -483,7 +483,7 @@ static INLINE void copy_all_notes_off(const uint8 channel){
  * copies OMNI OFF MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void copy_omni_off(const uint8 channel){
+static AM_INLINE void copy_omni_off(const uint8 channel){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_OFF;
 	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
@@ -493,7 +493,7 @@ static INLINE void copy_omni_off(const uint8 channel){
  * copies OMNI ON MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void copy_omni_on(const uint8 channel){
+static AM_INLINE void copy_omni_on(const uint8 channel){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_OMNI_ON;
 	MIDIsendBuffer[MIDIbytesToSend++]=0x00;
@@ -503,7 +503,7 @@ static INLINE void copy_omni_on(const uint8 channel){
  * copies MONO MIDI message
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
-static INLINE void copy_mono(const uint8 channel,const uint8 numberOfMono){
+static AM_INLINE void copy_mono(const uint8 channel,const uint8 numberOfMono){
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_MONO;
 	MIDIsendBuffer[MIDIbytesToSend++]=numberOfMono;
@@ -514,7 +514,7 @@ static INLINE void copy_mono(const uint8 channel,const uint8 numberOfMono){
  * @param channel MIDI channel number 1-16 (0x00-0x0f).
  */
 
-static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly)
+static AM_INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly)
 {
     MIDIsendBuffer[MIDIbytesToSend++]=EV_CONTROLLER|channel;
 	MIDIsendBuffer[MIDIbytesToSend++]=C_POLY;
@@ -525,7 +525,7 @@ static INLINE void copy_poly(const uint8 channel, const uint8 numberOfPoly)
 *   @param numChannels - number of channel
 */
 
-static INLINE void amAllNotesOff(const uint16 numChannels)
+static AM_INLINE void amAllNotesOff(const uint16 numChannels)
 {
   for(uint16 iCounter=0;iCounter<numChannels;++iCounter)
   {

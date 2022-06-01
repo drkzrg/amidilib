@@ -17,7 +17,7 @@ extern uint8 isMidiRTorSysex(const uint8 byteEvent);
 
 // helper functions for determining amount of data stored in midi file before actual conversion
 
-static INLINE void collectNoteOffInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectNoteOffInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
 {
     if(rs->recallRS==0)
     {
@@ -37,7 +37,7 @@ static INLINE void collectNoteOffInfo(uint8 **pMidiData, sRunningStatus_t *rs, s
 }
 
 
-static INLINE void collectNoteOnInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectNoteOnInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
 {
 
   if(rs->recallRS==0)
@@ -57,7 +57,7 @@ static INLINE void collectNoteOnInfo(uint8 **pMidiData, sRunningStatus_t *rs, sM
  (*pMidiData)=(*pMidiData)+sizeof(sNoteOn_t);
 }
 
-static INLINE void collectNoteAftInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectNoteAftInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
 {
   if(rs->recallRS==0){
    /* save last running status */
@@ -75,7 +75,7 @@ static INLINE void collectNoteAftInfo(uint8 **pMidiData, sRunningStatus_t *rs, s
 }
 
 
-static INLINE void collectControllerEventInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectControllerEventInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
 {
   if(rs->recallRS==0){
     /* save last running status */
@@ -92,7 +92,7 @@ static INLINE void collectControllerEventInfo(uint8 **pMidiData, sRunningStatus_
  (*pMidiData)=(*pMidiData)+sizeof(sController_t);
 }
 
-static INLINE void collectProgramChangeInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectProgramChangeInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo)
 {
   if(rs->recallRS==0)
   {
@@ -109,7 +109,7 @@ static INLINE void collectProgramChangeInfo(uint8 **pMidiData, sRunningStatus_t 
   (*pMidiData)=(*pMidiData) + sizeof(sProgramChange_t);
 }
 
-static INLINE void collectChannelAftInfo(uint8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectChannelAftInfo(uint8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo)
 {
 
   if(rs->recallRS==0)
@@ -127,7 +127,7 @@ static INLINE void collectChannelAftInfo(uint8 **pMidiData, sRunningStatus_t *rs
   (*pMidiData)=(*pMidiData)+sizeof(sChannelAft_t);
 }
 
-static INLINE void collectPitchBendInfo(uint8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo)
+static AM_INLINE void collectPitchBendInfo(uint8 **pMidiData, sRunningStatus_t *rs,sMidiTrackInfo_t* bufferInfo)
 {
     if(rs->recallRS==0){
       /* save last running status */
@@ -146,7 +146,7 @@ static INLINE void collectPitchBendInfo(uint8 **pMidiData, sRunningStatus_t *rs,
 }
 
 
-static INLINE void collectMetaEventInfo( uint32 delta, uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, Bool *bEOT)
+static AM_INLINE void collectMetaEventInfo( uint32 delta, uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo, Bool *bEOT)
 {
 
 uint8 size=0;
@@ -240,7 +240,7 @@ metaLenght=readVLQ((*pMidiData),&size);
 
 }
 
-static INLINE void collectSysexInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
+static AM_INLINE void collectSysexInfo(uint8 **pMidiData, sRunningStatus_t *rs, sMidiTrackInfo_t* bufferInfo){
 uint32 ulCount=0;
 
         rs->recallRS=0;

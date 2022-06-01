@@ -56,7 +56,8 @@ static const uint8 prescales[8]= { 0, 4, 10, 16, 50, 64, 100, 200 };
 *   @param data - pointer to unsigned long int for MFP data value
 */
 
-static inline void getMFPTimerSettings(const uint32 freq, uint8 *mode, uint8 *data){
+static AM_INLINE void getMFPTimerSettings(const uint32 freq, uint8 *mode, uint8 *data)
+{
 static uint8 presc=0;
 static uint32 temp=0;
 

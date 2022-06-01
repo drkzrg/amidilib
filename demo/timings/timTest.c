@@ -354,7 +354,7 @@ bool isEndSeq(sEvent *pEvent)
     return FALSE;
 }
 
-void INLINE printHelpScreen(void)
+void AM_INLINE printHelpScreen(void)
 {
   amPrintf("==============================================="NL);
   amPrintf("/|\\ delta timing and sound output test.."NL);

@@ -19,21 +19,21 @@
 
 //midi data sending, platform specific
 
-static INLINE uint16 amMidiDataReady(const uint8 deviceNo){
+static AM_INLINE uint16 amMidiDataReady(const uint8 deviceNo){
   return Bconstat(deviceNo);
 }
 
-static INLINE uint32 amMidiSendByte(const uint8 deviceNo,const uint8 data){
+static AM_INLINE uint32 amMidiSendByte(const uint8 deviceNo,const uint8 data){
   return Bconout(deviceNo,(int16)data);
 }
 
-static INLINE void amMidiSendData(const uint16 count,const uint8 *data){
+static AM_INLINE void amMidiSendData(const uint16 count,const uint8 *data){
  //use xbios function
  Midiws(count,data);
  return; 
 }
 
-static INLINE uint8 amMidiGetData(const uint8 deviceId){
+static AM_INLINE uint8 amMidiGetData(const uint8 deviceId){
   return (uint8)Bconin(deviceId); 
 } 
 
@@ -63,7 +63,7 @@ static void clearMidiOutputBuffer(void){
     amMemSet(MIDIsendBuffer,0,MIDI_SENDBUFFER_SIZE*sizeof(uint8));
 }
 
-static INLINE void flushMidiSendBuffer(void){
+static AM_INLINE void flushMidiSendBuffer(void){
     if(MIDIbytesToSend>0){
         amMidiSendData(MIDIbytesToSend,MIDIsendBuffer);
     }

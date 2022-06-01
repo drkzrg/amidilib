@@ -33,7 +33,7 @@ if(((pMidiInfo->id)==(ID_MTHD)&&(pMidiInfo->headLenght==6L))){
 * @return 1 if true, 0 otherwise
 */
 
-static INLINE Bool amIsMidiChannelEvent(const uint8 byteEvent)
+static AM_INLINE Bool amIsMidiChannelEvent(const uint8 byteEvent)
 {
   if(( ((byteEvent&0xF0)>=0x80) && ((byteEvent&0xF0)<=0xE0)))
   {
@@ -49,7 +49,7 @@ static INLINE Bool amIsMidiChannelEvent(const uint8 byteEvent)
 * @return 1 if true, 0 otherwise
 */
 
-static INLINE Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
+static AM_INLINE Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
 {
   if( ((byteEvent>=(uint8)0xF0)&&(byteEvent<=(uint8)0xFF)) )
   {
@@ -72,7 +72,7 @@ static INLINE Bool amIsMidiRtCmdOrSysex(const uint8 byteEvent)
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amNoteOff(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 sNoteOff_EventBlock_t *pEvntBlock=NULL;
@@ -168,7 +168,7 @@ if((*recallRS)==0){
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
  sEventBlock_t tempEvent;
 
@@ -271,7 +271,7 @@ static INLINE int16 amNoteOn(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, 
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amNoteAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 uint8 noteNb=0;
@@ -357,7 +357,7 @@ sNoteAft_EventBlock_t *pEvntBlock=NULL;
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
     sEventBlock_t tempEvent;
     int16 retCode = AM_OK;
@@ -447,7 +447,7 @@ static INLINE int16 amController(sSequence_t *pSeq,uint8 **pPtr, uint16 *recallR
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
+static AM_INLINE int16 amProgramChange(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta,  const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 
@@ -540,7 +540,7 @@ sEventBlock_t tempEvent;
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amChannelAft(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 int16 retCode = AM_OK;
@@ -620,7 +620,7 @@ int16 retCode = AM_OK;
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amPitchBend(sSequence_t *pSeq, uint8 **pPtr, uint16 *recallRS, const uint32 delta, const uint8 trackNb)
 {
 sEventBlock_t tempEvent;
 
@@ -710,7 +710,7 @@ tempEvent.dataPtr=0;
 * @return iRetVal pointer to an integer, which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb)
+static AM_INLINE int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb)
 {
   sEventBlock_t tempEvent;
   sSysEX_EventBlock_t *pEvntBlock=0;
@@ -770,7 +770,7 @@ static INLINE int16 amSysexMsg(sSequence_t *pSeq, uint8 **pPtr, const uint32 del
 *           which holds operation status after events processing (AM_OK on success, AM_ERR on error)
 */
 
-static INLINE int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb, Bool *bEOT)
+static AM_INLINE int16 amMetaEvent(sSequence_t *pSeq, uint8 **pPtr, const uint32 delta, const uint8 trackNb, Bool *bEOT)
 {
 sEventBlock_t tempEvent;
 
@@ -1287,7 +1287,7 @@ sEventBlock_t tempEvent;
 */
 
 /* handles the events in tracks and returns pointer to the next midi track */
-static INLINE void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, int16 *iRetVal )
+static AM_INLINE void *processMidiTrackEvents(sSequence_t *pSeq, void**startPtr, const void *endAddr, const uint8 trackNb, int16 *iRetVal )
 {
   uint8 usSwitch=0;
   uint16 recallStatus=0;

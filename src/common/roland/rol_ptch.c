@@ -799,7 +799,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      {
         requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
-        amTrace("\nSetting MT32 device on ch: %d"NL, channel);
+        amTrace(NL "Setting MT32 device on ch: %d"NL, channel);
         MT32Reset();
 
         moduleSettings.vendorID=ID_ROLAND;
@@ -810,7 +810,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      } break;
 
      case DT_LA_SOUND_SOURCE_EXT:{
-       amTrace("\nSetting MT32 ext device on ch: %d"NL, channel);
+       amTrace(NL "Setting MT32 ext device on ch: %d"NL, channel);
        requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
        moduleSettings.vendorID=ID_ROLAND;
@@ -823,7 +823,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      }break;
 
      case DT_GS_SOUND_SOURCE:       /* for pure GS / GM sound source */
-        amTrace("\nSetting GS device on ch: %d"NL, channel);
+        amTrace(NL "Setting GS device on ch: %d"NL, channel);
 
         moduleSettings.vendorID=ID_ROLAND;
         moduleSettings.modelID=GS_MODEL_ID;
@@ -837,7 +837,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      break;
 
      case DT_LA_GS_MIXED:{           /* if both LA / GS sound sources are available, like in CM-500 mode A, drop it? */
-        amTrace("\nSetting generic LA / GS device on ch: %d"NL, channel);
+        amTrace(NL "Setting generic LA / GS device on ch: %d"NL, channel);
 
         moduleSettings.vendorID=ID_ROLAND;
         moduleSettings.modelID=GS_MODEL_ID;
@@ -854,7 +854,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      }break;
 
      case DT_GM_SOUND_SOURCE:{
-        amTrace("\nSetting GM device on ch: %d"NL, channel);
+        amTrace(NL "Setting GM device on ch: %d"NL, channel);
 
         moduleSettings.vendorID=ID_ROLAND;
         moduleSettings.modelID=GS_MODEL_ID;
@@ -867,7 +867,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      }break;
 
      case DT_MT32_GM_EMULATION:{
-        amTrace("\nSetting GM emulation on MT32 on ch: %d"NL, channel);
+        amTrace(NL "Setting GM emulation on MT32 on ch: %d"NL, channel);
 
         requestedMasterVolume=MIDI_MASTER_VOL_DEFAULT_MT32;
 
@@ -886,7 +886,7 @@ void setupMidiDevice(const eMidiDeviceType device, const uint8 channel)
      case DT_XG_GM_YAMAHA:    //not supported yet
      default:
      {
-            amTrace("\nSetting generic default on ch: %d"NL,channel);
+            amTrace(NL "Setting generic default on ch: %d"NL,channel);
             control_change(C_BANK_SELECT, channel,0,0x00);
             program_change(channel, 1);
      } break;

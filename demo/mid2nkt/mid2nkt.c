@@ -2,7 +2,6 @@
 #if AMIDILIB_USE_LIBC
 #include <string.h>
 #else
-#include <osbind.h>
 #include "amstring.h"
 #endif
 
@@ -19,6 +18,8 @@
 #include "core/amprintf.h"
 #include "core/logger.h"    // logging
 #include "core/machine.h"
+
+#include <osbind.h>
 
 static const uint32 MIDI_OUT_TEMP = 100*1024; // temporary buffer for MUS->MID conversion
 static const uint32 MAX_GEMDOS_FILEPATH = 128;

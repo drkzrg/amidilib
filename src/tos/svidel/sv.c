@@ -12,7 +12,7 @@
 #define SV_VERSION      0x8001007CUL    /* SV version register */
 
 // dumps SCREENINFO content to file/console
-static inline void logScreenInfo(const RSCREENINFO *pPtr) 
+static AM_INLINE void logScreenInfo(const RSCREENINFO *pPtr) 
 {
   amTrace("\nSize of structure:\t0x%x"NL, pPtr->size);
   amTrace("Current screen mode:\t0x%x"NL, pPtr->devID); /* Device ID number */

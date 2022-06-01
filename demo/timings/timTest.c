@@ -472,7 +472,7 @@ static bool bStopped=FALSE;
   {
     g_CurrentState.currentBPM=60000000/g_CurrentState.currentTempo;
     g_CurrentState.timeStep=amCalculateTimeStep(g_CurrentState.currentBPM, g_CurrentState.currentPPQN, SEQUENCER_UPDATE_HZ);
-    //amTrace("\nSet new timestep:%d"NL,g_CurrentState.timeStep);
+    //amTrace(NL "Set new timestep:%d"NL,g_CurrentState.timeStep);
     handleTempoChange=FALSE;
   }
   

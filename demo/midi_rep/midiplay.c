@@ -319,7 +319,7 @@ void displayTuneInfo(void)
     amPrintf("[Track no. %d] %s"NL,(i+1),pTrkName);
   }
   
-  amPrintf("\nReady..."NL);
+  amPrintf(NL "Ready..."NL);
 }
 
 

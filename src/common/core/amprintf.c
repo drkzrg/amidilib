@@ -32,7 +32,7 @@ int amCustomPrintf(const char* format, ...)
 
   va_list val;
   va_start(val, format);
-  int const rv = npf_vsnprintf(&outputTraceBuffer[0],DEBUG_OUTPUT_BUFFER_SIZE,format,val);
+  int const rv = npf_vsnprintf(&outputTraceBuffer[0],DEBUG_OUTPUT_BUFFER_SIZE-1,format,val);
   va_end(val);
 
   AssertMsg(rv>=0,"npf_vsnprintf() error");

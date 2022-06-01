@@ -63,7 +63,7 @@ static const char* arDebugLevelString[TL_ERR_NUM] =
 };
 
 #define MIN_SRCPATHLEN 32
-#define DEBUG_TRACE_FMT "\n%s[source]:(l:%u)%s\n# "
+#define DEBUG_TRACE_FMT NL"%s[source]:(l:%u)%sNL# "
 
 char outputTraceBuffer[DEBUG_OUTPUT_BUFFER_SIZE] = {0};
 
@@ -132,7 +132,7 @@ void logOutputTraceSimple(const eTraceLevel level, const char* const message, ..
         ++bytesSent;
       }
 
-     if(outBufferLength==bytesSent)
+     if(outBufferLength == bytesSent)
      {
         sendCharsFlag=0;
      }
@@ -173,7 +173,7 @@ void logOutputTrace(const eTraceLevel level, const char * const sourceName, cons
         (void)Cconws(outputTraceBuffer);
     }
 #else
-    fprintf(stderr, "%s", outputTraceBuffer);
+    fprintf(stderr, outputTraceBuffer);
 #endif    
 #endif
 
@@ -211,7 +211,7 @@ void logOutputTrace(const eTraceLevel level, const char * const sourceName, cons
         ++bytesSent;
       }
 
-     if(outBufferLength==bytesSent)
+     if(outBufferLength == bytesSent)
      {
         sendCharsFlag=0;
      }

@@ -71,7 +71,7 @@ void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 p
   switch(getGlobalConfig()->connectedDeviceType){
     case DT_LA_SOUND_SOURCE:     
     case DT_LA_SOUND_SOURCE_EXT:{
-      amPrintf("\nSetting LA instrument pn: [%d] on ch: [%d]"NL, pn, channel);
+      amPrintf(NL "Setting LA instrument pn: [%d] on ch: [%d]"NL, pn, channel);
       program_change(channel, pn);
     }break;
     
@@ -81,7 +81,7 @@ void changeCurrentInstrument(const uint8 channel,const uint8 bank, const uint8 p
     case DT_XG_GM_YAMAHA:
     default:
     {
-      amPrintf("\nSetting GS/GM instrument bank:[%d]: pn [%d]: on [ch]: %d"NL, bank, pn, channel);
+      amPrintf(NL "Setting GS/GM instrument bank:[%d]: pn [%d]: on [ch]: %d"NL, bank, pn, channel);
 
       control_change(C_BANK_SELECT, channel, bank,0x00);
       program_change(channel, pn);

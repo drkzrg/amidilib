@@ -261,9 +261,9 @@ static sSysEX_t arSetTextMT32         =  {30,(uint8 []){0xf0,0x41,0x10,0x16,0x12
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                                                               0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xf7}};
 
-static inline void handleMasterSettings(void) AM_FORCE_INLINE;
+static AM_INLINE void handleMasterSettings(void) AM_FORCE_INLINE;
 
-static inline void handleMasterSettings(void) 
+static AM_INLINE void handleMasterSettings(void) 
 {
 
     // handle volume/balance/reverb change
@@ -680,9 +680,9 @@ void updateStepNktMt(void){
       //rewind all tracks to the first event
       for(uint16 i=0;i<g_CurrentNktSequence->nbOfTracks;++i)
       {
-          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0L;
-          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0L;
-          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0L;
+          g_CurrentNktSequence->pTracks[i].timeElapsedInt=0;
+          g_CurrentNktSequence->pTracks[i].timeElapsedFrac=0;
+          g_CurrentNktSequence->pTracks[i].eventsBlockOffset=0;
           g_CurrentNktSequence->pTracks[i].currentBlockId=0;
       }
 
@@ -886,7 +886,7 @@ sNktSeq *loadNktSequence(const uint8 *pFilePath){
             pTrk->eventsBlockBufferSize = trackData[i].eventsBlockBufSize;
             pTrk->dataBufferSize = trackData[i].eventDataBufSize;
 
-            amTrace("\n[Track]: %u "NL, i);
+            amTrace(NL "[Track]: %u "NL, i);
             amTrace("Blocks in sequence: %u "NL, pTrk->nbOfBlocks);
             amTrace("Event data buffer size: %u "NL, pTrk->dataBufferSize);
             amTrace("Events block size: %u "NL, pTrk->eventsBlockBufferSize);
@@ -1330,7 +1330,7 @@ void NktInit(const eMidiDeviceType devType, const uint8 channel)
 
     amSetDefaultUserMemoryCallbacks();
     
-    initLogger("nktlog.log");
+    initLogger("nkt.log");
 
     Supexec(installMidiResetHandler);
 

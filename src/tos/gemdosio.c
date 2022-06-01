@@ -392,11 +392,11 @@ int32 saveFile(const uint8 *szFileName, const void *memBlock, const uint32 memBl
        
      if(iRet == memBlockSize)
      {
-        amPrintf("\n%s saved [%d bytes written]."NL,szFileName,iRet);
+        amPrintf(NL "%s saved [%d bytes written]."NL,szFileName,iRet);
      }
      else
      {
-        amPrintf("\nError: %s saved [%d bytes written]."NL,szFileName, iRet);
+        amPrintf(NL "Error: %s saved [%d bytes written]."NL,szFileName, iRet);
      }
 
      amTrace("[GEMDOS] Closing file handle : [%d] "NL, fileHandle);

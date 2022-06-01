@@ -7,7 +7,7 @@
 
 #include "svidel/sv_defs.h"
 #include "core/logger.h"
-#include "core/amPrintf.h"
+#include "core/amprintf.h"
 
 #define SV_VERSION      0x8001007CUL    /* SV version register */
 

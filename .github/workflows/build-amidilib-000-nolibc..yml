@@ -88,4 +88,5 @@ jobs:
         with:
           name: amidilib-000-nolibc
           path: ./amidilib-*.tgz
+          retention-days: 7
           

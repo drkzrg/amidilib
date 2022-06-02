@@ -61,4 +61,5 @@ jobs:
         with:
           name: nktlib-060-libc
           path: ./nktlib/nktlib-*.tgz
+          retention-days: 7
           

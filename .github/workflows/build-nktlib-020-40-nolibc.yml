@@ -67,4 +67,5 @@ jobs:
         with:
           name: nktlib-020-40-nolibc
           path: ./nktlib/nktlib-*.tgz
+          retention-days: 7
           

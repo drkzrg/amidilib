@@ -7,7 +7,6 @@ find ./nktlib/ -name "*.inc" -type f|xargs rm -f
 find ./nktlib/ -name "*.h" -type f|xargs rm -f
 find ./nktlib/ -name "*.c" -type f|xargs rm -f
 
-
 echo Copying sources ..
 
 if [ ! -d "./nktlib/src" ]; then
@@ -20,6 +19,9 @@ cp ../src/common/formats/nkt_rep_m68k.s ./nktlib/src/
 cp ../src/common/roland/rol_ptch.c ./nktlib/src/
 cp ../src/tos/common.s ./nktlib/src/
 cp ../src/tos/memory.c ./nktlib/src/
+cp ../src/tos/machine.c ./nktlib/src/
+cp ../src/tos/ct60/ct60_m68k.s ./nktlib/src/
+cp ../src/tos/svidel/sv.c ./nktlib/src/
 cp ../src/common/memory/linalloc.c ./nktlib/src/
 cp ../src/common/formats/midi2nkt.c ./nktlib/src/
 cp ../src/common/formats/mus2midi.c ./nktlib/src/
@@ -35,7 +37,15 @@ if [ ! -d "./nktlib/include/" ]; then
 mkdir ./nktlib/include/
 fi
 
+if [ ! -d "./nktlib/include/core" ]; then
+mkdir ./nktlib/include/core
+fi
+
 cp ../include/core/logger.h ./nktlib/include/
+cp ../include/core/machine.h ./nktlib/include/core
+cp ../include/core/assert.h ./nktlib/include/core
+cp ../include/ct60.h ./nktlib/include/
+cp ../include/sv_defs.h ./nktlib/include/
 cp ../include/amstring.h ./nktlib/include/
 cp ../include/common_m68k.inc ./nktlib/include/
 cp ../include/vartypes.h ./nktlib/include/

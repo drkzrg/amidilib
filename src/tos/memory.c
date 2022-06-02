@@ -5,10 +5,9 @@
     See license.txt for licensing information.
 */
 
-#include <stdlib.h>
 
+#include "ct60.h"
 #include "memory/memory.h"
-#include "ct60/ct60.h"
 #include "core/machine.h"
 
 // global memory allocation callbacks
@@ -17,6 +16,7 @@ funcMemFree gUserMemFree;
 funcMemRealloc gUserMemRealloc;
 
 #if defined (FORCE_MALLOC)
+#include <stdlib.h>
 
 void* amMalloc(const uint32_t size, const eMemoryFlag ramflag, void *param)
 {

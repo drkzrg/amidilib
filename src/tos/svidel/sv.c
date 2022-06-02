@@ -5,9 +5,9 @@
     See license.txt for licensing information.
 */
 
-#include "svidel/sv_defs.h"
 #include "core/logger.h"
 #include "core/amprintf.h"
+#include "sv_defs.h"
 
 #define SV_VERSION      0x8001007CUL    /* SV version register */
 

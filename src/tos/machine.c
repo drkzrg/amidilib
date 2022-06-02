@@ -11,8 +11,8 @@
 #include "core/logger.h"
 #include "core/machine.h"
 #include "memory/memory.h"
-#include "ct60/ct60.h"
-#include "svidel/sv_defs.h"
+#include "ct60.h"
+#include "sv_defs.h"
 
 static const char *sAtariModels[MAX_ATARI_TYPE] =
 {

@@ -51,7 +51,7 @@ static AM_INLINE void logScreenInfo(const RSCREENINFO *pPtr)
 
 
 // needs supervisor
-const uint32 getSVfwVersion(void)
+const uint32 getSvFwVersion(void)
 {
   uint32 ver=0;
 

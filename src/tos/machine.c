@@ -343,7 +343,7 @@ void checkMachine(void)
       else if (getCookie(C_SupV, &sv) == C_FOUND)
       {
         machineInfo.videoHardware = SUPERVIDEL;
-        amTrace("Supervidel detected. Firmware ver: 0x%x"NL,0, getSVfwVersion());
+        amTrace("Supervidel detected. Firmware ver: 0x%x"NL,0, getSvFwVersion());
         machineInfo.vram = ct60_vmalloc(0, -1);
       }  // check Supervidel
     }    // check ct60

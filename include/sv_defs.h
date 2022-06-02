@@ -251,6 +251,6 @@ typedef struct {
 
 #define F030_PAL 0xFFFF9800UL /* 1024 bytes palette register */
 
-const uint32 getSVfwVersion(void);
+const uint32 getSvFwVersion(void);
 
 #endif
